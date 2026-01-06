@@ -6,9 +6,8 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-     public function index(Request $request)
+    public function index(Request $request)
     {
-        // Static data for now - ready to be replaced with database queries
         $regionalStats = [
             [
                 'period' => 'Jul 2025',
@@ -43,53 +42,8 @@ class DashboardController extends Controller
                 'underemp_rate' => 8.7,
                 'particip_rate' => 58.6
             ],
-            [
-                'period' => 'Oct 2024',
-                'labor_force' => 2405,
-                'employed' => 2325,
-                'unemployed' => 80,
-                'underemployed' => 160,
-                'emp_rate' => 96.7,
-                'unemp_rate' => 3.3,
-                'underemp_rate' => 6.9,
-                'particip_rate' => 59.2
-            ],
-            [
-                'period' => 'Jul 2024',
-                'labor_force' => 2394,
-                'employed' => 2320,
-                'unemployed' => 74,
-                'underemployed' => 155,
-                'emp_rate' => 96.9,
-                'unemp_rate' => 3.1,
-                'underemp_rate' => 6.7,
-                'particip_rate' => 59.3
-            ],
-            [
-                'period' => 'Apr 2024',
-                'labor_force' => 2410,
-                'employed' => 2320,
-                'unemployed' => 90,
-                'underemployed' => 235,
-                'emp_rate' => 96.3,
-                'unemp_rate' => 3.7,
-                'underemp_rate' => 10.1,
-                'particip_rate' => 60.0
-            ],
-            [
-                'period' => 'Jan 2024',
-                'labor_force' => 2380,
-                'employed' => 2290,
-                'unemployed' => 90,
-                'underemployed' => 230,
-                'emp_rate' => 96.2,
-                'unemp_rate' => 3.8,
-                'underemp_rate' => 10.0,
-                'particip_rate' => 59.5
-            ]
         ];
 
-        // Chart data (keeping your existing structure)
         $charts = [
             'labor_vs_employment' => [
                 'labels' => ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
@@ -102,6 +56,55 @@ class DashboardController extends Controller
             ]
         ];
 
-        return view('home', compact('charts', 'regionalStats'));
+        return view('home', [
+            'charts' => $charts,
+            'regionalStats' => $regionalStats,
+
+            // JOB MARKET DATA
+            'high_volume_jobs' => [
+                ['title' => 'Customer Service Rep', 'count' => 1250],
+                ['title' => 'Sales Associate', 'count' => 880],
+                ['title' => 'Construction Worker', 'count' => 750],
+                ['title' => 'Admin Assistant', 'count' => 520],
+                ['title' => 'Delivery Rider', 'count' => 480],
+                ['title' => 'Production Operator', 'count' => 450],
+                ['title' => 'Registered Nurse', 'count' => 320],
+                ['title' => 'Accountant', 'count' => 280],
+                ['title' => 'IT Support Specialist', 'count' => 200],
+                ['title' => 'Teacher', 'count' => 180],
+            ],
+
+            'hard_to_fill' => [
+                ['role' => 'Senior Data Scientist', 'days' => 120, 'bottleneck' => 'Skills Gap', 'year' => 2023],
+                ['role' => 'Licensed Civil Engineer', 'days' => 95, 'bottleneck' => 'Experience Gap', 'year' => 2023],
+                ['role' => 'Full Stack Developer', 'days' => 85, 'bottleneck' => 'High Competition', 'year' => 2023],
+                ['role' => 'Specialized Surgeon', 'days' => 88, 'bottleneck' => 'License/Cert', 'year' => 2024],
+            ],
+
+            'soft_skills' => [
+                ['name' => 'English Proficiency', 'sector' => 'BPO/IT'],
+                ['name' => 'Safety Compliance', 'sector' => 'Construction'],
+                ['name' => 'Customer Empathy', 'sector' => 'BPO/IT'],
+                ['name' => 'Crisis Mgmt', 'sector' => 'General'],
+                ['name' => 'Adaptability', 'sector' => 'General'],
+            ],
+
+            'tech_skills' => [
+                ['name' => 'Python / SQL', 'sector' => 'BPO/IT'],
+                ['name' => 'Heavy Machinery Op', 'sector' => 'Construction'],
+                ['name' => 'Data Analysis', 'sector' => 'BPO/IT'],
+                ['name' => 'Specialized Surgery', 'sector' => 'Healthcare'],
+                ['name' => 'Generative AI', 'sector' => 'BPO/IT'],
+                ['name' => 'Climate Resilience', 'sector' => 'Agriculture'],
+                ['name' => 'Robotics Maintenance', 'sector' => 'Manufacturing'],
+            ],
+
+            'matrix_results' => [
+                ['role' => 'Senior Java Developer', 'sector' => 'BPO/IT', 'skill' => 'Spring Boot Framework', 'type' => 'Hard', 'req' => 'Expert', 'obs' => 'Novice', 'impact' => 'High'],
+                ['role' => 'Customer Service Rep', 'sector' => 'BPO/IT', 'skill' => 'English Fluency (C1)', 'type' => 'Soft', 'req' => 'Competent', 'obs' => 'Basic', 'impact' => 'Critical'],
+                ['role' => 'Site Engineer', 'sector' => 'Construction', 'skill' => 'Project Mgmt (Primavera)', 'type' => 'Hard', 'req' => 'Competent', 'obs' => 'Novice', 'impact' => 'High'],
+                ['role' => 'ICU Nurse', 'sector' => 'Healthcare', 'skill' => 'Critical Care Cert', 'type' => 'Hard', 'req' => 'Expert', 'obs' => 'Competent', 'impact' => 'Critical'],
+            ]
+        ]);
     }
 }
