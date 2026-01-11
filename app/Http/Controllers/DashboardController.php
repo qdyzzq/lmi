@@ -44,20 +44,9 @@ class DashboardController extends Controller
             ],
         ];
 
-        $charts = [
-            'labor_vs_employment' => [
-                'labels' => ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
-                'labor' => [2100, 2000, 2150, 2250, 2300, 2350, 2378],
-                'employment_rate' => [94.5, 92.8, 95.2, 96.0, 96.5, 96.3, 96.4]
-            ],
-            'unemployment_volume' => [
-                'labels' => ['2012', '2014', '2016', '2018', '2020', '2022', '2024', '2025'],
-                'values' => [120, 110, 105, 95, 145, 88, 85, 86]
-            ]
-        ];
+        
 
         return view('home', [
-            'charts' => $charts,
             'regionalStats' => $regionalStats,
 
             // JOB MARKET DATA

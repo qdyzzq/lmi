@@ -20,11 +20,11 @@
         <nav class="flex-1 px-4 py-6 space-y-1 overflow-auto">
             <p class="text-[10px] uppercase tracking-widest text-blue-300 font-bold mb-4 px-2">Main Menu</p>
 
-            <a href="{{ route('home')}}" class="flex items-center gap-3 p-3 text-blue-100  rounded-lg transition group">
+            <a href="{{ route('home')}}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
                 <span class="opacity-70 group-hover:opacity-100">📊</span> Dashboard
             </a>
             
-            <a href="{{ route('hei.graduate') }}" class="flex items-center gap-3 p-3 text-blue-100 rounded-lg transition group">
+            <a href="{{ route('hei.graduate') }}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
                 <span class=" opacity-70 group-hover:opacity-100">🎓</span> HEI Graduate Data
             </a>
 
@@ -36,21 +36,21 @@
                 <span>📈</span> Job Market Overview
             </a>
             
-            <a href="#" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
+            <a href="{{ route('Government.Data') }}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
                 <span class=" opacity-70 group-hover:opacity-100">🗂️</span> Government Data
             </a>
 
-            <a href="#" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
+            <a href="{{ route('Stake.Holder.Engagement') }}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
                 <span class=" opacity-70 group-hover:opacity-100">🤝</span> Stakeholder Engagement
             </a>
 
-             <a href="#" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
+             <a href="{{ route('Report') }}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
                 <span class=" opacity-70 group-hover:opacity-100">📑</span> Reports
             </a>
 
             <div class="pt-6">
                 <p class="text-[10px] uppercase tracking-widest text-blue-300 font-bold mb-4 px-2">Account</p>
-                <a href="#" class="flex items-center gap-3 p-3 text-blue-100 hover:blue-800 rounded-lg transition group">
+                <a href="{{ route('Setting') }}" class="flex items-center gap-3 p-3 text-blue-100 hover:blue-800 rounded-lg transition group">
                     <span class="opacity-70 group-hover:opacity-100">⚙️</span> Settings
                 </a>
                 <a href="#" class="flex items-center gap-3 p-3 text-red-300 hover:bg-red-900/30 rounded-lg transition group">

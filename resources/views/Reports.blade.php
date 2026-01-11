@@ -21,19 +21,19 @@
             <p class="text-[10px] uppercase tracking-widest text-blue-300 font-bold mb-4 px-2">Main Menu</p>
 
             <a href="{{ route('home')}}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
-                <span>📊</span> Dashboard
+                <span class="opacity-70 group-hover:opacity-100">📊</span> Dashboard
             </a>
             
-            <a href="{{ route('hei.graduate') }}" class="flex items-center gap-3 p-3 bg-yellow-400 text-blue-900 font-bold rounded-lg transition shadow-md">
-                <span>🎓</span> HEI Graduate Data
+            <a href="{{ route('hei.graduate') }}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
+                <span class=" opacity-70 group-hover:opacity-100">🎓</span> HEI Graduate Data
             </a>
 
             <a href="{{ route('Skill.Gap.Demand') }}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
-                <span class=" opacity-70 group-hover:opacity-100">⚖️</span> Skills Gap & Demand
+                <span class="opacity-70 group-hover:opacity-100">⚖️</span> Skills Gap & Demand
             </a>
 
              <a href="{{ route('Job.Market.Overview') }}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
-                <span class=" opacity-70 group-hover:opacity-100">📈</span> Job Market Overview
+                <span class="opacity-70 group-hover:opacity-100">📈</span> Job Market Overview
             </a>
             
             <a href="{{ route('Government.Data') }}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
@@ -44,7 +44,7 @@
                 <span class=" opacity-70 group-hover:opacity-100">🤝</span> Stakeholder Engagement
             </a>
 
-             <a href="{{ route('Report') }}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
+             <a href="{{ route('Report') }}" class="flex items-center gap-3 p-3  bg-yellow-400 text-blue-900 font-bold  rounded-lg transition shadow-md">
                 <span class=" opacity-70 group-hover:opacity-100">📑</span> Reports
             </a>
 
@@ -66,7 +66,7 @@
         <div class="flex-1 flex flex-col overflow-hidden">
         
         <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 shadow-sm">
-            <h2 class="text-xl font-bold text-slate-800">HEI Graduate Data</h2>
+            <h2 class="text-xl font-bold text-slate-800">Reports</h2>
             <div class="flex items-center gap-4">
                 <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">
                     📅 Region XI • 2024
