@@ -5,6 +5,7 @@
     @vite('resources/css/app.css')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="{{ asset('path/to/chart-filtering.js') }}"></script>
 
     <title>LMI</title>
 </head>
@@ -221,184 +222,177 @@
                             </div>
                         </div>
 
-                        <!-- Charts  -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <!-- Labor Chart -->
-                            <div class="bg-white border rounded-xl p-5 shadow-sm">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div>
-                                        <h3 class="font-semibold text-slate-800">Labor Force vs Employment Rate</h3>
-                                        <p class="text-xs text-slate-500">Comparing workforce size (bars) vs employment rate (line)</p>
-                                    </div>
-                                    <div class="relative" x-data="{ open: false }">
-                                        <button @click="open = !open" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
-                                            <span id="laborYearRange">2019 – 2025</span>
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                            </svg>
-                                        </button>
-                                        
-                                        <div x-show="open" 
-                                            @click.away="open = false"
-                                            x-transition
-                                            class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border z-10 p-5">
-                                            
-                                            <div class="mb-4">
-                                                <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
-                                                
-                                                <!-- Year Range Inputs -->
-                                                <div class="flex items-center gap-3">
-                                                    <div class="flex-1">
-                                                        <label class="text-[10px] text-slate-500 mb-1 block">From</label>
-                                                        <select id="laborStartYear" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                                            <option value="2019">2019</option>
-                                                            <option value="2020">2020</option>
-                                                            <option value="2021">2021</option>
-                                                            <option value="2022">2022</option>
-                                                            <option value="2023">2023</option>
-                                                            <option value="2024">2024</option>
-                                                            <option value="2025">2025</option>
-                                                        </select>
-                                                    </div>
-                                                    
-                                                    <span class="text-slate-400 mt-5">—</span>
-                                                    
-                                                    <div class="flex-1">
-                                                        <label class="text-[10px] text-slate-500 mb-1 block">To</label>
-                                                        <select id="laborEndYear" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                                            <option value="2019">2019</option>
-                                                            <option value="2020">2020</option>
-                                                            <option value="2021">2021</option>
-                                                            <option value="2022">2022</option>
-                                                            <option value="2023">2023</option>
-                                                            <option value="2024">2024</option>
-                                                            <option value="2025" selected>2025</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Quick Presets -->
-                                            <div class="mb-4">
-                                                <label class="text-[10px] text-slate-500 mb-2 block">Quick Select</label>
-                                                <div class="flex flex-wrap gap-2">
-                                                    <button @click="setLaborYearRange('all')" class="px-3 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg transition">
-                                                        All Years
-                                                    </button>
-                                                    <button @click="setLaborYearRange('last3')" class="px-3 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg transition">
-                                                        Last 3 Years
-                                                    </button>
-                                                    <button @click="setLaborYearRange('last5')" class="px-3 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg transition">
-                                                        Last 5 Years
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <button @click="applyLaborFilter(); open = false" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 rounded-lg transition">
-                                                Apply Filter
-                                            </button>
-                                        </div>
-                                    </div>
+                        <!-- Charts Section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Labor Chart -->
+                        <div class="bg-white border rounded-xl p-5 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="font-semibold text-slate-800">Labor Force vs Employment Rate</h3>
+                                    <p class="text-xs text-slate-500">Comparing workforce size (bars) vs employment rate (line)</p>
                                 </div>
-                                <div class="relative h-80 w-full">
-                                    <canvas id="laborEmploymentChart"></canvas>
+                                <div class="relative" x-data="{ open: false }">
+                                    <button @click="open = !open" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
+                                        <span id="laborYearRange">2012 – 2025 Q4</span>
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                    
+                                    <div x-show="open" 
+                                        @click.away="open = false"
+                                        x-transition
+                                        class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border z-10 p-5">
+                                        
+                                        <div class="mb-4">
+                                            <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
+                                            
+                                            <!-- Year Range Inputs -->
+                                            <div class="flex items-center gap-3">
+                                                <div class="flex-1">
+                                                    <label class="text-[10px] text-slate-500 mb-1 block">From</label>
+                                                    <select id="laborStartYear" class=" form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                                        <option value="" selected disabled>Select year</option>
+                                                        @for ($year = 2012; $year <= 2025; $year++)
+                                                            <option value="{{ $year }}">{{ $year }}</option>
+                                                        @endfor
+                                                    </select>
+                                                </div>
+                                                
+                                                <span class="text-slate-400 mt-5">—</span>
+                                                
+                                                <div class="flex-1">
+                                                    <label class="text-[10px] text-slate-500 mb-1 block">To</label>
+                                                    <select id="laborEndYear" class="form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                                        <option value="" selected disabled>Select year</option>
+                                                        @for ($year = 2012; $year <= 2025; $year++)
+                                                           <option value="{{ $year }}">{{ $year }}</option>
+                                                        @endfor
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <!-- Quarter Selectors (shown when year >= 2018) -->
+                                            <div class="flex items-center gap-3 mt-3">
+                                                <div class="flex-1">
+                                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter (From)</label>
+                                                    <select id="laborStartQuarter" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500  cursor-pointer">
+                                                        <option value="Q1">Q1</option>
+                                                        <option value="Q2">Q2</option>
+                                                        <option value="Q3">Q3</option>
+                                                        <option value="Q4">Q4</option>
+                                                    </select>
+                                                </div>
+                                                
+                                                <span class="text-slate-400 mt-5">—</span>
+                                                
+                                                <div class="flex-1">
+                                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter (To)</label>
+                                                    <select id="laborEndQuarter" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500  cursor-pointer">
+                                                        <option value="Q1">Q1</option>
+                                                        <option value="Q2">Q2</option>
+                                                        <option value="Q3">Q3</option>
+                                                        <option value="Q4" selected>Q4</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button onclick="updateLaborChart()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition cursor-pointer">
+                                            Apply Filter
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-
-                            <!-- Unemployment Chart -->
-                            <div class="bg-white border rounded-xl p-5 shadow-sm">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div>
-                                        <h3 class="font-semibold text-slate-800">Unemployment Volume</h3>
-                                        <p class="text-xs text-slate-500">Headcount of unemployed persons</p>
-                                    </div>
-                                    <div class="relative" x-data="{ open: false }">
-                                        <button @click="open = !open" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
-                                            <span id="unempYearRange">2012 – 2025</span>
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                            </svg>
-                                        </button>
-                                        
-                                        <div x-show="open" 
-                                            @click.away="open = false"
-                                            x-transition
-                                            class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border z-10 p-5">
-                                            
-                                            <div class="mb-4">
-                                                <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
-                                                
-                                                <div class="flex items-center gap-3">
-                                                    <div class="flex-1">
-                                                        <label class="text-[10px] text-slate-500 mb-1 block">From</label>
-                                                        <select id="unempStartYear" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                                            <option value="2012">2012</option>
-                                                            <option value="2013">2013</option>
-                                                            <option value="2014">2014</option>
-                                                            <option value="2015">2015</option>
-                                                            <option value="2016">2016</option>
-                                                            <option value="2017">2017</option>
-                                                            <option value="2018">2018</option>
-                                                            <option value="2019">2019</option>
-                                                            <option value="2020">2020</option>
-                                                            <option value="2021">2021</option>
-                                                            <option value="2022">2022</option>
-                                                            <option value="2023">2023</option>
-                                                            <option value="2024">2024</option>
-                                                            <option value="2025">2025</option>
-                                                        </select>
-                                                    </div>
-                                                    
-                                                    <span class="text-slate-400 mt-5">—</span>
-                                                    
-                                                    <div class="flex-1">
-                                                        <label class="text-[10px] text-slate-500 mb-1 block">To</label>
-                                                        <select id="unempEndYear" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                                            <option value="2012">2012</option>
-                                                            <option value="2013">2013</option>
-                                                            <option value="2014">2014</option>
-                                                            <option value="2015">2015</option>
-                                                            <option value="2016">2016</option>
-                                                            <option value="2017">2017</option>
-                                                            <option value="2018">2018</option>
-                                                            <option value="2019">2019</option>
-                                                            <option value="2020">2020</option>
-                                                            <option value="2021">2021</option>
-                                                            <option value="2022">2022</option>
-                                                            <option value="2023">2023</option>
-                                                            <option value="2024">2024</option>
-                                                            <option value="2025" selected>2025</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="mb-4">
-                                                <label class="text-[10px] text-slate-500 mb-2 block">Quick Select</label>
-                                                <div class="flex flex-wrap gap-2">
-                                                    <button @click="setUnempYearRange('all')" class="px-3 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg transition">
-                                                        All Years
-                                                    </button>
-                                                    <button @click="setUnempYearRange('last3')" class="px-3 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg transition">
-                                                        Last 3 Years
-                                                    </button>
-                                                    <button @click="setUnempYearRange('last5')" class="px-3 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg transition">
-                                                        Last 5 Years
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <button @click="applyUnempFilter(); open = false" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 rounded-lg transition">
-                                                Apply Filter
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="relative h-80 w-full">
-                                    <canvas id="unemploymentChart"></canvas>
-                                </div>
+                            <div class="relative h-80 w-full">
+                                <canvas id="laborEmploymentChart"></canvas>
                             </div>
                         </div>
+
+                        <!-- Unemployment Chart -->
+                        <div class="bg-white border rounded-xl p-5 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="font-semibold text-slate-800">Unemployment Volume</h3>
+                                    <p class="text-xs text-slate-500">Headcount of unemployed persons</p>
+                                </div>
+                                <div class="relative" x-data="{ open: false }">
+                                    <button @click="open = !open" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
+                                        <span id="unempYearRange">2012 – 2025 Q4</span>
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                    
+                                    <div x-show="open" 
+                                        @click.away="open = false"
+                                        x-transition
+                                        class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border z-10 p-5">
+                                        
+                                        <div class="mb-4">
+                                            <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
+                                            
+                                            <div class="flex items-center gap-3">
+                                                <div class="flex-1">
+                                                    <label class="text-[10px] text-slate-500 mb-1 block">From</label>
+                                                    <select id="unempStartYear" class=" form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                                        <option value="" selected disabled>Select year</option>
+                                                        @for ($year = 2012; $year <= 2025; $year++)
+                                                            <option value="{{ $year }}">{{ $year }}</option>
+                                                        @endfor
+                                                    </select>
+                                                </div>
+                                                
+                                                <span class="text-slate-400 mt-5">—</span>
+                                                
+                                                <div class="flex-1">
+                                                    <label class="text-[10px] text-slate-500 mb-1 block">To</label>
+                                                    <select id="unempEndYear" class="form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                                        <option value="" selected disabled>Select year</option>
+                                                        @for ($year = 2012; $year <= 2025; $year++)
+                                                            <option value="{{ $year }}">{{ $year }}</option>
+                                                        @endfor
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <!-- Quarter Selectors -->
+                                            <div class="flex items-center gap-3 mt-3">
+                                                <div class="flex-1">
+                                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter (From)</label>
+                                                    <select id="unempStartQuarter" class="form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                                        <option value="Q1">Q1</option>
+                                                        <option value="Q2">Q2</option>
+                                                        <option value="Q3">Q3</option>
+                                                        <option value="Q4">Q4</option>
+                                                    </select>
+                                                </div>
+                                                
+                                                <span class="text-slate-400 mt-5">—</span>
+                                                
+                                                <div class="flex-1">
+                                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter (To)</label>
+                                                    <select id="unempEndQuarter" class="form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                                        <option value="Q1">Q1</option>
+                                                        <option value="Q2">Q2</option>
+                                                        <option value="Q3">Q3</option>
+                                                        <option value="Q4" selected>Q4</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button onclick="updateUnempChart()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition cursor-pointer">
+                                            Apply Filter
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="relative h-80 w-full">
+                                <canvas id="unemploymentChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
 
                         <!-- Data Table -->
                         <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
@@ -742,7 +736,7 @@
 
             
             <form action="#" method="POST" class="space-y-5 ">
-                
+`                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                         <label class="block text-gray-700 text-sm font-medium mb-2">
@@ -998,96 +992,393 @@
             }
         });
     </script>
-
-
 <script>
+// Global chart instances
+let laborChart = null;
+let unempChart = null;
+
+// Initialize charts on page load
 document.addEventListener('DOMContentLoaded', async function () {
+    await initializeLaborChart();
+    await initializeUnempChart();
+});
 
-    // ==============================
-    // Labor Force vs Employment Rate
-    // ==============================
-     const laborCtx = document.getElementById('laborEmploymentChart');
-    if (laborCtx) {
-        const response = await fetch("{{ url('/api/labor-vs-employment') }}");
+// ==============================
+// Labor Force Chart
+// ==============================
+async function initializeLaborChart() {
+    const laborCtx = document.getElementById('laborEmploymentChart');
+    if (!laborCtx) return;
 
-        if (!response.ok) {
-            console.error('API failed:', response.status);
-            return;
-        }
+    const response = await fetch("/api/labor-vs-employment");
+    if (!response.ok) {
+        console.error('Labor API failed:', response.status);
+        return;
+    }
 
-        const data = await response.json();
-        console.log('Labor API:', data);
+    const data = await response.json();
 
-        const labels = data.map(item => item.year);
-        const labor = data.map(item => item.labor_force_thousands);
-        const employmentRate = data.map(item => item.employment_rate);
+    laborChart = new Chart(laborCtx.getContext('2d'), {
+        data: {
+            labels: data.map(d => d.year),
+            datasets: [
+                // 🟦 Labor Force (Bars - Background Context)
+                {
+                    type: 'bar',
+                    label: 'Labor Force (thousands)',
+                    data: data.map(d => d.labor_force_thousands),
+                    backgroundColor: 'rgba(203, 213, 225, 0.45)',
+                    borderWidth: 0,
+                    borderRadius: 4,
+                    barPercentage: 0.85,
+                    categoryPercentage: 0.75,
+                    yAxisID: 'y'
+                },
 
-        new Chart(laborCtx.getContext('2d'), {
-            data: {
-                labels: data.map(d => d.year),
-                datasets: [
-                    {
-                        type: 'bar',
-                        label: 'Labor Force (thousands)',
-                        data: data.map(d => d.labor_force_thousands),
-                        backgroundColor: '#cbd5e1',
-                        yAxisID: 'y'
-                    },
-                    {
-                        type: 'line',
-                        label: 'Employment Rate (%)',
-                        data: data.map(d => d.employment_rate),
-                        borderColor: '#2563eb',
-                        tension: 0.35,
-                        yAxisID: 'y1'
-                    }
-                ]
+                // 🔵 Employment Rate (Line – Main Focus)
+                {
+                    type: 'line',
+                    label: 'Employment Rate (%)',
+                    data: data.map(d => d.employment_rate),
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.15)',
+                    tension: 0.35,
+                    borderWidth: 2.5,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    fill: false,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            interaction: {
+                mode: 'index',
+                intersect: false
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true },
-                    y1: { position: 'right', min: 80, max: 100 }
+
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 10
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+
+            scales: {
+                // 🟨 X-Axis (Readable Timeline)
+                x: {
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 12,
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
+                    grid: {
+                        display: false
+                    }
+                },
+
+                // 🟦 Left Y-Axis (Labor Force)
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Labor Force (thousands)'
+                    },
+                    grid: {
+                        color: 'rgba(148, 163, 184, 0.15)'
+                    }
+                },
+
+                // 🔵 Right Y-Axis (Employment Rate)
+                y1: {
+                    position: 'right',
+                    min: 80,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Employment Rate (%)'
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
                 }
             }
-        });
+        }
+    });
+}
+
+async function updateLaborChart() {
+    const startYear = parseInt(document.getElementById('laborStartYear').value);
+    const endYear = parseInt(document.getElementById('laborEndYear').value);
+    const startQuarter = document.getElementById('laborStartQuarter').value;
+    const endQuarter = document.getElementById('laborEndQuarter').value;
+
+    // Validate years
+    if (startYear > endYear) {
+        alert('Start year cannot be greater than end year');
+        return;
+    }
+    
+    // Validate quarters (enforce ascending order)
+    // Check if either year is >= 2018 (covers both pure and mixed ranges)
+    if (startYear >= 2018 || endYear >= 2018) {
+        if (startQuarter > endQuarter) {
+            alert('Start quarter cannot be greater than end quarter');
+            return;
+        }
     }
 
-    // ==============================
-    // Unemployment Volume Chart
-    // ==============================
-    const unempCtx = document.getElementById('unemploymentChart');
+    let labels = [];
+    let laborData = [];
+    let empRateData = [];
 
-    if (unempCtx) {
-        const response = await fetch("{{ url('/api/unemployment-volume') }}");
-        const data = await response.json();
-
-        const labels = data.map(item => item.year);
-        const values = data.map(item => item.unemployed_thousands);
-
-        new Chart(unempCtx.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'Unemployed Persons (thousands)',
-                    data: values,
-                    fill: true,
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    borderColor: '#ef4444',
-                    tension: 0.35
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
+    // Handle mixed range (e.g., 2015-2018)
+    if (startYear < 2018 && endYear >= 2018) {
+        // Fetch annual data first (2012-2017 range)
+        const annualResponse = await fetch("/api/labor-vs-employment");
+        const annualData = await annualResponse.json();
+        
+        // Add annual data for years before 2018
+        annualData.forEach(item => {
+            if (item.year >= startYear && item.year < 2018) {
+                labels.push(item.year.toString());
+                laborData.push(item.labor_force_thousands);
+                empRateData.push(item.employment_rate);
             }
         });
+
+        // Then fetch quarterly data for 2018 onwards
+        for (let year = 2018; year <= endYear; year++) {
+            const response = await fetch(`/api/quarterly/${year}`);
+            const data = await response.json();
+            
+            data.forEach(item => {
+                // For mixed ranges: apply quarter filters to all quarterly years
+                if (item.quarter < startQuarter) return;
+                if (item.quarter > endQuarter) return;
+                
+                const yearQuarter = `${year} ${item.quarter}`;
+                labels.push(yearQuarter);
+                laborData.push(item.labor_force_thousands);
+                empRateData.push(item.employment_rate);
+            });
+        }
+    } 
+    // Pure quarterly range (e.g., 2018-2025)
+    else if (startYear >= 2018) {
+        for (let year = startYear; year <= endYear; year++) {
+            const response = await fetch(`/api/quarterly/${year}`);
+            const data = await response.json();
+            
+            data.forEach(item => {
+                const yearQuarter = `${year} ${item.quarter}`;
+                
+                // Apply quarter filtering to ALL years consistently
+                if (item.quarter < startQuarter) return;
+                if (item.quarter > endQuarter) return;
+                
+                labels.push(yearQuarter);
+                laborData.push(item.labor_force_thousands);
+                empRateData.push(item.employment_rate);
+            });
+        }
+    } 
+    // Pure annual range (e.g., 2012-2017)
+    else {
+        const response = await fetch("/api/labor-vs-employment");
+        const data = await response.json();
+        
+        const filteredData = data.filter(item => {
+            return item.year >= startYear && item.year <= endYear;
+        });
+        
+        labels = filteredData.map(d => d.year.toString());
+        laborData = filteredData.map(d => d.labor_force_thousands);
+        empRateData = filteredData.map(d => d.employment_rate);
     }
 
-});
+    // Update chart
+    laborChart.data.labels = labels;
+    laborChart.data.datasets[0].data = laborData;
+    laborChart.data.datasets[1].data = empRateData;
+    laborChart.update();
+
+    // Update display text
+    let displayText = `${startYear}`;
+    if (startYear >= 2018) {
+        displayText += ` ${startQuarter}`;
+    }
+    displayText += ` — ${endYear}`;
+    if (endYear >= 2018) {
+        displayText += ` ${endQuarter}`;
+    }
+    document.getElementById('laborYearRange').textContent = displayText;
+}
+
+// ==============================
+// Unemployment Chart
+// ==============================
+async function initializeUnempChart() {
+    const unempCtx = document.getElementById('unemploymentChart');
+    if (!unempCtx) return;
+
+    const response = await fetch("/api/unemployment-volume");
+    if (!response.ok) {
+        console.error('Unemployment API failed:', response.status);
+        return;
+    }
+    
+    const data = await response.json();
+
+    unempChart = new Chart(unempCtx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: data.map(item => item.year),
+            datasets: [{
+                label: 'Unemployed Persons (thousands)',
+                data: data.map(item => item.unemployed_thousands),
+                fill: true,
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                borderColor: '#ef4444',
+                tension: 0.35
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+async function updateUnempChart() {
+    const startYear = parseInt(document.getElementById('unempStartYear').value);
+    const endYear = parseInt(document.getElementById('unempEndYear').value);
+    const startQuarter = document.getElementById('unempStartQuarter').value;
+    const endQuarter = document.getElementById('unempEndQuarter').value;
+
+    // Validate years
+    if (startYear > endYear) {
+        alert('Start year cannot be greater than end year');
+        return;
+    }
+
+    // Validate quarters (enforce ascending order)
+    // Check if either year is >= 2018 (covers both pure and mixed ranges)
+    if (startYear >= 2018 || endYear >= 2018) {
+        if (startQuarter > endQuarter) {
+            alert('Start quarter cannot be greater than end quarter');
+            return;
+        }
+    }
+
+    let labels = [];
+    let unempData = [];
+
+    // Determine the actual quarterly start year (either startYear or 2018, whichever is later)
+    const quarterlyStartYear = Math.max(startYear, 2018);
+
+    // Handle mixed range (e.g., 2015-2019, 2017-2020)
+    if (startYear < 2018 && endYear >= 2018) {
+        // Fetch annual data first (2012-2017 range)
+        const annualResponse = await fetch("/api/unemployment-volume");
+        const annualData = await annualResponse.json();
+        
+        // Add annual data for years before 2018
+        annualData.forEach(item => {
+            if (item.year >= startYear && item.year < 2018) {
+                labels.push(item.year.toString());
+                unempData.push(item.unemployed_thousands);
+            }
+        });
+
+        // Then fetch quarterly data for 2018 onwards
+        for (let year = quarterlyStartYear; year <= endYear; year++) {
+            const response = await fetch(`/api/quarterly/${year}`);
+            const data = await response.json();
+            
+            data.forEach(item => {
+                // For mixed ranges: apply quarter filters to all quarterly years
+                if (item.quarter < startQuarter) return;
+                if (item.quarter > endQuarter) return;
+                
+                const yearQuarter = `${year} ${item.quarter}`;
+                labels.push(yearQuarter);
+                unempData.push(item.unemployed_thousands);
+            });
+        }
+    } 
+    // Pure quarterly range (e.g., 2018-2025)
+    else if (startYear >= 2018) {
+        for (let year = startYear; year <= endYear; year++) {
+            const response = await fetch(`/api/quarterly/${year}`);
+            const data = await response.json();
+            
+            data.forEach(item => {
+                const yearQuarter = `${year} ${item.quarter}`;
+                
+                // Apply quarter filtering to ALL years consistently
+                if (item.quarter < startQuarter) return;
+                if (item.quarter > endQuarter) return;
+                
+                labels.push(yearQuarter);
+                unempData.push(item.unemployed_thousands);
+            });
+        }
+    } 
+    // Pure annual range (e.g., 2012-2017)
+    else {
+        const response = await fetch("/api/unemployment-volume");
+        const data = await response.json();
+        
+        const filteredData = data.filter(item => {
+            return item.year >= startYear && item.year <= endYear;
+        });
+        
+        labels = filteredData.map(d => d.year.toString());
+        unempData = filteredData.map(d => d.unemployed_thousands);
+    }
+
+    // Update chart
+    unempChart.data.labels = labels;
+    unempChart.data.datasets[0].data = unempData;
+    unempChart.update();
+
+    // Update display text
+    let displayText = `${startYear}`;
+    if (startYear >= 2018) {
+        displayText += ` ${startQuarter}`;
+    }
+    displayText += ` — ${endYear}`;
+    if (endYear >= 2018) {
+        displayText += ` ${endQuarter}`;
+    }
+    document.getElementById('unempYearRange').textContent = displayText;
+}
+
+// Helper function to add job title form
+function addJobTitle() {
+    const container = document.getElementById('jobTitlesContainer');
+    const newJobTitle = container.children[0].cloneNode(true);
+    
+    // Clear all inputs
+    newJobTitle.querySelectorAll('input, textarea').forEach(input => {
+        input.value = '';
+    });
+    
+    container.appendChild(newJobTitle);
+}
 </script>
 
 

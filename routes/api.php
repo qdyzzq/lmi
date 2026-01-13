@@ -5,3 +5,4 @@ use App\Http\Controllers\EmploymentStatsController;
 
 Route::get('/labor-vs-employment', [EmploymentStatsController::class, 'laborVsEmployment']);
 Route::get('/unemployment-volume', [EmploymentStatsController::class, 'unemploymentVolume']);
+Route::get('/quarterly/{year}', [EmploymentStatsController::class, 'quarterlyByYear']);
