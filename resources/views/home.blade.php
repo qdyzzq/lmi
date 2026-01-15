@@ -272,7 +272,7 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Quarter Selectors (shown when year >= 2018) -->
+                                            
                                             <div class="flex items-center gap-3 mt-3">
                                                 <div class="flex-1">
                                                     <label class="text-[10px] text-slate-500 mb-1 block">Quarter (From)</label>
@@ -395,20 +395,72 @@
                     </div>
 
                         <!-- Data Table -->
-                        <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
-                            <div class="p-5 border-b border-gray-200 bg-white">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <h3 class="font-semibold text-slate-800 text-lg">Consolidated Regional Statistics</h3>
-                                        <p class="text-xs text-slate-500 mt-1">Detailed breakdown for selected KPI Period (2024 - 2025).</p>
+                        <div class="bg-white border rounded-xl shadow-sm overflow-hidden" x-data="statsFilter()">
+                        <div class="p-5 border-b border-gray-200 bg-white">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-semibold text-slate-800 text-lg">Consolidated Regional Statistics</h3>
+                                    <p class="text-xs text-slate-500 mt-1">Detailed breakdown for selected period.</p>
+                                </div>
+                                
+                                <div class="flex items-center gap-3">
+                                    <!-- Year Range Filter -->
+                                    <div class="relative" x-data="{ open: false }">
+                                        <button @click="open = !open" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 min-w-40 transition">
+                                            <span x-text="displayRange"></span>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </button>
+                                        
+                                        <div x-show="open" 
+                                            @click.away="open = false"
+                                            x-transition
+                                            class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border z-10 p-5">
+                                            
+                                            <div class="mb-4">
+                                                <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
+                                                
+                                                <!-- Year Range Inputs -->
+                                                <div class="flex items-center gap-3">
+                                                    <div class="flex-1">
+                                                        <label class="text-[10px] text-slate-500 mb-1 block">From</label>
+                                                        <select x-model="startYear" class="form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                                            <option value="">Select year</option>
+                                                            <template x-for="year in availableYears" :key="year">
+                                                                <option :value="year" x-text="year"></option>
+                                                            </template>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    <span class="text-slate-400 mt-5">—</span>
+                                                    
+                                                    <div class="flex-1">
+                                                        <label class="text-[10px] text-slate-500 mb-1 block">To</label>
+                                                        <select x-model="endYear" class="form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                                            <option value="">Select year</option>
+                                                            <template x-for="year in availableYears" :key="year">
+                                                                <option :value="year" x-text="year"></option>
+                                                            </template>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <button @click="applyFilter(); open = false;" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition cursor-pointer">
+                                                Apply Filter
+                                            </button>
+                                        </div>
                                     </div>
-                                    <button class="flex items-center gap-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg hover:bg-blue-100">
+                                    
+                                    <button @click="exportCSV()" class="flex items-center gap-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg hover:bg-blue-100">
                                         <span>⬇️</span> Export CSV
                                     </button>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="overflow-x-auto">
+                        <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
                                 <table class="w-full text-sm">
                                     <thead>
                                         <tr class="bg-slate-50 border-b border-gray-200">
@@ -424,19 +476,46 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($regionalStats as $stat)
-                                        <tr class="border-b border-gray-100 hover:bg-slate-50 transition">
-                                            <td class="px-4 py-3 font-semibold text-slate-700">{{ $stat->period }}</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat->labor_force) }}</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat->employed) }}</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ $stat->unemployed }}</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ $stat->underemployed }}</td>
-                                            <td class="px-4 py-3 text-right font-semibold bg-blue-50 text-blue-700">{{ number_format($stat->emp_rate, 1) }}%</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat->unemp_rate, 1) }}%</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat->underemp_rate, 1) }}%</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat->particip_rate, 1) }}%</td>
-                                        </tr>
-                                        @endforeach
+                                        <template x-if="loading">
+                                            <tr>
+                                                <td colspan="9" class="px-4 py-8 text-center text-slate-500">
+                                                    <div class="flex items-center justify-center gap-2">
+                                                        <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Loading data...
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        
+                                        <template x-if="!loading && filteredData.length === 0">
+                                            <tr>
+                                                <td colspan="9" class="px-4 py-8 text-center text-slate-500">
+                                                    No data available for the selected period.
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        
+                                        <template x-for="stat in filteredData" :key="stat.period">
+                                            <tr class="border-b border-gray-100 hover:bg-slate-50 transition">
+                                                <td class="px-4 py-3 font-semibold text-slate-700">
+                                                    <div class="flex flex-col">
+                                                        <span x-text="formatPeriod(stat.period).month"></span>
+                                                        <span x-text="formatPeriod(stat.period).year"></span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 text-right text-slate-600" x-text="formatNumber(stat.labor_force)"></td>
+                                                <td class="px-4 py-3 text-right text-slate-600" x-text="formatNumber(stat.employed)"></td>
+                                                <td class="px-4 py-3 text-right text-slate-600" x-text="stat.unemployed"></td>
+                                                <td class="px-4 py-3 text-right text-slate-600" x-text="stat.underemployed"></td>
+                                                <td class="px-4 py-3 text-right font-semibold bg-blue-50 text-blue-700" x-text="formatRate(stat.emp_rate)"></td>
+                                                <td class="px-4 py-3 text-right text-slate-600" x-text="formatRate(stat.unemp_rate)"></td>
+                                                <td class="px-4 py-3 text-right text-slate-600" x-text="formatRate(stat.underemp_rate)"></td>
+                                                <td class="px-4 py-3 text-right text-slate-600" x-text="formatRate(stat.particip_rate)"></td>
+                                            </tr>
+                                        </template>
                                     </tbody>
                                 </table>
                             </div>
@@ -992,6 +1071,115 @@
             }
         });
     </script>
+
+    <script>
+function statsFilter() {
+    return {
+        allData: @json($regionalStats ?? []),
+        filteredData: [],
+        startYear: 2024,
+        endYear: 2025,
+        availableYears: Array.from({length: 14}, (_, i) => 2012 + i), // 2012-2025
+        loading: false,
+        
+        get displayRange() {
+            return `${this.startYear} — ${this.endYear}`;
+        },
+        
+        init() {
+            // Apply initial filter for 2024-2025 on load
+            this.applyFilter();
+        },
+        
+        applyFilter() {
+            if (!this.startYear || !this.endYear) {
+                alert('Please select both start and end years');
+                return;
+            }
+            
+            if (parseInt(this.startYear) > parseInt(this.endYear)) {
+                alert('Start year cannot be greater than end year');
+                return;
+            }
+            
+            this.loading = true;
+            
+            // Filter data based on year range
+            this.filteredData = this.allData.filter(stat => {
+                // Extract year from period (handles formats like "Apr 2015", "Jan 2015", "2024 Q1", etc.)
+                const yearMatch = stat.period.match(/\d{4}/);
+                if (!yearMatch) return false;
+                
+                const year = parseInt(yearMatch[0]);
+                return year >= parseInt(this.startYear) && year <= parseInt(this.endYear);
+            });
+            
+            // Sort by period
+            this.filteredData.sort((a, b) => {
+                const yearA = parseInt(a.period.match(/\d{4}/)[0]);
+                const yearB = parseInt(b.period.match(/\d{4}/)[0]);
+                return yearA - yearB;
+            });
+            
+            this.loading = false;
+        },
+        
+        formatNumber(value) {
+            return new Intl.NumberFormat('en-US').format(value);
+        },
+        
+        formatRate(value) {
+            return parseFloat(value).toFixed(1) + '%';
+        },
+         formatPeriod(period) {
+            // Split period by space or newline
+            const parts = period.split(/[\s\n]+/);
+            if (parts.length >= 2) {
+                return {
+                    month: parts[0],
+                    year: parts[1]
+                };
+            }
+            // Fallback if format is different
+            return {
+                month: period,
+                year: ''
+            };
+        },
+        
+        exportCSV() {
+            const headers = ['Period', 'Labor Force (\'000)', 'Employed (\'000)', 'Unemployed (\'000)', 
+                           'Underemployed (\'000)', 'Emp. Rate', 'Unemp. Rate', 'Underemp. Rate', 'Particip. Rate'];
+            
+            const csvContent = [
+                headers.join(','),
+                ...this.filteredData.map(stat => [
+                    stat.period,
+                    stat.labor_force,
+                    stat.employed,
+                    stat.unemployed,
+                    stat.underemployed,
+                    stat.emp_rate + '%',
+                    stat.unemp_rate + '%',
+                    stat.underemp_rate + '%',
+                    stat.particip_rate + '%'
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `regional-statistics-${this.startYear}-${this.endYear}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    }
+}
+</script>
+
+
+
 <script>
 // Global chart instances
 let laborChart = null;
@@ -1040,7 +1228,7 @@ async function initializeLaborChart() {
                     type: 'bar',
                     label: 'Labor Force (thousands)',
                     data: laborData,
-                    backgroundColor: 'rgba(203, 213, 225, 0.45)',
+                    backgroundColor: 'rgba(106, 177, 248, 0.45)',
                     borderWidth: 0,
                     borderRadius: 4,
                     barPercentage: 0.85,
