@@ -3,49 +3,45 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\LaborMarketData;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $regionalStats = [
-            [
-                'period' => 'Jul 2025',
-                'labor_force' => 2378,
-                'employed' => 2293,
-                'unemployed' => 86,
-                'underemployed' => 241,
-                'emp_rate' => 96.4,
-                'unemp_rate' => 3.6,
-                'underemp_rate' => 10.5,
-                'particip_rate' => 57.7
-            ],
-            [
-                'period' => 'Apr 2025',
-                'labor_force' => 2385,
-                'employed' => 2300,
-                'unemployed' => 85,
-                'underemployed' => 220,
-                'emp_rate' => 96.4,
-                'unemp_rate' => 3.6,
-                'underemp_rate' => 9.6,
-                'particip_rate' => 58.2
-            ],
-            [
-                'period' => 'Jan 2025',
-                'labor_force' => 2390,
-                'employed' => 2310,
-                'unemployed' => 80,
-                'underemployed' => 200,
-                'emp_rate' => 96.7,
-                'unemp_rate' => 3.3,
-                'underemp_rate' => 8.7,
-                'particip_rate' => 58.6
-            ],
-        ];
-
-        
-
+        // Fetch data from database
+        $regionalStats = DB::table('regional_labor_market_statistics')
+            ->select(
+                'year',
+                'month',
+                'labor_force',
+                'employed',
+                'unemployed',
+                'underemployed',
+                'employment_rate as emp_rate',
+                'unemployment_rate as unemp_rate',
+                'underemployment_rate as underemp_rate',
+                'labor_force_participation_rate as particip_rate'
+            )
+            ->whereIn('month', [1, 4, 7, 10]) // Only Jan, Apr, Jul, Oct
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->get()
+            ->map(function($stat) {
+                // Format period for quarterly data
+                $quarterNames = [
+                    1 => 'Jan',
+                    4 => 'Apr',
+                    7 => 'Jul',
+                    10 => 'Oct'
+                ];
+                
+                $stat->period = $quarterNames[$stat->month] . ' ' . $stat->year;
+                
+                return $stat;
+            });
+       
         return view('home', [
             'regionalStats' => $regionalStats,
 
@@ -88,12 +84,12 @@ class DashboardController extends Controller
                 ['name' => 'Robotics Maintenance', 'sector' => 'Manufacturing'],
             ],
 
-            'matrix_results' => [
+              'matrix_results' => [
                 ['role' => 'Senior Java Developer', 'sector' => 'BPO/IT', 'skill' => 'Spring Boot Framework', 'type' => 'Hard', 'req' => 'Expert', 'obs' => 'Novice', 'impact' => 'High'],
                 ['role' => 'Customer Service Rep', 'sector' => 'BPO/IT', 'skill' => 'English Fluency (C1)', 'type' => 'Soft', 'req' => 'Competent', 'obs' => 'Basic', 'impact' => 'Critical'],
                 ['role' => 'Site Engineer', 'sector' => 'Construction', 'skill' => 'Project Mgmt (Primavera)', 'type' => 'Hard', 'req' => 'Competent', 'obs' => 'Novice', 'impact' => 'High'],
                 ['role' => 'ICU Nurse', 'sector' => 'Healthcare', 'skill' => 'Critical Care Cert', 'type' => 'Hard', 'req' => 'Expert', 'obs' => 'Competent', 'impact' => 'Critical'],
             ]
-        ]);
-    }
-}
+        ]);  // This closes the return view() array
+    }        // This closes the index() function
+}      

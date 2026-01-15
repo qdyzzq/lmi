@@ -232,8 +232,8 @@
                                     <p class="text-xs text-slate-500">Comparing workforce size (bars) vs employment rate (line)</p>
                                 </div>
                                 <div class="relative" x-data="{ open: false }">
-                                    <button @click="open = !open" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
-                                        <span id="laborYearRange">2012 – 2025 Q4</span>
+                                    <button @click="open = !open" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 min-w-40 transition">
+                                        <span id="laborYearRange">2024 Q1 – 2025 Q4</span>
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                         </svg>
@@ -318,7 +318,7 @@
                                 </div>
                                 <div class="relative" x-data="{ open: false }">
                                     <button @click="open = !open" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
-                                        <span id="unempYearRange">2012 – 2025 Q4</span>
+                                        <span id="unempYearRange">2024 Q1 – 2025 Q4</span>
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                         </svg>
@@ -426,15 +426,15 @@
                                     <tbody>
                                         @foreach($regionalStats as $stat)
                                         <tr class="border-b border-gray-100 hover:bg-slate-50 transition">
-                                            <td class="px-4 py-3 font-semibold text-slate-700">{{ $stat['period'] }}</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat['labor_force']) }}</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat['employed']) }}</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ $stat['unemployed'] }}</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ $stat['underemployed'] }}</td>
-                                            <td class="px-4 py-3 text-right font-semibold bg-blue-50 text-blue-700">{{ number_format($stat['emp_rate'], 1) }}%</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat['unemp_rate'], 1) }}%</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat['underemp_rate'], 1) }}%</td>
-                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat['particip_rate'], 1) }}%</td>
+                                            <td class="px-4 py-3 font-semibold text-slate-700">{{ $stat->period }}</td>
+                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat->labor_force) }}</td>
+                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat->employed) }}</td>
+                                            <td class="px-4 py-3 text-right text-slate-600">{{ $stat->unemployed }}</td>
+                                            <td class="px-4 py-3 text-right text-slate-600">{{ $stat->underemployed }}</td>
+                                            <td class="px-4 py-3 text-right font-semibold bg-blue-50 text-blue-700">{{ number_format($stat->emp_rate, 1) }}%</td>
+                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat->unemp_rate, 1) }}%</td>
+                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat->underemp_rate, 1) }}%</td>
+                                            <td class="px-4 py-3 text-right text-slate-600">{{ number_format($stat->particip_rate, 1) }}%</td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -1010,23 +1010,36 @@ async function initializeLaborChart() {
     const laborCtx = document.getElementById('laborEmploymentChart');
     if (!laborCtx) return;
 
-    const response = await fetch("/api/labor-vs-employment");
-    if (!response.ok) {
-        console.error('Labor API failed:', response.status);
-        return;
-    }
+    // Fetch initial data for 2015-2025 (all quarterly)
+    let labels = [];
+    let laborData = [];
+    let empRateData = [];
 
-    const data = await response.json();
+    for (let year = 2024; year <= 2025; year++) {
+        const response = await fetch(`/api/quarterly/${year}`);
+        if (!response.ok) {
+            console.error(`API failed for year ${year}:`, response.status);
+            continue;
+        }
+        const data = await response.json();
+        
+        data.forEach(item => {
+            const yearQuarter = `${year} ${item.quarter}`;
+            labels.push(yearQuarter);
+            laborData.push(item.labor_force_thousands);
+            empRateData.push(item.employment_rate);
+        });
+    }
 
     laborChart = new Chart(laborCtx.getContext('2d'), {
         data: {
-            labels: data.map(d => d.year),
+            labels: labels,
             datasets: [
                 // 🟦 Labor Force (Bars - Background Context)
                 {
                     type: 'bar',
                     label: 'Labor Force (thousands)',
-                    data: data.map(d => d.labor_force_thousands),
+                    data: laborData,
                     backgroundColor: 'rgba(203, 213, 225, 0.45)',
                     borderWidth: 0,
                     borderRadius: 4,
@@ -1039,7 +1052,7 @@ async function initializeLaborChart() {
                 {
                     type: 'line',
                     label: 'Employment Rate (%)',
-                    data: data.map(d => d.employment_rate),
+                    data: empRateData,
                     borderColor: '#2563eb',
                     backgroundColor: 'rgba(37, 99, 235, 0.15)',
                     tension: 0.35,
@@ -1130,82 +1143,51 @@ async function updateLaborChart() {
         return;
     }
     
-    // Validate quarters (enforce ascending order)
-    // Check if either year is >= 2018 (covers both pure and mixed ranges)
-    if (startYear >= 2018 || endYear >= 2018) {
-        if (startQuarter > endQuarter) {
-            alert('Start quarter cannot be greater than end quarter');
-            return;
-        }
+    // Validate quarters when in the same year
+    if (startYear === endYear && startQuarter > endQuarter) {
+        alert('Start quarter cannot be greater than end quarter in the same year');
+        return;
     }
 
     let labels = [];
     let laborData = [];
     let empRateData = [];
 
-    // Handle mixed range (e.g., 2015-2018)
-    if (startYear < 2018 && endYear >= 2018) {
-        // Fetch annual data first (2012-2017 range)
-        const annualResponse = await fetch("/api/labor-vs-employment");
-        const annualData = await annualResponse.json();
-        
-        // Add annual data for years before 2018
-        annualData.forEach(item => {
-            if (item.year >= startYear && item.year < 2018) {
-                labels.push(item.year.toString());
-                laborData.push(item.labor_force_thousands);
-                empRateData.push(item.employment_rate);
-            }
-        });
+    // Convert quarters to numeric values for comparison
+    const quarterToNum = (q) => parseInt(q.replace('Q', ''));
+    const startQ = quarterToNum(startQuarter);
+    const endQ = quarterToNum(endQuarter);
 
-        // Then fetch quarterly data for 2018 onwards
-        for (let year = 2018; year <= endYear; year++) {
-            const response = await fetch(`/api/quarterly/${year}`);
-            const data = await response.json();
-            
-            data.forEach(item => {
-                // For mixed ranges: apply quarter filters to all quarterly years
-                if (item.quarter < startQuarter) return;
-                if (item.quarter > endQuarter) return;
-                
-                const yearQuarter = `${year} ${item.quarter}`;
-                labels.push(yearQuarter);
-                laborData.push(item.labor_force_thousands);
-                empRateData.push(item.employment_rate);
-            });
+    // Fetch quarterly data for the selected range
+    for (let year = startYear; year <= endYear; year++) {
+        const response = await fetch(`/api/quarterly/${year}`);
+        if (!response.ok) {
+            console.error(`API failed for year ${year}:`, response.status);
+            continue;
         }
-    } 
-    // Pure quarterly range (e.g., 2018-2025)
-    else if (startYear >= 2018) {
-        for (let year = startYear; year <= endYear; year++) {
-            const response = await fetch(`/api/quarterly/${year}`);
-            const data = await response.json();
-            
-            data.forEach(item => {
-                const yearQuarter = `${year} ${item.quarter}`;
-                
-                // Apply quarter filtering to ALL years consistently
-                if (item.quarter < startQuarter) return;
-                if (item.quarter > endQuarter) return;
-                
-                labels.push(yearQuarter);
-                laborData.push(item.labor_force_thousands);
-                empRateData.push(item.employment_rate);
-            });
-        }
-    } 
-    // Pure annual range (e.g., 2012-2017)
-    else {
-        const response = await fetch("/api/labor-vs-employment");
         const data = await response.json();
         
-        const filteredData = data.filter(item => {
-            return item.year >= startYear && item.year <= endYear;
+        data.forEach(item => {
+            const itemQ = quarterToNum(item.quarter);
+            
+            // For years between startYear and endYear (exclusive), show all quarters
+            if (year > startYear && year < endYear) {
+                const yearQuarter = `${year} ${item.quarter}`;
+                labels.push(yearQuarter);
+                laborData.push(item.labor_force_thousands);
+                empRateData.push(item.employment_rate);
+                return;
+            }
+            
+            // Apply quarter filtering only to start and end years
+            if (year === startYear && itemQ < startQ) return;
+            if (year === endYear && itemQ > endQ) return;
+            
+            const yearQuarter = `${year} ${item.quarter}`;
+            labels.push(yearQuarter);
+            laborData.push(item.labor_force_thousands);
+            empRateData.push(item.employment_rate);
         });
-        
-        labels = filteredData.map(d => d.year.toString());
-        laborData = filteredData.map(d => d.labor_force_thousands);
-        empRateData = filteredData.map(d => d.employment_rate);
     }
 
     // Update chart
@@ -1215,14 +1197,7 @@ async function updateLaborChart() {
     laborChart.update();
 
     // Update display text
-    let displayText = `${startYear}`;
-    if (startYear >= 2018) {
-        displayText += ` ${startQuarter}`;
-    }
-    displayText += ` — ${endYear}`;
-    if (endYear >= 2018) {
-        displayText += ` ${endQuarter}`;
-    }
+    const displayText = `${startYear} ${startQuarter} — ${endYear} ${endQuarter}`;
     document.getElementById('laborYearRange').textContent = displayText;
 }
 
@@ -1233,21 +1208,32 @@ async function initializeUnempChart() {
     const unempCtx = document.getElementById('unemploymentChart');
     if (!unempCtx) return;
 
-    const response = await fetch("/api/unemployment-volume");
-    if (!response.ok) {
-        console.error('Unemployment API failed:', response.status);
-        return;
+    // Fetch initial data for 2015-2025 (all quarterly)
+    let labels = [];
+    let unempData = [];
+
+    for (let year = 2024; year <= 2025; year++) {
+        const response = await fetch(`/api/quarterly/${year}`);
+        if (!response.ok) {
+            console.error(`API failed for year ${year}:`, response.status);
+            continue;
+        }
+        const data = await response.json();
+        
+        data.forEach(item => {
+            const yearQuarter = `${year} ${item.quarter}`;
+            labels.push(yearQuarter);
+            unempData.push(item.unemployed_thousands);
+        });
     }
-    
-    const data = await response.json();
 
     unempChart = new Chart(unempCtx.getContext('2d'), {
         type: 'line',
         data: {
-            labels: data.map(item => item.year),
+            labels: labels,
             datasets: [{
                 label: 'Unemployed Persons (thousands)',
-                data: data.map(item => item.unemployed_thousands),
+                data: unempData,
                 fill: true,
                 backgroundColor: 'rgba(239, 68, 68, 0.1)',
                 borderColor: '#ef4444',
@@ -1274,80 +1260,48 @@ async function updateUnempChart() {
         return;
     }
 
-    // Validate quarters (enforce ascending order)
-    // Check if either year is >= 2018 (covers both pure and mixed ranges)
-    if (startYear >= 2018 || endYear >= 2018) {
-        if (startQuarter > endQuarter) {
-            alert('Start quarter cannot be greater than end quarter');
-            return;
-        }
+    // Validate quarters when in the same year
+    if (startYear === endYear && startQuarter > endQuarter) {
+        alert('Start quarter cannot be greater than end quarter in the same year');
+        return;
     }
 
     let labels = [];
     let unempData = [];
 
-    // Determine the actual quarterly start year (either startYear or 2018, whichever is later)
-    const quarterlyStartYear = Math.max(startYear, 2018);
+    // Convert quarters to numeric values for comparison
+    const quarterToNum = (q) => parseInt(q.replace('Q', ''));
+    const startQ = quarterToNum(startQuarter);
+    const endQ = quarterToNum(endQuarter);
 
-    // Handle mixed range (e.g., 2015-2019, 2017-2020)
-    if (startYear < 2018 && endYear >= 2018) {
-        // Fetch annual data first (2012-2017 range)
-        const annualResponse = await fetch("/api/unemployment-volume");
-        const annualData = await annualResponse.json();
-        
-        // Add annual data for years before 2018
-        annualData.forEach(item => {
-            if (item.year >= startYear && item.year < 2018) {
-                labels.push(item.year.toString());
-                unempData.push(item.unemployed_thousands);
-            }
-        });
-
-        // Then fetch quarterly data for 2018 onwards
-        for (let year = quarterlyStartYear; year <= endYear; year++) {
-            const response = await fetch(`/api/quarterly/${year}`);
-            const data = await response.json();
-            
-            data.forEach(item => {
-                // For mixed ranges: apply quarter filters to all quarterly years
-                if (item.quarter < startQuarter) return;
-                if (item.quarter > endQuarter) return;
-                
-                const yearQuarter = `${year} ${item.quarter}`;
-                labels.push(yearQuarter);
-                unempData.push(item.unemployed_thousands);
-            });
+    // Fetch quarterly data for the selected range
+    for (let year = startYear; year <= endYear; year++) {
+        const response = await fetch(`/api/quarterly/${year}`);
+        if (!response.ok) {
+            console.error(`API failed for year ${year}:`, response.status);
+            continue;
         }
-    } 
-    // Pure quarterly range (e.g., 2018-2025)
-    else if (startYear >= 2018) {
-        for (let year = startYear; year <= endYear; year++) {
-            const response = await fetch(`/api/quarterly/${year}`);
-            const data = await response.json();
-            
-            data.forEach(item => {
-                const yearQuarter = `${year} ${item.quarter}`;
-                
-                // Apply quarter filtering to ALL years consistently
-                if (item.quarter < startQuarter) return;
-                if (item.quarter > endQuarter) return;
-                
-                labels.push(yearQuarter);
-                unempData.push(item.unemployed_thousands);
-            });
-        }
-    } 
-    // Pure annual range (e.g., 2012-2017)
-    else {
-        const response = await fetch("/api/unemployment-volume");
         const data = await response.json();
         
-        const filteredData = data.filter(item => {
-            return item.year >= startYear && item.year <= endYear;
+        data.forEach(item => {
+            const itemQ = quarterToNum(item.quarter);
+            
+            // For years between startYear and endYear (exclusive), show all quarters
+            if (year > startYear && year < endYear) {
+                const yearQuarter = `${year} ${item.quarter}`;
+                labels.push(yearQuarter);
+                unempData.push(item.unemployed_thousands);
+                return;
+            }
+            
+            // Apply quarter filtering only to start and end years
+            if (year === startYear && itemQ < startQ) return;
+            if (year === endYear && itemQ > endQ) return;
+            
+            const yearQuarter = `${year} ${item.quarter}`;
+            labels.push(yearQuarter);
+            unempData.push(item.unemployed_thousands);
         });
-        
-        labels = filteredData.map(d => d.year.toString());
-        unempData = filteredData.map(d => d.unemployed_thousands);
     }
 
     // Update chart
@@ -1356,14 +1310,7 @@ async function updateUnempChart() {
     unempChart.update();
 
     // Update display text
-    let displayText = `${startYear}`;
-    if (startYear >= 2018) {
-        displayText += ` ${startQuarter}`;
-    }
-    displayText += ` — ${endYear}`;
-    if (endYear >= 2018) {
-        displayText += ` ${endQuarter}`;
-    }
+    const displayText = `${startYear} ${startQuarter} — ${endYear} ${endQuarter}`;
     document.getElementById('unempYearRange').textContent = displayText;
 }
 
