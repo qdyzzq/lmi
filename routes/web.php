@@ -2,12 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PerformanceController;
+
 
 Route::get('/admin', function () {
     return view('admin.dashboard');
 })->name('admin.dashboard');
 Route::get('/', [DashboardController::class, 'index'])->name('home');
 Route::get('/export/csv', [DashboardController::class, 'exportCsv'])->name('export.csv');
+Route::get('/kpi-data', [PerformanceController::class, 'getKpiData']);
+
 
 
 

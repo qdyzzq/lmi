@@ -2,16 +2,41 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LaborStats;
 use Illuminate\Http\Request;
-use App\Models\LaborMarketData;
 use Illuminate\Support\Facades\DB;
+use App\Models\LaborMarketData;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
-    {
-        // Fetch data from database
-        $regionalStats = DB::table('regional_labor_market_statistics')
+{
+    $year = $request->year ?? 2025;
+    $quarter = $request->quarter; 
+    // ---  REAL DATABASE QUERIES ---
+    $years = DB::table('regional_stats')
+        ->select('year')
+        ->distinct()
+        ->orderBy('year', 'desc')
+        ->pluck('year');
+        $quarters = DB::table('regional_stats')
+        ->select('quarter')
+        ->distinct()
+        ->orderByRaw("FIELD(quarter, 'Annual', 'January', 'April', 'July', 'October')")
+        ->pluck('quarter');
+
+    $regionalStats = DB::table('regional_stats')
+        ->select('quarter', 'labor_force_rate', 'employment_rate', 'underemployment_rate', 'unemployment_rate')
+        ->where('year', $year)
+        ->when($quarter, function ($query) use ($quarter) {
+            return $query->where('quarter', $quarter);
+        })
+        ->get();
+
+        $latest = LaborStats::orderBy('year', 'desc')
+                ->orderBy('id', 'desc') // Use ID to ensure we get October (ID 38) not January (ID 35)
+                ->first();
+    $regionalTableStats = DB::table('regional_labor_market_statistics')
             ->select(
                 'year',
                 'month',
@@ -41,55 +66,74 @@ class DashboardController extends Controller
                 
                 return $stat;
             });
-       
-        return view('home', [
-            'regionalStats' => $regionalStats,
+    
 
-            // JOB MARKET DATA
-            'high_volume_jobs' => [
-                ['title' => 'Customer Service Rep', 'count' => 1250],
-                ['title' => 'Sales Associate', 'count' => 880],
-                ['title' => 'Construction Worker', 'count' => 750],
-                ['title' => 'Admin Assistant', 'count' => 520],
-                ['title' => 'Delivery Rider', 'count' => 480],
-                ['title' => 'Production Operator', 'count' => 450],
-                ['title' => 'Registered Nurse', 'count' => 320],
-                ['title' => 'Accountant', 'count' => 280],
-                ['title' => 'IT Support Specialist', 'count' => 200],
-                ['title' => 'Teacher', 'count' => 180],
-            ],
+    // Fallback in case table is empty
+    $defaultYear = $latest ? $latest->year : date('Y');
+    $defaultQuarter = $latest ? $latest->quarter : 'Annual';
 
-            'hard_to_fill' => [
-                ['role' => 'Senior Data Scientist', 'days' => 120, 'bottleneck' => 'Skills Gap', 'year' => 2023],
-                ['role' => 'Licensed Civil Engineer', 'days' => 95, 'bottleneck' => 'Experience Gap', 'year' => 2023],
-                ['role' => 'Full Stack Developer', 'days' => 85, 'bottleneck' => 'High Competition', 'year' => 2023],
-                ['role' => 'Specialized Surgeon', 'days' => 88, 'bottleneck' => 'License/Cert', 'year' => 2024],
-            ],
+    // Fetch lists for the dropdowns
+    $years = LaborStats::distinct()->orderBy('year', 'desc')->pluck('year');
+    $quarters = LaborStats::distinct()->pluck('quarter'); 
+    
+    $high_volume_jobs = [
+        ['title' => 'Customer Service Rep', 'count' => 1250],
+        ['title' => 'Sales Associate', 'count' => 880],
+        ['title' => 'Construction Worker', 'count' => 750],
+        ['title' => 'Admin Assistant', 'count' => 520],
+        ['title' => 'Delivery Rider', 'count' => 480],
+        ['title' => 'Production Operator', 'count' => 450],
+        ['title' => 'Registered Nurse', 'count' => 320],
+        ['title' => 'Accountant', 'count' => 280],
+        ['title' => 'IT Support Specialist', 'count' => 200],
+        ['title' => 'Teacher', 'count' => 180],
+    ];
 
-            'soft_skills' => [
-                ['name' => 'English Proficiency', 'sector' => 'BPO/IT'],
-                ['name' => 'Safety Compliance', 'sector' => 'Construction'],
-                ['name' => 'Customer Empathy', 'sector' => 'BPO/IT'],
-                ['name' => 'Crisis Mgmt', 'sector' => 'General'],
-                ['name' => 'Adaptability', 'sector' => 'General'],
-            ],
+    $hard_to_fill = [
+        ['role' => 'Senior Data Scientist', 'days' => 120, 'bottleneck' => 'Skills Gap', 'year' => 2023],
+        ['role' => 'Licensed Civil Engineer', 'days' => 95, 'bottleneck' => 'Experience Gap', 'year' => 2023],
+        ['role' => 'Full Stack Developer', 'days' => 85, 'bottleneck' => 'High Competition', 'year' => 2023],
+        ['role' => 'Specialized Surgeon', 'days' => 88, 'bottleneck' => 'License/Cert', 'year' => 2024],
+    ];
 
-            'tech_skills' => [
-                ['name' => 'Python / SQL', 'sector' => 'BPO/IT'],
-                ['name' => 'Heavy Machinery Op', 'sector' => 'Construction'],
-                ['name' => 'Data Analysis', 'sector' => 'BPO/IT'],
-                ['name' => 'Specialized Surgery', 'sector' => 'Healthcare'],
-                ['name' => 'Generative AI', 'sector' => 'BPO/IT'],
-                ['name' => 'Climate Resilience', 'sector' => 'Agriculture'],
-                ['name' => 'Robotics Maintenance', 'sector' => 'Manufacturing'],
-            ],
+    $soft_skills = [
+        ['name' => 'English Proficiency', 'sector' => 'BPO/IT'],
+        ['name' => 'Safety Compliance', 'sector' => 'Construction'],
+        ['name' => 'Customer Empathy', 'sector' => 'BPO/IT'],
+        ['name' => 'Crisis Mgmt', 'sector' => 'General'],
+        ['name' => 'Adaptability', 'sector' => 'General'],
+    ];
 
-              'matrix_results' => [
-                ['role' => 'Senior Java Developer', 'sector' => 'BPO/IT', 'skill' => 'Spring Boot Framework', 'type' => 'Hard', 'req' => 'Expert', 'obs' => 'Novice', 'impact' => 'High'],
-                ['role' => 'Customer Service Rep', 'sector' => 'BPO/IT', 'skill' => 'English Fluency (C1)', 'type' => 'Soft', 'req' => 'Competent', 'obs' => 'Basic', 'impact' => 'Critical'],
-                ['role' => 'Site Engineer', 'sector' => 'Construction', 'skill' => 'Project Mgmt (Primavera)', 'type' => 'Hard', 'req' => 'Competent', 'obs' => 'Novice', 'impact' => 'High'],
-                ['role' => 'ICU Nurse', 'sector' => 'Healthcare', 'skill' => 'Critical Care Cert', 'type' => 'Hard', 'req' => 'Expert', 'obs' => 'Competent', 'impact' => 'Critical'],
-            ]
-        ]);  // This closes the return view() array
-    }        // This closes the index() function
-}      
+    $tech_skills = [
+        ['name' => 'Python / SQL', 'sector' => 'BPO/IT'],
+        ['name' => 'Heavy Machinery Op', 'sector' => 'Construction'],
+        ['name' => 'Data Analysis', 'sector' => 'BPO/IT'],
+        ['name' => 'Specialized Surgery', 'sector' => 'Healthcare'],
+        ['name' => 'Generative AI', 'sector' => 'BPO/IT'],
+        ['name' => 'Climate Resilience', 'sector' => 'Agriculture'],
+        ['name' => 'Robotics Maintenance', 'sector' => 'Manufacturing'],
+    ];
+
+    $matrix_results = [
+        ['role' => 'Senior Java Developer', 'sector' => 'BPO/IT', 'skill' => 'Spring Boot Framework', 'type' => 'Hard', 'req' => 'Expert', 'obs' => 'Novice', 'impact' => 'High'],
+        ['role' => 'Customer Service Rep', 'sector' => 'BPO/IT', 'skill' => 'English Fluency (C1)', 'type' => 'Soft', 'req' => 'Competent', 'obs' => 'Basic', 'impact' => 'Critical'],
+        ['role' => 'Site Engineer', 'sector' => 'Construction', 'skill' => 'Project Mgmt (Primavera)', 'type' => 'Hard', 'req' => 'Competent', 'obs' => 'Novice', 'impact' => 'High'],
+        ['role' => 'ICU Nurse', 'sector' => 'Healthcare', 'skill' => 'Critical Care Cert', 'type' => 'Hard', 'req' => 'Expert', 'obs' => 'Competent', 'impact' => 'Critical'],
+    ];
+
+    // --- MERGE EVERYTHING INTO ONE VIEW RETURN ---
+    return view('home', [
+        'years' => $years,
+        'quarters' => $quarters,
+        'regionalStats' => $regionalStats, 
+        'defaultYear' => $defaultYear,
+        'defaultQuarter' => $defaultQuarter,
+        'regionalTableStats' => $regionalTableStats,
+        'high_volume_jobs' => $high_volume_jobs,
+        'hard_to_fill' => $hard_to_fill,
+        'soft_skills' => $soft_skills,
+        'tech_skills' => $tech_skills,
+        'matrix_results' => $matrix_results
+    ]);
+}
+}

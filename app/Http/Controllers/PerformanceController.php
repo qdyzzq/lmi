@@ -1,14 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\LaborStats;
-
-
 use Illuminate\Http\Request;
 
-class PeformanceController extends Controller
+class PerformanceController extends Controller
 {
- public function getKpiData(Request $request)
+    public function getKpiData(Request $request)
 {
     $year = $request->year;
     $quarter = $request->quarter;
