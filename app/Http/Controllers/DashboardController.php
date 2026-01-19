@@ -45,8 +45,14 @@ class DashboardController extends Controller
         // JOB MARKET DATA (Static/Hardcoded)
         // ================================================
         return view('home', [
-            'regionalStats' => $regionalStats,
+            'regionalStats' => $regionalStats
+        ]);
 
+        
+    }
+
+        public function jobMarket(){
+        return view('JobMarketDemands', [
             // High Volume Jobs
             'high_volume_jobs' => [
                 ['title' => 'Customer Service Rep', 'count' => 1250],
@@ -96,6 +102,6 @@ class DashboardController extends Controller
                 ['role' => 'Site Engineer', 'sector' => 'Construction', 'skill' => 'Project Mgmt (Primavera)', 'type' => 'Hard', 'req' => 'Competent', 'obs' => 'Novice', 'impact' => 'High'],
                 ['role' => 'ICU Nurse', 'sector' => 'Healthcare', 'skill' => 'Critical Care Cert', 'type' => 'Hard', 'req' => 'Expert', 'obs' => 'Competent', 'impact' => 'Critical'],
             ]
-        ]);
-    }
+            ]);
+            }
 }

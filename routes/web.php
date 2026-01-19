@@ -6,8 +6,14 @@ use App\Http\Controllers\DashboardController;
 Route::get('/admin', function () {
     return view('admin.dashboard');
 })->name('admin.dashboard');
+
+Route::get('/JobMarketDemands', function (){
+    return view('JobMarketDemands');
+})->name('Job.Market.Demands');
+
 Route::get('/', [DashboardController::class, 'index'])->name('home');
-Route::get('/export/csv', [DashboardController::class, 'exportCsv'])->name('export.csv');
+
+Route::get('/JobMarketDemands',[DashboardController::class, 'jobMarket'])->name('Job.Market.Demands');
 
 
 
@@ -42,3 +48,4 @@ Route::get('/Settings',function(){
 Route::get('/Logout',function(){
     return view('logout');
 })->name('Logout');
+
