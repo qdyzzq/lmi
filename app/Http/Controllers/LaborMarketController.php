@@ -2,64 +2,117 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RegionalLaborMarketStatistic;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class LaborMarketController extends Controller
 {
+    /**
+     * Store labor market data
+     * Route: POST /api/labor-market/store
+     */
     public function store(Request $request)
     {
         // Validate the incoming data
         $validator = Validator::make($request->all(), [
             'year' => 'required|integer|min:2000|max:2100',
-            'month' => 'required|integer|min:1|max:12',
-            'household_population' => 'nullable|numeric|min:0',
-            'labor_force' => 'nullable|numeric|min:0',
-            'employed' => 'nullable|numeric|min:0',
-            'underemployed' => 'nullable|numeric|min:0',
-            'unemployed' => 'nullable|numeric|min:0',
-            'labor_force_participation_rate' => 'nullable|numeric|min:0|max:100',
-            'employment_rate' => 'nullable|numeric|min:0|max:100',
-            'underemployment_rate' => 'nullable|numeric|min:0|max:100',
-            'unemployment_rate' => 'nullable|numeric|min:0|max:100',
+            'month' => 'required|integer|in:1,4,7,10',
+            'household_population' => 'required|integer|min:0',
+            'labor_force' => 'nullable|integer|min:0',
+            'employed' => 'nullable|integer|min:0',
+            'underemployed' => 'nullable|integer|min:0',
+            'unemployed' => 'nullable|integer|min:0',
+            'labor_force_participation_rate' => 'required|numeric|min:0|max:100',
+            'employment_rate' => 'required|numeric|min:0|max:100',
+            'underemployment_rate' => 'required|numeric|min:0|max:100',
+            'unemployment_rate' => 'required|numeric|min:0|max:100',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
+                'message' => 'Validation failed',
                 'errors' => $validator->errors()
             ], 422);
         }
 
         try {
-            // Check if record already exists for this year/month
-            $existing = RegionalLaborMarketStatistic::where('year', $request->year)
+            // Prepare data for insertion/update
+            $data = [
+                'household_population' => $request->household_population ? (int)$request->household_population : null,
+                'labor_force' => $request->labor_force ? (int)$request->labor_force : null,
+                'employed' => $request->employed ? (int)$request->employed : null,
+                'underemployed' => $request->underemployed ? (int)$request->underemployed : null,
+                'unemployed' => $request->unemployed ? (int)$request->unemployed : null,
+                'labor_force_participation_rate' => $request->labor_force_participation_rate,
+                'employment_rate' => $request->employment_rate,
+                'underemployment_rate' => $request->underemployment_rate,
+                'unemployment_rate' => $request->unemployment_rate,
+                'updated_at' => now()
+            ];
+
+            // Check if record already exists for this year and month
+            $exists = DB::table('regional_labor_market_statistics')
+                ->where('year', $request->year)
                 ->where('month', $request->month)
-                ->first();
+                ->exists();
 
-            if ($existing) {
+            if ($exists) {
                 // Update existing record
-                $existing->update($request->all());
-                $statistic = $existing;
-                $message = 'Labor market data updated successfully';
+                DB::table('regional_labor_market_statistics')
+                    ->where('year', $request->year)
+                    ->where('month', $request->month)
+                    ->update($data);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Labor market data for {$this->getMonthName($request->month)} {$request->year} updated successfully!",
+                    'data' => [
+                        'year' => $request->year,
+                        'month' => $request->month,
+                        'action' => 'updated'
+                    ]
+                ]);
             } else {
-                // Create new record
-                $statistic = RegionalLaborMarketStatistic::create($request->all());
-                $message = 'Labor market data saved successfully';
+                // Insert new record
+                $data['year'] = $request->year;
+                $data['month'] = $request->month;
+                $data['created_at'] = now();
+
+                DB::table('regional_labor_market_statistics')->insert($data);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Labor market data for {$this->getMonthName($request->month)} {$request->year} saved successfully!",
+                    'data' => [
+                        'year' => $request->year,
+                        'month' => $request->month,
+                        'action' => 'created'
+                    ]
+                ]);
             }
-
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-                'data' => $statistic
-            ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error saving data: ' . $e->getMessage()
+                'message' => 'Failed to save data',
+                'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Helper function to get month name
+     */
+    private function getMonthName($month)
+    {
+        $months = [
+            1 => 'January',
+            4 => 'April',
+            7 => 'July',
+            10 => 'October'
+        ];
+        
+        return $months[$month] ?? 'Unknown';
     }
 }

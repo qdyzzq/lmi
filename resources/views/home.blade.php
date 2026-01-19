@@ -107,23 +107,6 @@
                                 </button>
                             </div>
                         </div>
-                        
-                        <!-- KPI  -->
-                        <div class="flex items-center justify-between pb-5 border-b border-gray-200">
-                            <div>
-                                <h2 class="font-semibold text-slate-700">Key Performance Indicators</h2>
-                                <p class="text-xs text-slate-500">
-                                    Regional employment estimates based on PSA Labor Force Survey.
-                                </p>
-                            </div>
-                            <div class="flex items-center gap-2 bg-white border rounded-lg px-3 py-2 text-xs">
-                                <span class="text-slate-400">📅 KPI Period:</span>
-                                <select class="outline-none font-semibold">
-                                    <option>2024</option>
-                                    <option>2025</option>
-                                </select>
-                            </div>
-                        </div>
 
                         <!-- AI Box -->
                         <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 relative">
@@ -143,256 +126,328 @@
                                 </li>
                             </ul>
                         </div>
-
-                        <!-- KPI Cards  -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <!-- Employment Rate Card -->
-                            <div class="bg-white border rounded-xl p-5 shadow-sm">
-                                <div class="flex justify-between items-center mb-2">
-                                    <p class="text-xs text-slate-500 font-semibold uppercase">Employment Rate</p>
-                                    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">▲ 0%</span>
-                                </div>
-                                <h2 class="text-3xl font-bold text-slate-800">96.4%</h2>
-                                <div class="mt-4 h-1.5 bg-slate-100 rounded-full">
-                                    <div class="h-full w-[96%] bg-blue-600 rounded-full"></div>
-                                </div>
-                                <p class="text-[10px] text-slate-400 mt-2 text-right">Target: &gt;95.0%</p>
-                            </div>
-
-                            <!-- Unemployment Card -->
-                            <div class="bg-white border rounded-xl p-5 shadow-sm border-l-4 border-red-500">
-                                <div class="flex justify-between items-center mb-2">
-                                <p class="text-xs text-slate-500 font-semibold uppercase mb-2">Unemployment Rate</p>
-                                <svg class="w-6 h-6 text-red-200"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                <path stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857
-                                        M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857
-                                        M12 12a4 4 0 100-8 4 4 0 000 8z"/>
-                                </svg>
-
-                                </div>
-                                <h2 class="text-3xl font-bold text-slate-800">3.6%</h2>
-                                <p class="text-xs text-slate-500 mt-2">86k Unemployed Persons</p>
-                            </div>
-
-                            <!-- Underemployment Card -->
-                            <div class="bg-white border rounded-xl p-5 shadow-sm border-l-4 border-orange-500">
-                                <div class="flex justify-between items-center mb-2">
-                                <p class="text-xs text-slate-500 font-semibold uppercase mb-2">Underemp. Rate</p>
-                               <svg class="w-6 h-6 text-orange-200"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                <path stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
+                            
+                        <div x-data="kpiPeriodFilter()">
+            <!-- KPI Header with Dropdown -->
+            <div class="flex items-center justify-between pb-5 border-b border-gray-200 mb-6">
+                <div>
+                    <h2 class="font-semibold text-slate-700">Key Performance Indicators</h2>
+                    <p class="text-xs text-slate-500">
+                        Regional employment estimates based on PSA Labor Force Survey.
+                    </p>
+                </div>
+                
+                <!-- Period Dropdown -->
+                <div class="relative">
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" 
+                                class="text-xs bg-slate-280 border-1 border-gray-200 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 min-w-30 transition">
+                            <span x-text="selectedPeriodLabel">Loading...</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <div x-show="open" 
+                            @click.away="open = false"
+                            x-transition
+                            class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border z-20 p-5">
+                            <label class="block text-xs font-semibold text-slate-700 mb-3">Select Period</label>
+                            
+                            <!-- Quarter and Year side by side -->
+                            <div class="grid grid-cols-2 gap-3 mb-4">
+                                <!-- Quarter Selector -->
+                                <div>
+                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter</label>
+                                    <select x-model="selectedMonth" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                        <option value="">Select</option>
+                                        <option value="1">Q1 (Jan)</option>
+                                        <option value="4">Q2 (Apr)</option>
+                                        <option value="7">Q3 (Jul)</option>
+                                        <option value="10">Q4 (Oct)</option>
+                                    </select>
                                 </div>
                                 
-                                <h2 class="text-3xl font-bold text-slate-800">10.5%</h2>
-                                <p class="text-xs text-slate-500 mt-2">241k Seeking More Hours</p>
+                                <!-- Year Selector -->
+                                <div>
+                                    <label class="text-[10px] text-slate-500 mb-1 block">Year</label>
+                                    <select x-model="selectedYear" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                        <option value="">Select</option>
+                                        <template x-for="year in availableYears" :key="year">
+                                            <option :value="year" x-text="year"></option>
+                                        </template>
+                                    </select>
+                                </div>
                             </div>
+                            
+                            <button @click="applyPeriodFilter(); open = false;" 
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition">
+                                Apply Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                            <!-- Participation Card -->
-                            <div class="bg-white border rounded-xl p-5 shadow-sm border-l-4 border-green-500">
-                                <div class="flex justify-between items-center mb-2">
-                                <p class="text-xs text-slate-500 font-semibold uppercase mb-2">Participation Rate</p>
-                               <svg class="w-6 h-6 text-green-200"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                <path stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V7a2 2 0 012-2h3l1-2h2l1 2h3a2 2 0 012 2v12a2 2 0 01-2 2z"/>
-                                </svg>
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Employment Rate Card -->
+        <div class="bg-white border rounded-xl p-5 shadow-sm">
+            <div class="flex justify-between items-center mb-2">
+                <p class="text-xs text-slate-500 font-semibold uppercase">Employment Rate</p>
+                <svg class="w-6 h-6 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-slate-800" x-text="kpiData.employment_rate?.rate || '0%'">96.4%</h2>
+            <div class="mt-4 h-1.5 bg-slate-100 rounded-full">
+                <div class="h-full bg-blue-600 rounded-full transition-all duration-500" 
+                     :style="`width: ${kpiData.employment_rate?.raw_value || 0}%`"></div>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2 text-right">Target: >95.0%</p>
+        </div>
 
-                                </div>
-                                <h2 class="text-3xl font-bold text-slate-800">57.7%</h2>
-                                <div class="mt-4 h-1.5 bg-slate-100 rounded-full">
-                                    <div class="h-full w-[58%] bg-green-500 rounded-full"></div>
-                                </div>
-                                <p class="text-[10px] text-slate-400 mt-2 text-right">Active Workforce vs Pop 15+</p>
+        <!-- Unemployment Card -->
+        <div class="bg-white border rounded-xl p-5 shadow-sm border-l-4 border-red-500">
+            <div class="flex justify-between items-center mb-2">
+                <p class="text-xs text-slate-500 font-semibold uppercase">Unemployment Rate</p>
+                <svg class="w-6 h-6 text-red-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857M12 12a4 4 0 100-8 4 4 0 000 8z"/>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-slate-800" x-text="kpiData.unemployment_rate?.rate || '0%'">3.6%</h2>
+            <div class="mt-4 h-1.5 bg-slate-100 rounded-full">
+                <div class="h-full bg-red-500 rounded-full transition-all duration-500" 
+                     :style="`width: ${Math.min(kpiData.unemployment_rate?.raw_value || 0, 100)}%`"></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2" 
+               x-text="(kpiData.unemployment_rate?.count_formatted || '0') + ' Unemployed Persons'">86k Unemployed Persons</p>
+        </div>
+
+        <!-- Underemployment Card -->
+        <div class="bg-white border rounded-xl p-5 shadow-sm border-l-4 border-orange-500">
+            <div class="flex justify-between items-center mb-2">
+                <p class="text-xs text-slate-500 font-semibold uppercase">Underemp. Rate</p>
+                <svg class="w-6 h-6 text-orange-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-slate-800" x-text="kpiData.underemployment_rate?.rate || '0%'">10.5%</h2>
+            <div class="mt-4 h-1.5 bg-slate-100 rounded-full">
+                <div class="h-full bg-orange-500 rounded-full transition-all duration-500" 
+                     :style="`width: ${Math.min(kpiData.underemployment_rate?.raw_value || 0, 100)}%`"></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2" 
+               x-text="(kpiData.underemployment_rate?.count_formatted || '0') + ' Seeking More Hours'">241k Seeking More Hours</p>
+        </div>
+
+        <!-- Participation Card -->
+        <div class="bg-white border rounded-xl p-5 shadow-sm border-l-4 border-green-500">
+            <div class="flex justify-between items-center mb-2">
+                <p class="text-xs text-slate-500 font-semibold uppercase">Participation Rate</p>
+                <svg class="w-6 h-6 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V7a2 2 0 012-2h3l1-2h2l1 2h3a2 2 0 012 2v12a2 2 0 01-2 2z"/>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-slate-800" x-text="kpiData.participation_rate?.rate || '0%'">57.7%</h2>
+            <div class="mt-4 h-1.5 bg-slate-100 rounded-full">
+                <div class="h-full bg-green-500 rounded-full transition-all duration-500" 
+                     :style="`width: ${kpiData.participation_rate?.raw_value || 0}%`"></div>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2 text-right">Active Workforce vs Pop 15+</p>
+        </div>
+    </div>
+</div>
+
+                        <!-- Charts Section - WRAP ENTIRE SECTION IN x-data -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6" x-data="chartFilters()">
+    <!-- Labor Chart -->
+    <div class="bg-white border rounded-xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="font-semibold text-slate-800">Labor Force vs Employment Rate</h3>
+                <p class="text-xs text-slate-500">Comparing workforce size (bars) vs employment rate (line)</p>
+            </div>
+            <div class="relative">
+                <button @click="laborOpen = !laborOpen" 
+                        class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 min-w-38 transition">
+                    <span x-text="laborYearRange"></span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div x-show="laborOpen" 
+                    @click.away="laborOpen = false"
+                    x-transition
+                    class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border z-10 p-5">
+                    
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
+                        
+                        <!-- Year Range Inputs -->
+                        <div class="flex items-center gap-3">
+                            <div class="flex-1">
+                                <label class="text-[10px] text-slate-500 mb-1 block">From</label>
+                                <select x-model="laborStartYear" 
+                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                    <option value="">Select year</option>
+                                    <template x-for="year in laborAvailableYears" :key="year">
+                                        <option :value="year" x-text="year"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            
+                            <span class="text-slate-400 mt-5">—</span>
+                            
+                            <div class="flex-1">
+                                <label class="text-[10px] text-slate-500 mb-1 block">To</label>
+                                <select x-model="laborEndYear" 
+                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                    <option value="">Select year</option>
+                                    <template x-for="year in laborAvailableYears" :key="year">
+                                        <option :value="year" x-text="year"></option>
+                                    </template>
+                                </select>
                             </div>
                         </div>
 
-                        <!-- Charts Section -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- Labor Chart -->
-                        <div class="bg-white border rounded-xl p-5 shadow-sm">
-                            <div class="flex items-center justify-between mb-4">
-                                <div>
-                                    <h3 class="font-semibold text-slate-800">Labor Force vs Employment Rate</h3>
-                                    <p class="text-xs text-slate-500">Comparing workforce size (bars) vs employment rate (line)</p>
-                                </div>
-                                <div class="relative" x-data="{ open: false }">
-                                    <button @click="open = !open" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 min-w-40 transition">
-                                        <span id="laborYearRange">2024 Q1 – 2025 Q4</span>
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </button>
-                                    
-                                    <div x-show="open" 
-                                        @click.away="open = false"
-                                        x-transition
-                                        class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border z-10 p-5">
-                                        
-                                        <div class="mb-4">
-                                            <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
-                                            
-                                            <!-- Year Range Inputs -->
-                                            <div class="flex items-center gap-3">
-                                                <div class="flex-1">
-                                                    <label class="text-[10px] text-slate-500 mb-1 block">From</label>
-                                                    <select id="laborStartYear" class=" form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                                        <option value="" selected disabled>Select year</option>
-                                                        @for ($year = 2012; $year <= 2025; $year++)
-                                                            <option value="{{ $year }}">{{ $year }}</option>
-                                                        @endfor
-                                                    </select>
-                                                </div>
-                                                
-                                                <span class="text-slate-400 mt-5">—</span>
-                                                
-                                                <div class="flex-1">
-                                                    <label class="text-[10px] text-slate-500 mb-1 block">To</label>
-                                                    <select id="laborEndYear" class="form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                                        <option value="" selected disabled>Select year</option>
-                                                        @for ($year = 2012; $year <= 2025; $year++)
-                                                           <option value="{{ $year }}">{{ $year }}</option>
-                                                        @endfor
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            
-                                            <div class="flex items-center gap-3 mt-3">
-                                                <div class="flex-1">
-                                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter (From)</label>
-                                                    <select id="laborStartQuarter" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500  cursor-pointer">
-                                                        <option value="Q1">Q1</option>
-                                                        <option value="Q2">Q2</option>
-                                                        <option value="Q3">Q3</option>
-                                                        <option value="Q4">Q4</option>
-                                                    </select>
-                                                </div>
-                                                
-                                                <span class="text-slate-400 mt-5">—</span>
-                                                
-                                                <div class="flex-1">
-                                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter (To)</label>
-                                                    <select id="laborEndQuarter" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500  cursor-pointer">
-                                                        <option value="Q1">Q1</option>
-                                                        <option value="Q2">Q2</option>
-                                                        <option value="Q3">Q3</option>
-                                                        <option value="Q4" selected>Q4</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <button onclick="updateLaborChart()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition cursor-pointer">
-                                            Apply Filter
-                                        </button>
-                                    </div>
-                                </div>
+                        <!-- Quarter Selectors -->
+                        <div class="flex items-center gap-3 mt-3">
+                            <div class="flex-1">
+                                <label class="text-[10px] text-slate-500 mb-1 block">Quarter (From)</label>
+                                <select x-model="laborStartQuarter" 
+                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                    <option value="Q1">Q1</option>
+                                    <option value="Q2">Q2</option>
+                                    <option value="Q3">Q3</option>
+                                    <option value="Q4">Q4</option>
+                                </select>
                             </div>
-                            <div class="relative h-80 w-full">
-                                <canvas id="laborEmploymentChart"></canvas>
-                            </div>
-                        </div>
-
-                        <!-- Unemployment Chart -->
-                        <div class="bg-white border rounded-xl p-5 shadow-sm">
-                            <div class="flex items-center justify-between mb-4">
-                                <div>
-                                    <h3 class="font-semibold text-slate-800">Unemployment Volume</h3>
-                                    <p class="text-xs text-slate-500">Headcount of unemployed persons</p>
-                                </div>
-                                <div class="relative" x-data="{ open: false }">
-                                    <button @click="open = !open" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
-                                        <span id="unempYearRange">2024 Q1 – 2025 Q4</span>
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </button>
-                                    
-                                    <div x-show="open" 
-                                        @click.away="open = false"
-                                        x-transition
-                                        class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border z-10 p-5">
-                                        
-                                        <div class="mb-4">
-                                            <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
-                                            
-                                            <div class="flex items-center gap-3">
-                                                <div class="flex-1">
-                                                    <label class="text-[10px] text-slate-500 mb-1 block">From</label>
-                                                    <select id="unempStartYear" class=" form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                                        <option value="" selected disabled>Select year</option>
-                                                        @for ($year = 2012; $year <= 2025; $year++)
-                                                            <option value="{{ $year }}">{{ $year }}</option>
-                                                        @endfor
-                                                    </select>
-                                                </div>
-                                                
-                                                <span class="text-slate-400 mt-5">—</span>
-                                                
-                                                <div class="flex-1">
-                                                    <label class="text-[10px] text-slate-500 mb-1 block">To</label>
-                                                    <select id="unempEndYear" class="form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                                        <option value="" selected disabled>Select year</option>
-                                                        @for ($year = 2012; $year <= 2025; $year++)
-                                                            <option value="{{ $year }}">{{ $year }}</option>
-                                                        @endfor
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <!-- Quarter Selectors -->
-                                            <div class="flex items-center gap-3 mt-3">
-                                                <div class="flex-1">
-                                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter (From)</label>
-                                                    <select id="unempStartQuarter" class="form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                                        <option value="Q1">Q1</option>
-                                                        <option value="Q2">Q2</option>
-                                                        <option value="Q3">Q3</option>
-                                                        <option value="Q4">Q4</option>
-                                                    </select>
-                                                </div>
-                                                
-                                                <span class="text-slate-400 mt-5">—</span>
-                                                
-                                                <div class="flex-1">
-                                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter (To)</label>
-                                                    <select id="unempEndQuarter" class="form-select w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                                        <option value="Q1">Q1</option>
-                                                        <option value="Q2">Q2</option>
-                                                        <option value="Q3">Q3</option>
-                                                        <option value="Q4" selected>Q4</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <button onclick="updateUnempChart()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition cursor-pointer">
-                                            Apply Filter
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="relative h-80 w-full">
-                                <canvas id="unemploymentChart"></canvas>
+                            
+                            <span class="text-slate-400 mt-5">—</span>
+                            
+                            <div class="flex-1">
+                                <label class="text-[10px] text-slate-500 mb-1 block">Quarter (To)</label>
+                                <select x-model="laborEndQuarter" 
+                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                    <option value="Q1">Q1</option>
+                                    <option value="Q2">Q2</option>
+                                    <option value="Q3">Q3</option>
+                                    <option value="Q4">Q4</option>
+                                </select>
                             </div>
                         </div>
                     </div>
+
+                    <button @click="applyLaborFilter()" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition cursor-pointer">
+                        Apply Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="relative h-80 w-full">
+            <canvas id="laborEmploymentChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Unemployment Chart -->
+    <div class="bg-white border rounded-xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="font-semibold text-slate-800">Unemployment Volume</h3>
+                <p class="text-xs text-slate-500">Headcount of unemployed persons</p>
+            </div>
+            <div class="relative">
+                <button @click="unempOpen = !unempOpen" 
+                        class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
+                    <span x-text="unempYearRange"></span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div x-show="unempOpen" 
+                    @click.away="unempOpen = false"
+                    x-transition
+                    class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border z-10 p-5">
+                    
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="flex-1">
+                                <label class="text-[10px] text-slate-500 mb-1 block">From</label>
+                                <select x-model="unempStartYear" 
+                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                    <option value="">Select year</option>
+                                    <template x-for="year in unempAvailableYears" :key="year">
+                                        <option :value="year" x-text="year"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            
+                            <span class="text-slate-400 mt-5">—</span>
+                            
+                            <div class="flex-1">
+                                <label class="text-[10px] text-slate-500 mb-1 block">To</label>
+                                <select x-model="unempEndYear" 
+                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                    <option value="">Select year</option>
+                                    <template x-for="year in unempAvailableYears" :key="year">
+                                        <option :value="year" x-text="year"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Quarter Selectors -->
+                        <div class="flex items-center gap-3 mt-3">
+                            <div class="flex-1">
+                                <label class="text-[10px] text-slate-500 mb-1 block">Quarter (From)</label>
+                                <select x-model="unempStartQuarter" 
+                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                    <option value="Q1">Q1</option>
+                                    <option value="Q2">Q2</option>
+                                    <option value="Q3">Q3</option>
+                                    <option value="Q4">Q4</option>
+                                </select>
+                            </div>
+                            
+                            <span class="text-slate-400 mt-5">—</span>
+                            
+                            <div class="flex-1">
+                                <label class="text-[10px] text-slate-500 mb-1 block">Quarter (To)</label>
+                                <select x-model="unempEndQuarter" 
+                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                    <option value="Q1">Q1</option>
+                                    <option value="Q2">Q2</option>
+                                    <option value="Q3">Q3</option>
+                                    <option value="Q4">Q4</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button @click="applyUnempFilter()" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition cursor-pointer">
+                        Apply Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="relative h-80 w-full">
+            <canvas id="unemploymentChart"></canvas>
+        </div>
+    </div>
+</div>
 
                         <!-- Data Table -->
                         <div class="bg-white border rounded-xl shadow-sm overflow-hidden" x-data="statsFilter()">
@@ -406,7 +461,7 @@
                                 <div class="flex items-center gap-3">
                                     <!-- Year Range Filter -->
                                     <div class="relative" x-data="{ open: false }">
-                                        <button @click="open = !open" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 min-w-40 transition">
+                                        <button @click="open = !open" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 min-w-25 transition">
                                             <span x-text="displayRange"></span>
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -1077,18 +1132,43 @@ function statsFilter() {
     return {
         allData: @json($regionalStats ?? []),
         filteredData: [],
-        startYear: 2024,
-        endYear: 2025,
-        availableYears: Array.from({length: 14}, (_, i) => 2012 + i), // 2012-2025
+        startYear: null,
+        endYear: null,
+        availableYears: [],
         loading: false,
         
         get displayRange() {
             return `${this.startYear} — ${this.endYear}`;
         },
         
-        init() {
-            // Apply initial filter for 2024-2025 on load
+        async init() {
+            await this.fetchAvailableYears();
+            
+            if (this.availableYears.length >= 2) {
+                this.endYear = this.availableYears[0];
+                this.startYear = this.availableYears[1];
+            }
+            
             this.applyFilter();
+        },
+        
+        async fetchAvailableYears() {
+            try {
+                const response = await fetch('/api/available-years');
+                const result = await response.json();
+                
+                if (result.success) {
+                    this.availableYears = result.data;
+                } else {
+                    console.error('Failed to fetch years:', result.message);
+                    const currentYear = new Date().getFullYear();
+                    this.availableYears = [currentYear, currentYear - 1];
+                }
+            } catch (error) {
+                console.error('Error fetching available years:', error);
+                const currentYear = new Date().getFullYear();
+                this.availableYears = [currentYear, currentYear - 1];
+            }
         },
         
         applyFilter() {
@@ -1104,9 +1184,7 @@ function statsFilter() {
             
             this.loading = true;
             
-            // Filter data based on year range
             this.filteredData = this.allData.filter(stat => {
-                // Extract year from period (handles formats like "Apr 2015", "Jan 2015", "2024 Q1", etc.)
                 const yearMatch = stat.period.match(/\d{4}/);
                 if (!yearMatch) return false;
                 
@@ -1114,7 +1192,6 @@ function statsFilter() {
                 return year >= parseInt(this.startYear) && year <= parseInt(this.endYear);
             });
             
-            // Sort by period
             this.filteredData.sort((a, b) => {
                 const yearA = parseInt(a.period.match(/\d{4}/)[0]);
                 const yearB = parseInt(b.period.match(/\d{4}/)[0]);
@@ -1131,8 +1208,8 @@ function statsFilter() {
         formatRate(value) {
             return parseFloat(value).toFixed(1) + '%';
         },
-         formatPeriod(period) {
-            // Split period by space or newline
+        
+        formatPeriod(period) {
             const parts = period.split(/[\s\n]+/);
             if (parts.length >= 2) {
                 return {
@@ -1140,7 +1217,6 @@ function statsFilter() {
                     year: parts[1]
                 };
             }
-            // Fallback if format is different
             return {
                 month: period,
                 year: ''
@@ -1178,328 +1254,530 @@ function statsFilter() {
 }
 </script>
 
-
+<script>
+function kpiPeriodFilter() {
+    return {
+        availableYears: [],
+        selectedMonth: '',
+        selectedYear: '',
+        selectedPeriodLabel: 'Loading...',
+        kpiData: {
+            employment_rate: { rate: '96.4%', raw_value: 96.4 },
+            unemployment_rate: { rate: '3.6%', count_formatted: '86k' },
+            underemployment_rate: { rate: '10.5%', count_formatted: '241k' },
+            participation_rate: { rate: '57.7%', raw_value: 57.7 }
+        },
+        loading: false,
+        
+        async init() {
+            console.log('Initializing KPI Period Filter...');
+            await this.fetchAvailableYears();
+            await this.loadLatestKpiData();
+        },
+        
+        async fetchAvailableYears() {
+            try {
+                const response = await fetch('/api/kpi-cards/periods');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const years = [...new Set(result.data.map(p => p.year))].sort((a, b) => b - a);
+                    this.availableYears = years;
+                    
+                    if (result.data.length > 0) {
+                        const latest = result.data[0];
+                        this.selectedMonth = latest.month.toString();
+                        this.selectedYear = latest.year.toString();
+                        this.updatePeriodLabel();
+                    }
+                } else {
+                    console.error('Invalid response format:', result);
+                    this.selectedPeriodLabel = 'No data available';
+                }
+            } catch (error) {
+                console.error('Error fetching periods:', error);
+                this.selectedPeriodLabel = 'Error loading periods';
+            }
+        },
+        
+        async loadLatestKpiData() {
+            this.loading = true;
+            
+            try {
+                const response = await fetch('/api/kpi-cards');
+                console.log('KPI API Response:', response);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('KPI Data:', result);
+                
+                if (result.success) {
+                    this.kpiData = result.data;
+                } else {
+                    console.error('Error:', result.message);
+                }
+            } catch (error) {
+                console.error('Error loading KPI data:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        async loadKpiData(year, month) {
+            this.loading = true;
+            
+            try {
+                const url = `/api/kpi-cards?year=${year}&month=${month}`;
+                console.log('Fetching KPI data from:', url);
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('KPI Data for selected period:', result);
+                
+                if (result.success) {
+                    this.kpiData = result.data;
+                } else {
+                    console.error('Error:', result.message);
+                    alert('No data available for the selected period');
+                }
+            } catch (error) {
+                console.error('Error loading KPI data:', error);
+                alert('Error loading data. Please try again.');
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        applyPeriodFilter() {
+            if (!this.selectedMonth || !this.selectedYear) {
+                alert('Please select both month and year');
+                return;
+            }
+            
+            console.log('Applying filter:', this.selectedMonth, this.selectedYear);
+            this.updatePeriodLabel();
+            this.loadKpiData(this.selectedYear, this.selectedMonth);
+        },
+        
+        updatePeriodLabel() {
+            if (this.selectedMonth && this.selectedYear) {
+                const quarterMonths = {
+                    '1': 'January',
+                    '4': 'April', 
+                    '7': 'July',
+                    '10': 'October'
+                };
+                this.selectedPeriodLabel = `${quarterMonths[this.selectedMonth]} ${this.selectedYear}`;
+            }
+        }
+    }
+}
+</script>
 
 <script>
-// Global chart instances
-let laborChart = null;
-let unempChart = null;
-
-// Initialize charts on page load
-document.addEventListener('DOMContentLoaded', async function () {
-    await initializeLaborChart();
-    await initializeUnempChart();
-});
-
-// ==============================
-// Labor Force Chart
-// ==============================
-async function initializeLaborChart() {
-    const laborCtx = document.getElementById('laborEmploymentChart');
-    if (!laborCtx) return;
-
-    // Fetch initial data for 2015-2025 (all quarterly)
-    let labels = [];
-    let laborData = [];
-    let empRateData = [];
-
-    for (let year = 2024; year <= 2025; year++) {
-        const response = await fetch(`/api/quarterly/${year}`);
-        if (!response.ok) {
-            console.error(`API failed for year ${year}:`, response.status);
-            continue;
-        }
-        const data = await response.json();
+// Chart Filters - NEW ALPINE.JS VERSION
+function chartFilters() {
+    return {
+        // Labor Chart State
+        laborAvailableYears: [],
+        laborStartYear: '',
+        laborEndYear: '',
+        laborStartQuarter: 'Q1',
+        laborEndQuarter: 'Q4',
+        laborYearRange: 'Loading...',
+        laborOpen: false,
         
-        data.forEach(item => {
-            const yearQuarter = `${year} ${item.quarter}`;
-            labels.push(yearQuarter);
-            laborData.push(item.labor_force_thousands);
-            empRateData.push(item.employment_rate);
-        });
-    }
-
-    laborChart = new Chart(laborCtx.getContext('2d'), {
-        data: {
-            labels: labels,
-            datasets: [
-                // 🟦 Labor Force (Bars - Background Context)
-                {
-                    type: 'bar',
-                    label: 'Labor Force (thousands)',
-                    data: laborData,
-                    backgroundColor: 'rgba(106, 177, 248, 0.45)',
-                    borderWidth: 0,
-                    borderRadius: 4,
-                    barPercentage: 0.85,
-                    categoryPercentage: 0.75,
-                    yAxisID: 'y'
-                },
-
-                // 🔵 Employment Rate (Line – Main Focus)
-                {
-                    type: 'line',
-                    label: 'Employment Rate (%)',
-                    data: empRateData,
-                    borderColor: '#2563eb',
-                    backgroundColor: 'rgba(37, 99, 235, 0.15)',
-                    tension: 0.35,
-                    borderWidth: 2.5,
-                    pointRadius: 3,
-                    pointHoverRadius: 5,
-                    fill: false,
-                    yAxisID: 'y1'
-                }
-            ]
+        // Unemployment Chart State
+        unempAvailableYears: [],
+        unempStartYear: '',
+        unempEndYear: '',
+        unempStartQuarter: 'Q1',
+        unempEndQuarter: 'Q4',
+        unempYearRange: 'Loading...',
+        unempOpen: false,
+        
+        async init() {
+            console.log('Initializing chart filters...');
+            await this.fetchAvailableYears();
+            await this.initializeLaborChart();
+            await this.initializeUnempChart();
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-
-            interaction: {
-                mode: 'index',
-                intersect: false
-            },
-
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        usePointStyle: true,
-                        boxWidth: 10
-                    }
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false
-                }
-            },
-
-            scales: {
-                // 🟨 X-Axis (Readable Timeline)
-                x: {
-                    ticks: {
-                        autoSkip: true,
-                        maxTicksLimit: 12,
-                        maxRotation: 45,
-                        minRotation: 45
-                    },
-                    grid: {
-                        display: false
-                    }
-                },
-
-                // 🟦 Left Y-Axis (Labor Force)
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Labor Force (thousands)'
-                    },
-                    grid: {
-                        color: 'rgba(148, 163, 184, 0.15)'
-                    }
-                },
-
-                // 🔵 Right Y-Axis (Employment Rate)
-                y1: {
-                    position: 'right',
-                    min: 80,
-                    max: 100,
-                    title: {
-                        display: true,
-                        text: 'Employment Rate (%)'
-                    },
-                    grid: {
-                        drawOnChartArea: false
-                    }
-                }
-            }
-        }
-    });
-}
-
-async function updateLaborChart() {
-    const startYear = parseInt(document.getElementById('laborStartYear').value);
-    const endYear = parseInt(document.getElementById('laborEndYear').value);
-    const startQuarter = document.getElementById('laborStartQuarter').value;
-    const endQuarter = document.getElementById('laborEndQuarter').value;
-
-    // Validate years
-    if (startYear > endYear) {
-        alert('Start year cannot be greater than end year');
-        return;
-    }
-    
-    // Validate quarters when in the same year
-    if (startYear === endYear && startQuarter > endQuarter) {
-        alert('Start quarter cannot be greater than end quarter in the same year');
-        return;
-    }
-
-    let labels = [];
-    let laborData = [];
-    let empRateData = [];
-
-    // Convert quarters to numeric values for comparison
-    const quarterToNum = (q) => parseInt(q.replace('Q', ''));
-    const startQ = quarterToNum(startQuarter);
-    const endQ = quarterToNum(endQuarter);
-
-    // Fetch quarterly data for the selected range
-    for (let year = startYear; year <= endYear; year++) {
-        const response = await fetch(`/api/quarterly/${year}`);
-        if (!response.ok) {
-            console.error(`API failed for year ${year}:`, response.status);
-            continue;
-        }
-        const data = await response.json();
         
-        data.forEach(item => {
-            const itemQ = quarterToNum(item.quarter);
+        async fetchAvailableYears() {
+            try {
+                const response = await fetch('/api/available-years');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    this.laborAvailableYears = result.data;
+                    this.unempAvailableYears = result.data;
+                    
+                    // Set default to latest 2 years
+                    if (result.data.length >= 2) {
+                        this.laborEndYear = result.data[0].toString();
+                        this.laborStartYear = result.data[1].toString();
+                        this.unempEndYear = result.data[0].toString();
+                        this.unempStartYear = result.data[1].toString();
+                    } else if (result.data.length === 1) {
+                        this.laborEndYear = result.data[0].toString();
+                        this.laborStartYear = result.data[0].toString();
+                        this.unempEndYear = result.data[0].toString();
+                        this.unempStartYear = result.data[0].toString();
+                    }
+                    
+                    this.updateLaborYearRange();
+                    this.updateUnempYearRange();
+                } else {
+                    console.error('Invalid response format:', result);
+                    const currentYear = new Date().getFullYear();
+                    this.laborAvailableYears = [currentYear, currentYear - 1];
+                    this.unempAvailableYears = [currentYear, currentYear - 1];
+                    this.laborEndYear = currentYear.toString();
+                    this.laborStartYear = (currentYear - 1).toString();
+                    this.unempEndYear = currentYear.toString();
+                    this.unempStartYear = (currentYear - 1).toString();
+                    this.updateLaborYearRange();
+                    this.updateUnempYearRange();
+                }
+            } catch (error) {
+                console.error('Error fetching available years:', error);
+                const currentYear = new Date().getFullYear();
+                this.laborAvailableYears = [currentYear, currentYear - 1];
+                this.unempAvailableYears = [currentYear, currentYear - 1];
+                this.laborEndYear = currentYear.toString();
+                this.laborStartYear = (currentYear - 1).toString();
+                this.unempEndYear = currentYear.toString();
+                this.unempStartYear = (currentYear - 1).toString();
+                this.updateLaborYearRange();
+                this.updateUnempYearRange();
+            }
+        },
+        
+        updateLaborYearRange() {
+            this.laborYearRange = `${this.laborStartYear} ${this.laborStartQuarter} – ${this.laborEndYear} ${this.laborEndQuarter}`;
+        },
+        
+        updateUnempYearRange() {
+            this.unempYearRange = `${this.unempStartYear} ${this.unempStartQuarter} – ${this.unempEndYear} ${this.unempEndQuarter}`;
+        },
+        
+        async applyLaborFilter() {
+            const startYear = parseInt(this.laborStartYear);
+            const endYear = parseInt(this.laborEndYear);
             
-            // For years between startYear and endYear (exclusive), show all quarters
-            if (year > startYear && year < endYear) {
-                const yearQuarter = `${year} ${item.quarter}`;
-                labels.push(yearQuarter);
-                laborData.push(item.labor_force_thousands);
-                empRateData.push(item.employment_rate);
+            if (!this.laborStartYear || !this.laborEndYear) {
+                alert('Please select both start and end years');
                 return;
             }
             
-            // Apply quarter filtering only to start and end years
-            if (year === startYear && itemQ < startQ) return;
-            if (year === endYear && itemQ > endQ) return;
-            
-            const yearQuarter = `${year} ${item.quarter}`;
-            labels.push(yearQuarter);
-            laborData.push(item.labor_force_thousands);
-            empRateData.push(item.employment_rate);
-        });
-    }
-
-    // Update chart
-    laborChart.data.labels = labels;
-    laborChart.data.datasets[0].data = laborData;
-    laborChart.data.datasets[1].data = empRateData;
-    laborChart.update();
-
-    // Update display text
-    const displayText = `${startYear} ${startQuarter} — ${endYear} ${endQuarter}`;
-    document.getElementById('laborYearRange').textContent = displayText;
-}
-
-// ==============================
-// Unemployment Chart
-// ==============================
-async function initializeUnempChart() {
-    const unempCtx = document.getElementById('unemploymentChart');
-    if (!unempCtx) return;
-
-    // Fetch initial data for 2015-2025 (all quarterly)
-    let labels = [];
-    let unempData = [];
-
-    for (let year = 2024; year <= 2025; year++) {
-        const response = await fetch(`/api/quarterly/${year}`);
-        if (!response.ok) {
-            console.error(`API failed for year ${year}:`, response.status);
-            continue;
-        }
-        const data = await response.json();
-        
-        data.forEach(item => {
-            const yearQuarter = `${year} ${item.quarter}`;
-            labels.push(yearQuarter);
-            unempData.push(item.unemployed_thousands);
-        });
-    }
-
-    unempChart = new Chart(unempCtx.getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Unemployed Persons (thousands)',
-                data: unempData,
-                fill: true,
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                borderColor: '#ef4444',
-                tension: 0.35
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } }
-        }
-    });
-}
-
-async function updateUnempChart() {
-    const startYear = parseInt(document.getElementById('unempStartYear').value);
-    const endYear = parseInt(document.getElementById('unempEndYear').value);
-    const startQuarter = document.getElementById('unempStartQuarter').value;
-    const endQuarter = document.getElementById('unempEndQuarter').value;
-
-    // Validate years
-    if (startYear > endYear) {
-        alert('Start year cannot be greater than end year');
-        return;
-    }
-
-    // Validate quarters when in the same year
-    if (startYear === endYear && startQuarter > endQuarter) {
-        alert('Start quarter cannot be greater than end quarter in the same year');
-        return;
-    }
-
-    let labels = [];
-    let unempData = [];
-
-    // Convert quarters to numeric values for comparison
-    const quarterToNum = (q) => parseInt(q.replace('Q', ''));
-    const startQ = quarterToNum(startQuarter);
-    const endQ = quarterToNum(endQuarter);
-
-    // Fetch quarterly data for the selected range
-    for (let year = startYear; year <= endYear; year++) {
-        const response = await fetch(`/api/quarterly/${year}`);
-        if (!response.ok) {
-            console.error(`API failed for year ${year}:`, response.status);
-            continue;
-        }
-        const data = await response.json();
-        
-        data.forEach(item => {
-            const itemQ = quarterToNum(item.quarter);
-            
-            // For years between startYear and endYear (exclusive), show all quarters
-            if (year > startYear && year < endYear) {
-                const yearQuarter = `${year} ${item.quarter}`;
-                labels.push(yearQuarter);
-                unempData.push(item.unemployed_thousands);
+            if (startYear > endYear) {
+                alert('Start year cannot be greater than end year');
                 return;
             }
             
-            // Apply quarter filtering only to start and end years
-            if (year === startYear && itemQ < startQ) return;
-            if (year === endYear && itemQ > endQ) return;
+            const quarterToNum = (q) => parseInt(q.replace('Q', ''));
+            const startQ = quarterToNum(this.laborStartQuarter);
+            const endQ = quarterToNum(this.laborEndQuarter);
             
-            const yearQuarter = `${year} ${item.quarter}`;
-            labels.push(yearQuarter);
-            unempData.push(item.unemployed_thousands);
-        });
+            if (startYear === endYear && startQ > endQ) {
+                alert('Start quarter cannot be greater than end quarter in the same year');
+                return;
+            }
+            
+            this.updateLaborYearRange();
+            this.laborOpen = false;
+            await this.updateLaborChart();
+        },
+        
+        async applyUnempFilter() {
+            const startYear = parseInt(this.unempStartYear);
+            const endYear = parseInt(this.unempEndYear);
+            
+            if (!this.unempStartYear || !this.unempEndYear) {
+                alert('Please select both start and end years');
+                return;
+            }
+            
+            if (startYear > endYear) {
+                alert('Start year cannot be greater than end year');
+                return;
+            }
+            
+            const quarterToNum = (q) => parseInt(q.replace('Q', ''));
+            const startQ = quarterToNum(this.unempStartQuarter);
+            const endQ = quarterToNum(this.unempEndQuarter);
+            
+            if (startYear === endYear && startQ > endQ) {
+                alert('Start quarter cannot be greater than end quarter in the same year');
+                return;
+            }
+            
+            this.updateUnempYearRange();
+            this.unempOpen = false;
+            await this.updateUnempChart();
+        },
+        
+        async initializeLaborChart() {
+            const laborCtx = document.getElementById('laborEmploymentChart');
+            if (!laborCtx) return;
+
+            let labels = [];
+            let laborData = [];
+            let empRateData = [];
+
+            const startYear = parseInt(this.laborStartYear);
+            const endYear = parseInt(this.laborEndYear);
+
+            for (let year = startYear; year <= endYear; year++) {
+                const response = await fetch(`/api/quarterly/${year}`);
+                if (!response.ok) continue;
+                
+                const data = await response.json();
+                
+                data.forEach(item => {
+                    labels.push(`${year} ${item.quarter}`);
+                    laborData.push(parseFloat(item.labor_force_thousands) || 0);
+                    empRateData.push(parseFloat(item.employment_rate) || 0);
+                });
+            }
+
+            window.laborChart = new Chart(laborCtx.getContext('2d'), {
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Labor Force (thousands)',
+                            data: laborData,
+                            backgroundColor: 'rgba(106, 177, 248, 0.45)',
+                            borderWidth: 0,
+                            borderRadius: 4,
+                            barPercentage: 0.85,
+                            categoryPercentage: 0.75,
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Employment Rate (%)',
+                            data: empRateData,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.15)',
+                            tension: 0.35,
+                            borderWidth: 2.5,
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                            fill: false,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 10 } },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.dataset.yAxisID === 'y') {
+                                        const actualValue = Math.round(context.parsed.y * 1000);
+                                        label += new Intl.NumberFormat('en-US').format(actualValue);
+                                    } else {
+                                        label += context.parsed.y.toFixed(1) + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            ticks: { autoSkip: true, maxTicksLimit: 12, maxRotation: 45, minRotation: 45 }, 
+                            grid: { display: false } 
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Labor Force (thousands)' },
+                            ticks: { callback: (value) => new Intl.NumberFormat('en-US').format(value * 1000) },
+                            grid: { color: 'rgba(148, 163, 184, 0.15)' }
+                        },
+                        y1: {
+                            position: 'right',
+                            min: 80,
+                            max: 100,
+                            title: { display: true, text: 'Employment Rate (%)' },
+                            ticks: { callback: (value) => value.toFixed(1) + '%' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        },
+        
+        async updateLaborChart() {
+            const startYear = parseInt(this.laborStartYear);
+            const endYear = parseInt(this.laborEndYear);
+            const quarterToNum = (q) => parseInt(q.replace('Q', ''));
+            const startQ = quarterToNum(this.laborStartQuarter);
+            const endQ = quarterToNum(this.laborEndQuarter);
+
+            let labels = [];
+            let laborData = [];
+            let empRateData = [];
+
+            for (let year = startYear; year <= endYear; year++) {
+                const response = await fetch(`/api/quarterly/${year}`);
+                if (!response.ok) continue;
+                
+                const data = await response.json();
+                
+                data.forEach(item => {
+                    const itemQ = quarterToNum(item.quarter);
+                    
+                    if (year > startYear && year < endYear) {
+                        labels.push(`${year} ${item.quarter}`);
+                        laborData.push(parseFloat(item.labor_force_thousands) || 0);
+                        empRateData.push(parseFloat(item.employment_rate) || 0);
+                        return;
+                    }
+                    
+                    if (year === startYear && itemQ < startQ) return;
+                    if (year === endYear && itemQ > endQ) return;
+                    
+                    labels.push(`${year} ${item.quarter}`);
+                    laborData.push(parseFloat(item.labor_force_thousands) || 0);
+                    empRateData.push(parseFloat(item.employment_rate) || 0);
+                });
+            }
+
+            window.laborChart.data.labels = labels;
+            window.laborChart.data.datasets[0].data = laborData;
+            window.laborChart.data.datasets[1].data = empRateData;
+            window.laborChart.update();
+        },
+        
+        async initializeUnempChart() {
+            const unempCtx = document.getElementById('unemploymentChart');
+            if (!unempCtx) return;
+
+            let labels = [];
+            let unempData = [];
+
+            const startYear = parseInt(this.unempStartYear);
+            const endYear = parseInt(this.unempEndYear);
+
+            for (let year = startYear; year <= endYear; year++) {
+                const response = await fetch(`/api/quarterly/${year}`);
+                if (!response.ok) continue;
+                
+                const data = await response.json();
+                
+                data.forEach(item => {
+                    labels.push(`${year} ${item.quarter}`);
+                    unempData.push(parseFloat(item.unemployed_thousands) || 0);
+                });
+            }
+
+            window.unempChart = new Chart(unempCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Unemployed Persons (thousands)',
+                        data: unempData,
+                        fill: true,
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderColor: '#ef4444',
+                        tension: 0.35,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const actualValue = Math.round(context.parsed.y * 1000);
+                                    return 'Unemployed: ' + new Intl.NumberFormat('en-US').format(actualValue);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Unemployed Persons (thousands)' },
+                            ticks: { callback: (value) => new Intl.NumberFormat('en-US').format(value * 1000) }
+                        }
+                    }
+                }
+            });
+        },
+        
+        async updateUnempChart() {
+            const startYear = parseInt(this.unempStartYear);
+            const endYear = parseInt(this.unempEndYear);
+            const quarterToNum = (q) => parseInt(q.replace('Q', ''));
+            const startQ = quarterToNum(this.unempStartQuarter);
+            const endQ = quarterToNum(this.unempEndQuarter);
+
+            let labels = [];
+            let unempData = [];
+
+            for (let year = startYear; year <= endYear; year++) {
+                const response = await fetch(`/api/quarterly/${year}`);
+                if (!response.ok) continue;
+                
+                const data = await response.json();
+                
+                data.forEach(item => {
+                    const itemQ = quarterToNum(item.quarter);
+                    
+                    if (year > startYear && year < endYear) {
+                        labels.push(`${year} ${item.quarter}`);
+                        unempData.push(parseFloat(item.unemployed_thousands) || 0);
+                        return;
+                    }
+                    
+                    if (year === startYear && itemQ < startQ) return;
+                    if (year === endYear && itemQ > endQ) return;
+                    
+                    labels.push(`${year} ${item.quarter}`);
+                    unempData.push(parseFloat(item.unemployed_thousands) || 0);
+                });
+            }
+
+            window.unempChart.data.labels = labels;
+            window.unempChart.data.datasets[0].data = unempData;
+            window.unempChart.update();
+        }
     }
-
-    // Update chart
-    unempChart.data.labels = labels;
-    unempChart.data.datasets[0].data = unempData;
-    unempChart.update();
-
-    // Update display text
-    const displayText = `${startYear} ${startQuarter} — ${endYear} ${endQuarter}`;
-    document.getElementById('unempYearRange').textContent = displayText;
 }
 
 // Helper function to add job title form
@@ -1507,7 +1785,6 @@ function addJobTitle() {
     const container = document.getElementById('jobTitlesContainer');
     const newJobTitle = container.children[0].cloneNode(true);
     
-    // Clear all inputs
     newJobTitle.querySelectorAll('input, textarea').forEach(input => {
         input.value = '';
     });
@@ -1515,7 +1792,140 @@ function addJobTitle() {
     container.appendChild(newJobTitle);
 }
 </script>
-
-
+    
+function kpiPeriodFilter() {
+    return {
+        availableYears: [],
+        selectedMonth: '',
+        selectedYear: '',
+        selectedPeriodLabel: 'Loading...',
+        kpiData: {
+            employment_rate: { rate: '96.4%', raw_value: 96.4 },
+            unemployment_rate: { rate: '3.6%', count_formatted: '86k' },
+            underemployment_rate: { rate: '10.5%', count_formatted: '241k' },
+            participation_rate: { rate: '57.7%', raw_value: 57.7 }
+        },
+        loading: false,
+        
+        async init() {
+            console.log('Initializing KPI Period Filter...');
+            await this.fetchAvailableYears();
+            await this.loadLatestKpiData();
+        },
+        
+        async fetchAvailableYears() {
+            try {
+                // Use the existing periods endpoint which already works
+                const response = await fetch('/api/kpi-cards/periods');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    // Extract unique years from periods and sort descending
+                    const years = [...new Set(result.data.map(p => p.year))].sort((a, b) => b - a);
+                    this.availableYears = years;
+                    
+                    // Set latest period as default
+                    if (result.data.length > 0) {
+                        const latest = result.data[0];
+                        this.selectedMonth = latest.month.toString();
+                        this.selectedYear = latest.year.toString();
+                        this.updatePeriodLabel();
+                    }
+                } else {
+                    console.error('Invalid response format:', result);
+                    this.selectedPeriodLabel = 'No data available';
+                }
+            } catch (error) {
+                console.error('Error fetching periods:', error);
+                this.selectedPeriodLabel = 'Error loading periods';
+            }
+        },
+        
+        async loadLatestKpiData() {
+            this.loading = true;
+            
+            try {
+                const response = await fetch('/api/kpi-cards');
+                console.log('KPI API Response:', response);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('KPI Data:', result);
+                
+                if (result.success) {
+                    this.kpiData = result.data;
+                } else {
+                    console.error('Error:', result.message);
+                }
+            } catch (error) {
+                console.error('Error loading KPI data:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        async loadKpiData(year, month) {
+            this.loading = true;
+            
+            try {
+                const url = `/api/kpi-cards?year=${year}&month=${month}`;
+                console.log('Fetching KPI data from:', url);
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('KPI Data for selected period:', result);
+                
+                if (result.success) {
+                    this.kpiData = result.data;
+                } else {
+                    console.error('Error:', result.message);
+                    alert('No data available for the selected period');
+                }
+            } catch (error) {
+                console.error('Error loading KPI data:', error);
+                alert('Error loading data. Please try again.');
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        applyPeriodFilter() {
+            if (!this.selectedMonth || !this.selectedYear) {
+                alert('Please select both month and year');
+                return;
+            }
+            
+            console.log('Applying filter:', this.selectedMonth, this.selectedYear);
+            this.updatePeriodLabel();
+            this.loadKpiData(this.selectedYear, this.selectedMonth);
+        },
+        
+        updatePeriodLabel() {
+            if (this.selectedMonth && this.selectedYear) {
+                const quarterMonths = {
+                    '1': 'January',
+                    '4': 'April', 
+                    '7': 'July',
+                    '10': 'October'
+                };
+                this.selectedPeriodLabel = `${quarterMonths[this.selectedMonth]} ${this.selectedYear}`;
+            }
+        }
+    }
+}
+</script>
 </body>
 </html>
