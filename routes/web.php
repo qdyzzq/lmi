@@ -11,6 +11,11 @@ Route::get('/JobMarketDemands', function (){
     return view('JobMarketDemands');
 })->name('Job.Market.Demands');
 
+
+Route::get('/SupplySide', function(){
+    return view('SupplySide');
+})->name('Supply.Side');
+
 Route::get('/', [DashboardController::class, 'index'])->name('home');
 
 Route::get('/JobMarketDemands',[DashboardController::class, 'jobMarket'])->name('Job.Market.Demands');
@@ -33,9 +38,9 @@ Route::get('/GovernmentData', function(){
     return view('GovernData');
 })->name('Government.Data');
 
-Route::get('/StakeHolderEngagement', function(){
+Route::get('/StakeHolder', function(){
     return view('StakeHolder');
-})->name('Stake.Holder.Engagement');
+})->name('Stake.Holder');
 
 Route::get('/Report', function(){
     return view('Reports');  

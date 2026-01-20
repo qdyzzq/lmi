@@ -56,7 +56,7 @@
                         <span class="opacity-70 group-hover:opacity-100">🗂️</span> Government Data
                     </a>
 
-                    <a href="{{ route('Stake.Holder.Engagement') }}" class="flex item-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
+                    <a href="{{ route('Stake.Holder') }}" class="flex item-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
                         <span class="opacity-70 group-hover:opacity-100">🤝</span> Stakeholder Engagement
                     </a>
 
@@ -105,6 +105,13 @@
                                 class="px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-md">
                                 Job Market Demands
                                 </a>
+                                <a href="{{ route('Supply.Side') }}"
+                                    class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-md">
+                                    Supply Side
+                                </a>
+                                <button class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-md transition">
+                                Programs & Stories
+                            </button>
                             </div>
                         </div>
 
