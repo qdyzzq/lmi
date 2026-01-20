@@ -84,7 +84,7 @@ class LaborMarketController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => "Labor market data for {$this->getMonthName($request->month)} {$request->year} saved successfully!",
+                    'message' => "Data for {$this->getMonthName($request->month)} {$request->year} saved successfully!",
                     'data' => [
                         'year' => $request->year,
                         'month' => $request->month,

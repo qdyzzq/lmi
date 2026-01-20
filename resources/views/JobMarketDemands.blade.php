@@ -517,145 +517,380 @@
         </div>
         </div>
 </div>
-                <div class="bg-teal-50 border border-teal-200 rounded-lg p-6 mt-10 overflow-hidden ">
-                    <div class="flex items-start gap-2 text-teal-700 text-base font-semibold mb-2">
-                        <svg class="w-5 h-5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                <!-- PART II: HARD-TO-FILL ROLES -->
+<div class="bg-teal-50 border border-teal-200 rounded-lg p-6 mt-10 overflow-hidden">
+    <div class="flex items-start gap-2 text-teal-700 text-base font-semibold mb-2">
+        <svg class="w-5 h-5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        PART II: HARD-TO-FILL ROLES
+    </div>
+    <p class="text-teal-600 text-xs italic mb-4">
+        Please identify the TOP Job Titles you find hardest to fill. Be as specific as possible (e.g., instead of "IT Skills", say "Python Programming").
+    </p>
+
+    <div id="jobTitlesContainer" class="space-y-6">
+        <!-- Single Job Entry -->
+        <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <!-- 8. Job Title -->
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-medium mb-2">
+                    8. Job Title: <span class="text-gray-400 text-xs">[Short Answer]</span>
+                </label>
+                <input 
+                    type="text" 
+                    name="job_title[]"
+                    placeholder="e.g. Senior Java Developer"
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+                />
+            </div>
+
+            <!-- 9. Standard Job Classifications / Families -->
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-medium mb-2">
+                    9. Standard Job Classifications / Families:
+                </label>
+                <div x-data="{ open: false, selected: '' }" class="relative">
+                    <button @click="open = !open" 
+                            type="button"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
+                        <span x-text="selected || 'Select job classification'" 
+                              :class="!selected ? 'text-gray-400' : 'text-gray-600'"></span>
+                        <svg class="w-5 h-5 text-gray-400 transition-transform" 
+                             :class="open ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
-                        Section B: Job Titles & Competency Gaps
-                    </div>
-                    <p class="text-teal-600 text-xs italic mb-4">
-                        Tip: Think about the last 10–20 applicants you rejected. What specific skills were missing?
-                    </p>
-
-                    <div id="jobTitlesContainer" class="space-y-4">
-                        
-                        <div class="bg-white rounded-lg p-4 border border-gray-200">
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-medium mb-2 uppercase tracking-wide">
-                                    Job Title
-                                </label>
-                                <input 
-                                    type="text" 
-                                    name="job_title[]"
-                                    placeholder="e.g. Senior Java Developer"
-                                    class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
-                                />
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label class="block text-gray-700 text-sm font-medium mb-2">
-                                        Critical Hard Skills Missing
-                                    </label>
-                                    <textarea 
-                                        name="hard_skills[]"
-                                        rows="3"
-                                        placeholder="e.g. Spring Boot framework..."
-                                        class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm resize-none"
-                                    ></textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 text-sm font-medium mb-2">
-                                        Critical Soft Skills Missing
-                                    </label>
-                                    <textarea 
-                                        name="soft_skills[]"
-                                        rows="3"
-                                        placeholder="e.g. Ability to explain code to non-tech..."
-                                        class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm resize-none"
-                                    ></textarea>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-700 text-sm font-medium mb-2">
-                                    Additional Notes
-                                </label>
-                                <input 
-                                    type="text" 
-                                    name="additional_notes[]"
-                                    placeholder="Specific certifications needed?"
-                                    class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="button" 
-                            onclick="addJobTitle()"
-                            class="mt-4 text-teal-600 hover:text-teal-700 font-medium text-sm flex items-center gap-1">
-                        <span class="text-lg">+</span> Add another Job Title
                     </button>
+                    
+                    <div x-show="open" 
+                         @click.away="open = false"
+                         x-transition
+                         class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                        
+                        <div @click="selected = 'Accounting, Finance & Banking'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Accounting, Finance & Banking
+                        </div>
+                        
+                        <div @click="selected = 'Administrative, HR & Office Support'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Administrative, HR & Office Support
+                        </div>
+                        
+                        <div @click="selected = 'Agriculture, Forestry & Agribusiness'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Agriculture, Forestry & Agribusiness
+                        </div>
+                        
+                        <div @click="selected = 'Construction, Engineering & Architecture'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Construction, Engineering & Architecture
+                        </div>
+                        
+                        <div @click="selected = 'Customer Service & BPO (Contact Center)'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Customer Service & BPO (Contact Center)
+                        </div>
+                        
+                        <div @click="selected = 'Education, Training & Academe'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Education, Training & Academe
+                        </div>
+                        
+                        <div @click="selected = 'Healthcare, Medical & Allied Services'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Healthcare, Medical & Allied Services
+                        </div>
+                        
+                        <div @click="selected = 'IT, Software, Data & Digital Creative'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • IT, Software, Data & Digital Creative
+                        </div>
+                        
+                        <div @click="selected = 'Legal, Compliance & Public Service'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Legal, Compliance & Public Service
+                        </div>
+                        
+                        <div @click="selected = 'Logistics, Transport & Supply Chain'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Logistics, Transport & Supply Chain
+                        </div>
+                        
+                        <div @click="selected = 'Manufacturing, Production & Technical'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Manufacturing, Production & Technical
+                        </div>
+                        
+                        <div @click="selected = 'Sales, Marketing, Retail & E-Commerce'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Sales, Marketing, Retail & E-Commerce
+                        </div>
+                        
+                        <div @click="selected = 'Science, Research & Laboratory'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Science, Research & Laboratory
+                        </div>
+                        
+                        <div @click="selected = 'Skilled Trades, Maintenance & General Services'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Skilled Trades, Maintenance & General Services
+                        </div>
+                        
+                        <div @click="selected = 'Tourism, Hospitality & Food Service'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            • Tourism, Hospitality & Food Service
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="job_classification[]" x-model="selected">
                 </div>
+            </div>
 
-                
-                <div class="bg-gray-50   rounded-lg p-6 mt-8">
-                    <div class="flex items-start gap-2 text-base font-semibold mb-2">
-                        <svg class="w-5 h-5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm7 4v10m-5-5h10"/>
+            <!-- 10. Duration that the Vacancy is Open -->
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-medium mb-2">
+                    10. Duration that the Vacancy is Open:
+                </label>
+                <div x-data="{ open: false, selected: '' }" class="relative">
+                    <button @click="open = !open" 
+                            type="button"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
+                        <span x-text="selected || 'Select duration'" 
+                              :class="!selected ? 'text-gray-400' : 'text-gray-600'"></span>
+                        <svg class="w-5 h-5 text-gray-400 transition-transform" 
+                             :class="open ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
-                        Section B: Job Titles & Competency Gaps
-                    </div>
-
-                    <div class="space-y-5">
+                    </button>
+                    
+                    <div x-show="open" 
+                         @click.away="open = false"
+                         x-transition
+                         class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
                         
-                        <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-2">
-                                1. Which 1–3 job titles have the most severe competency gaps, and why?
-                            </label>
-                            <textarea 
-                                name="question_1"
-                                rows="3"
-                                class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm resize-none"
-                            ></textarea>
+                        <div @click="selected = 'Less than 30 Days'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            Less than 30 Days
                         </div>
-
                         
-                        <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-2">
-                                2. Of the missing competencies, which are trainable internally vs requiring external training?
-                            </label>
-                            <textarea 
-                                name="question_2"
-                                rows="3"
-                                class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm resize-none"
-                            ></textarea>
+                        <div @click="selected = '30-60 Days'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            30-60 Days
                         </div>
-
                         
-                        <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-2">
-                                3. Are there emerging skills not yet reflected in current job descriptions?
-                            </label>
-                            <textarea 
-                                name="question_3"
-                                rows="3"
-                                class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm resize-none"
-                            ></textarea>
+                        <div @click="selected = '60-90 Days'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            60-90 Days
+                        </div>
+                        
+                        <div @click="selected = '90+ Days'; open = false" 
+                             class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                            90+ Days
                         </div>
                     </div>
+                    
+                    <input type="hidden" name="vacancy_duration[]" x-model="selected">
                 </div>
+            </div>
 
-                
-                <div class="flex items-start gap-3 mt-6">
-                    <input 
-                        type="checkbox" 
-                        id="consent"
-                        name="consent"
-                        class="mt-1 w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-                        required
-                    />
-                    <label for="consent" class="text-gray-600 text-sm">
-                        I agree to contribute this data to the Regional LMI Database.
-                    </label>
+           <!-- 11. Primary Reason For Difficulty -->
+<div class="mb-4">
+    <label class="block text-gray-700 text-sm font-medium mb-2">
+        11. Primary Reason For Difficulty (Role-Level) <span class="italic text-gray-500">(Select ONE)</span>
+    </label>
+    <div x-data="{ open: false, selected: '' }" class="relative">
+        <button @click="open = !open" 
+                type="button"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
+            <span x-text="selected || 'Select primary reason'" 
+                  :class="!selected ? 'text-gray-400' : 'text-gray-600'"></span>
+            <svg class="w-5 h-5 text-gray-400 transition-transform" 
+                 :class="open ? 'rotate-180' : ''"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </button>
+        
+        <div x-show="open" 
+             @click.away="open = false"
+             x-transition
+             class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+            
+            <div @click="selected = 'Technical / Hard Skills Missing'; open = false" 
+                 class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                <div class="font-medium">Technical / Hard Skills Missing</div>
+                <div class="text-xs text-gray-500 mt-1">Applicants do not have the required tools, software, or technical knowledge</div>
+            </div>
+            
+            <div @click="selected = 'Soft / Employability Skills Missing'; open = false" 
+                 class="px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                <div class="font-medium">Soft / Employability Skills Missing</div>
+                <div class="text-xs text-gray-500 mt-1">Applicants cannot communicate effectively, work in teams, or demonstrate professionalism/problem-solving</div>
+            </div>
+        </div>
+        <input type="hidden" name="primary_reason[]" x-model="selected">
+
+        <!-- Follow-up: Technical Skills Details - Only shows when Technical is selected -->
+        <div x-show="selected === 'Technical / Hard Skills Missing'" 
+             x-transition
+             class="mt-4">
+            <label class="block text-gray-700 text-sm font-medium mb-2">
+                Follow-up: What specific technical tools, software, or machinery knowledge is missing in applicants?
+            </label>
+            <textarea 
+                name="technical_skills_missing[]"
+                rows="3"
+                placeholder="e.g. Python, SQL, AutoCAD, specific machinery..."
+                class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm resize-none"
+            ></textarea>
+        </div>
+
+        <!-- Follow-up: Soft Skills Details - Only shows when Soft Skills is selected -->
+        <div x-show="selected === 'Soft / Employability Skills Missing'" 
+             x-transition
+             class="mt-4">
+            <label class="block text-gray-700 text-sm font-medium mb-2">
+                Follow-up: What attitude or behavioral traits cause you to reject applicants?
+            </label>
+            <textarea 
+                name="soft_skills_missing[]"
+                rows="3"
+                placeholder="e.g. Poor communication, lack of teamwork, unprofessional behavior..."
+                class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm resize-none"
+            ></textarea>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+    <button type="button" 
+            onclick="addJobTitle()"
+            class="mt-4 text-teal-600 hover:text-teal-700 font-medium text-sm flex items-center gap-1">
+        <span class="text-lg">+</span> Add another Hard-to-Fill Role
+    </button>
+</div>
+
+<!-- PART III: DIAGNOSIS OF MISMATCH (Section C from your form) -->
+<div class="bg-gray-50 rounded-lg p-6 mt-8">
+    <div class="flex items-start gap-2 text-base font-semibold mb-2">
+        <svg class="w-5 h-5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        PART III: DIAGNOSIS OF MISMATCH
+    </div>
+    <p class="text-gray-500 text-xs italic mb-4">
+        For applicants who meet formal qualifications (degree, license), what observable factors most often cause them to be rejected?
+    </p>
+
+    <div class="space-y-5">
+        <!-- 12. GNA IMPACT -->
+        <div>
+            <label class="block text-gray-700 text-sm font-medium mb-2">
+                12. Your business / sector / operations are diminished, critical or high-quality applicants for this role (important for this role impact).
+            </label>
+            <div class="space-y-2">
+                <label class="flex items-center">
+                    <input type="radio" name="impact_level" value="High" 
+                           class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                    <span class="ml-3 text-sm text-gray-700">High - Operations are disrupted, critical tasks or projects are delayed</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="radio" name="impact_level" value="Medium" 
+                           class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                    <span class="ml-3 text-sm text-gray-700">Medium - Operations continue but require overtime, workload, or project delays</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="radio" name="impact_level" value="Low" 
+                           class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                    <span class="ml-3 text-sm text-gray-700">Low - Minimal impact; new hires can be trained internally without significant operational disruptions</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Additional questions from your form can be added here -->
+    </div>
+</div>
+
+
+<!-- PART IV: ENGAGEMENT & NEXT STEPS -->
+<div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-8">  <!-- Changed mt-10 to mt-8 for consistency -->
+    <div class="flex items-start gap-2 text-gray-700 text-base font-semibold mb-2">  <!-- Changed text-gray-700 to text-blue-700 -->
+        PART IV: ENGAGEMENT & NEXT STEPS
+    </div>
+
+    <div class="space-y-5">
+        <!-- 20. If DOLE provides a Regional LMI Dashboard -->
+        <div>
+            <label class="block text-gray-700 text-sm font-medium mb-2">
+                20. If DOLE provides a Regional LMI Dashboard (What feature would be most useful for you / Select top (2)):
+            </label>
+            <div class="space-y-2">
+                <label class="flex items-start">
+                    <input type="checkbox" name="lmi_features[]" value="Viewing the supply of graduates" 
+                           class="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <span class="ml-3 text-sm text-gray-700">Viewing the supply of graduates (e.g., "How many IT grads will graduate next year?")</span>
+                </label>
                 
-                <button type="submit" 
-                        class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition shadow-lg mt-6">
-                    Submit LMI Matrix
-                </button>
+                <label class="flex items-start">
+                    <input type="checkbox" name="lmi_features[]" value="A channel to submit real-time feedback" 
+                           class="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <span class="ml-3 text-sm text-gray-700">A channel to submit real-time feedback on curriculum quality</span>
+                </label>
+                
+                <label class="flex items-start">
+                    <input type="checkbox" name="lmi_features[]" value="A directory of job placement offices" 
+                           class="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <span class="ml-3 text-sm text-gray-700">A directory of job placement offices and Public Employment offices (PESOs)</span>
+                </label>
+                
+                <label class="flex items-start">
+                    <input type="checkbox" name="lmi_features[]" value="Other" 
+                           class="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <span class="ml-3 text-sm text-gray-700">Other: _____________</span>
+                </label>
+            </div>
+        </div>
+
+        
+
+        <!-- Your specific inputs (optional) -->
+        <div>
+            <label class="block text-gray-700 text-sm font-medium mb-2">
+                Your specific inputs?
+            </label>
+            <textarea 
+                name="specific_inputs"
+                rows="4"
+                placeholder="Please share any additional insights or suggestions..."
+                class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+            ></textarea>
+        </div>
+    </div>
+</div>  
+
+        <!-- Consent Checkbox -->
+        <div class="flex items-start gap-3 mt-6">
+            <input 
+                type="checkbox" 
+                id="consent"
+                name="consent"
+                class="mt-1 w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+                required
+            />
+            <label for="consent" class="text-gray-600 text-sm">
+                I agree to contribute this data to the Regional LMI Database.
+            </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" 
+                class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition shadow-lg mt-6">
+            Submit LMI Matrix
+        </button>
             </form>
         </div>
     </div>

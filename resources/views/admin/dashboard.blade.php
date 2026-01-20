@@ -82,7 +82,7 @@
 
     <div class="max-w-4xl mx-auto bg-white rounded-xl shadow p-8">
         <h3 class="text-lg font-bold text-slate-800 mb-6">
-            Labor Market Indicators Input
+            Labor Market Form
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -126,7 +126,6 @@
             <div>
                 <label class="block text-sm font-semibold text-slate-600 mb-1">
                     Household Population (15 Years Old and Over)
-                    <span class="text-xs text-slate-400 ml-1">(in thousands)</span>
                 </label>
                 <input
                     type="number"
@@ -205,7 +204,7 @@
             <div>
                 <label class="block text-sm font-semibold text-slate-600 mb-1">
                     Labor Force (Auto-calculated)
-                    <span class="text-xs text-slate-400 ml-1">(in thousands)</span>
+                    <span class="text-xs text-slate-400 ml-1">(HOP * LFPR)</span>
                 </label>
                 <input
                     type="number"
@@ -219,7 +218,7 @@
             <div>
                 <label class="block text-sm font-semibold text-slate-600 mb-1">
                     Employed (Auto-calculated)
-                    <span class="text-xs text-slate-400 ml-1">(in thousands)</span>
+                    <span class="text-xs text-slate-400 ml-1">(EMPR * LFPR)</span>
                 </label>
                 <input
                     type="number"
@@ -233,7 +232,7 @@
             <div>
                 <label class="block text-sm font-semibold text-slate-600 mb-1">
                     Underemployed (Auto-calculated)
-                    <span class="text-xs text-slate-400 ml-1">(in thousands)</span>
+                    <span class="text-xs text-slate-400 ml-1">(EMP * UEMP)</span>
                 </label>
                 <input
                     type="number"
@@ -247,7 +246,7 @@
             <div>
                 <label class="block text-sm font-semibold text-slate-600 mb-1">
                     Unemployed (Auto-calculated)
-                    <span class="text-xs text-slate-400 ml-1">(in thousands)</span>
+                    <span class="text-xs text-slate-400 ml-1">(LF * UEMPR)</span>
                 </label>
                 <input
                     type="number"

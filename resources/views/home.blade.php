@@ -167,13 +167,12 @@
                                     <select x-model="selectedMonth" 
                                             class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
                                         <option value="">Select</option>
-                                        <option value="1">Q1 (Jan)</option>
-                                        <option value="4">Q2 (Apr)</option>
-                                        <option value="7">Q3 (Jul)</option>
-                                        <option value="10">Q4 (Oct)</option>
+                                        <option value="1">Jan</option>
+                                        <option value="4">Apr</option>
+                                        <option value="7">Jul</option>
+                                        <option value="10">Oct</option>
                                     </select>
                                 </div>
-                                
                                 <!-- Year Selector -->
                                 <div>
                                     <label class="text-[10px] text-slate-500 mb-1 block">Year</label>
@@ -269,8 +268,7 @@
         </div>
     </div>
 </div>
-
-                        <!-- Charts Section - WRAP ENTIRE SECTION IN x-data -->
+<!-- Charts Section - WRAP ENTIRE SECTION IN x-data -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" x-data="chartFilters()">
     <!-- Labor Chart -->
     <div class="bg-white border rounded-xl p-5 shadow-sm">
@@ -279,82 +277,96 @@
                 <h3 class="font-semibold text-slate-800">Labor Force vs Employment Rate</h3>
                 <p class="text-xs text-slate-500">Comparing workforce size (bars) vs employment rate (line)</p>
             </div>
-            <div class="relative">
-                <button @click="laborOpen = !laborOpen" 
-                        class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 min-w-38 transition">
-                    <span x-text="laborYearRange"></span>
+            <div class="flex items-center gap-2">
+                <!-- Expand Button -->
+                <button @click="openChartModal('labor')" 
+                        class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition"
+                        title="Expand chart">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
                     </svg>
+                    <span>Expand</span>
                 </button>
                 
-                <div x-show="laborOpen" 
-                    @click.away="laborOpen = false"
-                    x-transition
-                    class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border z-10 p-5">
-                    
-                    <div class="mb-4">
-                        <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
-                        
-                        <!-- Year Range Inputs -->
-                        <div class="flex items-center gap-3">
-                            <div class="flex-1">
-                                <label class="text-[10px] text-slate-500 mb-1 block">From</label>
-                                <select x-model="laborStartYear" 
-                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                    <option value="">Select year</option>
-                                    <template x-for="year in laborAvailableYears" :key="year">
-                                        <option :value="year" x-text="year"></option>
-                                    </template>
-                                </select>
-                            </div>
-                            
-                            <span class="text-slate-400 mt-5">—</span>
-                            
-                            <div class="flex-1">
-                                <label class="text-[10px] text-slate-500 mb-1 block">To</label>
-                                <select x-model="laborEndYear" 
-                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                    <option value="">Select year</option>
-                                    <template x-for="year in laborAvailableYears" :key="year">
-                                        <option :value="year" x-text="year"></option>
-                                    </template>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Quarter Selectors -->
-                        <div class="flex items-center gap-3 mt-3">
-                            <div class="flex-1">
-                                <label class="text-[10px] text-slate-500 mb-1 block">Quarter (From)</label>
-                                <select x-model="laborStartQuarter" 
-                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                    <option value="Q1">Q1</option>
-                                    <option value="Q2">Q2</option>
-                                    <option value="Q3">Q3</option>
-                                    <option value="Q4">Q4</option>
-                                </select>
-                            </div>
-                            
-                            <span class="text-slate-400 mt-5">—</span>
-                            
-                            <div class="flex-1">
-                                <label class="text-[10px] text-slate-500 mb-1 block">Quarter (To)</label>
-                                <select x-model="laborEndQuarter" 
-                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                    <option value="Q1">Q1</option>
-                                    <option value="Q2">Q2</option>
-                                    <option value="Q3">Q3</option>
-                                    <option value="Q4">Q4</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button @click="applyLaborFilter()" 
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition cursor-pointer">
-                        Apply Filter
+                <!-- Year Range Filter -->
+                <div class="relative">
+                    <button @click="laborOpen = !laborOpen" 
+                            class="text-xs bg-slate-100 w-40 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 min-w-38 transition">
+                        <span x-text="laborYearRange"></span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
                     </button>
+                    
+                    <div x-show="laborOpen" 
+                        @click.away="laborOpen = false"
+                        x-transition
+                        class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border z-10 p-5">
+                        
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
+                            
+                            <!-- Year Range Inputs -->
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1">
+                                    <label class="text-[10px] text-slate-500 mb-1 block">From</label>
+                                    <select x-model="laborStartYear" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                        <option value="">Select year</option>
+                                        <template x-for="year in laborAvailableYears" :key="year">
+                                            <option :value="year" x-text="year"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                
+                                <span class="text-slate-400 mt-5">—</span>
+                                
+                                <div class="flex-1">
+                                    <label class="text-[10px] text-slate-500 mb-1 block">To</label>
+                                    <select x-model="laborEndYear" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                        <option value="">Select year</option>
+                                        <template x-for="year in laborAvailableYears" :key="year">
+                                            <option :value="year" x-text="year"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Quarter Selectors -->
+                            <div class="flex items-center gap-3 mt-3">
+                                <div class="flex-1">
+                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter (From)</label>
+                                    <select x-model="laborStartQuarter" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                        <option value="Q1">Jan</option>
+                                        <option value="Q2">Apr</option>
+                                        <option value="Q3">Jul</option>
+                                        <option value="Q4">Oct</option>
+                                    </select>
+                                </div>
+                                
+                                <span class="text-slate-400 mt-5">—</span>
+                                
+                                <div class="flex-1">
+                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter (To)</label>
+                                    <select x-model="laborEndQuarter" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                        <option value="Q1">Jan</option>
+                                        <option value="Q2">Apr</option>
+                                        <option value="Q3">Jul</option>
+                                        <option value="Q4">Oct</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button @click="applyLaborFilter()" 
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition cursor-pointer">
+                            Apply Filter
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -370,86 +382,159 @@
                 <h3 class="font-semibold text-slate-800">Unemployment Volume</h3>
                 <p class="text-xs text-slate-500">Headcount of unemployed persons</p>
             </div>
-            <div class="relative">
-                <button @click="unempOpen = !unempOpen" 
-                        class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
-                    <span x-text="unempYearRange"></span>
+            <div class="flex items-center gap-2">
+                <!-- Expand Button -->
+                <button @click="openChartModal('unemployment')" 
+                        class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition"
+                        title="Expand chart">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
                     </svg>
+                    <span>Expand</span>
                 </button>
                 
-                <div x-show="unempOpen" 
-                    @click.away="unempOpen = false"
-                    x-transition
-                    class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border z-10 p-5">
-                    
-                    <div class="mb-4">
-                        <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
-                        
-                        <div class="flex items-center gap-3">
-                            <div class="flex-1">
-                                <label class="text-[10px] text-slate-500 mb-1 block">From</label>
-                                <select x-model="unempStartYear" 
-                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                    <option value="">Select year</option>
-                                    <template x-for="year in unempAvailableYears" :key="year">
-                                        <option :value="year" x-text="year"></option>
-                                    </template>
-                                </select>
-                            </div>
-                            
-                            <span class="text-slate-400 mt-5">—</span>
-                            
-                            <div class="flex-1">
-                                <label class="text-[10px] text-slate-500 mb-1 block">To</label>
-                                <select x-model="unempEndYear" 
-                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                    <option value="">Select year</option>
-                                    <template x-for="year in unempAvailableYears" :key="year">
-                                        <option :value="year" x-text="year"></option>
-                                    </template>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Quarter Selectors -->
-                        <div class="flex items-center gap-3 mt-3">
-                            <div class="flex-1">
-                                <label class="text-[10px] text-slate-500 mb-1 block">Quarter (From)</label>
-                                <select x-model="unempStartQuarter" 
-                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                    <option value="Q1">Q1</option>
-                                    <option value="Q2">Q2</option>
-                                    <option value="Q3">Q3</option>
-                                    <option value="Q4">Q4</option>
-                                </select>
-                            </div>
-                            
-                            <span class="text-slate-400 mt-5">—</span>
-                            
-                            <div class="flex-1">
-                                <label class="text-[10px] text-slate-500 mb-1 block">Quarter (To)</label>
-                                <select x-model="unempEndQuarter" 
-                                        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                    <option value="Q1">Q1</option>
-                                    <option value="Q2">Q2</option>
-                                    <option value="Q3">Q3</option>
-                                    <option value="Q4">Q4</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button @click="applyUnempFilter()" 
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition cursor-pointer">
-                        Apply Filter
+                <!-- Year Range Filter -->
+                <div class="relative">
+                    <button @click="unempOpen = !unempOpen" 
+                            class="text-xs bg-slate-100 w-40 hover:bg-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
+                        <span x-text="unempYearRange"></span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
                     </button>
+                    
+                    <div x-show="unempOpen" 
+                        @click.away="unempOpen = false"
+                        x-transition
+                        class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border z-10 p-5">
+                        
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
+                            
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1">
+                                    <label class="text-[10px] text-slate-500 mb-1 block">From</label>
+                                    <select x-model="unempStartYear" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                        <option value="">Select year</option>
+                                        <template x-for="year in unempAvailableYears" :key="year">
+                                            <option :value="year" x-text="year"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                
+                                <span class="text-slate-400 mt-5">—</span>
+                                
+                                <div class="flex-1">
+                                    <label class="text-[10px] text-slate-500 mb-1 block">To</label>
+                                    <select x-model="unempEndYear" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                        <option value="">Select year</option>
+                                        <template x-for="year in unempAvailableYears" :key="year">
+                                            <option :value="year" x-text="year"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Quarter Selectors -->
+                            <div class="flex items-center gap-3 mt-3">
+                                <div class="flex-1">
+                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter (From)</label>
+                                    <select x-model="unempStartQuarter" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                        <option value="Q1">Jan</option>
+                                        <option value="Q2">Apr</option>
+                                        <option value="Q3">Jul</option>
+                                        <option value="Q4">Oct</option>
+                                    </select>
+                                </div>
+                                
+                                <span class="text-slate-400 mt-5">—</span>
+                                
+                                <div class="flex-1">
+                                    <label class="text-[10px] text-slate-500 mb-1 block">Quarter (To)</label>
+                                    <select x-model="unempEndQuarter" 
+                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                        <option value="Q1">Jan</option>
+                                        <option value="Q2">Apr</option>
+                                        <option value="Q3">Jul</option>
+                                        <option value="Q4">Oct</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button @click="applyUnempFilter()" 
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition cursor-pointer">
+                            Apply Filter
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="relative h-80 w-full">
             <canvas id="unemploymentChart"></canvas>
+        </div>
+    </div>
+
+    <!-- MODAL FOR EXPANDED CHART -->
+    <div x-show="expandedChart !== null" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @keydown.escape.window="closeChartModal()"
+         class="fixed inset-0 z-50 overflow-y-auto"
+         style="display: none;">
+        
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+             @click="closeChartModal()"></div>
+        
+        <!-- Modal Content -->
+        <div class="flex min-h-screen items-center justify-center p-4">
+            <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden"
+                 @click.stop>
+                
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-800" 
+                            x-text="expandedChart === 'labor' ? 'Labor Force vs Employment Rate' : 'Unemployment Volume'"></h3>
+                        <p class="text-sm text-slate-500 mt-1"
+                           x-text="expandedChart === 'labor' ? 'Comparing workforce size (bars) vs employment rate (line)' : 'Headcount of unemployed persons'"></p>
+                    </div>
+                    
+                    <button @click="closeChartModal()" 
+                            class="text-slate-400 hover:text-slate-600 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Modal Body - Chart Container -->
+                <div class="p-6">
+                    <div class="relative w-full" style="height: 600px;">
+                        <canvas id="expandedChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="p-6 border-t border-gray-200 bg-slate-50 flex justify-between items-center">
+                    <p class="text-xs text-slate-500">
+                        Press ESC or click outside to close
+                    </p>
+                    <button @click="closeChartModal()" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                        Close
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -856,9 +941,22 @@ function kpiPeriodFilter() {
 </script>
 
 <script>
-// Chart Filters - NEW ALPINE.JS VERSION
+// Chart Filters - UPDATED VERSION WITH EXPAND MODAL
 function chartFilters() {
     return {
+        // Modal state
+        expandedChart: null,
+        
+        quarterToMonth(q) {
+            const map = {
+                Q1: 'Jan',
+                Q2: 'Apr',
+                Q3: 'Jul',
+                Q4: 'Oct'
+            };
+            return map[q] || q;
+        },
+        
         // Labor Chart State
         laborAvailableYears: [],
         laborStartYear: '',
@@ -884,6 +982,156 @@ function chartFilters() {
             await this.initializeUnempChart();
         },
         
+        // Modal methods
+        openChartModal(chartType) {
+            this.expandedChart = chartType;
+            this.$nextTick(() => {
+                if (chartType === 'labor') {
+                    this.drawExpandedLaborChart();
+                } else if (chartType === 'unemployment') {
+                    this.drawExpandedUnemploymentChart();
+                }
+            });
+        },
+        
+        closeChartModal() {
+            this.expandedChart = null;
+            if (window.expandedChartInstance) {
+                window.expandedChartInstance.destroy();
+                window.expandedChartInstance = null;
+            }
+        },
+        
+        drawExpandedLaborChart() {
+            const ctx = document.getElementById('expandedChart');
+            if (!ctx) return;
+            
+            if (window.expandedChartInstance) {
+                window.expandedChartInstance.destroy();
+            }
+            
+            const originalChart = window.laborChart;
+            if (!originalChart) return;
+            
+            window.expandedChartInstance = new Chart(ctx.getContext('2d'), {
+                data: {
+                    labels: originalChart.data.labels,
+                    datasets: originalChart.data.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { 
+                            position: 'top', 
+                            labels: { 
+                                usePointStyle: true, 
+                                boxWidth: 10,
+                                font: { size: 14 }
+                            } 
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.dataset.yAxisID === 'y') {
+                                        const actualValue = Math.round(context.parsed.y * 1000);
+                                        label += new Intl.NumberFormat('en-US').format(actualValue);
+                                    } else {
+                                        label += context.parsed.y.toFixed(1) + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            ticks: { 
+                                autoSkip: false, 
+                                maxRotation: 45, 
+                                minRotation: 45,
+                                font: { size: 12 }
+                            }, 
+                            grid: { display: false } 
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Labor Force (thousands)' },
+                            ticks: { callback: (value) => new Intl.NumberFormat('en-US').format(value * 1000) },
+                            grid: { color: 'rgba(148, 163, 184, 2.5)' }
+                        },
+                        y1: {
+                            position: 'right',
+                            min: 80,
+                            max: 100,
+                            title: { display: true, text: 'Employment Rate (%)' },
+                            ticks: { callback: (value) => value.toFixed(1) + '%' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        },
+        
+        drawExpandedUnemploymentChart() {
+            const ctx = document.getElementById('expandedChart');
+            if (!ctx) return;
+            
+            if (window.expandedChartInstance) {
+                window.expandedChartInstance.destroy();
+            }
+            
+            const originalChart = window.unempChart;
+            if (!originalChart) return;
+            
+            window.expandedChartInstance = new Chart(ctx.getContext('2d'), {
+                type: originalChart.config.type,
+                data: {
+                    labels: originalChart.data.labels,
+                    datasets: originalChart.data.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            display: true,
+                            position: 'top',
+                            labels: { font: { size: 14 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const actualValue = Math.round(context.parsed.y * 1000);
+                                    return 'Unemployed: ' + new Intl.NumberFormat('en-US').format(actualValue);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: { size: 12 }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Unemployed Persons (thousands)' },
+                            ticks: { callback: (value) => new Intl.NumberFormat('en-US').format(value * 1000) }
+                        }
+                    }
+                }
+            });
+        },
+        
         async fetchAvailableYears() {
             try {
                 const response = await fetch('/api/available-years');
@@ -898,7 +1146,6 @@ function chartFilters() {
                     this.laborAvailableYears = result.data;
                     this.unempAvailableYears = result.data;
                     
-                    // Set default to latest 2 years
                     if (result.data.length >= 2) {
                         this.laborEndYear = result.data[0].toString();
                         this.laborStartYear = result.data[1].toString();
@@ -940,11 +1187,15 @@ function chartFilters() {
         },
         
         updateLaborYearRange() {
-            this.laborYearRange = `${this.laborStartYear} ${this.laborStartQuarter} – ${this.laborEndYear} ${this.laborEndQuarter}`;
+            const startMonth = this.quarterToMonth(this.laborStartQuarter);
+            const endMonth = this.quarterToMonth(this.laborEndQuarter);
+            this.laborYearRange = `${this.laborStartYear} ${startMonth} - ${this.laborEndYear} ${endMonth}`;
         },
         
         updateUnempYearRange() {
-            this.unempYearRange = `${this.unempStartYear} ${this.unempStartQuarter} – ${this.unempEndYear} ${this.unempEndQuarter}`;
+            const startMonth = this.quarterToMonth(this.unempStartQuarter);
+            const endMonth = this.quarterToMonth(this.unempEndQuarter);
+            this.unempYearRange = `${this.unempStartYear} ${startMonth} - ${this.unempEndYear} ${endMonth}`;
         },
         
         async applyLaborFilter() {
@@ -1021,7 +1272,7 @@ function chartFilters() {
                 const data = await response.json();
                 
                 data.forEach(item => {
-                    labels.push(`${year} ${item.quarter}`);
+                    labels.push(`${year} ${this.quarterToMonth(item.quarter)}`);
                     laborData.push(parseFloat(item.labor_force_thousands) || 0);
                     empRateData.push(parseFloat(item.employment_rate) || 0);
                 });
@@ -1031,30 +1282,31 @@ function chartFilters() {
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            type: 'bar',
-                            label: 'Labor Force (thousands)',
-                            data: laborData,
-                            backgroundColor: 'rgba(106, 177, 248, 0.45)',
-                            borderWidth: 0,
-                            borderRadius: 4,
-                            barPercentage: 0.85,
-                            categoryPercentage: 0.75,
-                            yAxisID: 'y'
-                        },
-                        {
+                         {
                             type: 'line',
                             label: 'Employment Rate (%)',
                             data: empRateData,
                             borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.15)',
+                            backgroundColor: '#374151',
                             tension: 0.35,
                             borderWidth: 2.5,
                             pointRadius: 3,
                             pointHoverRadius: 5,
                             fill: false,
                             yAxisID: 'y1'
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Labor Force (thousands)',
+                            data: laborData,
+                            backgroundColor: '#1D4ED8',
+                            borderWidth: 0,
+                            borderRadius: 4,
+                            barPercentage: 0.85,
+                            categoryPercentage: 0.75,
+                            yAxisID: 'y'
                         }
+                       
                     ]
                 },
                 options: {
@@ -1090,7 +1342,7 @@ function chartFilters() {
                             beginAtZero: true,
                             title: { display: true, text: 'Labor Force (thousands)' },
                             ticks: { callback: (value) => new Intl.NumberFormat('en-US').format(value * 1000) },
-                            grid: { color: 'rgba(148, 163, 184, 0.15)' }
+                            grid: { color: 'rgba(148, 163, 184, 2.5)' }
                         },
                         y1: {
                             position: 'right',
@@ -1126,7 +1378,7 @@ function chartFilters() {
                     const itemQ = quarterToNum(item.quarter);
                     
                     if (year > startYear && year < endYear) {
-                        labels.push(`${year} ${item.quarter}`);
+                        labels.push(`${year} ${this.quarterToMonth(item.quarter)}`);
                         laborData.push(parseFloat(item.labor_force_thousands) || 0);
                         empRateData.push(parseFloat(item.employment_rate) || 0);
                         return;
@@ -1135,7 +1387,7 @@ function chartFilters() {
                     if (year === startYear && itemQ < startQ) return;
                     if (year === endYear && itemQ > endQ) return;
                     
-                    labels.push(`${year} ${item.quarter}`);
+                    labels.push(`${year} ${this.quarterToMonth(item.quarter)}`);
                     laborData.push(parseFloat(item.labor_force_thousands) || 0);
                     empRateData.push(parseFloat(item.employment_rate) || 0);
                 });
@@ -1164,7 +1416,7 @@ function chartFilters() {
                 const data = await response.json();
                 
                 data.forEach(item => {
-                    labels.push(`${year} ${item.quarter}`);
+                    labels.push(`${year} ${this.quarterToMonth(item.quarter)}`);
                     unempData.push(parseFloat(item.unemployed_thousands) || 0);
                 });
             }
@@ -1228,7 +1480,7 @@ function chartFilters() {
                     const itemQ = quarterToNum(item.quarter);
                     
                     if (year > startYear && year < endYear) {
-                        labels.push(`${year} ${item.quarter}`);
+                       labels.push(`${year} ${this.quarterToMonth(item.quarter)}`);
                         unempData.push(parseFloat(item.unemployed_thousands) || 0);
                         return;
                     }
@@ -1236,7 +1488,7 @@ function chartFilters() {
                     if (year === startYear && itemQ < startQ) return;
                     if (year === endYear && itemQ > endQ) return;
                     
-                    labels.push(`${year} ${item.quarter}`);
+                    labels.push(`${year} ${this.quarterToMonth(item.quarter)}`);
                     unempData.push(parseFloat(item.unemployed_thousands) || 0);
                 });
             }
@@ -1248,17 +1500,7 @@ function chartFilters() {
     }
 }
 
-// Helper function to add job title form
-function addJobTitle() {
-    const container = document.getElementById('jobTitlesContainer');
-    const newJobTitle = container.children[0].cloneNode(true);
-    
-    newJobTitle.querySelectorAll('input, textarea').forEach(input => {
-        input.value = '';
-    });
-    
-    container.appendChild(newJobTitle);
-}
+
 </script>
 
 <script>
