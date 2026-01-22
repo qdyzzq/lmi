@@ -136,28 +136,26 @@
                         </div>
                     </div>
 
-                    <!-- AI Box -->
-                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 relative">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 class="font-semibold text-blue-700 flex items-center gap-2">
-                                ✨ AI Executive Summary (Jul 2025)
-                            </h3>
-                            <button
-                                class="text-xs font-semibold text-blue-600 bg-white border px-3 py-1 rounded-lg hover:bg-blue-50">
-                                Regenerate Analysis
-                            </button>
-                        </div>
-                        <ul class="text-sm text-slate-700 space-y-1">
-                            <li>• <b>Employment Rate</b> is at <b>96.4%</b>, which is <span
-                                    class="text-green-600 font-semibold">up by 0%</span>.</li>
-                            <li>• The <b>Labor Force</b> size is currently <b>2,378k</b>.</li>
-                            <li class="text-xs text-slate-500 italic">
-                                Click "Regenerate Analysis" for AI-powered insights.
-                            </li>
-                        </ul>
-                    </div>
+                    <!-- Analysis for Kpi Cards -->
 
                     <div x-data="kpiPeriodFilter()">
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 relative">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-semibold text-blue-700 flex items-center gap-2">
+                                    ✨ Analysis for (<span x-text="selectedPeriodLabel"></span>)
+                                </h3>
+                            </div>
+                            <div class="text-sm text-slate-700 space-y-4 leading-relaxed">
+                                <p x-show="analysis.employment" x-text="analysis.employment"></p>
+                                <p x-show="analysis.underemployment" x-text="analysis.underemployment"></p>
+                                <p x-show="analysis.unemployment" x-text="analysis.unemployment"></p>
+                                <p x-show="analysis.lfpr" x-text="analysis.lfpr"></p>
+
+                                <p x-show="loading" class="text-xs text-slate-500 animate-pulse">
+                                    Calculating comparison with previous year data...
+                                </p>
+                            </div>
+                        </div>
                         <!-- KPI Header with Dropdown -->
                         <div class="flex items-center justify-between pb-5 border-b border-gray-200 mb-6">
                             <div>
@@ -234,10 +232,7 @@
                                 </div>
                                 <h2 class="text-3xl font-bold text-slate-800"
                                     x-text="kpiData.employment_rate?.rate || '0%'">96.4%</h2>
-                                <div class="mt-4 h-1.5 bg-slate-100 rounded-full">
-                                    <div class="h-full bg-blue-600 rounded-full transition-all duration-500"
-                                        :style="`width: ${kpiData.employment_rate?.raw_value || 0}%`"></div>
-                                </div>
+
                                 <p class="text-[10px] text-slate-400 mt-2 text-right">Target: >95.0%</p>
                             </div>
 
@@ -253,11 +248,7 @@
                                 </div>
                                 <h2 class="text-3xl font-bold text-slate-800"
                                     x-text="kpiData.unemployment_rate?.rate || '0%'">3.6%</h2>
-                                <div class="mt-4 h-1.5 bg-slate-100 rounded-full">
-                                    <div class="h-full bg-red-500 rounded-full transition-all duration-500"
-                                        :style="`width: ${Math.min(kpiData.unemployment_rate?.raw_value || 0, 100)}%`">
-                                    </div>
-                                </div>
+
                                 <p class="text-xs text-slate-500 mt-2"
                                     x-text="(kpiData.unemployment_rate?.count_formatted || '0') + ' Unemployed Persons'">
                                     86k Unemployed Persons</p>
@@ -275,11 +266,7 @@
                                 </div>
                                 <h2 class="text-3xl font-bold text-slate-800"
                                     x-text="kpiData.underemployment_rate?.rate || '0%'">10.5%</h2>
-                                <div class="mt-4 h-1.5 bg-slate-100 rounded-full">
-                                    <div class="h-full bg-orange-500 rounded-full transition-all duration-500"
-                                        :style="`width: ${Math.min(kpiData.underemployment_rate?.raw_value || 0, 100)}%`">
-                                    </div>
-                                </div>
+
                                 <p class="text-xs text-slate-500 mt-2"
                                     x-text="(kpiData.underemployment_rate?.count_formatted || '0') + ' Seeking More Hours'">
                                     241k Seeking More Hours</p>
@@ -297,10 +284,7 @@
                                 </div>
                                 <h2 class="text-3xl font-bold text-slate-800"
                                     x-text="kpiData.participation_rate?.rate || '0%'">57.7%</h2>
-                                <div class="mt-4 h-1.5 bg-slate-100 rounded-full">
-                                    <div class="h-full bg-green-500 rounded-full transition-all duration-500"
-                                        :style="`width: ${kpiData.participation_rate?.raw_value || 0}%`"></div>
-                                </div>
+
                                 <p class="text-[10px] text-slate-400 mt-2 text-right">Active Workforce vs Pop 15+</p>
                             </div>
                         </div>
@@ -428,8 +412,8 @@
                         <div class="bg-white border rounded-xl p-5 shadow-sm">
                             <div class="flex items-center justify-between mb-4">
                                 <div>
-                                    <h3 class="font-semibold text-slate-800">Unemployment Volume</h3>
-                                    <p class="text-xs text-slate-500">Headcount of unemployed persons</p>
+                                    <h3 class="font-semibold text-slate-800">Visualization of Compiled Data</h3>
+                                    <p class="text-xs text-slate-500">Key Employment Indicators</p>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <!-- Expand Button -->
@@ -551,7 +535,7 @@
 
                             <!-- Modal Content -->
                             <div class="flex min-h-screen items-center justify-center p-4">
-                                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden"
+                                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden"
                                     @click.stop>
 
                                     <!-- Modal Header -->
@@ -605,7 +589,8 @@
                                 <div>
                                     <h3 class="font-semibold text-slate-800 text-lg">Consolidated Regional Statistics
                                     </h3>
-                                    <p class="text-xs text-slate-500 mt-1">Detailed breakdown for selected period.</p>
+                                    <p class="text-xs text-slate-500 mt-1">Summary of Key Employment Indicators <i>In
+                                            thousands</i> </p>
                                 </div>
 
                                 <div class="flex items-center gap-3">
@@ -912,7 +897,6 @@
                     }
                 }
             </script>
-
             <script>
                 function kpiPeriodFilter() {
                     return {
@@ -920,141 +904,173 @@
                         selectedMonth: '',
                         selectedYear: '',
                         selectedPeriodLabel: 'Loading...',
-                        kpiData: {
-                            employment_rate: {
-                                rate: '96.4%',
-                                raw_value: 96.4
-                            },
-                            unemployment_rate: {
-                                rate: '3.6%',
-                                count_formatted: '86k'
-                            },
-                            underemployment_rate: {
-                                rate: '10.5%',
-                                count_formatted: '241k'
-                            },
-                            participation_rate: {
-                                rate: '57.7%',
-                                raw_value: 57.7
-                            }
-                        },
                         loading: false,
 
+                        // State for text-based analysis
+                        analysis: {
+                            employment: '',
+                            underemployment: '',
+                            unemployment: '',
+                            lfpr: ''
+                        },
+
+                        // KPI Data structure
+                        kpiData: {
+                            employment_rate: {
+                                rate: '0%',
+                                raw_value: 0
+                            },
+                            unemployment_rate: {
+                                rate: '0%',
+                                count_formatted: '0',
+                                raw_value: 0
+                            },
+                            underemployment_rate: {
+                                rate: '0%',
+                                count_formatted: '0',
+                                raw_value: 0
+                            },
+                            participation_rate: {
+                                rate: '0%',
+                                raw_value: 0
+                            }
+                        },
+
                         async init() {
-                            console.log('Initializing KPI Period Filter...');
+                            // 1. Get the list of available periods first to identify "Latest"
                             await this.fetchAvailableYears();
-                            await this.loadLatestKpiData();
+
+                            // 2. If we found a latest period, load that specific data immediately
+                            if (this.selectedYear && this.selectedMonth) {
+                                await this.applyPeriodFilter();
+                            } else {
+                                // Fallback: If periods fail, try the general latest endpoint
+                                await this.loadLatestKpiData();
+                                await this.generateAnalysis();
+                            }
                         },
 
                         async fetchAvailableYears() {
                             try {
                                 const response = await fetch('/api/kpi-cards/periods');
-
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status}`);
-                                }
-
                                 const result = await response.json();
 
-                                if (result.success && result.data) {
-                                    const years = [...new Set(result.data.map(p => p.year))].sort((a, b) => b - a);
-                                    this.availableYears = years;
+                                if (result.success && result.data && result.data.length > 0) {
+                                    // Extract unique years for the dropdown
+                                    this.availableYears = [...new Set(result.data.map(p => p.year))].sort((a, b) => b - a);
 
-                                    if (result.data.length > 0) {
-                                        const latest = result.data[0];
-                                        this.selectedMonth = latest.month.toString();
-                                        this.selectedYear = latest.year.toString();
-                                        this.updatePeriodLabel();
-                                    }
-                                } else {
-                                    console.error('Invalid response format:', result);
-                                    this.selectedPeriodLabel = 'No data available';
+                                    // Identify the latest available period (assuming sorted by DB)
+                                    const latest = result.data[0];
+                                    this.selectedMonth = latest.month.toString();
+                                    this.selectedYear = latest.year.toString();
+
+                                    this.updatePeriodLabel();
                                 }
-                            } catch (error) {
-                                console.error('Error fetching periods:', error);
-                                this.selectedPeriodLabel = 'Error loading periods';
+                            } catch (e) {
+                                console.error("Failed to load available periods:", e);
                             }
                         },
 
                         async loadLatestKpiData() {
                             this.loading = true;
-
                             try {
                                 const response = await fetch('/api/kpi-cards');
-                                console.log('KPI API Response:', response);
-
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status}`);
-                                }
-
                                 const result = await response.json();
-                                console.log('KPI Data:', result);
-
                                 if (result.success) {
                                     this.kpiData = result.data;
-                                } else {
-                                    console.error('Error:', result.message);
                                 }
-                            } catch (error) {
-                                console.error('Error loading KPI data:', error);
                             } finally {
                                 this.loading = false;
                             }
                         },
 
-                        async loadKpiData(year, month) {
+                        async applyPeriodFilter() {
+                            if (!this.selectedMonth || !this.selectedYear) return;
+
+                            this.updatePeriodLabel();
                             this.loading = true;
 
                             try {
-                                const url = `/api/kpi-cards?year=${year}&month=${month}`;
-                                console.log('Fetching KPI data from:', url);
-
-                                const response = await fetch(url);
-
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status}`);
-                                }
-
+                                const response = await fetch(
+                                    `/api/kpi-cards?year=${this.selectedYear}&month=${this.selectedMonth}`
+                                );
                                 const result = await response.json();
-                                console.log('KPI Data for selected period:', result);
 
                                 if (result.success) {
                                     this.kpiData = result.data;
-                                } else {
-                                    console.error('Error:', result.message);
-                                    alert('No data available for the selected period');
+                                    // Trigger analysis generation for the selected period vs previous year
+                                    await this.generateAnalysis();
                                 }
-                            } catch (error) {
-                                console.error('Error loading KPI data:', error);
-                                alert('Error loading data. Please try again.');
+                            } catch (e) {
+                                console.error("Error applying period filter:", e);
                             } finally {
                                 this.loading = false;
                             }
                         },
 
-                        applyPeriodFilter() {
-                            if (!this.selectedMonth || !this.selectedYear) {
-                                alert('Please select both month and year');
-                                return;
-                            }
+                        async generateAnalysis() {
+                            const currentYear = parseInt(this.selectedYear);
+                            const prevYear = currentYear - 1;
+                            const monthName = this.selectedPeriodLabel.split(' ')[0];
 
-                            console.log('Applying filter:', this.selectedMonth, this.selectedYear);
-                            this.updatePeriodLabel();
-                            this.loadKpiData(this.selectedYear, this.selectedMonth);
+                            try {
+                                // Fetch previous year data for comparison
+                                const response = await fetch(`/api/kpi-cards?year=${prevYear}&month=${this.selectedMonth}`);
+                                const result = await response.json();
+
+                                if (result.success) {
+                                    const cur = this.kpiData;
+                                    const prev = result.data;
+
+                                    // 1. Employment Rate Analysis
+                                    let empTrend = parseFloat(cur.employment_rate.raw_value) >= parseFloat(prev.employment_rate
+                                            .raw_value) ?
+                                        'higher' : 'lower';
+                                    this.analysis.employment =
+                                        `The employment rate in ${monthName} ${currentYear} was estimated at ${cur.employment_rate.rate}. This was ${empTrend} than the recorded rate in ${monthName} ${prevYear} of ${prev.employment_rate.rate}.`;
+
+                                    // 2. Underemployment Rate Analysis
+                                    let underTrend = parseFloat(cur.underemployment_rate.raw_value) >= parseFloat(prev
+                                            .underemployment_rate.raw_value) ?
+                                        'went up' : 'went down';
+                                    this.analysis.underemployment =
+                                        `The underemployment rate in ${monthName} ${currentYear} ${underTrend} to ${cur.underemployment_rate.rate}, from ${prev.underemployment_rate.rate} in ${monthName} ${prevYear}.`;
+
+                                    // 3. Unemployment Rate Analysis
+                                    let unempTrend = parseFloat(cur.unemployment_rate.raw_value) >= parseFloat(prev
+                                            .unemployment_rate.raw_value) ?
+                                        'rose' : 'dropped';
+                                    this.analysis.unemployment =
+                                        `The unemployment rate ${unempTrend} to ${cur.unemployment_rate.rate} in ${monthName} ${currentYear}, from its rate in ${monthName} ${prevYear} of ${prev.unemployment_rate.rate}.`;
+
+                                    // 4. LFPR Analysis
+                                    let lfprTrend = parseFloat(cur.participation_rate.raw_value) >= parseFloat(prev
+                                            .participation_rate.raw_value) ?
+                                        'higher' : 'lower';
+                                    this.analysis.lfpr =
+                                        `The country’s labor force participation rate (LFPR) in ${monthName} ${currentYear} was recorded at ${cur.participation_rate.rate}, ${lfprTrend} than the estimated LFPR in ${monthName} ${prevYear} at ${prev.participation_rate.rate}.`;
+
+                                } else {
+                                    this.analysis.employment = `Historical comparison data not found for ${prevYear}.`;
+                                    this.analysis.underemployment = this.analysis.unemployment = this.analysis.lfpr = "";
+                                }
+                            } catch (e) {
+                                this.analysis.employment = "Could not generate analysis due to a network error.";
+                            }
                         },
 
                         updatePeriodLabel() {
+                            const quarterMonths = {
+                                '1': 'January',
+                                '4': 'April',
+                                '7': 'July',
+                                '10': 'October'
+                            };
                             if (this.selectedMonth && this.selectedYear) {
-                                const quarterMonths = {
-                                    '1': 'January',
-                                    '4': 'April',
-                                    '7': 'July',
-                                    '10': 'October'
-                                };
                                 this.selectedPeriodLabel = `${quarterMonths[this.selectedMonth]} ${this.selectedYear}`;
                             }
                         }
-                    }
+                    };
                 }
             </script>
 
@@ -1178,6 +1194,7 @@
                                                 autoSkip: false,
                                                 maxRotation: 45,
                                                 minRotation: 45,
+                                                color: '#000000',
                                                 font: {
                                                     size: 12,
                                                     weight: 'bold'
@@ -1191,9 +1208,17 @@
                                             beginAtZero: true,
                                             title: {
                                                 display: true,
-                                                text: 'Labor Force (thousands)'
+                                                text: 'Labor Force (thousands)',
+                                                color: '#000000',
+                                                font: {
+                                                    weight: 'bold'
+                                                }
                                             },
                                             ticks: {
+                                                color: '#000000',
+                                                font: {
+                                                    weight: 'bold'
+                                                },
                                                 callback: (value) => new Intl.NumberFormat('en-US').format(value * 1000)
                                             },
                                             grid: {
@@ -1201,6 +1226,7 @@
                                             }
                                         },
                                         y1: {
+                                            display: false,
                                             position: 'right',
                                             min: 80,
                                             max: 100,
@@ -1763,153 +1789,7 @@
                 }
             </script>
 
-            <script>
-                function kpiPeriodFilter() {
-                    return {
-                        availableYears: [],
-                        selectedMonth: '',
-                        selectedYear: '',
-                        selectedPeriodLabel: 'Loading...',
-                        kpiData: {
-                            employment_rate: {
-                                rate: '96.4%',
-                                raw_value: 96.4
-                            },
-                            unemployment_rate: {
-                                rate: '3.6%',
-                                count_formatted: '86k'
-                            },
-                            underemployment_rate: {
-                                rate: '10.5%',
-                                count_formatted: '241k'
-                            },
-                            participation_rate: {
-                                rate: '57.7%',
-                                raw_value: 57.7
-                            }
-                        },
-                        loading: false,
 
-                        async init() {
-                            console.log('Initializing KPI Period Filter...');
-                            await this.fetchAvailableYears();
-                            await this.loadLatestKpiData();
-                        },
-
-                        async fetchAvailableYears() {
-                            try {
-                                // Use the existing periods endpoint which already works
-                                const response = await fetch('/api/kpi-cards/periods');
-
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status}`);
-                                }
-
-                                const result = await response.json();
-
-                                if (result.success && result.data) {
-                                    // Extract unique years from periods and sort descending
-                                    const years = [...new Set(result.data.map(p => p.year))].sort((a, b) => b - a);
-                                    this.availableYears = years;
-
-                                    // Set latest period as default
-                                    if (result.data.length > 0) {
-                                        const latest = result.data[0];
-                                        this.selectedMonth = latest.month.toString();
-                                        this.selectedYear = latest.year.toString();
-                                        this.updatePeriodLabel();
-                                    }
-                                } else {
-                                    console.error('Invalid response format:', result);
-                                    this.selectedPeriodLabel = 'No data available';
-                                }
-                            } catch (error) {
-                                console.error('Error fetching periods:', error);
-                                this.selectedPeriodLabel = 'Error loading periods';
-                            }
-                        },
-
-                        async loadLatestKpiData() {
-                            this.loading = true;
-
-                            try {
-                                const response = await fetch('/api/kpi-cards');
-                                console.log('KPI API Response:', response);
-
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status}`);
-                                }
-
-                                const result = await response.json();
-                                console.log('KPI Data:', result);
-
-                                if (result.success) {
-                                    this.kpiData = result.data;
-                                } else {
-                                    console.error('Error:', result.message);
-                                }
-                            } catch (error) {
-                                console.error('Error loading KPI data:', error);
-                            } finally {
-                                this.loading = false;
-                            }
-                        },
-
-                        async loadKpiData(year, month) {
-                            this.loading = true;
-
-                            try {
-                                const url = `/api/kpi-cards?year=${year}&month=${month}`;
-                                console.log('Fetching KPI data from:', url);
-
-                                const response = await fetch(url);
-
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status}`);
-                                }
-
-                                const result = await response.json();
-                                console.log('KPI Data for selected period:', result);
-
-                                if (result.success) {
-                                    this.kpiData = result.data;
-                                } else {
-                                    console.error('Error:', result.message);
-                                    alert('No data available for the selected period');
-                                }
-                            } catch (error) {
-                                console.error('Error loading KPI data:', error);
-                                alert('Error loading data. Please try again.');
-                            } finally {
-                                this.loading = false;
-                            }
-                        },
-
-                        applyPeriodFilter() {
-                            if (!this.selectedMonth || !this.selectedYear) {
-                                alert('Please select both month and year');
-                                return;
-                            }
-
-                            console.log('Applying filter:', this.selectedMonth, this.selectedYear);
-                            this.updatePeriodLabel();
-                            this.loadKpiData(this.selectedYear, this.selectedMonth);
-                        },
-
-                        updatePeriodLabel() {
-                            if (this.selectedMonth && this.selectedYear) {
-                                const quarterMonths = {
-                                    '1': 'January',
-                                    '4': 'April',
-                                    '7': 'July',
-                                    '10': 'October'
-                                };
-                                this.selectedPeriodLabel = `${quarterMonths[this.selectedMonth]} ${this.selectedYear}`;
-                            }
-                        }
-                    }
-                }
-            </script>
 </body>
 
 </html>
