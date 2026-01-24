@@ -13,89 +13,17 @@
     <title>LMI</title>
 </head>
 
-<body class="bg-slate-100 flex min-h-screen ">
-    <div x-data="{ activeView: 'overview', showReportModal: false, showLmiMatrix: false }" class="flex w-full h-full">
-
-
-
-
+<body class="bg-slate-100 flex min-h-screen">
+    <div x-data="{
+        activeView: 'overview',
+        showReportModal: false,
+        showLmiMatrix: false,
+        sidebarExpanded: true
+    }" class="flex w-full h-full">
         <!-- SIDEBAR -->
-        <aside
-            class="w-72 bg-[#1e3a8a] text-white 
-              flex flex-col shadow-xl z-10 overflow-y-auto 
-              scrollbar-thin scrollbar-thumb-white/20 
-              scrollbar-track-transparent 
-              hover:scrollbar-thumb-white/40">
 
-            <div class="p-6 border-b border-blue-800">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-blue-900 font-bold">
-                        LMI</div>
-                    <div class="leading-tight">
-                        <p class="font-bold text-sm">Labor Market Intelligence</p>
-                        <p class="text-[10px] opacity-70 italic">Bridging Education & Industry</p>
-                    </div>
-                </div>
-            </div>
+        @include('partials.sidebar')
 
-            <!-- NavMenu -->
-            <nav class="flex-1 px-4 py-6 space-y-1 ">
-                <p class="text-[10px] uppercase tracking-widest text-blue-300 font-bold mb-4 px-2">Main Menu</p>
-
-                <a href="#"
-                    class="flex items-center gap-3 p-3 bg-yellow-400 text-blue-900 font-bold rounded-lg transition shadow-md">
-                    <span>📊</span> Dashboard
-                </a>
-
-                <a href="{{ route('hei.graduate') }}"
-                    class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
-                    <span class="opacity-70 group-hover:opacity-100">🎓</span> HEI Graduate Data
-                </a>
-
-                <a href="{{ route('Skill.Gap.Demand') }}"
-                    class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
-                    <span class="opacity-70 group-hover:opacity-100">⚖️</span> Skills Gap & Demand
-                </a>
-
-                <a href="{{ route('Job.Market.Overview') }}"
-                    class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
-                    <span class="opacity-70 group-hover:opacity-100">📈</span> Job Market Overview
-                </a>
-
-                <a href="{{ route('Government.Data') }}"
-                    class="flex item-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
-                    <span class="opacity-70 group-hover:opacity-100">🗂️</span> Government Data
-                </a>
-
-                <a href="{{ route('Stake.Holder') }}"
-                    class="flex item-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
-                    <span class="opacity-70 group-hover:opacity-100">🤝</span> Stakeholder Engagement
-                </a>
-
-                <a href="{{ route('Report') }}"
-                    class="flex item-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
-                    <span class="opacity-70 group-hover:opacity-100">📑</span> Reports
-                </a>
-
-
-                <div class="pt-6">
-                    <p class="text-[10px] uppercase tracking-widest text-blue-300 font-bold mb-4 px-2">Account</p>
-                    <a href="{{ route('Setting') }}"
-                        class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
-                        <span class="opacity-70 group-hover:opacity-100">⚙️</span> Settings
-                    </a>
-                    <a href="#"
-                        class="flex items-center gap-3 p-3 text-red-300 hover:bg-red-900/30 rounded-lg transition group">
-                        <span class="opacity-70 group-hover:opacity-100">🚪</span> Logout
-                    </a>
-                </div>
-            </nav>
-
-
-            <div class="p-4 bg-blue-950 text-[10px] text-center opacity-50">
-                © 2026 DOLE Region XI
-            </div>
-        </aside>
 
 
         <!-- MAIN -->
@@ -116,40 +44,22 @@
                             </p>
                         </div>
 
-
-                        <div class="flex bg-white rounded-lg p-1 shadow-sm border">
-                            <a href="{{ route('home') }}"
-                                class="px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-md">
-                                Regional Statistics
-                            </a>
-                            <a href="{{ route('Job.Market.Demands') }}"
-                                class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-md">
-                                Job Market Demands
-                            </a>
-                            <a href="{{ route('Supply.Side') }}"
-                                class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-md">
-                                Supply Side
-                            </a>
-                            <button class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-md transition">
-                                Programs & Stories
-                            </button>
-                        </div>
                     </div>
 
                     <!-- Analysis for Kpi Cards -->
 
-                    <div x-data="kpiPeriodFilter()">
+                    <div x-data="kpiPeriodFilter()" class="mt-14">
                         <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 relative">
                             <div class="flex items-center justify-between mb-3">
                                 <h3 class="font-semibold text-blue-700 flex items-center gap-2">
-                                    ✨ Analysis for (<span x-text="selectedPeriodLabel"></span>)
+                                    ✨ Analysis for <span x-text="selectedPeriodLabel"></span>
                                 </h3>
                             </div>
                             <div class="text-sm text-slate-700 space-y-4 leading-relaxed">
-                                <p x-show="analysis.employment" x-text="analysis.employment"></p>
-                                <p x-show="analysis.underemployment" x-text="analysis.underemployment"></p>
-                                <p x-show="analysis.unemployment" x-text="analysis.unemployment"></p>
-                                <p x-show="analysis.lfpr" x-text="analysis.lfpr"></p>
+                                <p x-show="analysis.employment" x-html="analysis.employment"></p>
+                                <p x-show="analysis.underemployment" x-html="analysis.underemployment"></p>
+                                <p x-show="analysis.unemployment" x-html="analysis.unemployment"></p>
+                                <p x-show="analysis.lfpr" x-html="analysis.lfpr"></p>
 
                                 <p x-show="loading" class="text-xs text-slate-500 animate-pulse">
                                     Calculating comparison with previous year data...
@@ -157,7 +67,7 @@
                             </div>
                         </div>
                         <!-- KPI Header with Dropdown -->
-                        <div class="flex items-center justify-between pb-5 border-b border-gray-200 mb-6">
+                        <div class="flex items-center justify-between pb-6 pt-6 border-b border-gray-200 mb-8 mt-4">
                             <div>
                                 <h2 class="font-semibold text-slate-700">Key Performance Indicators</h2>
                                 <p class="text-xs text-slate-500">
@@ -233,7 +143,9 @@
                                 <h2 class="text-3xl font-bold text-slate-800"
                                     x-text="kpiData.employment_rate?.rate || '0%'">96.4%</h2>
 
-                                <p class="text-[10px] text-slate-400 mt-2 text-right">Target: >95.0%</p>
+                                <p class="text-xs text-slate-500 mt-2"
+                                    x-text="(kpiData.unemployment_rate?.count_formatted || '0') + ' Estimate number of people'">
+                                </p>
                             </div>
 
                             <!-- Unemployment Card -->
@@ -250,14 +162,14 @@
                                     x-text="kpiData.unemployment_rate?.rate || '0%'">3.6%</h2>
 
                                 <p class="text-xs text-slate-500 mt-2"
-                                    x-text="(kpiData.unemployment_rate?.count_formatted || '0') + ' Unemployed Persons'">
-                                    86k Unemployed Persons</p>
+                                    x-text="(kpiData.unemployment_rate?.count_formatted || '0') + ' Estimate number of people'">
+                                </p>
                             </div>
 
                             <!-- Underemployment Card -->
                             <div class="bg-white border rounded-xl p-5 shadow-sm border-l-4 border-orange-500">
                                 <div class="flex justify-between items-center mb-2">
-                                    <p class="text-xs text-slate-500 font-semibold uppercase">Underemp. Rate</p>
+                                    <p class="text-xs text-slate-500 font-semibold uppercase">Underemployment Rate</p>
                                     <svg class="w-6 h-6 text-orange-200" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -268,8 +180,8 @@
                                     x-text="kpiData.underemployment_rate?.rate || '0%'">10.5%</h2>
 
                                 <p class="text-xs text-slate-500 mt-2"
-                                    x-text="(kpiData.underemployment_rate?.count_formatted || '0') + ' Seeking More Hours'">
-                                    241k Seeking More Hours</p>
+                                    x-text="(kpiData.underemployment_rate?.count_formatted || '0') + ' Estimate number of people seeking more hours of work'">
+                                </p>
                             </div>
 
                             <!-- Participation Card -->
@@ -285,7 +197,9 @@
                                 <h2 class="text-3xl font-bold text-slate-800"
                                     x-text="kpiData.participation_rate?.rate || '0%'">57.7%</h2>
 
-                                <p class="text-[10px] text-slate-400 mt-2 text-right">Active Workforce vs Pop 15+</p>
+                                <p class="text-xs text-slate-500 mt-2"
+                                    x-text="(kpiData.participation_rate?.count_formatted || '0') + ' Estimate number of people'">
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -778,6 +692,7 @@
                         availableYears: [],
                         loading: false,
 
+
                         get displayRange() {
                             return `${this.startYear} — ${this.endYear}`;
                         },
@@ -836,7 +751,7 @@
                             this.filteredData.sort((a, b) => {
                                 const yearA = parseInt(a.period.match(/\d{4}/)[0]);
                                 const yearB = parseInt(b.period.match(/\d{4}/)[0]);
-                                return yearA - yearB;
+                                return yearB - yearA;
                             });
 
                             this.loading = false;
@@ -918,6 +833,7 @@
                         kpiData: {
                             employment_rate: {
                                 rate: '0%',
+                                count_formatted: '0',
                                 raw_value: 0
                             },
                             unemployment_rate: {
@@ -932,6 +848,7 @@
                             },
                             participation_rate: {
                                 rate: '0%',
+                                count_formatted: '0',
                                 raw_value: 0
                             }
                         },
@@ -1022,33 +939,41 @@
                                     const cur = this.kpiData;
                                     const prev = result.data;
 
-                                    // 1. Employment Rate Analysis
-                                    let empTrend = parseFloat(cur.employment_rate.raw_value) >= parseFloat(prev.employment_rate
-                                            .raw_value) ?
-                                        'higher' : 'lower';
+                                    const b = (val) => `<span class="font-bold text-slate-900">${val}</span>`;
+
+                                    const trend = (text, isHigher, isGood) => {
+                                        const color = isGood ? 'text-green-600' : 'text-red-600';
+                                        const arrow = isHigher ? '↑' : '↓';
+                                        return `<span class="font-bold ${color}">${text} ${arrow}</span>`;
+                                    };
+
+                                    // 1. Employment Rate Analysis (Higher is Good)
+                                    let empHigher = parseFloat(cur.employment_rate.raw_value) >= parseFloat(prev.employment_rate
+                                        .raw_value);
+                                    let empWord = empHigher ? 'higher' : 'lower';
                                     this.analysis.employment =
-                                        `The employment rate in ${monthName} ${currentYear} was estimated at ${cur.employment_rate.rate}. This was ${empTrend} than the recorded rate in ${monthName} ${prevYear} of ${prev.employment_rate.rate}.`;
+                                        `The employment rate in ${b(monthName + ' ' + currentYear)} was estimated at ${b(cur.employment_rate.rate)}. This was ${trend(empWord, empHigher, empHigher)} than the recorded rate in ${b(monthName + ' ' + prevYear)} of ${b(prev.employment_rate.rate)}.`;
 
-                                    // 2. Underemployment Rate Analysis
-                                    let underTrend = parseFloat(cur.underemployment_rate.raw_value) >= parseFloat(prev
-                                            .underemployment_rate.raw_value) ?
-                                        'went up' : 'went down';
+                                    // 2. Underemployment Rate Analysis (Going DOWN is Good)
+                                    let underHigher = parseFloat(cur.underemployment_rate.raw_value) >= parseFloat(prev
+                                        .underemployment_rate.raw_value);
+                                    let underWord = underHigher ? 'went up' : 'went down';
                                     this.analysis.underemployment =
-                                        `The underemployment rate in ${monthName} ${currentYear} ${underTrend} to ${cur.underemployment_rate.rate}, from ${prev.underemployment_rate.rate} in ${monthName} ${prevYear}.`;
+                                        `The underemployment rate in ${b(monthName + ' ' + currentYear)} ${trend(underWord, underHigher, !underHigher)} to ${b(cur.underemployment_rate.rate)}, from ${b(prev.underemployment_rate.rate)} in ${b(monthName + ' ' + prevYear)}.`;
 
-                                    // 3. Unemployment Rate Analysis
-                                    let unempTrend = parseFloat(cur.unemployment_rate.raw_value) >= parseFloat(prev
-                                            .unemployment_rate.raw_value) ?
-                                        'rose' : 'dropped';
+                                    // 3. Unemployment Rate Analysis (Going DOWN is Good)
+                                    let unempHigher = parseFloat(cur.unemployment_rate.raw_value) >= parseFloat(prev
+                                        .unemployment_rate.raw_value);
+                                    let unempWord = unempHigher ? 'rose' : 'dropped';
                                     this.analysis.unemployment =
-                                        `The unemployment rate ${unempTrend} to ${cur.unemployment_rate.rate} in ${monthName} ${currentYear}, from its rate in ${monthName} ${prevYear} of ${prev.unemployment_rate.rate}.`;
+                                        `The unemployment rate ${trend(unempWord, unempHigher, !unempHigher)} to ${b(cur.unemployment_rate.rate)} in ${b(monthName + ' ' + currentYear)}, from its rate in ${b(monthName + ' ' + prevYear)} of ${b(prev.unemployment_rate.rate)}.`;
 
-                                    // 4. LFPR Analysis
-                                    let lfprTrend = parseFloat(cur.participation_rate.raw_value) >= parseFloat(prev
-                                            .participation_rate.raw_value) ?
-                                        'higher' : 'lower';
+                                    // 4. LFPR Analysis (Higher is Good)
+                                    let lfprHigher = parseFloat(cur.participation_rate.raw_value) >= parseFloat(prev
+                                        .participation_rate.raw_value);
+                                    let lfprWord = lfprHigher ? 'higher' : 'lower';
                                     this.analysis.lfpr =
-                                        `The country’s labor force participation rate (LFPR) in ${monthName} ${currentYear} was recorded at ${cur.participation_rate.rate}, ${lfprTrend} than the estimated LFPR in ${monthName} ${prevYear} at ${prev.participation_rate.rate}.`;
+                                        `The country’s labor force participation rate (LFPR) in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.participation_rate.rate)}, ${trend(lfprWord, lfprHigher, lfprHigher)} than the estimated LFPR in ${b(monthName + ' ' + prevYear)} at ${b(prev.participation_rate.rate)}.`;
 
                                 } else {
                                     this.analysis.employment = `Historical comparison data not found for ${prevYear}.`;
@@ -1565,7 +1490,6 @@
                                                 color: '#000000',
                                                 font: {
                                                     weight: 'bold'
-
                                                 },
                                                 callback: (value) => new Intl.NumberFormat('en-US').format(value * 1000)
                                             },
