@@ -96,7 +96,7 @@ class KpiController extends Controller
                             'raw_value' => (float)$kpiData->employment_rate,
                             'count' => number_format($kpiData->employed_persons),
                             'label' => 'Employed Persons',
-                            'target' => '>95.0%'
+                            'count_formatted' => $this->formatLargeNumber($kpiData->employed_persons)
                         ],
                         'unemployment_rate' => [
                             'rate' => number_format($kpiData->unemployment_rate, 1) . '%',

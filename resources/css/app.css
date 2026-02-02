@@ -6,11 +6,101 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
+
 @theme {
+    /* Original Font */
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    
+    /* DOLE Fonts */
+    --font-dole-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-dole-display: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+
+    /* DOLE Brand Colors */
+    --color-dole-blue: #0038A8;
+    --color-dole-red: #CE1126;
+    --color-dole-yellow: #FCD116;
+    --color-dole-dark: #001F3F;
+
+    /* DOLE Custom Animations */
+    --animate-fade-in-up: fade-in-up 0.8s ease-out;
+    --animate-slide-in-left: slide-in-left 0.8s ease-out;
+    --animate-pulse-glow: pulse-glow 8s ease-in-out infinite;
+    --animate-pulse-glow-reverse: pulse-glow 10s ease-in-out infinite reverse;
 }
 
+/* Original details styling */
 details:not([open]) > .details-content {
     display: none;
+}
+
+/* DOLE Custom Animations Keyframes */
+@keyframes fade-in-up {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-in-left {
+    0% {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.6;
+    }
+}
+
+/* DOLE Custom Utility Classes */
+.animate-pulse-glow {
+    animation: pulse-glow 8s ease-in-out infinite;
+}
+
+.animate-pulse-glow-reverse {
+    animation: pulse-glow 10s ease-in-out infinite reverse;
+}
+
+/* Gradient Shimmer Effect */
+.gradient-shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.gradient-shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.gradient-shimmer:hover::before {
+    left: 100%;
+}
+
+/* Star Shape Utility */
+.star-shape {
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
 }

@@ -3,116 +3,339 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\RegionalLaborMarketStatistic;
+use App\Models\PendingLaborMarketData;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 
 class LaborMarketController extends Controller
 {
-    /**
-     * Store labor market data
-     * Route: POST /api/labor-market/store
-     */
-    public function store(Request $request)
+    public function index()
     {
-        // Validate the incoming data
-        $validator = Validator::make($request->all(), [
-            'year' => 'required|integer|min:2000|max:2100',
-            'month' => 'required|integer|in:1,4,7,10',
-            'household_population' => 'required|integer|min:0',
-            'labor_force' => 'nullable|integer|min:0',
-            'employed' => 'nullable|integer|min:0',
-            'underemployed' => 'nullable|integer|min:0',
-            'unemployed' => 'nullable|integer|min:0',
-            'labor_force_participation_rate' => 'required|numeric|min:0|max:100',
-            'employment_rate' => 'required|numeric|min:0|max:100',
-            'underemployment_rate' => 'required|numeric|min:0|max:100',
-            'unemployment_rate' => 'required|numeric|min:0|max:100',
-        ]);
+        // Add pagination here - 10 items per page
+        $pendingRecords = PendingLaborMarketData::with('submittedBy')
+            ->orderBy('created_at', 'desc')
+            ->paginate(1); // Changed from get() to paginate()
+        
+        return view('statistician.statisticianReview', compact('pendingRecords'));
+    }
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
+    public function check(Request $request)
+    {
         try {
-            // Prepare data for insertion/update
-            $data = [
-                'household_population' => $request->household_population ? (int)$request->household_population : null,
-                'labor_force' => $request->labor_force ? (int)$request->labor_force : null,
-                'employed' => $request->employed ? (int)$request->employed : null,
-                'underemployed' => $request->underemployed ? (int)$request->underemployed : null,
-                'unemployed' => $request->unemployed ? (int)$request->unemployed : null,
-                'labor_force_participation_rate' => $request->labor_force_participation_rate,
-                'employment_rate' => $request->employment_rate,
-                'underemployment_rate' => $request->underemployment_rate,
-                'unemployment_rate' => $request->unemployment_rate,
-                'updated_at' => now()
-            ];
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'month' => 'required|integer'
+            ]);
 
-            // Check if record already exists for this year and month
-            $exists = DB::table('regional_labor_market_statistics')
-                ->where('year', $request->year)
-                ->where('month', $request->month)
+            // Check if data already exists in PENDING table
+            $existsInPending = PendingLaborMarketData::where('year', $validated['year'])
+                ->where('month', $validated['month'])
                 ->exists();
 
-            if ($exists) {
-                // Update existing record
-                DB::table('regional_labor_market_statistics')
-                    ->where('year', $request->year)
-                    ->where('month', $request->month)
-                    ->update($data);
-
+            if ($existsInPending) {
                 return response()->json([
-                    'success' => true,
-                    'message' => "Labor market data for {$this->getMonthName($request->month)} {$request->year} updated successfully!",
-                    'data' => [
-                        'year' => $request->year,
-                        'month' => $request->month,
-                        'action' => 'updated'
-                    ]
-                ]);
-            } else {
-                // Insert new record
-                $data['year'] = $request->year;
-                $data['month'] = $request->month;
-                $data['created_at'] = now();
-
-                DB::table('regional_labor_market_statistics')->insert($data);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => "Data for {$this->getMonthName($request->month)} {$request->year} saved successfully!",
-                    'data' => [
-                        'year' => $request->year,
-                        'month' => $request->month,
-                        'action' => 'created'
-                    ]
+                    'exists' => true,
+                    'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' is already pending review.'
                 ]);
             }
+
+            // Check if data already exists in FINAL database
+            $existsInFinal = RegionalLaborMarketStatistic::where('year', $validated['year'])
+                ->where('month', $validated['month'])
+                ->exists();
+
+            if ($existsInFinal) {
+                return response()->json([
+                    'exists' => true,
+                    'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' already exists in the database.'
+                ]);
+            }
+
+            return response()->json([
+                'exists' => false
+            ]);
+            
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'Failed to save data',
-                'error' => $e->getMessage()
+                'exists' => true,
+                'message' => 'Error checking data: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Helper function to get month name
-     */
-    private function getMonthName($month)
+    public function submitPending(Request $request)
     {
-        $months = [
-            1 => 'January',
-            4 => 'April',
-            7 => 'July',
-            10 => 'October'
-        ];
-        
-        return $months[$month] ?? 'Unknown';
+        try {
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'month' => 'required|integer',
+                'household_population' => 'nullable|numeric',
+                'labor_force' => 'nullable|numeric',
+                'employed' => 'nullable|numeric',
+                'underemployed' => 'nullable|numeric',
+                'unemployed' => 'nullable|numeric',
+                'labor_force_participation_rate' => 'nullable|numeric',
+                'employment_rate' => 'nullable|numeric',
+                'underemployment_rate' => 'nullable|numeric',
+                'unemployment_rate' => 'nullable|numeric'
+            ]);
+
+            // Double-check for duplicates
+            $existsInPending = PendingLaborMarketData::where('year', $validated['year'])
+                ->where('month', $validated['month'])
+                ->exists();
+
+            if ($existsInPending) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' is already pending review.'
+                ], 422);
+            }
+
+            $existsInFinal = RegionalLaborMarketStatistic::where('year', $validated['year'])
+                ->where('month', $validated['month'])
+                ->exists();
+
+            if ($existsInFinal) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' already exists in the database.'
+                ], 422);
+            }
+
+            // Add the authenticated user's ID
+            $validated['submitted_by'] = auth()->id();
+
+            // Create pending record
+            $pendingData = PendingLaborMarketData::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data submitted successfully to pending queue!',
+                'data' => $pendingData
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error submitting data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Method for statistician to check before posting (matches route name)
+    public function checkPost(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'month' => 'required|integer'
+            ]);
+
+            // Only check FINAL database (not pending)
+            $existsInFinal = RegionalLaborMarketStatistic::where('year', $validated['year'])
+                ->where('month', $validated['month'])
+                ->exists();
+
+            if ($existsInFinal) {
+                return response()->json([
+                    'exists' => true,
+                    'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' already exists in the final database.'
+                ]);
+            }
+
+            return response()->json([
+                'exists' => false
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'exists' => true,
+                'message' => 'Error checking data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Method for statistician to post verified data (matches route name)
+    public function post(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'pending_id' => 'required|exists:pending_labor_market_data,id',
+                'year' => 'required|integer',
+                'month' => 'required|integer',
+                'household_population' => 'nullable|numeric',
+                'labor_force' => 'nullable|numeric',
+                'employed' => 'nullable|numeric',
+                'underemployed' => 'nullable|numeric',
+                'unemployed' => 'nullable|numeric',
+                'labor_force_participation_rate' => 'nullable|numeric',
+                'employment_rate' => 'nullable|numeric',
+                'underemployment_rate' => 'nullable|numeric',
+                'unemployment_rate' => 'nullable|numeric'
+            ]);
+
+            // Start transaction
+            DB::beginTransaction();
+
+            try {
+                // Double-check for duplicates in final database
+                $existsInFinal = RegionalLaborMarketStatistic::where('year', $validated['year'])
+                    ->where('month', $validated['month'])
+                    ->exists();
+
+                if ($existsInFinal) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' already exists in the final database.'
+                    ], 422);
+                }
+
+                // Create record in final database
+                $finalData = RegionalLaborMarketStatistic::create([
+                    'year' => $validated['year'],
+                    'month' => $validated['month'],
+                    'household_population' => $validated['household_population'],
+                    'labor_force' => $validated['labor_force'],
+                    'employed' => $validated['employed'],
+                    'underemployed' => $validated['underemployed'],
+                    'unemployed' => $validated['unemployed'],
+                    'labor_force_participation_rate' => $validated['labor_force_participation_rate'],
+                    'employment_rate' => $validated['employment_rate'],
+                    'underemployment_rate' => $validated['underemployment_rate'],
+                    'unemployment_rate' => $validated['unemployment_rate'],
+                ]);
+
+                // Delete from pending table
+                PendingLaborMarketData::where('id', $validated['pending_id'])->delete();
+
+                // Commit transaction
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data successfully posted to the database!',
+                    'data' => $finalData
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error posting data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // New method: Check if data exists in FINAL database before posting
+    public function checkBeforePost(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'year' => 'required|integer',
+                'month' => 'required|integer'
+            ]);
+
+            // Only check FINAL database (not pending)
+            $existsInFinal = RegionalLaborMarketStatistic::where('year', $validated['year'])
+                ->where('month', $validated['month'])
+                ->exists();
+
+            if ($existsInFinal) {
+                return response()->json([
+                    'exists' => true,
+                    'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' already exists in the final database.'
+                ]);
+            }
+
+            return response()->json([
+                'exists' => false
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'exists' => true,
+                'message' => 'Error checking data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // New method: Post verified data to final database
+    public function postVerifiedData(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'pending_id' => 'required|exists:pending_labor_market_data,id',
+                'year' => 'required|integer',
+                'month' => 'required|integer',
+                'household_population' => 'nullable|numeric',
+                'labor_force' => 'nullable|numeric',
+                'employed' => 'nullable|numeric',
+                'underemployed' => 'nullable|numeric',
+                'unemployed' => 'nullable|numeric',
+                'labor_force_participation_rate' => 'nullable|numeric',
+                'employment_rate' => 'nullable|numeric',
+                'underemployment_rate' => 'nullable|numeric',
+                'unemployment_rate' => 'nullable|numeric'
+            ]);
+
+            // Start transaction
+            DB::beginTransaction();
+
+            try {
+                // Double-check for duplicates in final database
+                $existsInFinal = RegionalLaborMarketStatistic::where('year', $validated['year'])
+                    ->where('month', $validated['month'])
+                    ->exists();
+
+                if ($existsInFinal) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' already exists in the final database.'
+                    ], 422);
+                }
+
+                // Create record in final database
+                $finalData = RegionalLaborMarketStatistic::create([
+                    'year' => $validated['year'],
+                    'month' => $validated['month'],
+                    'household_population' => $validated['household_population'],
+                    'labor_force' => $validated['labor_force'],
+                    'employed' => $validated['employed'],
+                    'underemployed' => $validated['underemployed'],
+                    'unemployed' => $validated['unemployed'],
+                    'labor_force_participation_rate' => $validated['labor_force_participation_rate'],
+                    'employment_rate' => $validated['employment_rate'],
+                    'underemployment_rate' => $validated['underemployment_rate'],
+                    'unemployment_rate' => $validated['unemployment_rate'],
+                ]);
+
+                // Delete from pending table
+                PendingLaborMarketData::where('id', $validated['pending_id'])->delete();
+
+                // Commit transaction
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data successfully posted to the database!',
+                    'data' => $finalData
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error posting data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
