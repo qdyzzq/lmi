@@ -1,4 +1,3 @@
-<!DOCTYPE html
 <html lang="en">
 
 <head>
@@ -16,18 +15,19 @@
 
 <body class="bg-slate-100 flex min-h-screen">
     <div x-data="{
-        activeView: 'job-market-view',
+        activeView: 'overview',
         showReportModal: false,
         showLmiMatrix: false,
         sidebarExpanded: true
     }" class="flex w-full h-full">
-        
-        <!-- SIDEBAR - Just include it directly, no wrapper -->
+        <!-- SIDEBAR -->
+
         @include('partials.sidebar')
-        
-        <!-- MAIN CONTENT - Same as your home page -->
+        <!-- MAIN -->
         <div class="flex-1 flex flex-col overflow-y-auto">
-            <div x-show="activeView === 'job-market-view'" x-transition>
+
+
+            <div x-show="activeView === 'overview'" x-transition>
                 <div class="space-y-6 m-5">
 
                     <div class="flex items-center justify-between">
@@ -143,6 +143,7 @@
                                 <p class="text-xs text-slate-500 mt-2"
                                     x-text="(kpiData.employment_rate?.count || '0') + ' Estimate number of people'">
                                 </p>
+
                             </div>
 
                             <!-- Unemployment Card -->
@@ -161,6 +162,7 @@
                                 <p class="text-xs text-slate-500 mt-2"
                                     x-text="(kpiData.unemployment_rate?.count_formatted || '0') + ' Estimate number of people'">
                                 </p>
+
                             </div>
 
                             <!-- Underemployment Card -->
@@ -197,6 +199,7 @@
                                 <p class="text-xs text-slate-500 mt-2"
                                     x-text="(kpiData.participation_rate?.active_workforce || '0') + ' Estimate number of people'">
                                 </p>
+
                             </div>
                         </div>
                     </div>
@@ -818,7 +821,6 @@
                         selectedPeriodLabel: 'Loading...',
                         loading: false,
 
-                        // State for text-based analysis
                         analysis: {
                             employment: '',
                             underemployment: '',
@@ -851,14 +853,11 @@
                         },
 
                         async init() {
-                            // 1. Get the list of available periods first to identify "Latest"
                             await this.fetchAvailableYears();
 
-                            // 2. If we found a latest period, load that specific data immediately
                             if (this.selectedYear && this.selectedMonth) {
                                 await this.applyPeriodFilter();
                             } else {
-                                // Fallback: If periods fail, try the general latest endpoint
                                 await this.loadLatestKpiData();
                                 await this.generateAnalysis();
                             }
@@ -870,10 +869,9 @@
                                 const result = await response.json();
 
                                 if (result.success && result.data && result.data.length > 0) {
-                                    // Extract unique years for the dropdown
                                     this.availableYears = [...new Set(result.data.map(p => p.year))].sort((a, b) => b - a);
 
-                                    // Identify the latest available period (assuming sorted by DB)
+                                    // Identify the latest available period
                                     const latest = result.data[0];
                                     this.selectedMonth = latest.month.toString();
                                     this.selectedYear = latest.year.toString();
@@ -912,7 +910,6 @@
 
                                 if (result.success) {
                                     this.kpiData = result.data;
-                                    // Trigger analysis generation for the selected period vs previous year
                                     await this.generateAnalysis();
                                 }
                             } catch (e) {
@@ -1088,7 +1085,7 @@
                                                 usePointStyle: true,
                                                 boxWidth: 10,
                                                 font: {
-                                                    size: 14
+                                                    size: 14,
                                                 }
                                             }
                                         },
@@ -1193,19 +1190,25 @@
                                             display: true,
                                             position: 'top',
                                             labels: {
+                                                color: '#000000',
                                                 font: {
-                                                    size: 14
+                                                    size: 14,
+                                                    weight: 'bold'
                                                 }
                                             }
                                         },
-                                        tooltip: {
-                                            callbacks: {
-                                                label: (context) => {
-                                                    const actualValue = Math.round(context.parsed.y * 1000);
-                                                    return 'Unemployed: ' + new Intl.NumberFormat('en-US').format(
-                                                        actualValue);
-                                                }
-                                            }
+                                        datalabels: {
+                                            display: true,
+                                            color: '#000000',
+                                            align: 'top',
+                                            anchor: 'end',
+                                            offset: 4,
+                                            font: {
+                                                family: 'Arial',
+                                                size: 11,
+                                                weight: 'bold'
+                                            },
+                                            formatter: (value) => value.toFixed(1) + '%'
                                         }
                                     },
                                     scales: {
@@ -1214,21 +1217,33 @@
                                                 autoSkip: false,
                                                 maxRotation: 45,
                                                 minRotation: 45,
+                                                color: '#000000',
                                                 font: {
                                                     size: 12,
                                                     weight: 'bold'
-
                                                 },
+                                            },
+                                            grid: {
+                                                display: false
                                             }
                                         },
                                         y: {
                                             beginAtZero: true,
+                                            ticks: {
+                                                stepSize: 20,
+                                                color: '#000000',
+                                                font: {
+                                                    weight: 'bold'
+                                                }
+                                            },
                                             title: {
                                                 display: true,
-                                                text: 'Unemployed Persons (thousands)'
-                                            },
-                                            ticks: {
-                                                callback: (value) => new Intl.NumberFormat('en-US').format(value * 1000)
+                                                text: 'Rate (%)',
+                                                color: '#000000',
+                                                font: {
+                                                    size: 13,
+                                                    weight: 'bold'
+                                                }
                                             }
                                         }
                                     }
@@ -1400,7 +1415,7 @@
 
                                             datalabels: {
                                                 display: true,
-                                                anchor: 'center', // 🔥 key change
+                                                anchor: 'center',
                                                 align: 'top',
                                                 offset: 6,
                                                 color: '#000000',
@@ -1564,9 +1579,7 @@
 
                                 const data = await response.json();
 
-                                // Inside initializeUnempChart loop:
                                 data.forEach(item => {
-                                    // Note: 'quarter' is used because the view groups by Q1-Q4
                                     labels.push(`${year} ${this.quarterToMonth(item.quarter)}`);
                                     empRateData.push(parseFloat(item.employment_rate) || 0);
                                     lfprData.push(parseFloat(item.lfpr) || 0);
@@ -1580,7 +1593,7 @@
                                 data: {
                                     labels: labels,
                                     datasets: [{
-                                            label: 'EMP RATE',
+                                            label: 'EMPLOYMENT RATE',
                                             data: empRateData,
                                             borderColor: '#c0504d',
                                             backgroundColor: '#c0504d',
@@ -1593,7 +1606,7 @@
 
                                         },
                                         {
-                                            label: 'LFPR',
+                                            label: 'LABOR FORCE PARTICIPATION RATE',
                                             data: lfprData,
                                             borderColor: '#4f81bd',
                                             backgroundColor: '#4f81bd',
@@ -1605,7 +1618,7 @@
                                             }
                                         },
                                         {
-                                            label: 'UNDEREMP RATE',
+                                            label: 'UNDEREMPLOYMENT RATE',
                                             data: underempData,
                                             borderColor: '#006400',
                                             backgroundColor: '#006400',
@@ -1617,7 +1630,7 @@
                                             }
                                         },
                                         {
-                                            label: 'UNEMP RATE',
+                                            label: 'UNEMPLOYMENT RATE',
                                             data: unempRateData,
                                             borderColor: '#00b0f0',
                                             backgroundColor: '#00b0f0',
@@ -1637,6 +1650,14 @@
                                         legend: {
                                             display: true,
                                             position: 'bottom',
+                                            labels: {
+                                                color: '#000000',
+                                                font: {
+                                                    family: 'Arial',
+                                                    size: 11,
+                                                    weight: 'bold'
+                                                }
+                                            }
                                         },
                                         datalabels: {
                                             display: true,
@@ -1647,24 +1668,43 @@
                                                 weight: 'bold'
                                             },
                                             formatter: (value) => value.toFixed(1)
-
                                         },
-                                        scales: {
-                                            y: {
-                                                beginAtZero: true,
-                                                max: 110,
-                                                title: {
-                                                    display: true,
-                                                    font: {
-                                                        weight: 'bold'
-                                                    },
-                                                    text: 'Rate (%)'
+                                    },
+                                    scales: {
+                                        x: {
+                                            ticks: {
+                                                color: '#000',
+                                                font: {
+                                                    family: 'Arial',
+                                                    size: 12,
+                                                    weight: 'bold'
+                                                }
+                                            }
+                                        },
+                                        y: {
+                                            beginAtZero: true,
+                                            //max: 100,
+                                            ticks: {
+                                                stepSize: 20,
+                                                color: '#000',
+                                                font: {
+                                                    family: 'Arial',
+                                                    size: 12,
+                                                    weight: 'bold'
+                                                }
+                                            },
+                                            title: {
+                                                display: true,
+                                                text: 'Rate (%)',
+                                                color: '#000',
+                                                font: {
+                                                    family: 'Arial',
+                                                    size: 13,
+                                                    weight: 'bold'
                                                 }
                                             }
                                         }
-
-                                    },
-
+                                    }
                                 }
                             });
                         },
