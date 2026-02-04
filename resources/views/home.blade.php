@@ -1069,7 +1069,27 @@
                             window.expandedChartInstance = new Chart(ctx.getContext('2d'), {
                                 data: {
                                     labels: originalChart.data.labels,
-                                    datasets: originalChart.data.datasets
+                                    datasets: originalChart.data.datasets.map((dataset) => {
+                                        return {
+                                            ...dataset,
+                                            datalabels: {
+                                                display: true,
+                                                anchor: 'center',
+
+                                                align: dataset.type === 'line' ? 'top' : 'center',
+                                                color: '#000000',
+                                                font: {
+                                                    weight: 'bold',
+                                                    size: 25
+                                                },
+                                                formatter: (value) => {
+                                                    return dataset.type === 'line' ?
+                                                        value.toFixed(1) + '%' :
+                                                        new Intl.NumberFormat('en-US').format(value);
+                                                }
+                                            }
+                                        };
+                                    })
                                 },
                                 options: {
                                     responsive: true,
@@ -1115,7 +1135,7 @@
                                                 minRotation: 45,
                                                 color: '#000000',
                                                 font: {
-                                                    size: 12,
+                                                    size: 22,
                                                     weight: 'bold'
                                                 },
                                             },
@@ -1130,12 +1150,14 @@
                                                 text: 'Labor Force (thousands)',
                                                 color: '#000000',
                                                 font: {
+                                                    size: 18,
                                                     weight: 'bold'
                                                 }
                                             },
                                             ticks: {
                                                 color: '#000000',
                                                 font: {
+                                                    size: 22,
                                                     weight: 'bold'
                                                 },
                                                 callback: (value) => new Intl.NumberFormat('en-US').format(value * 1000)
@@ -1205,7 +1227,7 @@
                                             offset: 4,
                                             font: {
                                                 family: 'Arial',
-                                                size: 11,
+                                                size: 19,
                                                 weight: 'bold'
                                             },
                                             formatter: (value) => value.toFixed(1) + '%'
@@ -1219,7 +1241,7 @@
                                                 minRotation: 45,
                                                 color: '#000000',
                                                 font: {
-                                                    size: 12,
+                                                    size: 20,
                                                     weight: 'bold'
                                                 },
                                             },
@@ -1233,6 +1255,7 @@
                                                 stepSize: 20,
                                                 color: '#000000',
                                                 font: {
+                                                    size: 20,
                                                     weight: 'bold'
                                                 }
                                             },
@@ -1241,7 +1264,7 @@
                                                 text: 'Rate (%)',
                                                 color: '#000000',
                                                 font: {
-                                                    size: 13,
+                                                    size: 15,
                                                     weight: 'bold'
                                                 }
                                             }
@@ -1308,13 +1331,15 @@
                         updateLaborYearRange() {
                             const startMonth = this.quarterToMonth(this.laborStartQuarter);
                             const endMonth = this.quarterToMonth(this.laborEndQuarter);
-                            this.laborYearRange = `${this.laborStartYear} ${startMonth} - ${this.laborEndYear} ${endMonth}`;
+                            this.laborYearRange =
+                                `${this.laborStartYear} ${startMonth} - ${this.laborEndYear} ${endMonth}`;
                         },
 
                         updateUnempYearRange() {
                             const startMonth = this.quarterToMonth(this.unempStartQuarter);
                             const endMonth = this.quarterToMonth(this.unempEndQuarter);
-                            this.unempYearRange = `${this.unempStartYear} ${startMonth} - ${this.unempEndYear} ${endMonth}`;
+                            this.unempYearRange =
+                                `${this.unempStartYear} ${startMonth} - ${this.unempEndYear} ${endMonth}`;
                         },
 
                         async applyLaborFilter() {
@@ -1421,7 +1446,7 @@
                                                 color: '#000000',
                                                 font: {
                                                     weight: 'bold',
-                                                    size: 11
+                                                    size: 16
                                                 },
                                                 formatter: (value) => value.toFixed(1) + '%'
                                             }
@@ -1434,9 +1459,18 @@
                                             borderColor: '#314671',
                                             borderWidth: 3,
                                             borderRadius: 4,
-                                            barPercentage: 0.85,
-                                            categoryPercentage: 0.75,
-                                            yAxisID: 'y'
+                                            yAxisID: 'y',
+                                            datalabels: {
+                                                display: true,
+                                                anchor: 'center',
+                                                align: 'center',
+                                                color: "#000000",
+                                                font: {
+                                                    weight: 'bold', // Made bold
+                                                    size: 18 // Increased size (was 15)
+                                                },
+                                                formatter: (value) => new Intl.NumberFormat('en-US').format(value)
+                                            }
                                         }
 
                                     ]
@@ -1464,10 +1498,13 @@
                                                     let label = context.dataset.label || '';
                                                     if (label) label += ': ';
                                                     if (context.dataset.yAxisID === 'y') {
-                                                        const actualValue = Math.round(context.parsed.y * 1000);
-                                                        label += new Intl.NumberFormat('en-US').format(actualValue);
+                                                        const actualValue = Math.round(context
+                                                            .parsed.y * 1000);
+                                                        label += new Intl.NumberFormat('en-US')
+                                                            .format(actualValue);
                                                     } else {
-                                                        label += context.parsed.y.toFixed(1) + '%';
+                                                        label += context.parsed.y.toFixed(1) +
+                                                            '%';
                                                     }
                                                     return label;
                                                 }
@@ -1483,7 +1520,7 @@
                                                 minRotation: 45,
                                                 color: '#000000',
                                                 font: {
-                                                    size: 12,
+                                                    size: 16,
                                                     weight: 'bold',
 
                                                 },
@@ -1501,9 +1538,11 @@
                                             ticks: {
                                                 color: '#000000',
                                                 font: {
+                                                    size: 16,
                                                     weight: 'bold'
                                                 },
-                                                callback: (value) => new Intl.NumberFormat('en-US').format(value * 1000)
+                                                callback: (value) => new Intl.NumberFormat('en-US')
+                                                    .format(value * 1000)
                                             },
                                             grid: {
                                                 color: 'rgba(148, 163, 184, 2.5)'
@@ -1540,8 +1579,10 @@
                                     const itemQ = quarterToNum(item.quarter);
 
                                     if (year > startYear && year < endYear) {
-                                        labels.push(`${year} ${this.quarterToMonth(item.quarter)}`);
-                                        laborData.push(parseFloat(item.labor_force_thousands) || 0);
+                                        labels.push(
+                                            `${year} ${this.quarterToMonth(item.quarter)}`);
+                                        laborData.push(parseFloat(item.labor_force_thousands) ||
+                                            0);
                                         empRateData.push(parseFloat(item.employment_rate) || 0);
                                         return;
                                     }
@@ -1580,11 +1621,14 @@
                                 const data = await response.json();
 
                                 data.forEach(item => {
-                                    labels.push(`${year} ${this.quarterToMonth(item.quarter)}`);
+                                    labels.push(
+                                        `${year} ${this.quarterToMonth(item.quarter)}`);
                                     empRateData.push(parseFloat(item.employment_rate) || 0);
                                     lfprData.push(parseFloat(item.lfpr) || 0);
-                                    underempData.push(parseFloat(item.underemployment_rate) || 0);
-                                    unempRateData.push(parseFloat(item.unemployment_rate) || 0);
+                                    underempData.push(parseFloat(item
+                                        .underemployment_rate) || 0);
+                                    unempRateData.push(parseFloat(item.unemployment_rate) ||
+                                        0);
                                 });
                             }
 
@@ -1664,7 +1708,7 @@
                                             color: '#000000',
                                             font: {
                                                 family: 'Arial',
-                                                size: 9,
+                                                size: 15,
                                                 weight: 'bold'
                                             },
                                             formatter: (value) => value.toFixed(1)
@@ -1676,7 +1720,7 @@
                                                 color: '#000',
                                                 font: {
                                                     family: 'Arial',
-                                                    size: 12,
+                                                    size: 19,
                                                     weight: 'bold'
                                                 }
                                             }
@@ -1689,7 +1733,7 @@
                                                 color: '#000',
                                                 font: {
                                                     family: 'Arial',
-                                                    size: 12,
+                                                    size: 19,
                                                     weight: 'bold'
                                                 }
                                             },
@@ -1699,7 +1743,7 @@
                                                 color: '#000',
                                                 font: {
                                                     family: 'Arial',
-                                                    size: 13,
+                                                    size: 15,
                                                     weight: 'bold'
                                                 }
                                             }
@@ -1731,10 +1775,13 @@
                                     if (year === startYear && itemQ < startQ) return;
                                     if (year === endYear && itemQ > endQ) return;
 
-                                    labels.push(`${year} ${this.quarterToMonth(item.quarter)}`);
+                                    labels.push(
+                                        `${year} ${this.quarterToMonth(item.quarter)}`
+                                    );
                                     emp.push(parseFloat(item.employment_rate) || 0);
                                     lfpr.push(parseFloat(item.lfpr) || 0);
-                                    under.push(parseFloat(item.underemployment_rate) || 0);
+                                    under.push(parseFloat(item.underemployment_rate) ||
+                                        0);
                                     unemp.push(parseFloat(item.unemployment_rate) || 0);
                                 });
                             }

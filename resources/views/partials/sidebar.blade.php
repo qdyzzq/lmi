@@ -87,7 +87,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m4-4a4 4 0 110-8 4 4 0 010 8zm6 2a3 3 0 100-6" />
                 </svg>
-                <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium">Labor Supply</span>
+                <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium">Labor Supply Data</span>
             </a>
             <div x-show="!sidebarExpanded && hovered"
                 class="fixed left-22 bg-blue-900 text-white text-xs py-2 px-3 rounded shadow-lg z-50 whitespace-nowrap border border-blue-700 pointer-events-none">
