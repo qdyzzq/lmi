@@ -7,7 +7,13 @@ use App\Http\Controllers\LaborMarketController;
 use App\Http\Controllers\LmiSubmissionController;
 use App\Http\Controllers\JobTitleController;
 
+
+
 // ==================== PUBLIC ROUTES (No login required) ====================
+
+Route::get('/programs-and-stories', function () {
+    return view('programs-stories');
+})->name('programs.stories');
 Route::post('/lmi/submit', [LmiSubmissionController::class, 'store'])->name('lmi.submit');
 Route::get('/login', function () {
     return view('auth.Login');
