@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <title>LMI</title>
     <style>
         /* ---------- EDIT BUTTON IN HEADER ---------- */
@@ -194,47 +195,16 @@
         .year-edited-banner svg { flex-shrink: 0; width: 20px; height: 20px; }
     </style>
 </head>
-<body class="bg-slate-100 flex h-screen overflow-hidden">
-    <!-- SIDEBAR -->
-    <aside id="sidebar" class="w-72 bg-[#1e3a8a] text-white flex flex-col shadow-xl z-10 transition-all duration-300">
-        <div class="p-6 border-b border-blue-800">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-blue-900 font-bold">LMI</div>
-                <div class="leading-tight">
-                    <p class="font-bold text-sm">Labor Market Intelligence</p>
-                    <p class="text-[10px] opacity-70 italic">Bridging Education & Industry</p>
-                </div>
-            </div>
-        </div>
-        <nav class="flex-1 px-4 py-6 space-y-1 overflow-auto">
-            <p class="text-[10px] uppercase tracking-widest text-blue-300 font-bold mb-4 px-2">Main Menu</p>
-            <a href="{{ route('statistician.review') }}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
-                <span>📋</span> Labor Market Review
-            </a>
-            <a href="{{ route('statistician.job-titles.pending') }}" class="flex items-center gap-3 p-3 bg-yellow-400 text-blue-900 font-bold rounded-lg transition shadow-md">
-                <span>💼</span> Job Titles Pending
-            </a>
-            <div class="pt-6">
-                <p class="text-[10px] uppercase tracking-widest text-blue-300 font-bold mb-4 px-2">Account</p>
-                <a href="{{ route('Setting') }}" class="flex items-center gap-3 p-3 text-blue-100 hover:bg-blue-800 rounded-lg transition group">
-                    <span class="opacity-70 group-hover:opacity-100">⚙️</span> Settings
-                </a>
-            </div>
-            <form method="POST" action="{{ route('logout') }}" class="w-full">
-                @csrf
-                <button type="submit" class="flex items-center gap-3 p-3 text-red-300 hover:bg-red-900/30 rounded-lg transition group w-full text-left">
-                    <span class="opacity-70 group-hover:opacity-100">🚪</span> Logout
-                </button>
-            </form>
-        </nav>
-        <div class="p-4 bg-blue-950 text-[10px] text-center opacity-50">© 2026 DOLE Region XI</div>
-    </aside>
-
+<body class="bg-slate-100 flex h-screen overflow-hidden" >
+   @include('partials.statisticianSidebar')
     <!-- MAIN -->
     <div id="mainContent" class="flex-1 flex flex-col overflow-hidden transition-all duration-300">
         <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 shadow-sm">
-            <h2 class="text-xl font-bold text-slate-800">Job Market Overview • Statistician</h2>
+            <h2 class="text-xl font-bold text-slate-800">Job Title Pending • Statistician</h2>
             <div class="flex items-center gap-4">
+                <div class="bg-yellow-100 px-4 py-2 rounded-lg text-sm font-medium text-yellow-700 border border-yellow-300">
+                    <span id="pending-badge-count" class="font-bold">{{ $submissions->count() }}</span> Pending
+                </div>
                 <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">📅 Region XI • 2024</div>
                 <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
             </div>
@@ -495,6 +465,89 @@
         // Tracks which year cards currently have edit mode ON
         const editModeActive = {};
 
+        // ─── Toast Notification System ──────────────────────────────────────────
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toastContainer');
+
+            const configs = {
+                error: {
+                    bg: 'bg-red-50 border-red-400',
+                    icon: `<svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                           </svg>`,
+                    text: 'text-red-800',
+                    bar: 'bg-red-400',
+                },
+                warning: {
+                    bg: 'bg-amber-50 border-amber-400',
+                    icon: `<svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                           </svg>`,
+                    text: 'text-amber-800',
+                    bar: 'bg-amber-400',
+                },
+                success: {
+                    bg: 'bg-green-50 border-green-400',
+                    icon: `<svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                           </svg>`,
+                    text: 'text-green-800',
+                    bar: 'bg-green-400',
+                },
+                info: {
+                    bg: 'bg-blue-50 border-blue-400',
+                    icon: `<svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                           </svg>`,
+                    text: 'text-blue-800',
+                    bar: 'bg-blue-400',
+                },
+            };
+
+            const c = configs[type] || configs.error;
+
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto w-full border-l-4 ${c.bg} rounded-xl shadow-xl overflow-hidden
+                               transform transition-all duration-300 translate-x-full opacity-0`;
+
+            toast.innerHTML = `
+                <div class="flex items-start gap-3 px-4 py-4">
+                    ${c.icon}
+                    <p class="text-sm font-medium ${c.text} flex-1 leading-snug">${message}</p>
+                    <button onclick="this.closest('.pointer-events-auto').remove()"
+                            class="text-gray-400 hover:text-gray-600 transition ml-1 flex-shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="h-1 ${c.bar} animate-shrink" style="animation: shrink 4s linear forwards;"></div>
+            `;
+
+            container.appendChild(toast);
+
+            // Slide in
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    toast.classList.remove('translate-x-full', 'opacity-0');
+                });
+            });
+
+            // Auto-remove after 4s
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // CSS for the shrink progress bar
+        if (!document.getElementById('toastStyle')) {
+            const style = document.createElement('style');
+            style.id = 'toastStyle';
+            style.textContent = `@keyframes shrink { from { width: 100%; } to { width: 0%; } }`;
+            document.head.appendChild(style);
+        }
+
         // -------- TOGGLE EDIT MODE (highlights all rows) --------
         function toggleEditMode(year) {
             const card    = document.getElementById(`card-${year}`);
@@ -653,14 +706,16 @@
         async function confirmReject() {
             const reason = document.getElementById('rejectionReason').value.trim();
             if (!reason) { 
-                alert('Please provide a reason for rejection'); 
+                showToast('Please provide a reason for rejection', 'warning'); 
                 return; 
             }
+
+            const yearToReject = selectedYear; // ✅ capture before closeRejectModal nulls it
 
             closeRejectModal();
 
             try {
-                const response = await fetch(`/statistician/job-titles/${selectedYear}/reject`, {
+                const response = await fetch(`/statistician/job-titles/${yearToReject}/reject`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -693,5 +748,110 @@
             document.getElementById('errorModal').classList.add('hidden');
         }
     </script>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastContainer" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none" style="min-width: 340px;"></div>
+
+    <!-- ─── Live Polling — detect new pending job title submissions every 30s ─── -->
+    <script>
+    (function () {
+        let knownPending    = parseInt('{{ $submissions->count() }}');
+        const POLL_INTERVAL  = 30_000;
+        let accumulatedNew   = 0;
+        let notifToast       = null;
+
+        function fetchCounts() {
+            fetch('{{ route("statistician.job-titles.pending-count") }}', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                }
+            })
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (!data) return;
+                const newPending = parseInt(data.pending ?? 0);
+
+                // Update header badge live
+                const badge = document.getElementById('pending-badge-count');
+                if (badge) badge.textContent = newPending;
+
+                if (newPending > knownPending) {
+                    accumulatedNew += (newPending - knownPending);
+                    showOrUpdateNotifToast();
+                }
+                knownPending = newPending;
+            })
+            .catch(() => {});
+        }
+
+        function showOrUpdateNotifToast() {
+            const msgText   = `🔔 ${accumulatedNew} new job title submission${accumulatedNew > 1 ? 's' : ''} — click to refresh`;
+            const container = document.getElementById('toastContainer');
+
+            if (notifToast && container.contains(notifToast)) {
+                notifToast.querySelector('.notif-text').textContent = msgText;
+                notifToast.classList.add('scale-105');
+                setTimeout(() => notifToast.classList.remove('scale-105'), 200);
+                return;
+            }
+
+            notifToast = document.createElement('div');
+            notifToast.className = [
+                'pointer-events-auto w-full rounded-xl shadow-xl overflow-hidden',
+                'border-l-4 border-blue-500 bg-blue-50',
+                'transform transition-all duration-300 translate-x-full opacity-0',
+                'cursor-pointer hover:shadow-2xl hover:scale-[1.02] active:scale-[0.99]',
+                'transition-transform'
+            ].join(' ');
+
+            notifToast.innerHTML = `
+                <div class="flex items-center gap-3 px-4 py-4">
+                    <span class="relative flex-shrink-0 flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                    </span>
+                    <p class="notif-text text-sm font-semibold text-blue-800 flex-1 leading-snug">${msgText}</p>
+                    <button class="notif-dismiss text-blue-400 hover:text-blue-700 transition ml-1 flex-shrink-0" title="Dismiss">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            `;
+
+            // Click toast body → reload page
+            notifToast.addEventListener('click', function (e) {
+                if (e.target.closest('.notif-dismiss')) return;
+                dismissNotifToast();
+                window.location.reload();
+            });
+
+            // Dismiss button → close only
+            notifToast.querySelector('.notif-dismiss').addEventListener('click', function (e) {
+                e.stopPropagation();
+                dismissNotifToast();
+            });
+
+            container.appendChild(notifToast);
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                notifToast.classList.remove('translate-x-full', 'opacity-0');
+            }));
+        }
+
+        function dismissNotifToast() {
+            if (!notifToast) return;
+            notifToast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                notifToast?.remove();
+                notifToast = null;
+                accumulatedNew = 0;
+            }, 300);
+        }
+
+        setInterval(fetchCounts, POLL_INTERVAL);
+    })();
+    </script>
+
 </body>
 </html>

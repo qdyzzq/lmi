@@ -13,6 +13,7 @@ class LmiHardToFillRole extends Model
     'lmi_submission_id',
     'job_title',
     'job_classification',
+    'salary_range',
     'vacancies',              // ← ADD THIS LINE
     'vacancy_duration',
     'difficulty_reasons',
@@ -66,7 +67,7 @@ class LmiHardToFillRole extends Model
      */
     public function getFormattedJobTitleAttribute()
     {
-        return ucwords(strtolower(trim($this->job_title)));
+        return mb_strtoupper(trim($this->job_title), 'UTF-8');
     }
     
     /**

@@ -13,40 +13,78 @@ use Illuminate\Support\Facades\Log;
 class LmiSubmissionController extends Controller
 {   
     
-    // FIXED: Now only shows PENDING submissions
-    public function adminIndex()
+    // UPDATED: Now supports pending, approved, and rejected tabs
+    public function adminIndex(Request $request)
     {
-        $submissions = LmiSubmission::with(['hardToFillRoles', 'diagnosis', 'engagement'])
-            ->where('status', 'pending')
-            ->orderBy('created_at', 'asc')
-            ->paginate(1);
-    
-        return view('admin.LmiSubmissions', compact('submissions'));
-    }   
-    public function updateEngagement(Request $request, $id)
-{
-    try {
-        $submission = LmiSubmission::findOrFail($id);
-        $engagement = LmiEngagement::findOrFail($request->engagement_id);
+        // Get the status from query parameter, default to 'pending'
+        $status = $request->query('status', 'pending');
         
-        // Ensure lmi_features is an array
-        $lmiFeatures = $request->lmi_features ?? [];
-        if (!is_array($lmiFeatures)) {
-            $lmiFeatures = [$lmiFeatures];
+        // Validate status
+        if (!in_array($status, ['pending', 'approved', 'rejected'])) {
+            $status = 'pending';
         }
         
-        $engagement->update([
-            'lmi_features' => $lmiFeatures,
-            'specific_inputs' => $request->specific_inputs,
-        ]);
+        // Get counts for all statuses (for badges in header and tabs)
+        $pendingCount = LmiSubmission::where('status', 'pending')->count();
+        $approvedCount = LmiSubmission::where('status', 'approved')->count();
+        $rejectedCount = LmiSubmission::where('status', 'rejected')->count();
         
-        return redirect()->back()->with('success', 'Engagement information updated successfully!');
-        
-    } catch (\Exception $e) {
-        Log::error('Update engagement error: ' . $e->getMessage());
-        return redirect()->back()->with('error', 'Failed to update engagement: ' . $e->getMessage());
+        // Get submissions for the selected status
+        $submissions = LmiSubmission::with(['hardToFillRoles', 'diagnosis', 'engagement'])
+            ->where('status', $status)
+            ->orderBy('created_at', 'asc')
+            ->paginate(1)
+            ->appends(['status' => $status]); // Keep status in pagination links
+    
+        return view('admin.LmiSubmissions', compact(
+            'submissions', 
+            'pendingCount', 
+            'approvedCount', 
+            'rejectedCount'
+        ))->with('activeTab', $status);
     }
-}
+
+    // Live polling endpoint — returns current submission counts for real-time badge updates
+    public function counts()
+    {
+        return response()->json([
+            'pending'  => LmiSubmission::where('status', 'pending')->count(),
+            'approved' => LmiSubmission::where('status', 'approved')->count(),
+            'rejected' => LmiSubmission::where('status', 'rejected')->count(),
+        ]);
+    }
+    
+    public function updateEngagement(Request $request, $id)
+    {
+        try {
+            $submission = LmiSubmission::findOrFail($id);
+            $engagement = LmiEngagement::findOrFail($request->engagement_id);
+            
+            // Ensure lmi_features is an array
+            $lmiFeatures = $request->lmi_features ?? [];
+            if (!is_array($lmiFeatures)) {
+                $lmiFeatures = [$lmiFeatures];
+            }
+
+            // If "Other" was selected and a custom value was typed, replace "Other" with the actual text
+            if (in_array('Other', $lmiFeatures) && !empty($request->lmi_features_other)) {
+                $lmiFeatures = array_diff($lmiFeatures, ['Other']);
+                $lmiFeatures[] = 'Other: ' . trim($request->lmi_features_other);
+                $lmiFeatures = array_values($lmiFeatures);
+            }
+            
+            $engagement->update([
+                'lmi_features' => $lmiFeatures,
+                'specific_inputs' => $request->specific_inputs,
+            ]);
+            
+            return redirect()->back()->with('success', 'Engagement information updated successfully!');
+            
+        } catch (\Exception $e) {
+            Log::error('Update engagement error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update engagement: ' . $e->getMessage());
+        }
+    }
     
     public function updateDiagnosis(Request $request, $id)
     {
@@ -112,9 +150,16 @@ class LmiSubmissionController extends Controller
                     ? array_map('trim', explode(',', $roleData['soft_skills_missing']))
                     : [];
                 
+                $salaryRange = $roleData['salary_range'] ?? null;
+                
+                if (is_numeric($salaryRange)) {
+                    $salaryRange = (int) str_replace(',', '', $salaryRange);
+                }
+                
                 $role->update([
                     'job_title' => $roleData['job_title'],
                     'job_classification' => $roleData['job_classification'],
+                    'salary_range' => $salaryRange,
                     'vacancy_duration' => $roleData['vacancy_duration'],
                     'difficulty_reasons' => $roleData['difficulty_reasons'] ?? [],
                     'technical_skills_missing' => array_filter($techSkills),
@@ -136,22 +181,61 @@ class LmiSubmissionController extends Controller
         }
     }
 
+    // UPDATED: Now changes status to 'approved' instead of deleting
     public function approve($id)
     {
-        $submission = LmiSubmission::findOrFail($id);
-        $submission->update(['status' => 'approved']);
-        
-        return redirect()->route('admin.lmi-submissions.index')
-                       ->with('success', 'Submission approved successfully!');
+        try {
+            $submission = LmiSubmission::findOrFail($id);
+            $submission->update([
+                'status' => 'approved',
+                'reviewed_at' => now(),
+                'reviewed_by' => auth()->id(),
+            ]);
+            
+            return redirect()->route('admin.lmi-submissions.index', ['status' => 'pending'])
+                           ->with('success', 'Submission approved successfully!');
+        } catch (\Exception $e) {
+            Log::error('Approve submission error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to approve submission: ' . $e->getMessage());
+        }
     }
 
+    // UPDATED: Now changes status to 'rejected' instead of deleting
     public function reject($id)
     {
-        $submission = LmiSubmission::findOrFail($id);
-        $submission->update(['status' => 'rejected']);
-        
-        return redirect()->route('admin.lmi-submissions.index')
-                       ->with('success', 'Submission rejected successfully!');
+        try {
+            $submission = LmiSubmission::findOrFail($id);
+            $submission->update([
+                'status' => 'rejected',
+                'reviewed_at' => now(),
+                'reviewed_by' => auth()->id(),
+            ]);
+            
+            return redirect()->route('admin.lmi-submissions.index', ['status' => 'pending'])
+                           ->with('success', 'Submission rejected successfully!');
+        } catch (\Exception $e) {
+            Log::error('Reject submission error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to reject submission: ' . $e->getMessage());
+        }
+    }
+
+    // NEW: Restore rejected submission back to pending
+    public function restorePending($id)
+    {
+        try {
+            $submission = LmiSubmission::findOrFail($id);
+            $submission->update([
+                'status' => 'pending',
+                'reviewed_at' => null,
+                'reviewed_by' => null,
+            ]);
+            
+            return redirect()->route('admin.lmi-submissions.index', ['status' => 'pending'])
+                           ->with('success', 'Submission restored to pending status successfully!');
+        } catch (\Exception $e) {
+            Log::error('Restore pending error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to restore submission: ' . $e->getMessage());
+        }
     }
     
     public function store(Request $request)
@@ -162,7 +246,6 @@ class LmiSubmissionController extends Controller
             Log::info('Request URL: ' . $request->fullUrl());
             Log::info('All Input Keys: ' . json_encode(array_keys($request->all())));
             
-            // Validate basic fields
             $validated = $request->validate([
                 // Part I: Company Profile
                 'company' => 'required|string|max:255',
@@ -176,32 +259,28 @@ class LmiSubmissionController extends Controller
                 // Part II: Hard-to-Fill Roles
                 'job_title' => 'required|array|min:1',
                 'job_title.*' => 'required|string|max:255',
-                'job_classification' => 'required|array|min:1',
-                'job_classification.*' => 'required|string|max:255',
-                'vacancy_duration' => 'required|array|min:1',
+                'job_classification' => 'required|array',
+                'job_classification.*' => 'required|string',
+                'salary_range' => 'required|array',
+                'vacancy_duration' => 'required|array',
                 'vacancy_duration.*' => 'required|string',
                 'technical_skills_missing' => 'nullable|array',
                 'soft_skills_missing' => 'nullable|array',
                 
-                // Part IV: Engagement & Next Steps
-                'lmi_features' => 'nullable|array',
-                'lmi_features.*' => 'nullable|string',
-                'specific_inputs' => 'nullable|string|max:5000',
+                // Part III: Diagnosis
+                'rejection_reasons' => 'nullable|array',
+                'rejection_reasons_other' => 'nullable|string|max:500',
+                'coordination_frequency' => 'nullable|string',
+                'coordination_frequency_other' => 'nullable|string|max:255',
                 
-                'consent' => 'required|accepted',
+                // Part IV: Engagement
+                'lmi_features' => 'nullable|array',
+                'specific_inputs' => 'nullable|string',
             ]);
-
-            Log::info('Basic validation passed');
-
+            
             // Validate impact levels
-            if (!is_array($request->job_title)) {
-                throw new \Exception('job_title must be an array');
-            }
-
             foreach ($request->job_title as $index => $jobTitle) {
                 $impactLevel = $request->input("impact_level_{$index}");
-                
-                Log::info("Checking impact level for job {$index}: " . ($impactLevel ?? 'NULL'));
                 
                 if (empty($impactLevel)) {
                     $errorMessage = "Impact level is required for job entry #" . ($index + 1);
@@ -241,7 +320,6 @@ class LmiSubmissionController extends Controller
 
             // Save hard-to-fill roles
             foreach ($request->job_title as $index => $jobTitle) {
-                // Process skills
                 $technicalSkillsArray = [];
                 if (isset($request->technical_skills_missing[$index]) && !empty($request->technical_skills_missing[$index])) {
                     $technicalSkillsArray = array_filter(
@@ -256,66 +334,60 @@ class LmiSubmissionController extends Controller
                     );
                 }
 
-                // Get difficulty reasons for this specific job entry
                 $jobDifficultyReasons = $request->input("difficulty_reasons_{$index}", []);
                 
-                // Ensure it's an array
                 if (!is_array($jobDifficultyReasons)) {
                     $jobDifficultyReasons = [$jobDifficultyReasons];
                 }
 
-                Log::info("Job {$index} - Difficulty Reasons: " . json_encode($jobDifficultyReasons));
+                $salaryRange = $request->salary_range[$index];
+                
+                if (is_numeric($salaryRange)) {
+                    $salaryRange = (int) str_replace(',', '', $salaryRange);
+                }
 
-                // Create the hard-to-fill role
                 $hardToFillRole = LmiHardToFillRole::create([
                     'lmi_submission_id' => $submission->id,
                     'job_title' => $jobTitle,
                     'job_classification' => $request->job_classification[$index],
+                    'salary_range' => $salaryRange,
                     'vacancy_duration' => $request->vacancy_duration[$index],
                     'difficulty_reasons' => $jobDifficultyReasons,
                     'technical_skills_missing' => $technicalSkillsArray,
                     'soft_skills_missing' => $softSkillsArray,
                 ]);
 
-                Log::info('Hard-to-fill role created: ' . $hardToFillRole->id);
-
-                // Get the impact level for this specific role
                 $impactLevel = $request->input("impact_level_{$index}");
 
-                // Prepare diagnosis data
                 $diagnosisData = [
                     'lmi_submission_id' => $submission->id,
                     'lmi_hard_to_fill_role_id' => $hardToFillRole->id,
                     'impact_level' => $impactLevel,
                 ];
 
-                // Add Part 3 data ONLY to the FIRST diagnosis (company-level data)
                 if ($index === 0) {
                     $rejectionReasons = $request->rejection_reasons ?? [];
-                    
-                    // Ensure it's an array
                     if (!is_array($rejectionReasons)) {
                         $rejectionReasons = [$rejectionReasons];
                     }
-                    
                     $diagnosisData['rejection_reasons'] = $rejectionReasons;
                     $diagnosisData['rejection_reasons_other'] = $request->rejection_reasons_other;
                     $diagnosisData['coordination_frequency'] = $request->coordination_frequency;
                     $diagnosisData['coordination_frequency_other'] = $request->coordination_frequency_other;
                 }
 
-                // Create diagnosis record
                 LmiDiagnosis::create($diagnosisData);
-
-                Log::info("Diagnosis created for submission {$submission->id} with impact: {$impactLevel}");
             }
 
             // Save engagement
             $lmiFeatures = $request->lmi_features ?? [];
-            
-            // Ensure it's an array
             if (!is_array($lmiFeatures)) {
                 $lmiFeatures = [$lmiFeatures];
+            }
+            if (in_array('Other', $lmiFeatures) && !empty($request->lmi_features_other)) {
+                $lmiFeatures = array_diff($lmiFeatures, ['Other']);
+                $lmiFeatures[] = 'Other: ' . trim($request->lmi_features_other);
+                $lmiFeatures = array_values($lmiFeatures);
             }
             
             LmiEngagement::create([
@@ -324,13 +396,8 @@ class LmiSubmissionController extends Controller
                 'specific_inputs' => $request->specific_inputs,
             ]);
 
-            Log::info('Engagement created');
-
             DB::commit();
 
-            Log::info('Transaction committed! Submission ID: ' . $submission->id);
-
-            // Check if it's an AJAX request
             if ($request->ajax() || $request->expectsJson()) {
                 return response()->json([
                     'success' => true,
@@ -338,13 +405,10 @@ class LmiSubmissionController extends Controller
                 ]);
             }
 
-            // Regular form submission
             return redirect()->back()->with('success', 'Thank you! Your submission (ID: ' . $submission->id . ') has been received and is pending admin confirmation.');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            Log::error('Validation failed: ' . json_encode($e->errors()));
-            
             if ($request->ajax() || $request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -352,24 +416,17 @@ class LmiSubmissionController extends Controller
                     'errors' => $e->errors()
                 ], 422);
             }
-            
             return back()->withErrors($e->errors())->withInput();
             
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('=== SUBMISSION ERROR ===');
-            Log::error('Message: ' . $e->getMessage());
-            Log::error('Line: ' . $e->getLine());
-            Log::error('File: ' . $e->getFile());
-            Log::error('Trace: ' . $e->getTraceAsString());
-            
+            Log::error('Submission error: ' . $e->getMessage());
             if ($request->ajax() || $request->expectsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'An error occurred: ' . $e->getMessage()
                 ], 500);
             }
-            
             return back()->withInput()->with('error', 'Error: ' . $e->getMessage());
         }
     }

@@ -60,11 +60,23 @@ class JobTitleController extends Controller
     }
 
     /**
+     * Live polling endpoint — returns current pending job title count
+     */
+    public function pendingCount()
+    {
+        return response()->json([
+            'pending' => JobTitle::where('status', 'pending')->count(),
+        ]);
+    }
+
+    /**
      * Show pending submissions for statistician
+     * FIX: exclude null-year records to prevent groupBy keying on empty string
      */
     public function pendingSubmissions()
     {
         $submissions = JobTitle::where('status', 'pending')
+            ->whereNotNull('year')
             ->with('submitter')
             ->orderBy('year', 'desc')
             ->orderBy('created_at', 'desc')
@@ -76,8 +88,9 @@ class JobTitleController extends Controller
 
     /**
      * Approve job titles
+     * FIX: removed `int` type hint, added null-safe year handling
      */
-    public function approve(Request $request, int $year)
+    public function approve(Request $request, $year)
     {
         try {
             $edits = $request->input('edits', []);
@@ -97,13 +110,19 @@ class JobTitleController extends Controller
             }
 
             // Update all pending job titles for this year to approved
-            JobTitle::where('year', $year)
-                ->where('status', 'pending')
-                ->update([
-                    'status' => 'approved',
-                    'reviewed_by' => auth()->id(),
-                    'reviewed_at' => now(),
-                ]);
+            $query = JobTitle::where('status', 'pending');
+
+            if (is_null($year) || in_array($year, ['null', 'undefined', ''])) {
+                $query->whereNull('year');
+            } else {
+                $query->where('year', (int) $year);
+            }
+
+            $query->update([
+                'status'      => 'approved',
+                'reviewed_by' => auth()->id(),
+                'reviewed_at' => now(),
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -120,6 +139,7 @@ class JobTitleController extends Controller
 
     /**
      * Reject job titles
+     * FIX: added null-safe year handling to prevent SQL "= null" error
      */
     public function reject(Request $request, $year)
     {
@@ -128,14 +148,20 @@ class JobTitleController extends Controller
         ]);
 
         try {
-            JobTitle::where('year', $year)
-                ->where('status', 'pending')
-                ->update([
-                    'status' => 'rejected',
-                    'reviewed_by' => auth()->id(),
-                    'reviewed_at' => now(),
-                    'rejection_reason' => $validated['reason'],
-                ]);
+            $query = JobTitle::where('status', 'pending');
+
+            if (is_null($year) || in_array($year, ['null', 'undefined', ''])) {
+                $query->whereNull('year');
+            } else {
+                $query->where('year', (int) $year);
+            }
+
+            $query->update([
+                'status'           => 'rejected',
+                'reviewed_by'      => auth()->id(),
+                'reviewed_at'      => now(),
+                'rejection_reason' => $validated['reason'],
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -161,5 +187,28 @@ class JobTitleController extends Controller
             ->get();
 
         return response()->json($jobTitles);
+    }
+
+    public function checkYear($year)
+    {
+        $data = \App\Models\JobTitle::where('year', $year)->get();
+
+        if ($data->isEmpty()) {
+            return response()->json(['exists' => false, 'data' => null], 404);
+        }
+
+        return response()->json([
+            'exists' => true,
+            'data' => [
+                'year' => $year,
+                'jobs' => $data->map(function($job) {
+                    return [
+                        'id'    => $job->id,
+                        'title' => $job->job_title,
+                        'count' => $job->job_count
+                    ];
+                })
+            ]
+        ], 200);
     }
 }

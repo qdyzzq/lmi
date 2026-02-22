@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     @vite('resources/css/app.css')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -39,44 +40,95 @@
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Scroll indicator bounce animation */
+@keyframes bounce-custom {
+    0%, 100% {
+        transform: translateY(0);
+        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+    50% {
+        transform: translateY(-25%);
+        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+}
+
+.scroll-indicator {
+    animation: bounce-custom 1s infinite;
+}
     </style>
 </head>
-<body class="bg-slate-100 flex h-screen overflow-hidden">
+<body class="bg-slate-100 min-h-screen">
     <div x-data="{
         activeView: 'job-market-view',
         showReportModal: false,
         showLmiMatrix: false,
-        sidebarExpanded: true
-    }" class="flex w-full h-full">
-
-    
-        <div id="main-content" class="flex w-full h-full transition-all duration-200">
-               
-        @include('partials.sidebar')
-  
-
+        mobileMenuOpen: false
+    }">
+        
+        <!-- NAVBAR at top -->
+        @include('partials.navbar')
+        
+        <!-- Hero Image Section -->
+        <div class="relative w-full h-[500px] md:h-[700px] lg:h-[900px] overflow-hidden">
+            <div class="absolute inset-0">
+                <img src="{{ asset('images/navbar-bg.png') }}" alt="Job Market Background"
+                    class="w-full h-full object-cover object-top">
+                <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-100"></div>
+            </div>
             
-               
-            <div class="flex-1 flex flex-col overflow-y-auto">
-                <div x-show="activeView === 'job-market-view'" x-transition>
-                    <div class="space-y-6 m-5">
+            <!-- Hero Content -->
+            <div class="relative z-10 h-full flex items-center justify-center px-4">
+                <div class="text-center text-white">
+                    <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-lg">
+                        Davao Regional Labor Demand
+                    </h1>
+                    <p class="text-base md:text-xl lg:text-2xl text-slate-100 drop-shadow-md">
+                        Regional Labor Market Intelligence & Trends
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Scroll Indicator -->
+            <div class="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-20 scroll-indicator">
+                <a href="#job-market-section"
+                   class="flex flex-col items-center cursor-pointer group"
+                   @click.prevent="() => {
+                       const element = document.getElementById('job-market-section');
+                       if (element) {
+                           element.scrollIntoView({ 
+                               behavior: 'smooth', 
+                               block: 'start' 
+                           });
+                       }
+                   }">
+                    <svg class="w-8 h-8 text-white group-hover:text-blue-300 transition-colors" 
+                         fill="none" 
+                         stroke="currentColor" 
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" 
+                              stroke-linejoin="round" 
+                              stroke-width="2"
+                              d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                    </svg>
+                    <p class="text-white text-sm mt-2 font-medium group-hover:text-blue-300 transition-colors">
+                        Scroll to explore
+                    </p>
+                </a>
+            </div>
+        </div>
+        
+        <!-- MAIN CONTENT with top margin to account for hero -->
+        <div class="flex-1 flex flex-col overflow-y-auto mt-10 relative z-30">
+            <div x-show="activeView === 'job-market-view'" x-transition>
+                <div class="max-w-7xl mx-auto px-4 md:px-6 space-y-6" id="job-market-section">
                         
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                                    <span class="text-blue-600">📈</span>
-                                    Davao Employment Dashboard
-                                </h1>
-                                <p class="text-sm text-slate-500">
-                                    Regional Labor Market Intelligence & Trends
-                                </p>
-                            </div>
-                        </div>
+                        
 
                            
                            
                        
-                        <div class="bg-slate-700 rounded-xl p-6 text-white flex justify-between items-center shadow-lg">
+                        <div class="bg-slate-700 rounded-xl p-6 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-lg">
                             <div class="flex items-start gap-4">
                                 <div class="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">🤝</div>
                                 <div>   
@@ -87,7 +139,7 @@
                             <div class="flex gap-3">
                             
                                 <button id="show-lmi-matrix-btn" class="bg-emerald-500 border border-emerald-500 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-500/20 transition">
-                                    Update LMI Matrix
+                                    Submit Labor Information
                                 </button>
                             </div>
                         </div>
@@ -103,10 +155,11 @@
         <div class="flex justify-between items-center p-6 pb-4 border-b border-gray-100">
             <div>
                 <h3 class="font-bold text-gray-800">Top 10 High-Volume Job Titles</h3>
+                
                 @if($selected_year && isset($selected_year))
-                    <p class="text-xs text-gray-500 mt-1">
-                        <span class="text-green-600 font-medium">{{ $selected_year - 1 }}</span> vs 
-                        <span class="text-blue-600 font-medium">{{ $selected_year }}</span>
+                    <p class="text-xs text-gray-500 mt-1" id="chartSubtitle" style="{{ collect($comparison_data ?? [])->some(fn($d) => $d['previous_count'] > 0) ? '' : 'display:none' }}">
+                        <span id="prevYearLabel" class="text-green-600 font-medium">{{ $selected_year - 1 }}</span> vs 
+                        <span id="currentYearLabel" class="text-blue-600 font-medium">{{ $selected_year }}</span>
                     </p>
                 @endif
             </div>
@@ -116,7 +169,7 @@
                     <select 
                         id="yearSelector" 
                         class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                        onchange="window.location.href = '{{ route('Job.Market.Demands') }}?year=' + this.value"
+                        onchange="updateChart(this.value)"
                     >
                         @foreach($available_years as $year)
                             <option value="{{ $year }}" {{ $year == $selected_year ? 'selected' : '' }}>
@@ -148,14 +201,40 @@
                 <canvas id="highVolumeHorizontalChart"></canvas>
             </div>
         </div>
+            <div class="px-6 pb-4 pt-2 border-t border-gray-100">
+                    <p class="text-xs text-gray-500 text-center italic">
+                        Source: PhilJobNet
+                    </p>
+    </div>
+
     </div>
 
     <!-- RIGHT SIDE: Hard-to-Fill Roles (Takes 1 column) -->
-    <div class="lg:col-span-1 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="flex justify-between p-6 pb-4">
+     <div class="lg:col-span-1 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="p-6 pb-4">
+    <div class="flex justify-between mb-3">
+        <div>
             <h3 class="font-bold text-gray-800">Hard-to-Fill Roles</h3>
-            <span class="text-gray-300 cursor-help" title="Click to expand details">ⓘ</span>
+            <p class="text-xs text-gray-500 mt-1">Jobs that are consistently difficult to recruit for</p>
         </div>
+        <span class="text-gray-300 cursor-help" title="Click to expand details">ⓘ</span>
+    </div>
+    
+    {{-- Quarter Banner Inside Hard-to-Fill Section --}}
+    @if(isset($quarter_info))
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-md">
+        <div class="flex items-center">
+            <svg class="h-4 w-4 text-blue-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <div>
+                <p class="text-xs font-semibold text-blue-900">Last 90 Days</p>
+                <p class="text-xs text-blue-700">{{ $quarter_info['display_text'] }}</p>
+            </div>
+        </div>
+    </div>
+    @endif
+</div>
         
         @if(isset($groupedRoles) && count($groupedRoles) > 0)
             <div class="max-h-96 overflow-y-auto px-6 pb-6">
@@ -176,8 +255,8 @@
                                 <div class="p-3 bg-white hover:bg-slate-50 transition">
                                     <div class="flex items-start justify-between">
                                         <div class="flex-1">
-                                            <p class="font-bold text-sm text-slate-800">{{ ucwords(strtolower(trim($role->job_title))) }}</p>
-                                            <p class="text-xs text-gray-400 mt-1">{{ $role->vacancy_duration }}</p>
+                                            <p class="font-bold text-sm text-slate-800">{{ $role->formatted_job_title }}</p>
+                                            <p class="text-xs text-gray-400 mt-1">Vacancy Duration: {{ $role->vacancy_duration }}</p>
                                         </div>
                                         
                                         <!-- Expand Icon -->
@@ -278,7 +357,6 @@
                                             <!-- Company Info -->
                                             <div class="pt-2 border-t">
                                                 <p class="text-xs text-slate-500">
-                                                    <strong>Company:</strong> {{ $submission->company_name }}<br>
                                                     <strong>Sector:</strong> {{ $submission->industry_sector }}
                                                 </p>
                                             </div>
@@ -302,7 +380,7 @@
                                 <div class="p-3 bg-white hover:bg-slate-50 transition">
                                     <div class="flex items-start justify-between">
                                         <div class="flex-1">
-                                            <p class="font-bold text-sm text-slate-800">{{ ucwords(strtolower(trim($role->job_title))) }}</p>
+                                            <p class="font-bold text-sm text-slate-800">{{ $role->formatted_job_title }}</p>
                                             <p class="text-xs text-gray-400 mt-1">{{ $role->vacancy_duration }}</p>
                                         </div>
                                         
@@ -358,14 +436,20 @@
         <div style="height: calc(100% - 60px);">
             <canvas id="highVolumeExpandedChart"></canvas>
         </div>
+          <div class="absolute  left-0 right-0 text-center">
+            <p class="text-xs text-gray-500 italic">
+                Source: PhilJobNet
+            </p>
+        </div>
     </div>
 </div>              
                         <!-- Critical Skill Gaps Per Sector -->
 <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
-    <h3 class="font-bold text-lg mb-4">"Critical Skill Gaps" Per Sector</h3>
+    <h3 class="font-bold text-lg mb-4">Critical Skill Gaps Per Sector</h3>
     
     <!-- Sector Filter Tabs -->
     <div class="flex gap-2 mb-8 pb-5 border-b border-gray-200 overflow-x-auto">
+        <span class=" px-4 py-1 text-sm rounded-full border bg-blue-500  text-white hover:bg-gray-50 transition whitespace-nowrap">FILTER</span>
         <button onclick="filterSkills('All')" 
                 class="sector-tab active px-4 py-1 text-sm rounded-full bg-purple-600 text-white transition whitespace-nowrap" 
                 data-sector="All">
@@ -380,11 +464,32 @@
         @endforeach
     </div>
 
-    <div class="grid grid-cols-2 gap-12">
-    <!-- Missing Soft Skills -->
-    <div class="border-r border-gray-200 pr-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
+    
+        <!-- Missing Technical Skills -->
+        <div class="md:border-r border-gray-200 md:pr-6">
         <h4 class="text-xs font-bold text-gray-400 mb-4 uppercase bg-white pb-2">
-            🚫 Missing Soft Skills (Critical Gaps)
+            🔍 In demand Technical Skills 
+        </h4>
+        <div class="flex flex-wrap gap-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar" 
+             id="tech-skills-container"
+             style="overflow-y: scroll;">  <!-- Force scrollbar to always show for testing -->
+            @foreach($tech_skills as $skill)
+                    <div class="skill-tag tech-skill bg-blue-100 text-gray-800 font-semibold px-3 py-2 rounded-lg text-sm h-fit" 
+                         data-sector="{{ $skill['sector'] }}">
+                        {{ $skill['name'] }} 
+                        <span class="text-[12px] opacity-70">({{ $skill['sector'] }})</span>
+                        @if(isset($skill['count']) && $skill['count'] > 1)
+                            <span class="ml-1 px-1.5 py-0.5 bg-blue-200 rounded-full text-[9px] font-bold">{{ $skill['count'] }}×</span>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        <!-- Missing Soft Skills -->
+    <div class="md:pl-6">
+        <h4 class="text-xs font-bold text-gray-400 mb-4 uppercase bg-white pb-2">
+            🚫 In demand Soft Skills 
         </h4>
         <div class="flex flex-wrap gap-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar" 
              id="soft-skills-container"
@@ -402,26 +507,6 @@
             </div>
         </div>
 
-        <!-- Missing Technical Skills -->
-        <div class="pl-6">
-        <h4 class="text-xs font-bold text-gray-400 mb-4 uppercase bg-white pb-2">
-            🔍 Missing Technical Skills
-        </h4>
-        <div class="flex flex-wrap gap-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar" 
-             id="tech-skills-container"
-             style="overflow-y: scroll;">  <!-- Force scrollbar to always show for testing -->
-            @foreach($tech_skills as $skill)
-                    <div class="skill-tag tech-skill bg-blue-100 text-gray-800 font-semibold px-3 py-2 rounded-lg text-sm h-fit" 
-                         data-sector="{{ $skill['sector'] }}">
-                        {{ $skill['name'] }} 
-                        <span class="text-[12px] opacity-70">({{ $skill['sector'] }})</span>
-                        @if(isset($skill['count']) && $skill['count'] > 1)
-                            <span class="ml-1 px-1.5 py-0.5 bg-blue-200 rounded-full text-[9px] font-bold">{{ $skill['count'] }}×</span>
-                        @endif
-                    </div>
-                @endforeach
-            </div>
-        </div>
     </div>
 </div>
                  <!-- LMI Matrix - Improved Design with Laravel Blade -->
@@ -429,11 +514,21 @@
     openItem: null,
     currentPage: 1, 
     itemsPerPage: 10,
-    get totalPages() { return Math.ceil({{ count($matrix_results) }} / this.itemsPerPage); },
+    get sortedData() {
+        const impactOrder = { 'High': 1, 'Medium': 2, 'Low': 3 };
+        return (window.matrixResultsData || []).sort((a, b) => {
+            const impactA = impactOrder[a.impact] || 2; // Default to Medium if no impact
+            const impactB = impactOrder[b.impact] || 2;
+            return impactA - impactB;
+        });
+    },
+    get totalPages() { 
+        return Math.ceil((this.sortedData?.length || 0) / this.itemsPerPage); 
+    },
     get paginatedData() {
         const start = (this.currentPage - 1) * this.itemsPerPage;
         const end = start + this.itemsPerPage;
-        return @js($matrix_results).slice(start, end);
+        return this.sortedData.slice(start, end);
     },
     nextPage() {
         if (this.currentPage < this.totalPages) {
@@ -455,250 +550,313 @@
     <div class="p-6 border-b flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
     <h3 class="font-bold text-gray-900 flex items-center gap-3 text-lg">
         <span class="text-2xl">📊</span> 
-        <span>LMI Granularity Matrix Results: Competency Gap Analysis</span>
+        <span>Critical Skills Requirements</span>
     </h3>
     <button id="exportLMIMatrixBtn" class="text-emerald-600 border border-emerald-200 bg-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-50 transition-all shadow-sm hover:shadow">
     Export Analysis
     </button>
+</div>
+
+
+
+@if(count($matrix_results) > 0)
+    <div class="overflow-x-auto">
+    <div class="min-w-[700px]">
+    <!-- Sticky Table Header Row - Improved proportions with Salary Range -->
+    <div class="sticky top-0 z-20 bg-gradient-to-r from-gray-900 to-gray-800 border-b border-gray-700 shadow-md">
+        <div class="grid grid-cols-12 gap-4 px-8 py-4 items-center">
+            <div class="col-span-2 flex items-center justify-center">
+                <span class="text-s font-small font-bold text-white uppercase tracking-wider">Job Title / Role</span>
+            </div>
+            <div class="col-span-3 flex items-center justify-center">
+                <span class="text-s font-small font-bold text-white uppercase tracking-wider">Sector</span>
+            </div>
+            <div class="col-span-3 flex items-center justify-center">
+                <span class="text-s font-small font-bold text-white uppercase tracking-wider">Missing Skills / Competency</span>
+            </div>
+            <div class="col-span-2 flex items-center justify-center">
+                <span class="text-s font-small font-bold text-white uppercase tracking-wider">Salary Range</span>
+            </div>
+            <div class="col-span-2 flex items-center justify-end">
+                <span class="text-s font-small font-bold text-white uppercase tracking-wider">Job Gap Impact to Industry</span>
+            </div>
+        </div>
     </div>
 
-    @if(count($matrix_results) > 0)
-        <!-- Sticky Table Header Row - Improved proportions -->
-        <div class="sticky top-0 z-20 bg-gradient-to-r from-gray-900 to-gray-800 border-b border-gray-700 shadow-md">
-            <div class="grid grid-cols-12 gap-6 px-8 py-4">
-                <div class="col-span-2">
-                    <span class="text-xs font-bold text-white uppercase tracking-wider">Job Title / Role</span>
-                </div>
-                <div class="col-span-4">
-                    <span class="text-xs font-bold text-white uppercase tracking-wider">Sector</span>
-                </div>
-                <div class="col-span-4">
-                    <span class="text-xs font-bold text-white uppercase tracking-wider">Missing Skills / Competency</span>
-                </div>
-                <div class="col-span-2 text-right">
-                    <span class="text-xs font-bold text-white uppercase tracking-wider">Gap Impact</span>
-                </div>
+    <!-- Scrollable Content Area -->
+    <div class="max-h-[600px] overflow-y-auto bg-gray-50">
+        <!-- Accordion Items -->
+        <div class="divide-y divide-gray-200">
+            <template x-for="(result, index) in paginatedData" :key="index">
+                <div class="bg-white hover:bg-gray-50 transition-all duration-200 border-l-4" 
+                     :class="openItem === index ? 'border-l-gray-500 shadow-md' : 'border-l-transparent'">
+                    <!-- Accordion Header (Collapsed View) -->
+<div 
+    @click="(result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0) ? (openItem = openItem === index ? null : index) : null"
+    class="grid grid-cols-12 gap-4 px-8 py-6 items-center" :class="((result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0)) ? 'cursor-pointer' : 'cursor-default'">
+    
+    <!-- LEFT-ALIGNED: Job Title (2 cols) -->
+    <div class="col-span-2 flex items-center justify-start">
+        <h4 class="font-bold text-gray-900 text-base" x-text="result.role"></h4>
+    </div>
+
+    <!-- LEFT-ALIGNED: Sector (3 cols) -->
+    <div class="col-span-3 flex items-center justify-start">
+        <p class="text-xs font-bold text-gray-700 uppercase tracking-wide leading-relaxed" x-text="result.sector"></p>
+    </div>
+
+  <!-- CENTER-ALIGNED: Skills Preview (3 cols) - FIXED ALIGNMENT AND MESSAGING -->
+<div class="col-span-3 flex items-center justify-center">
+    <div class="flex flex-col gap-1 items-start w-full px-4"> <!-- Changed to items-start and added padding -->
+        <!-- Check if Technical checkbox was selected -->
+        <template x-if="result.has_technical_checkbox">
+            <div class="flex items-center gap-2 w-full"> <!-- Added w-full -->
+                <span class="text-gray-900 font-medium">•</span>
+                <span class="text-sm text-gray-700 flex-1"> <!-- Added flex-1 -->
+                    <template x-if="result.hard_skills && result.hard_skills.length > 0">
+                        <span>
+                            <span class="font-bold" x-text="result.hard_skills.length"></span> <span class="font-bold">Technical Skill</span><span x-show="result.hard_skills.length > 1">s</span>
+                        </span>
+                    </template>
+                    <template x-if="!result.hard_skills || result.hard_skills.length === 0">
+                        <span class="text-gray-600 font-semibold">
+                            Technical Skills 
+                            
+                        </span>
+                    </template>
+                </span>
             </div>
+        </template>
+        
+        <!-- Check if Soft checkbox was selected -->
+        <template x-if="result.has_soft_checkbox">
+            <div class="flex items-center gap-2 w-full"> <!-- Added w-full -->
+                <span class="text-gray-900 font-medium">•</span>
+                <span class="text-sm text-gray-700 flex-1"> <!-- Added flex-1 -->
+                    <template x-if="result.soft_skills && result.soft_skills.length > 0">
+                        <span>
+                            <span class="font-bold" x-text="result.soft_skills.length"></span> <span class="font-bold">Soft Skill</span><span x-show="result.soft_skills.length > 1">s</span>
+                        </span>
+                    </template>
+                    <template x-if="!result.soft_skills || result.soft_skills.length === 0">
+                        <span class="text-gray-600 font-semibold">
+                            Soft Skills 
+                            
+                        </span>
+                    </template>
+                </span>
+            </div>
+        </template>
+        
+        <!-- No skills specified at all -->
+        <template x-if="!result.has_technical_checkbox && !result.has_soft_checkbox">
+            <span class="text-xs text-gray-400 italic text-center w-full">No skills specified</span>
+        </template>
+        
+        <!-- View details prompt -->
+        <span class="text-xs text-gray-400 italic mt-1 text-left w-full" x-show="openItem !== index && ((result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0))">
+            Click to view details
+        </span>
+    </div>
+</div>
+    <!-- LEFT-ALIGNED: Salary Range (2 cols) -->
+    <div class="col-span-2 flex items-center justify-start">
+        <div class="flex flex-col">
+            <template x-if="result.salary_range && result.salary_range !== 'Not specified'">
+                <span class="text-sm font-semibold text-gray-900" x-text="result.salary_range"></span>
+            </template>
+            <template x-if="!result.salary_range || result.salary_range === 'Not specified'">
+                <span class="text-xs text-gray-400 italic">Not specified</span>
+            </template>
         </div>
+    </div>
 
-        <!-- Scrollable Content Area -->
-        <div class="max-h-[600px] overflow-y-auto bg-gray-50">
-            <!-- Accordion Items -->
-            <div class="divide-y divide-gray-200">
-                <template x-for="(result, index) in paginatedData" :key="index">
-                    <div class="bg-white hover:bg-gray-50 transition-all duration-200 border-l-4" 
-                         :class="openItem === index ? 'border-l-blue-500 shadow-md' : 'border-l-transparent'">
-                        <!-- Accordion Header (Collapsed View) -->
-                        <div 
-                            @click="openItem = openItem === index ? null : index"
-                            class="grid grid-cols-12 gap-6 px-8 py-6 cursor-pointer items-center">
-                            
-                            <!-- Job Title (2 cols) -->
-                            <div class="col-span-2">
-                                <h4 class="font-bold text-gray-900 text-base" x-text="result.role"></h4>
-                            </div>
+    <!-- RIGHT-ALIGNED: Impact Badge (2 cols) - Keep as is -->
+    <div class="col-span-2 flex items-center justify-end gap-3">
+        <span 
+            class="px-4 py-2 rounded-lg text-sm font-bold min-w-[90px] text-center shadow-sm"
+            :class="{
+                'bg-red-50 text-red-700 border border-red-200': result.impact === 'High',
+                'bg-green-50 text-green-700 border border-green-200': result.impact === 'Low',
+                'bg-amber-50 text-amber-700 border border-amber-200': result.impact === 'Medium' || !result.impact
+            }"
+            x-text="result.impact || 'Medium'">
+        </span>
 
-                            <!-- Sector (4 cols) -->
-                            <div class="col-span-4">
-                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide leading-relaxed" x-text="result.sector"></p>
-                            </div>
-
-                            <!-- Skills Preview (4 cols) - Simplified with counts -->
-                            <div class="col-span-4">
-                                <div class="flex items-center gap-3">
-                                    <!-- Skill count summary instead of showing individual pills -->
-                                    <div class="flex items-center gap-4">
-                                        <template x-if="result.hard_skills && result.hard_skills.length > 0">
-                                            <div class="flex items-center gap-2">
-                                                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                                                <span class="text-sm font-semibold text-gray-700">
-                                                    <span x-text="result.hard_skills.length"></span> Technical
-                                                </span>
-                                            </div>
-                                        </template>
-                                        
-                                        <template x-if="result.soft_skills && result.soft_skills.length > 0">
-                                            <div class="flex items-center gap-2">
-                                                <div class="w-2 h-2 rounded-full bg-pink-500"></div>
-                                                <span class="text-sm font-semibold text-gray-700">
-                                                    <span x-text="result.soft_skills.length"></span> Soft
-                                                </span>
-                                            </div>
-                                        </template>
+        <!-- Expand Icon -->
+        <svg 
+            class="w-5 h-5 transition-all duration-300 flex-shrink-0"
+            :class="[
+                openItem === index ? 'rotate-180 text-gray-600' : 'text-gray-400',
+                ((result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0)) ? 'opacity-100' : 'opacity-0'
+            ]"
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </div>
+</div>
+                    <!-- Accordion Content (Expanded View) - Formal black styling -->
+                    <div 
+                        x-show="openItem === index"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 -translate-y-4"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 -translate-y-4"
+                        class="border-t border-gray-200 bg-gray-50"
+                        style="display: none;">
+                        
+                        <div class="px-8 py-8">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <!-- Technical Skills -->
+                                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                            <span class="text-lg">🔧</span>
+                                        </div>
+                                        <span class="text-sm font-bold text-gray-900 uppercase tracking-wide">Missing Technical Skills</span>
                                     </div>
+                                    <template x-if="result.hard_skills && result.hard_skills.length > 0">
+                                        <div class="flex flex-wrap gap-2.5">
+                                            <template x-for="skill in result.hard_skills" :key="skill.name || skill">
+                                                <span 
+                                                    class="px-4 py-2.5 bg-white text-gray-800 border border-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
+                                                    x-text="skill.name || skill">
+                                                </span>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template x-if="!result.hard_skills || result.hard_skills.length === 0">
+                                        <div class="text-center py-6">
+                                            <div class="text-3xl mb-2 opacity-20">✓</div>
+                                            <p class="text-sm text-gray-400 font-medium">No technical skill gaps identified</p>
+                                        </div>
+                                    </template>
+                                </div>
 
-                                    <!-- View details prompt -->
-                                    <span class="text-xs text-gray-400 italic ml-auto" x-show="openItem !== index">
-                                        Click to view
-                                    </span>
+                                <!-- Soft Skills -->
+                                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                            <span class="text-lg">💬</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-bold text-gray-900 uppercase tracking-wide block">Missing Soft Skills</span>
+                                            <span class="text-xs text-gray-600 font-medium">(Critical Gaps)</span>
+                                        </div>
+                                    </div>
+                                    <template x-if="result.soft_skills && result.soft_skills.length > 0">
+                                        <div class="flex flex-wrap gap-2.5">
+                                            <template x-for="skill in result.soft_skills" :key="skill.name || skill">
+                                                <span 
+                                                    class="px-4 py-2.5 bg-white text-gray-800 border border-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
+                                                    x-text="skill.name || skill">
+                                                </span>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template x-if="!result.soft_skills || result.soft_skills.length === 0">
+                                        <div class="text-center py-6">
+                                            <div class="text-3xl mb-2 opacity-20">✓</div>
+                                            <p class="text-sm text-gray-400 font-medium">No soft skill gaps identified</p>
+                                        </div>
+                                    </template>
                                 </div>
                             </div>
 
-                            <!-- Impact Badge (2 cols) -->
-                            <div class="col-span-2 flex items-center justify-end gap-3">
-                                <span 
-                                    class="px-4 py-2 rounded-lg text-sm font-bold min-w-[90px] text-center shadow-sm"
-                                    :class="{
-                                        'bg-red-50 text-red-700 border border-red-200': result.impact === 'High',
-                                        'bg-green-50 text-green-700 border border-green-200': result.impact === 'Low',
-                                        'bg-amber-50 text-amber-700 border border-amber-200': result.impact === 'Medium' || !result.impact
-                                    }"
-                                    x-text="result.impact || 'Medium'">
-                                </span>
-
-                                <!-- Expand Icon -->
-                                <svg 
-                                    class="w-5 h-5 text-gray-400 transition-all duration-300 flex-shrink-0"
-                                    :class="openItem === index ? 'rotate-180 text-blue-600' : ''"
-                                    fill="none" 
-                                    stroke="currentColor" 
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </div>
-                        </div>
-
-                        <!-- Accordion Content (Expanded View) -->
-                        <div 
-                            x-show="openItem === index"
-                            x-transition:enter="transition ease-out duration-300"
-                            x-transition:enter-start="opacity-0 -translate-y-4"
-                            x-transition:enter-end="opacity-100 translate-y-0"
-                            x-transition:leave="transition ease-in duration-200"
-                            x-transition:leave-start="opacity-100 translate-y-0"
-                            x-transition:leave-end="opacity-0 -translate-y-4"
-                            class="border-t border-gray-200 bg-gradient-to-br from-blue-50/30 to-pink-50/30"
-                            style="display: none;">
-                            
-                            <div class="px-8 py-8">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <!-- Technical Skills -->
-                                    <div class="bg-white rounded-xl p-6 shadow-sm border border-blue-100">
-                                        <div class="flex items-center gap-2 mb-4">
-                                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                <span class="text-lg">🔧</span>
+                            <!-- Salary Range Details in Expanded View (Optional) -->
+                            <template x-if="result.salary_min && result.salary_max">
+                                <div class="mt-6 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                                <span class="text-lg">💰</span>
                                             </div>
-                                            <span class="text-sm font-bold text-blue-900 uppercase tracking-wide">Missing Technical Skills</span>
+                                            <span class="text-sm font-bold text-gray-900 uppercase tracking-wide">Salary Range</span>
                                         </div>
-                                        <template x-if="result.hard_skills && result.hard_skills.length > 0">
-                                            <div class="flex flex-wrap gap-2.5">
-                                                <template x-for="skill in result.hard_skills" :key="skill.name || skill">
-                                                    <span 
-                                                        class="px-4 py-2.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg text-sm font-semibold hover:bg-blue-100 hover:border-blue-300 transition-all shadow-sm"
-                                                        x-text="skill.name || skill">
-                                                    </span>
-                                                </template>
+                                        <div class="text-right">
+                                            <div class="text-lg font-bold text-gray-900">
+                                                ₱<span x-text="Number(result.salary_min).toLocaleString()"></span> - ₱<span x-text="Number(result.salary_max).toLocaleString()"></span>
                                             </div>
-                                        </template>
-                                        <template x-if="!result.hard_skills || result.hard_skills.length === 0">
-                                            <div class="text-center py-6">
-                                                <div class="text-3xl mb-2 opacity-20">✓</div>
-                                                <p class="text-sm text-gray-400 font-medium">No technical skill gaps identified</p>
-                                            </div>
-                                        </template>
-                                    </div>
-
-                                    <!-- Soft Skills -->
-                                    <div class="bg-white rounded-xl p-6 shadow-sm border border-pink-100">
-                                        <div class="flex items-center gap-2 mb-4">
-                                            <div class="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center">
-                                                <span class="text-lg">💬</span>
-                                            </div>
-                                            <div>
-                                                <span class="text-sm font-bold text-pink-900 uppercase tracking-wide block">Missing Soft Skills</span>
-                                                <span class="text-xs text-pink-600 font-medium">(Critical Gaps)</span>
-                                            </div>
+                                            <div class="text-xs text-gray-500 mt-1">Monthly compensation</div>
                                         </div>
-                                        <template x-if="result.soft_skills && result.soft_skills.length > 0">
-                                            <div class="flex flex-wrap gap-2.5">
-                                                <template x-for="skill in result.soft_skills" :key="skill.name || skill">
-                                                    <span 
-                                                        class="px-4 py-2.5 bg-pink-50 text-pink-800 border border-pink-200 rounded-lg text-sm font-semibold hover:bg-pink-100 hover:border-pink-300 transition-all shadow-sm"
-                                                        x-text="skill.name || skill">
-                                                    </span>
-                                                </template>
-                                            </div>
-                                        </template>
-                                        <template x-if="!result.soft_skills || result.soft_skills.length === 0">
-                                            <div class="text-center py-6">
-                                                <div class="text-3xl mb-2 opacity-20">✓</div>
-                                                <p class="text-sm text-gray-400 font-medium">No soft skill gaps identified</p>
-                                            </div>
-                                        </template>
                                     </div>
                                 </div>
-                            </div>
+                            </template>
                         </div>
                     </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="px-8 py-5 border-t bg-white flex items-center justify-between shadow-inner">
+        <div class="flex items-center gap-2 text-sm text-gray-600">
+            <span>Showing</span>
+            <span class="font-bold text-gray-900" x-text="(currentPage - 1) * itemsPerPage + 1"></span>
+            <span>to</span>
+            <span class="font-bold text-gray-900" x-text="Math.min(currentPage * itemsPerPage, (window.matrixResultsData?.length || 0))"></span>
+            <span>of</span>
+            <span class="font-bold text-gray-900" x-text="(sortedData?.length || 0)"></span>
+            <span>results</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Previous Button -->
+            <button 
+                @click="prevPage()"
+                :disabled="currentPage === 1"
+                :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 hover:border-gray-400'"
+                class="px-5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 transition-all">
+                Previous
+            </button>
+
+            <!-- Page Numbers -->
+            <div class="flex gap-1.5">
+                <template x-for="page in totalPages" :key="page">
+                    <button 
+                        @click="goToPage(page)"
+                        :class="currentPage === page ? 'bg-emerald-500 text-white border-emerald-500 shadow-md' : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'"
+                        class="min-w-[44px] px-4 py-2.5 rounded-lg border text-sm font-bold transition-all"
+                        x-text="page">
+                    </button>
                 </template>
             </div>
+
+            <!-- Next Button -->
+            <button 
+                @click="nextPage()"
+                :disabled="currentPage === totalPages"
+                :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 hover:border-gray-400'"
+                class="px-5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 transition-all">
+                Next
+            </button>
         </div>
-
-        <!-- Pagination Controls -->
-        <div class="px-8 py-5 border-t bg-white flex items-center justify-between shadow-inner">
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-                <span>Showing</span>
-                <span class="font-bold text-gray-900" x-text="(currentPage - 1) * itemsPerPage + 1"></span>
-                <span>to</span>
-                <span class="font-bold text-gray-900" x-text="Math.min(currentPage * itemsPerPage, {{ count($matrix_results) }})"></span>
-                <span>of</span>
-                <span class="font-bold text-gray-900">{{ count($matrix_results) }}</span>
-                <span>results</span>
-            </div>
-
-            <div class="flex items-center gap-2">
-                <!-- Previous Button -->
-                <button 
-                    @click="prevPage()"
-                    :disabled="currentPage === 1"
-                    :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 hover:border-gray-400'"
-                    class="px-5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 transition-all">
-                    Previous
-                </button>
-
-                <!-- Page Numbers -->
-                <div class="flex gap-1.5">
-                    <template x-for="page in totalPages" :key="page">
-                        <button 
-                            @click="goToPage(page)"
-                            :class="currentPage === page ? 'bg-emerald-500 text-white border-emerald-500 shadow-md' : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'"
-                            class="min-w-[44px] px-4 py-2.5 rounded-lg border text-sm font-bold transition-all"
-                            x-text="page">
-                        </button>
-                    </template>
-                </div>
-
-                <!-- Next Button -->
-                <button 
-                    @click="nextPage()"
-                    :disabled="currentPage === totalPages"
-                    :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 hover:border-gray-400'"
-                    class="px-5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 transition-all">
-                    Next
-                </button>
-            </div>
-        </div>
-    @else
-        <div class="p-12 text-center bg-white">
-            <div class="text-6xl mb-4 opacity-20">📊</div>
-            <p class="text-slate-500 font-medium">No competency gap data available yet.</p>
-            <p class="text-slate-400 text-sm mt-2">Data will appear once submissions are approved.</p>
-        </div>
-    @endif
+    </div>
 </div>
 
-                 <div class="p-4 bg-slate-50 border-t text-center">
-        <p class="text-xs text-slate-500">
-            Source: Tab1-Employment-Davao-Region-with-JUL2025.xlsx (Rates) | Module 2 Sources: PhilJobNet, PSA ISLE, Industry Surveys.
-        </p>
-    </div>       
-                        
-                </div>
-</div>
-</div>
-</div>
+    <div class="flex items-center justify-center">
+                        <p class="text-xs text-slate-500">
+                            Source: Tab1-Employment-Davao-Region-with-JUL2025.xlsx (Rates) | Module 2 Sources: PhilJobNet, PSA ISLE, Industry Surveys.
+                        </p>
+                    </div>
+    </div><!-- end min-w -->
+    </div><!-- end overflow-x-auto -->
 
-<div id="lmi-matrix-modal" class="fixed inset-0 z-50 flex items-center justify-center px-4 hidden">
+@else
+    <!-- Empty State -->
+    <div class="p-12 text-center bg-white">
+        <div class="text-6xl mb-4 opacity-20">📊</div>
+        <p class="text-slate-500 font-medium">No competency gap data available yet.</p>
+        <p class="text-slate-400 text-sm mt-2">Data will appear once submissions are approved.</p>
+    </div>
+@endif
+
+<div id="lmi-matrix-modal" class="fixed inset-0 z-[9999] flex items-center justify-center px-4 hidden">
     <div id="modal-backdrop" class="absolute inset-0 backdrop-blur-md bg-white/30 pointer-events-none"></div>
     <div id="lmi-form-content" class="bg-white rounded-2xl shadow-2xl w-full w-[96vw] h-[96vh] max-w-[96vw] max-h-[96vh] overflow-hidden relative z-10 pointer-events-auto">
         
@@ -743,7 +901,9 @@
         <!-- ► END STEP INDICATOR ◄ -->
 
         <div class="overflow-y-auto h-[calc(98vh-250px)]">
-        <div class="p-8">
+    <div class="p-8">
+        <!-- ► ONLY SHOW IN STEP 1 ◄ -->
+        <div id="intro-section">
             <h4 class="text-l font-bold pb-2">INDUSTRY SKILLS NEED SURVEY</h4>
             <p class="text-gray-600 text-sm leading-relaxed mb-8 pb-6 border-b border-gray-200">
                 {{__('lmip.lmi_intro')}}
@@ -752,6 +912,7 @@
             <p class="text-gray-600 text-sm leading-relaxed mb-8 pb-6 border-b border-gray-200">
                 {{ __('lmip.privacy_statement') }}
             </p>
+        </div>
 
             <!-- ════════════════════════════════════════════════════════
                  SINGLE FORM — all 4 steps live inside here
@@ -764,37 +925,40 @@
             <!-- ─── STEP 1: COMPANY PROFILE ─────────────────────── -->
             <div class="lmi-step" data-step="0">
 
-                <div class="bg-gray-50 rounded-lg p-6 mt-8">
-                    <div class="flex items-start gap-2 text-base font-semibold mb-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                        </svg>
-                        PART 1: COMPANY PROFILE
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mt-8">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                        </div>
+                        <div class="text-sm font-bold text-gray-800 uppercase tracking-wide">Part 1: Company Profile</div>
                     </div>
+                    <div class="h-px bg-gray-100 mb-5"></div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
                         <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-2">Company Name:</label>
-                            <input type="text" name="company" required
+                            <label class="block text-gray-800 text-sm font-semibold mb-2">Company Name:<span class="text-red-500">*</span></label>
+                            <input type="text" name="company"  required
                                 class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
                         </div>
                         <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-2">Name of Respondent:</label>
-                            <input type="text" name="respondent" required
+                            <label class="block text-gray-800 text-sm font-semibold mb-2">Name of Respondent:<span class="text-red-500">*</span></label>
+                            <input type="text" name="respondent" placeholder="e.g., John Quincy Adams" required
                                 class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
                         </div>
                         <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-2">Designation / Position:</label>
+                            <label class="block text-gray-800 text-sm font-semibold mb-2">Designation / Position:<span class="text-red-500">*</span></label>
                             <input type="text" name="position" required
                                 class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
                         </div>
                         <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-2">Contact Number:</label>
+                            <label class="block text-gray-800 text-sm font-semibold mb-2">Contact Number:<span class="text-red-500">*</span></label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <span class="text-gray-500 sm:text-sm border-r pr-2 border-gray-300">🇵🇭 +63</span>
                                 </div>
-                                <input type="tel" name="contact_number" maxlength="11" placeholder="912 345 6789" required
+                                <input type="tel" name="contact_number" maxlength="10" placeholder="912 345 6789" required
                                     class="w-full pl-16 pr-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
                             </div>
                         </div>
@@ -802,15 +966,16 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
                         <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-2">Email Address:</label>
-                            <input type="email" name="email" required
+                            <label class="block text-gray-800 text-sm font-semibold mb-2">Email Address:<span class="text-red-500">*</span></label>
+                            <input type="email" name="email" id="emailInput" required
                                 class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
+                            <p id="emailError" class="hidden text-red-500 text-xs mt-1.5 font-medium">Please enter a valid email address (e.g. <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="cea0afa3ab8eabb6afa3bea2abe0ada1a3">[email&#160;protected]</a>)</p>
                         </div>
                     </div>
 
                     <!-- Industry Sector Dropdown -->
                     <div class="relative mt-4">
-                        <label class="block text-gray-700 text-sm font-medium mb-2">Industry Sector:</label>
+                        <label class="block text-gray-800 text-sm font-semibold mb-2">Industry Sector:<span class="text-red-500">*</span></label>
                         <button type="button" id="industry-dropdown-btn"
                             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 hover:border-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
                             <span id="industry-selected-text" class="text-gray-400">Please select your primary operation</span>
@@ -840,7 +1005,7 @@
 
                     <!-- Company Size Dropdown -->
                     <div class="relative mt-4">
-                        <label class="block text-gray-700 text-sm font-medium mb-2">Company Size:</label>
+                        <label class="block text-gray-800 text-sm font-semibold mb-2">Company Size:<span class="text-red-500">*</span></label>
                         <button type="button" id="company-size-btn"
                             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 hover:border-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
                             <span id="company-size-selected-text" class="text-gray-400">Select company size</span>
@@ -860,7 +1025,7 @@
 
                 <!-- NAV -->
                 <div class="flex justify-end mt-6">
-                    <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-8 py-2.5 rounded-lg transition shadow">Next →</button>
+                    <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-8 py-2.5 rounded-lg transition shadow-md">Next </button>
                 </div>
             </div>
             <!-- ─── END STEP 1 ──────────────────────────────────── -->
@@ -870,13 +1035,16 @@
             <div class="lmi-step" data-step="1" style="display:none;">
 
                 <div class="bg-teal-50 border border-teal-200 rounded-lg p-6 mt-10 overflow-hidden">
-                    <div class="flex items-start gap-2 text-teal-700 text-base font-semibold mb-2">
-                        <svg class="w-5 h-5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        PART II: HARD-TO-FILL ROLES
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        <div class="text-sm font-bold text-gray-800 uppercase tracking-wide">Part II: Hard-to-Fill Roles</div>
                     </div>
-                    <p class="text-teal-600 text-xs italic mb-4">
+                    <div class="h-px bg-gray-100 mb-4"></div>
+                    <p class="text-teal-700 text-xs font-medium mb-4">
                         Please identify the TOP Job Titles you find hardest to fill. Be as specific as possible (e.g., instead of "IT Skills", say "Python Programming").
                     </p>
 
@@ -884,13 +1052,13 @@
                         <div class="bg-white rounded-lg p-4 border border-gray-200 job-entry">
                             <!-- 8 -->
                             <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-medium mb-2">8. Job Title: <span class="text-red-500">*</span></label>
+                                <label class="block text-gray-800 text-sm font-semibold mb-2"> Job Title: <span class="text-gray-700 text-sm font-medium">(Please list only one job title)</span><span class="text-red-500">*</span></label>
                                 <input type="text" name="job_title[]" placeholder="e.g. Senior Java Developer" required
                                     class="job-title-input w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
                             </div>
                             <!-- 9 -->
                             <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-medium mb-2">9. Standard Job Classifications / Families: <span class="text-red-500">*</span></label>
+                                <label class="block text-gray-800 text-sm font-semibold mb-2"> Standard Job Classifications / Families: <span class="text-red-500">*</span></label>
                                 <div class="relative">
                                     <button type="button" class="job-classification-btn w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
                                         <span class="job-classification-text text-gray-400">Select job classification</span>
@@ -918,9 +1086,46 @@
                                     <input type="hidden" class="job-classification-input" name="job_classification[]" required>
                                 </div>
                             </div>
-                            <!-- 10 -->
+                            
+                            <!-- 10 - Salary Range -->
                             <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-medium mb-2">10. Duration that the Vacancy is Open: <span class="text-red-500">*</span></label>
+                                <label class="block text-gray-800 text-sm font-semibold mb-2"> Salary Range: <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <button type="button" class="salary-range-btn w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
+                                        <span class="salary-range-text text-gray-400">Select salary range</span>
+                                        <svg class="salary-range-arrow w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                    <div class="salary-range-menu absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden hidden">
+                                        <div data-value="₱30,000 - ₱59,999" class="salary-range-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">₱30,000 - ₱59,999</div>
+                                        <div data-value="₱60,000 - ₱89,999" class="salary-range-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">₱60,000 - ₱89,999</div>
+                                        <div data-value="₱90,000 - ₱149,999" class="salary-range-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">₱90,000 - ₱149,999</div>
+                                        <div data-value="₱150,000 - ₱499,999" class="salary-range-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">₱150,000 - ₱499,999</div>
+                                        <div data-value="₱500,000 and above" class="salary-range-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">₱500,000 and above</div>
+                                        <div data-value="Below ₱30,000" class="salary-range-option below-30k-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition"> 
+                                        Below ₱30,000 (please specify)
+                                    </div>
+                                    </div>
+                                    <input type="hidden" class="salary-range-input" name="salary_range[]">
+                                </div>
+                                
+                                <!-- Below 30k input field (shown when "Below ₱30,000" is selected) -->
+                                <div class="below-30k-input-container mt-3 hidden">
+                                <label class="block text-gray-600 text-xs font-medium mb-2">Please specify the exact salary amount:</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">₱</span>
+                                    <input type="text" 
+                                        name="below_30k_salary[]"
+                                        class="below-30k-salary-input w-full pl-8 pr-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" 
+                                        placeholder="e.g. 25,000"
+                                        inputmode="numeric">
+                                </div>
+                            </div>
+                            </div>
+                            <!-- 11 -->
+                            <div class="mb-4">
+                                <label class="block text-gray-800 text-sm font-semibold mb-2">Duration that the Vacancy is Open: <span class="text-red-500">*</span></label>
                                 <div class="relative">
                                     <button type="button" class="duration-btn w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
                                         <span class="duration-text text-gray-400">Select duration</span>
@@ -937,76 +1142,80 @@
                                     <input type="hidden" class="duration-input" name="vacancy_duration[]" required>
                                 </div>
                             </div>
-                            <!-- 11 -->
+                            <!-- 12 -->
                             <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-medium mb-2">
-                                    11. Reasons For Difficulty (Role-Level) <span class="italic text-gray-500">(Check all that apply)</span>
+                                <label class="block text-gray-800 text-sm font-semibold mb-2">
+                                    Reasons For Difficulty (Role-Level) <span class="italic text-gray-500">(Check all that apply)</span>
                                 </label>
                                 <div class="difficulty-reasons space-y-3">
-                                    <label class="technical-skills-label flex items-start p-3 border rounded-lg cursor-pointer transition-all border-gray-200 hover:bg-gray-50">
-                                        <input type="checkbox" name="difficulty_reasons_0[]" value="Technical / Hard Skills Missing"
-                                            class="technical-checkbox mt-1 w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
-                                        <div class="ml-3 flex-1">
-                                            <div class="font-medium text-gray-700">Technical / Hard Skills Missing</div>
-                                            <div class="text-xs text-gray-500 mt-1">Applicants do not have the required tools, software, or technical knowledge</div>
-                                            <div class="technical-details mt-3 hidden">
-                                                <label class="block text-gray-600 text-xs font-medium mb-1">What specific technical tools, software, or machinery knowledge is missing?</label>
-                                                <div class="technical-tags-container flex flex-wrap gap-2 mb-2"></div>
-                                                <div class="flex gap-2">
-                                                    <input type="text" class="technical-skill-input flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                                        placeholder="Type a skill and press Enter (e.g. Python, SQL, AutoCAD...)"/>
-                                                    <button type="button" class="add-technical-skill px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-medium text-sm transition-colors shadow-sm">Add</button>
-                                                </div>
-                                                <p class="text-xs text-gray-500 mt-1">Press Enter or comma to add each skill</p>
-                                                <input type="hidden" class="technical-skills-input" name="technical_skills_missing[]">
+                                    <div class="technical-skills-label p-3 border rounded-lg transition-all border-gray-200">
+                                        <label class="flex items-start cursor-pointer">
+                                            <input type="checkbox" name="difficulty_reasons_0[]" value="Technical / Hard Skills Missing"
+                                                class="technical-checkbox mt-1 w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
+                                            <div class="ml-3">
+                                                <div class="font-semibold text-gray-800">Technical / Hard Skills Missing</div>
+                                                <div class="text-xs text-gray-500 mt-1">Applicants do not have the required tools, software, or technical knowledge</div>
                                             </div>
-                                        </div>
-                                    </label>
-                                    <label class="soft-skills-label flex items-start p-3 border rounded-lg cursor-pointer transition-all border-gray-200 hover:bg-gray-50">
-                                        <input type="checkbox" name="difficulty_reasons_0[]" value="Soft / Employability Skills Missing"
-                                            class="soft-checkbox mt-1 w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
-                                        <div class="ml-3 flex-1">
-                                            <div class="font-medium text-gray-700">Soft / Employability Skills Missing</div>
-                                            <div class="text-xs text-gray-500 mt-1">Applicants cannot communicate effectively, work in teams, or demonstrate professionalism</div>
-                                            <div class="soft-details mt-3 hidden">
-                                                <label class="block text-gray-600 text-xs font-medium mb-1">What attitude or behavioral traits cause you to reject applicants?</label>
-                                                <div class="soft-tags-container flex flex-wrap gap-2 mb-2"></div>
-                                                <div class="flex gap-2">
-                                                    <input type="text" class="soft-skill-input flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                                        placeholder="Type a trait and press Enter (e.g. Poor communication, Unprofessional...)"/>
-                                                    <button type="button" class="add-soft-skill px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-medium text-sm transition-colors shadow-sm">Add</button>
-                                                </div>
-                                                <p class="text-xs text-gray-500 mt-1">Press Enter or comma to add each trait</p>
-                                                <input type="hidden" class="soft-skills-input" name="soft_skills_missing[]">
+                                        </label>
+                                        <div class="technical-details mt-3 hidden">
+                                            <label class="block text-gray-600 text-xs font-medium mb-1">What specific technical tools, software, or machinery knowledge is missing?</label>
+                                            <div class="technical-tags-container flex flex-wrap gap-2 mb-2"></div>
+                                            <div class="flex gap-2">
+                                                <input type="text" class="technical-skill-input flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                                                    placeholder="Type a skill and press Enter (e.g. Python, SQL, AutoCAD...)"/>
+                                                <button type="button" class="add-technical-skill px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-medium text-sm transition-colors shadow-sm">Enter</button>
                                             </div>
+                                            <p class="text-xs text-gray-500 mt-1">Press Enter or comma to add each skill</p>
+                                            <input type="hidden" class="technical-skills-input" name="technical_skills_missing[]">
                                         </div>
-                                    </label>
+                                    </div>
+                                    <div class="soft-skills-label p-3 border rounded-lg transition-all border-gray-200">
+                                        <label class="flex items-start cursor-pointer">
+                                            <input type="checkbox" name="difficulty_reasons_0[]" value="Soft / Employability Skills Missing"
+                                                class="soft-checkbox mt-1 w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
+                                            <div class="ml-3">
+                                                <div class="font-semibold text-gray-800">Soft / Employability Skills Missing</div>
+                                                <div class="text-xs text-gray-500 mt-1">Applicants cannot communicate effectively, work in teams, or demonstrate professionalism</div>
+                                            </div>
+                                        </label>
+                                        <div class="soft-details mt-3 hidden">
+                                            <label class="block text-gray-600 text-xs font-medium mb-1">What attitude or behavioral traits cause you to reject applicants?</label>
+                                            <div class="soft-tags-container flex flex-wrap gap-2 mb-2"></div>
+                                            <div class="flex gap-2">
+                                                <input type="text" class="soft-skill-input flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                                                    placeholder="Type a trait and press Enter (e.g. Poor communication, Unprofessional...)"/>
+                                                <button type="button" class="add-soft-skill px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-medium text-sm transition-colors shadow-sm">Enter</button>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">Press Enter or comma to add each trait</p>
+                                            <input type="hidden" class="soft-skills-input" name="soft_skills_missing[]">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <!-- 12 -->
+                            <!-- 13 -->
                             <div class="mb-4 mt-6 pt-4 border-t border-gray-200">
-                                <label class="block text-gray-700 text-sm font-medium mb-3">
-                                    12. How much does the difficulty finding qualified applicants for this role impact your business operations? <span class="text-red-500">*</span>
+                                <label class="block text-gray-800 text-sm font-semibold mb-3">
+                                    How much does the difficulty finding qualified applicants for this role impact your business operations? <span class="text-red-500">*</span>
                                 </label>
                                 <div class="impact-level space-y-3">
                                     <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
                                         <input type="radio" name="impact_level_0" value="High" required class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                         <div class="ml-3 flex-1">
-                                            <div class="font-medium text-gray-800">High Impact</div>
+                                            <div class="font-semibold text-gray-900">High Impact</div>
                                             <div class="text-xs text-gray-500 mt-1">Operations are significantly disrupted, critical tasks or projects are delayed, affecting productivity and revenue</div>
                                         </div>
                                     </label>
                                     <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
                                         <input type="radio" name="impact_level_0" value="Medium" required class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                         <div class="ml-3 flex-1">
-                                            <div class="font-medium text-gray-800">Medium Impact</div>
+                                            <div class="font-semibold text-gray-900">Medium Impact</div>
                                             <div class="text-xs text-gray-500 mt-1">Operations continue but require overtime, increased workload for existing staff, or minor project delays</div>
                                         </div>
                                     </label>
                                     <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
                                         <input type="radio" name="impact_level_0" value="Low" required class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                         <div class="ml-3 flex-1">
-                                            <div class="font-medium text-gray-800">Low Impact</div>
+                                            <div class="font-semibold text-gray-900">Low Impact</div>
                                             <div class="text-xs text-gray-500 mt-1">Minimal impact; new hires can be trained internally without significant operational disruptions</div>
                                         </div>
                                     </label>
@@ -1024,10 +1233,11 @@
                     </button>
                 </div>
 
+
                 <!-- NAV -->
                 <div class="flex justify-between mt-6">
-                    <button type="button" class="btn-prev bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-8 py-2.5 rounded-lg transition shadow">← Previous</button>
-                    <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-8 py-2.5 rounded-lg transition shadow">Next →</button>
+                    <button type="button" class="btn-prev bg-white hover:bg-gray-50 text-gray-700 font-semibold px-8 py-2.5 rounded-lg transition border border-gray-300 shadow-sm"> Previous</button>
+                    <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-8 py-2.5 rounded-lg transition shadow-md">Next </button>
                 </div>
             </div>
             <!-- ─── END STEP 2 ──────────────────────────────────── -->
@@ -1036,56 +1246,59 @@
             <!-- ─── STEP 3: DIAGNOSIS OF MISMATCH ───────────────── -->
             <div class="lmi-step" data-step="2" style="display:none;">
 
-                <div class="bg-orange-50 border border-orange-200 rounded-lg p-6 mt-10">
-                    <div class="flex items-start gap-2 text-orange-700 text-base font-semibold mb-2">
-                        <svg class="w-5 h-5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        PART III: DIAGNOSIS OF MISMATCH
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mt-10">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="text-sm font-bold text-gray-800 uppercase tracking-wide">Part III: Diagnosis of Mismatch</div>
                     </div>
-                    <p class="text-gray-700 text-xs italic mb-6">
+                    <div class="h-px bg-gray-100 mb-4"></div>
+                    <p class="text-gray-600 text-xs font-medium mb-6">
                         For applicants who meet formal qualifications (degree, license, or certification), which observable factors most often cause them to be rejected?
                     </p>
 
                     <div class="space-y-6">
                         <!-- 13 -->
                         <div class="bg-white rounded-lg p-5 border border-gray-200">
-                            <label class="block text-gray-700 text-sm font-medium mb-3">
-                                13. Reason Qualified Applicants Are Rejected (Applicant-Level) <span class="text-gray-500 italic text-xs">(Check all that apply)</span>
+                            <label class="block text-gray-800 text-sm font-semibold mb-3">
+                                Reason Qualified Applicants Are Rejected (Applicant-Level) <span class="text-gray-500 italic text-xs">(Check all that apply)</span>
                             </label>
                             <div class="space-y-3">
                                 <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
                                     <input type="checkbox" name="rejection_reasons[]" value="Lack of practical / hands-on experience" class="mt-1 w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
                                     <div class="ml-3 flex-1">
-                                        <div class="font-medium text-gray-800">Lack of practical / hands-on experience</div>
+                                        <div class="font-semibold text-gray-900">Lack of practical / hands-on experience</div>
                                         <div class="text-xs text-gray-500 mt-1">Cannot apply theory to real work; requires supervision</div>
                                     </div>
                                 </label>
                                 <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
                                     <input type="checkbox" name="rejection_reasons[]" value="Skills are outdated" class="mt-1 w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
                                     <div class="ml-3 flex-1">
-                                        <div class="font-medium text-gray-800">Skills are outdated</div>
+                                        <div class="font-semibold text-gray-900">Skills are outdated</div>
                                         <div class="text-xs text-gray-500 mt-1">Training received does not match current tools, systems, or industry practices</div>
                                     </div>
                                 </label>
                                 <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
                                     <input type="checkbox" name="rejection_reasons[]" value="Poor communication skills" class="mt-1 w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
                                     <div class="ml-3 flex-1">
-                                        <div class="font-medium text-gray-800">Poor communication skills</div>
+                                        <div class="font-semibold text-gray-900">Poor communication skills</div>
                                         <div class="text-xs text-gray-500 mt-1">Oral, written, presentation, or cross-cultural communication issues</div>
                                     </div>
                                 </label>
                                 <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
                                     <input type="checkbox" name="rejection_reasons[]" value="Low job readiness / poor interview performance" class="mt-1 w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
                                     <div class="ml-3 flex-1">
-                                        <div class="font-medium text-gray-800">Low job readiness / poor interview performance</div>
+                                        <div class="font-semibold text-gray-900">Low job readiness / poor interview performance</div>
                                         <div class="text-xs text-gray-500 mt-1">Cannot demonstrate readiness during recruitment; fails assessments; lacks workplace etiquette</div>
                                     </div>
                                 </label>
                                 <div class="other-rejection-option border rounded-lg transition-all border-gray-200">
                                     <label class="flex items-start p-3 cursor-pointer">
                                         <input type="checkbox" name="rejection_reasons[]" value="Other" class="other-rejection-checkbox mt-1 w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
-                                        <div class="ml-3 flex-1"><div class="font-medium text-gray-800">Other (please specify)</div></div>
+                                        <div class="ml-3 flex-1"><div class="font-semibold text-gray-900">Other (please specify)</div></div>
                                     </label>
                                     <div class="other-rejection-input px-3 pb-3 ml-7 hidden">
                                         <input type="text" name="rejection_reasons_other" placeholder="Please specify other reasons..."
@@ -1096,39 +1309,39 @@
                         </div>
                         <!-- 14 -->
                         <div class="bg-white rounded-lg p-5 border border-gray-200">
-                            <label class="block text-gray-700 text-sm font-medium mb-3">
-                                14. How often do you coordinate with Universities/Colleges to discuss your skills requirements? <span class="text-gray-500 italic text-xs">(Select ONE)</span>
+                            <label class="block text-gray-800 text-sm font-semibold mb-3">
+                                How often do you coordinate with Universities/Colleges to discuss your skills requirements? <span class="text-gray-500 italic text-xs">(Select ONE)</span>
                             </label>
                             <div class="coordination-options space-y-3">
                                 <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
                                     <input type="radio" name="coordination_frequency" value="Never" required class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
-                                    <div class="ml-3 flex-1"><div class="font-medium text-gray-800">Never</div></div>
+                                    <div class="ml-3 flex-1"><div class="font-semibold text-gray-900">Never</div></div>
                                 </label>
                                 <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
                                     <input type="radio" name="coordination_frequency" value="Rarely" required class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                     <div class="ml-3 flex-1">
-                                        <div class="font-medium text-gray-800">Rarely</div>
+                                        <div class="font-semibold text-gray-900">Rarely</div>
                                         <div class="text-xs text-gray-500 mt-1">Only when invited to graduations/events</div>
                                     </div>
                                 </label>
                                 <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
                                     <input type="radio" name="coordination_frequency" value="Occasionally" required class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                     <div class="ml-3 flex-1">
-                                        <div class="font-medium text-gray-800">Occasionally</div>
+                                        <div class="font-semibold text-gray-900">Occasionally</div>
                                         <div class="text-xs text-gray-500 mt-1">During OJT placement</div>
                                     </div>
                                 </label>
                                 <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
                                     <input type="radio" name="coordination_frequency" value="Frequently" required class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
                                     <div class="ml-3 flex-1">
-                                        <div class="font-medium text-gray-800">Frequently</div>
+                                        <div class="font-semibold text-gray-900">Frequently</div>
                                         <div class="text-xs text-gray-500 mt-1">We sit on advisory boards/curriculum reviews</div>
                                     </div>
                                 </label>
                                 <div class="other-coordination-option border rounded-lg transition-all border-gray-200">
                                     <label class="flex items-start p-3 cursor-pointer">
                                         <input type="radio" name="coordination_frequency" value="Other" required class="other-coordination-radio mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
-                                        <div class="ml-3 flex-1"><div class="font-medium text-gray-800">Other (please specify)</div></div>
+                                        <div class="ml-3 flex-1"><div class="font-semibold text-gray-900">Other (please specify)</div></div>
                                     </label>
                                     <div class="other-coordination-input px-3 pb-3 ml-7 hidden">
                                         <input type="text" name="coordination_frequency_other" placeholder="Please specify..."
@@ -1142,8 +1355,8 @@
 
                 <!-- NAV -->
                 <div class="flex justify-between mt-6">
-                    <button type="button" class="btn-prev bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-8 py-2.5 rounded-lg transition shadow">← Previous</button>
-                    <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-8 py-2.5 rounded-lg transition shadow">Next →</button>
+                    <button type="button" class="btn-prev bg-white hover:bg-gray-50 text-gray-700 font-semibold px-8 py-2.5 rounded-lg transition border border-gray-300 shadow-sm"> Previous</button>
+                    <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-8 py-2.5 rounded-lg transition shadow-md">Next </button>
                 </div>
             </div>
             <!-- ─── END STEP 3 ──────────────────────────────────── -->
@@ -1152,43 +1365,52 @@
             <!-- ─── STEP 4: ENGAGEMENT & NEXT STEPS ─────────────── -->
             <div class="lmi-step" data-step="3" style="display:none;">
 
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-8">
-                    <div class="flex items-start gap-2 text-blue-700 text-base font-semibold mb-2">
-                        <svg class="w-5 h-5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
-                        </svg>
-                        PART IV: ENGAGEMENT &amp; NEXT STEPS
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mt-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
+                            </svg>
+                        </div>
+                        <div class="text-sm font-bold text-gray-800 uppercase tracking-wide">Part IV: Engagement &amp; Next Steps</div>
                     </div>
-                    <p class="text-blue-600 text-xs italic mb-4">Help us understand what features would be most valuable to you.</p>
+                    <div class="h-px bg-gray-100 mb-4"></div>
+                    <p class="text-gray-600 text-xs font-medium mb-4">Help us understand what features would be most valuable to you.</p>
 
                     <div class="space-y-5">
                         <!-- 20 -->
                         <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-3">
-                                20. If DOLE provides a Regional LMI Dashboard, what features would be most useful for you? <span class="text-gray-500 text-xs">(Select top 2)</span>
+                            <label class="block text-gray-800 text-sm font-semibold mb-3">
+                                If DOLE provides a Regional LMI Dashboard, what features would be most useful for you? <span class="text-gray-500 text-xs">(Select top 2)</span>
                             </label>
-                            <div class="space-y-3">
-                                <label class="flex items-start p-3 border rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition">
-                                    <input type="checkbox" name="lmi_features[]" value="Viewing the supply of graduates" class="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                    <div class="ml-3 flex-1"><div class="font-medium text-gray-800">Viewing the supply of graduates (e.g., "How many IT grads will graduate next year?")</div></div>
+                            <div class="space-y-3" id="lmi-features-group">
+                                <label class="lmi-feature-label flex items-start p-3 border rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition">
+                                    <input type="checkbox" name="lmi_features[]" value="Viewing the supply of graduates" class="lmi-feature-checkbox mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <div class="ml-3 flex-1"><div class="font-semibold text-gray-900">Viewing the supply of graduates (e.g., "How many IT grads will graduate next year?")</div></div>
                                 </label>
-                                <label class="flex items-start p-3 border rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition">
-                                    <input type="checkbox" name="lmi_features[]" value="A channel to submit real-time feedback" class="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                    <div class="ml-3 flex-1"><div class="font-medium text-gray-800">A channel to submit real-time feedback on curriculum quality</div></div>
+                                <label class="lmi-feature-label flex items-start p-3 border rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition">
+                                    <input type="checkbox" name="lmi_features[]" value="A channel to submit real-time feedback" class="lmi-feature-checkbox mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <div class="ml-3 flex-1"><div class="font-semibold text-gray-900">A channel to submit real-time feedback on curriculum quality</div></div>
                                 </label>
-                                <label class="flex items-start p-3 border rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition">
-                                    <input type="checkbox" name="lmi_features[]" value="A directory of job placement offices" class="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                    <div class="ml-3 flex-1"><div class="font-medium text-gray-800">A directory of job placement offices and Public Employment offices (PESOs)</div></div>
+                                <label class="lmi-feature-label flex items-start p-3 border rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition">
+                                    <input type="checkbox" name="lmi_features[]" value="A directory of job placement offices" class="lmi-feature-checkbox mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <div class="ml-3 flex-1"><div class="font-semibold text-gray-900">A directory of job placement offices and Public Employment offices (PESOs)</div></div>
                                 </label>
-                                <label class="flex items-start p-3 border rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition">
-                                    <input type="checkbox" name="lmi_features[]" value="Other" class="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                    <div class="ml-3 flex-1"><div class="font-medium text-gray-800">Other</div></div>
-                                </label>
+                                <div class="lmi-other-option border rounded-lg border-gray-200 transition-all">
+                                    <label class="lmi-feature-label flex items-start p-3 cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+                                        <input type="checkbox" name="lmi_features[]" value="Other" class="lmi-feature-checkbox lmi-other-checkbox mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                        <div class="ml-3 flex-1"><div class="font-semibold text-gray-900">Other (please specify)</div></div>
+                                    </label>
+                                    <div class="lmi-other-input px-3 pb-3 ml-7 hidden">
+                                        <input type="text" name="lmi_features_other" placeholder="Please specify..."
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"/>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <!-- Additional -->
                         <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-2">
+                            <label class="block text-gray-800 text-sm font-semibold mb-2">
                                 Additional Insights or Suggestions: <span class="text-gray-500 text-xs">(Optional)</span>
                             </label>
                             <textarea name="specific_inputs" rows="4" placeholder="Please share any additional insights or suggestions..."
@@ -1201,15 +1423,15 @@
                 <div class="mt-6 mb-2">
                     <label class="flex items-start cursor-pointer">
                         <input type="checkbox" name="consent" value="1" required class="consent-checkbox mt-1 w-4 h-4 text-teal-600">
-                        <span class="ml-3 text-sm text-gray-700">
-                            I consent to submit this data for labor market intelligence purposes. <span class="text-red-500">*</span>
+                        <span class="ml-3 text-l text-gray-700">
+                            By proceeding, I signify my consent to the processing of my personal data for labor market intelligence purposes, in accordance with RA 10173 (Data Privacy Act of 2012) and its IRR. <span class="text-red-500">*</span>
                         </span>
                     </label>
                 </div>
 
                 <!-- NAV -->
                 <div class="flex justify-between mt-6">
-                    <button type="button" class="btn-prev bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-8 py-2.5 rounded-lg transition shadow">← Previous</button>
+                    <button type="button" class="btn-prev bg-white hover:bg-gray-50 text-gray-700 font-semibold px-8 py-2.5 rounded-lg transition border border-gray-300 shadow-sm"> Previous</button>
                     <button type="submit" class="btn-submit-lmi bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-8 rounded-lg transition shadow-lg">
                         Submit LMI Matrix
                     </button>
@@ -1279,7 +1501,7 @@
 </div>
 </div>
 </div>
- <script>
+ <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // Toggle role details function
 function toggleRoleDetails(submissionId, index) {
     const details = document.getElementById(`role-details-${submissionId}-${index}`);
@@ -1294,206 +1516,130 @@ function toggleRoleDetails(submissionId, index) {
     }
 }
 
-// Prepare comparison data
-const comparisonData = @json($comparison_data ?? []);
+// Prepare comparison data (initial load from server)
+let comparisonData = @json($comparison_data ?? []);
+let currentSelectedYear = {{ $selected_year ?? 'null' }};
 
-// Create labels and datasets
-const labels = comparisonData.map(d => d.title);
-const currentYearData = comparisonData.map(d => d.current_count);
-const previousYearData = comparisonData.map(d => d.previous_count);
-
-// Chart configuration
-const chartConfig = {
-    type: 'bar',
-    data: {
-        labels: labels,
-        datasets: [
-            {
-                label: '{{ $selected_year - 1 ?? "Previous Year" }}',
-                data: previousYearData,
-                backgroundColor: 'rgba(34, 197, 94, 0.7)',
-                borderColor: 'rgba(34, 197, 94, 1)',
-                borderWidth: 0,
-                borderRadius: 4,
-                barThickness: 18,
-            },
-            {
-                label: '{{ $selected_year ?? "Current Year" }}',
-                data: currentYearData,
-                backgroundColor: 'rgba(59, 130, 246, 0.9)',
-                borderColor: 'rgba(59, 130, 246, 1)',
-                borderWidth: 0,
-                borderRadius: 4,
-                barThickness: 18,
-            }
-        ]
-    },
-    options: {
-        indexAxis: 'y', // Horizontal bars
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: true,
-                position: 'top',
-                align: 'end',
-                labels: {
-                    boxWidth: 12,
-                    boxHeight: 12,
-                    font: {
-                        size: 11,
-                        weight: '500'
-                    },
-                    padding: 15,
-                    usePointStyle: true,
-                    pointStyle: 'circle'
-                }
-            },
-            tooltip: {
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                padding: 12,
-                titleFont: {
-                    size: 13,
-                    weight: 'bold'
-                },
-                bodyFont: {
-                    size: 12
-                },
-                callbacks: {
-                    title: function(context) {
-                        return context[0].label;
-                    },
-                    label: function(context) {
-                        let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
-                        }
-                        label += context.parsed.x.toLocaleString();
-                        
-                        // Add change info for current year
-                        if (context.datasetIndex === 1) {
-                            const dataIndex = context.dataIndex;
-                            if (comparisonData[dataIndex]) {
-                                const change = comparisonData[dataIndex].change;
-                                const isNew = comparisonData[dataIndex].is_new;
-                                
-                                if (isNew) {
-                                    label += ' (NEW)';
-                                } else if (change !== 0) {
-                                    label += ` (${change > 0 ? '+' : ''}${change}%)`;
-                                }
-                            }
-                        }
-                        return label;
-                    }
-                }
-            }
-        },
-        scales: {
-            x: {
-                beginAtZero: true,
-                grid: {
-                    display: true,
-                    color: 'rgba(0, 0, 0, 0.03)'
-                },
-                ticks: {
-                    font: {
-                        size: 10
-                    },
-                    callback: function(value) {
-                        if (value >= 1000) {
-                            return (value / 1000) + 'k';
-                        }
-                        return value;
-                    }
-                }
-            },
-            y: {
-                grid: {
-                    display: false
-                },
-                ticks: {
-                    font: {
-                        size: 11,
-                        weight: '500'
-                    },
-                    color: '#374151'
-                }
-            }
-        },
-        interaction: {
-            mode: 'y',
-            intersect: false
-        }
-    }
-};
-
-// Initialize main chart
+// Build and render the main chart
 let mainChart = null;
 let expandedChart = null;
 
-if (comparisonData && comparisonData.length > 0) {
+function renderMainChart() {
     const ctx = document.getElementById('highVolumeHorizontalChart');
-    if (ctx) {
-        mainChart = new Chart(ctx, chartConfig);
+    if (!ctx || !comparisonData.length) return;
+    if (mainChart) mainChart.destroy();
+    mainChart = new Chart(ctx, buildChartConfig(comparisonData));
+}
+
+function buildChartConfig(data, axisSize = 11) {
+    const labels      = data.map(d => d.title);
+    const currentData = data.map(d => d.current_count);
+    const prevData    = data.map(d => d.previous_count);
+    const hasPrev     = prevData.some(v => v && v > 0);
+
+    const datasets = [
+        ...(hasPrev ? [{
+            label: String(currentSelectedYear - 1),
+            data: prevData,
+            backgroundColor: 'rgba(34, 197, 94, 0.7)',
+            borderColor: 'rgba(34, 197, 94, 1)',
+            borderWidth: 0, borderRadius: 4, barThickness: 18,
+        }] : []),
+        {
+            label: String(currentSelectedYear),
+            data: currentData,
+            backgroundColor: 'rgba(59, 130, 246, 0.9)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 0, borderRadius: 4, barThickness: 18,
+        }
+    ];
+
+    return {
+        type: 'bar',
+        data: { labels, datasets },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true, position: 'top', align: 'end',
+                    labels: { boxWidth: 12, boxHeight: 12, font: { size: axisSize, weight: '500' }, padding: 15, usePointStyle: true, pointStyle: 'circle' }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)', padding: 12,
+                    titleFont: { size: 13, weight: 'bold' }, bodyFont: { size: 12 },
+                    callbacks: {
+                        title: ctx => ctx[0].label,
+                        label: function(context) {
+                            let label = (context.dataset.label || '') + ': ';
+                            label += context.parsed.x.toLocaleString();
+                            if (context.datasetIndex === 1 && comparisonData[context.dataIndex]) {
+                                const { change, is_new } = comparisonData[context.dataIndex];
+                                if (is_new) label += ' (NEW)';
+                                else if (change !== 0) label += ` (${change > 0 ? '+' : ''}${change}%)`;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: { display: true, color: 'rgba(0,0,0,0.03)' },
+                    ticks: { font: { size: axisSize }, callback: v => v >= 1000 ? (v/1000)+'k' : v }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { font: { size: axisSize, weight: '500' }, color: '#374151' }
+                }
+            },
+            interaction: { mode: 'y', intersect: false }
+        }
+    };
+}
+
+// Fetch new chart data when year changes — no page reload
+async function updateChart(year) {
+    try {
+        const res  = await fetch(`/api/job-market/chart-data?year=${year}`);
+        const json = await res.json();
+
+        comparisonData      = json.comparison_data;
+        currentSelectedYear = json.selected_year;
+
+        // Update subtitle - show only when previous data exists
+        const subtitle     = document.getElementById('chartSubtitle');
+        const prevLabel    = document.getElementById('prevYearLabel');
+        const currentLabel = document.getElementById('currentYearLabel');
+
+        if (prevLabel)    prevLabel.textContent    = json.previous_year;
+        if (currentLabel) currentLabel.textContent = json.selected_year;
+        if (subtitle)     subtitle.style.display   = json.has_previous_data ? '' : 'none';
+
+        renderMainChart();
+    } catch (e) {
+        console.error('Chart update failed:', e);
     }
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    renderMainChart();
+});
 
 // Expand chart function
 function expandChart() {
     const modal = document.getElementById('chartModal');
     modal.classList.remove('hidden');
     
-    // Destroy existing expanded chart if any
     if (expandedChart) {
         expandedChart.destroy();
     }
     
-    // Create expanded chart
     const expandedCtx = document.getElementById('highVolumeExpandedChart');
     if (expandedCtx && comparisonData && comparisonData.length > 0) {
-        expandedChart = new Chart(expandedCtx, {
-            ...chartConfig,
-            options: {
-                ...chartConfig.options,
-                plugins: {
-                    ...chartConfig.options.plugins,
-                    legend: {
-                        ...chartConfig.options.plugins.legend,
-                        labels: {
-                            ...chartConfig.options.plugins.legend.labels,
-                            font: {
-                                size: 14,
-                                weight: '500'
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    ...chartConfig.options.scales,
-                    x: {
-                        ...chartConfig.options.scales.x,
-                        ticks: {
-                            font: {
-                                size: 12
-                            },
-                            callback: function(value) {
-                                return value.toLocaleString();
-                            }
-                        }
-                    },
-                    y: {
-                        ...chartConfig.options.scales.y,
-                        ticks: {
-                            font: {
-                                size: 13,
-                                weight: '500'
-                            }
-                        }
-                    }
-                }
-            }
-        });
+        expandedChart = new Chart(expandedCtx, buildChartConfig(comparisonData, 13));
     }
 }
 
@@ -1516,8 +1662,8 @@ document.addEventListener('keydown', function(e) {
 });
 </script>
 <script>
-      
-   
+document.addEventListener('DOMContentLoaded', function() {
+
     // Main application state
 const appState = {
     showLmiMatrix: false
@@ -1545,18 +1691,55 @@ function showModal() {
     appState.showLmiMatrix = true;
     document.body.style.overflow = 'hidden';
     
+    // Hide navbar by setting z-index lower than modal
+    const navbar = document.querySelector('nav');
+    if (navbar) {
+        navbar.style.zIndex = '-1';
+        navbar.style.visibility = 'hidden';
+    }
+    
     // ADD THIS: Initialize autocomplete when modal opens
     setTimeout(() => {
-        console.log('🎯 Modal opened, initializing autocomplete...');
+
         initializeAllAutocompletes();
-        console.log('✅ Autocomplete initialized for modal!');
+
     }, 200);
 }
 
 function hideModal() {
+
     lmiMatrixModal.classList.add('hidden');
-    mainContent.classList.remove('blur-sm');
+    
+    // Remove blur if mainContent exists
+    if (mainContent) {
+        mainContent.classList.remove('blur-sm');
+    }
+    
+    // CRITICAL: Restore scrolling
+
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('overflow-y');
+    document.documentElement.style.removeProperty('overflow');
+    
+    // Double-check after a tiny delay
+    setTimeout(() => {
+        if (document.body.style.overflow === 'hidden') {
+            console.warn('⚠️ Body still has overflow:hidden! Forcing fix...');
+            document.body.style.overflow = 'auto';
+        }
+
+    }, 50);
+    
+    // Show navbar by restoring z-index
+    const navbar = document.querySelector('nav');
+    if (navbar) {
+        navbar.style.zIndex = '';
+        navbar.style.visibility = '';
+
+    }
+    
     appState.showLmiMatrix = false;
+
 }
 
 // Function to show confirmation modal (NO BLUR)
@@ -1618,8 +1801,8 @@ confirmSubmitBtn.addEventListener('click', async () => {
     
     try {
         // Log what we're sending (for debugging)
-        console.log('Form data being sent:', Object.fromEntries(formData));
-        console.log('Form action:', lmiForm.action);
+
+
         
         // Submit via AJAX
         const response = await fetch(lmiForm.action, {
@@ -1631,11 +1814,11 @@ confirmSubmitBtn.addEventListener('click', async () => {
             }
         });
         
-        console.log('Response status:', response.status);
+
         
         // Try to get the response text for debugging
         const responseText = await response.text();
-        console.log('Response text:', responseText);
+
         
         if (response.ok) {
             // Show success modal
@@ -1645,6 +1828,9 @@ confirmSubmitBtn.addEventListener('click', async () => {
             
             // Reset all dropdowns to placeholder state
             resetFormDropdowns();
+
+            // Reset step back to step 1
+            showStep(0);
             
         } else {
             // Try to parse as JSON for error messages
@@ -1710,15 +1896,24 @@ function resetFormDropdowns() {
             durationInput.value = '';
         }
         
-        // Clear skill tags
+        // Clear skill tags — call reset() to also clear the internal tags array in the closure,
+        // so old values do not ghost back when the user starts typing in a new session.
         const techTagsContainer = entry.querySelector('.technical-tags-container');
         if (techTagsContainer) {
-            techTagsContainer.innerHTML = '';
+            if (techTagsContainer._tagSystem) {
+                techTagsContainer._tagSystem.reset();
+            } else {
+                techTagsContainer.innerHTML = '';
+            }
         }
         
         const softTagsContainer = entry.querySelector('.soft-tags-container');
         if (softTagsContainer) {
-            softTagsContainer.innerHTML = '';
+            if (softTagsContainer._tagSystem) {
+                softTagsContainer._tagSystem.reset();
+            } else {
+                softTagsContainer.innerHTML = '';
+            }
         }
         
         // Uncheck and hide detail sections
@@ -1937,9 +2132,11 @@ document.addEventListener('keydown', (e) => {
             // Update hidden input
             hiddenInput.value = tags.join(', ');
             
-            // Add event listeners to remove buttons
+            // Bug fix: stopPropagation so clicking remove does not bubble up to the
+            // parent <label> and accidentally toggle the checkbox.
             tagsContainer.querySelectorAll('.remove-tag').forEach(btn => {
                 btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     const index = parseInt(e.target.closest('.remove-tag').getAttribute('data-index'));
                     tags.splice(index, 1);
                     updateTags();
@@ -1949,11 +2146,23 @@ document.addEventListener('keydown', (e) => {
         
         function addTag() {
             const tag = input.value.trim();
-            if (tag && !tags.includes(tag)) {
+            // Bug fix: case-insensitive duplicate check so "Apple" and "APPLE" are treated as the same.
+            if (tag && !tags.some(t => t.toLowerCase() === tag.toLowerCase())) {
                 tags.push(tag);
                 input.value = '';
                 updateTags();
+            } else {
+                input.value = '';
             }
+        }
+        
+        // Bug fix: expose reset() so resetFormDropdowns can clear the internal tags array,
+        // not just the DOM — otherwise old tags ghost back when the user types in a new session.
+        function reset() {
+            tags.length = 0;
+            tagsContainer.innerHTML = '';
+            hiddenInput.value = '';
+            input.value = '';
         }
         
         addButton.addEventListener('click', addTag);
@@ -1965,22 +2174,23 @@ document.addEventListener('keydown', (e) => {
             }
         });
         
-        return { tags, updateTags, addTag };
+        return { tags, updateTags, addTag, reset };
     }
 
     // Checkbox show/hide functionality
     function setupCheckboxToggle(checkbox, targetElement) {
         checkbox.addEventListener('change', () => {
+            // Outer wrapper is now a <div> (not a <label>) so we target the
+            // nearest element that carries the border/bg classes.
+            const wrapper = checkbox.closest('.technical-skills-label, .soft-skills-label');
             if (checkbox.checked) {
                 targetElement.classList.remove('hidden');
-                // Add active styles
-                checkbox.closest('label').classList.add('border-teal-500', 'bg-teal-50');
-                checkbox.closest('label').classList.remove('border-gray-200', 'hover:bg-gray-50');
+                wrapper?.classList.add('border-teal-500', 'bg-teal-50');
+                wrapper?.classList.remove('border-gray-200');
             } else {
                 targetElement.classList.add('hidden');
-                // Remove active styles
-                checkbox.closest('label').classList.remove('border-teal-500', 'bg-teal-50');
-                checkbox.closest('label').classList.add('border-gray-200', 'hover:bg-gray-50');
+                wrapper?.classList.remove('border-teal-500', 'bg-teal-50');
+                wrapper?.classList.add('border-gray-200');
             }
         });
     }
@@ -2035,13 +2245,15 @@ document.addEventListener('keydown', (e) => {
             setupCheckboxToggle(techCheckbox, techDetails);
             
             if (techAddBtn && techInput && techHiddenInput && techTagsContainer) {
-                createSkillTagSystem(
+                const techTagSystem = createSkillTagSystem(
                     techDetails,
                     techAddBtn,
                     techInput,
                     techHiddenInput,
                     techTagsContainer
                 );
+                // Store reset reference so resetFormDropdowns can clear the internal tags array
+                techTagsContainer._tagSystem = techTagSystem;
             }
         }
         
@@ -2057,296 +2269,431 @@ document.addEventListener('keydown', (e) => {
             setupCheckboxToggle(softCheckbox, softDetails);
             
             if (softAddBtn && softInput && softHiddenInput && softTagsContainer) {
-                createSkillTagSystem(
+                const softTagSystem = createSkillTagSystem(
                     softDetails,
                     softAddBtn,
                     softInput,
                     softHiddenInput,
                     softTagsContainer
                 );
+                // Store reset reference so resetFormDropdowns can clear the internal tags array
+                softTagsContainer._tagSystem = softTagSystem;
             }
         }
     }
+   document.addEventListener('click', function(e) {
+    // Toggle salary range dropdown
+    if (e.target.closest('.salary-range-btn')) {
+        const btn = e.target.closest('.salary-range-btn');
+        const menu = btn.nextElementSibling;
+        const arrow = btn.querySelector('.salary-range-arrow');
+        
+        menu.classList.toggle('hidden');
+        arrow.classList.toggle('rotate-180');
+        
+        // Close other dropdowns
+        document.querySelectorAll('.salary-range-menu').forEach(m => {
+            if (m !== menu) m.classList.add('hidden');
+        });
+    }
+    
+    // Select salary range option
+    
+if (e.target.closest('.salary-range-option')) {
+    const option = e.target.closest('.salary-range-option');
+    const container = option.closest('.mb-4');
+    const btn = container.querySelector('.salary-range-btn');
+    const menu = container.querySelector('.salary-range-menu');
+    const text = btn.querySelector('.salary-range-text');
+    const arrow = btn.querySelector('.salary-range-arrow');
+    const input = container.querySelector('.salary-range-input');
+    const below30kContainer = container.querySelector('.below-30k-input-container');
+    const below30kInput = container.querySelector('.below-30k-salary-input');
+
+    const value = option.dataset.value;
+
+    text.textContent = option.textContent.trim();
+    text.classList.remove('text-gray-400');
+    text.classList.add('text-gray-700');
+
+    menu.classList.add('hidden');
+    arrow.classList.remove('rotate-180');
+
+    if (value === 'Below ₱30,000') {
+    input.value = '__below_30k__'; // sentinel value
+    below30kContainer.classList.remove('hidden');
+    below30kInput.required = true;
+} else {
+    input.value = value;
+    below30kContainer.classList.add('hidden');
+    below30kInput.required = false;
+    below30kInput.value = '';
+}
+}
+    
+    // Close dropdown when clicking outside
+    if (!e.target.closest('.salary-range-btn') && !e.target.closest('.salary-range-menu')) {
+        document.querySelectorAll('.salary-range-menu').forEach(menu => {
+            menu.classList.add('hidden');
+        });
+        document.querySelectorAll('.salary-range-arrow').forEach(arrow => {
+            arrow.classList.remove('rotate-180');
+        });
+    }
+});
+
+// Limit Below 30k Salary Input to 5 digits with comma formatting
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('below-30k-salary-input')) {
+        let value = e.target.value;
+        
+        // Remove any non-numeric characters (including existing commas)
+        value = value.replace(/[^0-9]/g, '');
+        
+        // Limit to 5 characters (29999)
+        if (value.length > 5) {
+            value = value.substring(0, 5);
+        }
+        
+        // Check if value exceeds 29999
+        const numValue = parseInt(value);
+        if (numValue >= 30000) {
+            value = '30000';
+        }
+        
+        // Add comma formatting (e.g., 25000 becomes 25,000)
+       if (value) {
+            value = parseInt(value).toLocaleString('en-US');
+        }
+
+        e.target.value = value;
+
+        // 🔥 ADD THIS NEW CODE HERE:
+        if (value) {
+            const container = e.target.closest('.mb-4');
+            const salaryRangeInput = container.querySelector('.salary-range-input');
+            const numericValue = value.replace(/,/g, ''); // Remove comma (25,000 → 25000)
+            
+            if (salaryRangeInput) {
+                salaryRangeInput.value = numericValue; // Replace __below_30k__ with 25000
+            }
+        }
+    }
+});
 
     // Initialize existing job entries
-    document.querySelectorAll('.job-entry').forEach(initializeJobEntry);
+document.querySelectorAll('.job-entry').forEach(initializeJobEntry);
 
-    // Add job title functionality
-    const addJobTitleBtn = document.getElementById('add-job-title-btn');
-    const jobTitlesContainer = document.getElementById('jobTitlesContainer');
+// Add job title functionality
+const addJobTitleBtn = document.getElementById('add-job-title-btn');
+const jobTitlesContainer = document.getElementById('jobTitlesContainer');
 
-    addJobTitleBtn.addEventListener('click', () => {
-        const jobCount = jobTitlesContainer.querySelectorAll('.job-entry').length;
+addJobTitleBtn.addEventListener('click', () => {
+    const jobCount = jobTitlesContainer.querySelectorAll('.job-entry').length;
     const entryIndex = jobCount;
-        
-        const newJobEntry = document.createElement('div');
-        newJobEntry.className = 'bg-white rounded-lg p-4 border border-gray-200 job-entry relative';
-        
-        newJobEntry.innerHTML = `
-            <!-- Remove Button -->
-            <button type="button" 
-                    class="remove-job-btn absolute top-4 right-4 text-red-500 hover:text-red-700 font-medium text-sm flex items-center gap-1 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-                Remove
-            </button>
+    
+    const newJobEntry = document.createElement('div');
+    newJobEntry.className = 'bg-white rounded-lg p-4 border border-gray-200 job-entry relative';
+    
+    newJobEntry.innerHTML = `
+        <!-- Remove Button -->
+        <button type="button" 
+                class="remove-job-btn absolute top-4 right-4 text-red-500 hover:text-red-700 font-medium text-sm flex items-center gap-1 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            Remove
+        </button>
 
-            <!-- Job Entry Number -->
-            <div class="mb-4 pb-2 border-b border-gray-200">
-                <h4 class="text-sm font-bold text-teal-700">Job Entry #${jobCount + 1}</h4>
-            </div>
+        <!-- Job Entry Number -->
+        <div class="mb-4 pb-2 border-b border-gray-200">
+            <h4 class="text-sm font-bold text-teal-700">Job Entry #${jobCount + 1}</h4>
+        </div>
 
-            <!-- 8. Job Title -->
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-medium mb-2">
-                    8. Job Title: <span class="text-red-500">*</span>
-                </label>
-                <input 
-                    type="text" 
-                    name="job_title[]"
-                    placeholder="e.g. Senior Java Developer"
-                    required
-                    class="job-title-input w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
-                />
-            </div>
+        <!-- 8. Job Title -->
+        <div class="mb-4">
+            <label class="block text-gray-800 text-sm font-semibold mb-2">
+                Job Title: <span class="text-red-500">*</span>
+            </label>
+            <input 
+                type="text" 
+                name="job_title[]"
+                placeholder="e.g. Senior Java Developer"
+                required
+                class="job-title-input w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+            />
+        </div>
 
-            <!-- 9. Standard Job Classifications -->
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-medium mb-2">
-                    9. Standard Job Classifications / Families: <span class="text-red-500">*</span>
-                </label>
-                <div class="relative">
-                    <button type="button" class="job-classification-btn w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
-                        <span class="job-classification-text text-gray-400">Select job classification</span>
-                        <svg class="job-classification-arrow w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    
-                    <div class="job-classification-menu dropdown-menu absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
-                        
-                        <div data-value="Accounting, Finance & Banking" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Accounting, Finance & Banking
-                        </div>
-                        <div data-value="Administrative, HR & Office Support" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Administrative, HR & Office Support
-                        </div>
-                        <div data-value="Agriculture, Forestry & Agribusiness" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Agriculture, Forestry & Agribusiness
-                        </div>
-                        <div data-value="Construction, Engineering & Architecture" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Construction, Engineering & Architecture
-                        </div>
-                        <div data-value="Customer Service & BPO (Contact Center)" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Customer Service & BPO (Contact Center)
-                        </div>
-                        <div data-value="Education, Training & Academe" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Education, Training & Academe
-                        </div>
-                        <div data-value="Healthcare, Medical & Allied Services" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Healthcare, Medical & Allied Services
-                        </div>
-                        <div data-value="IT, Software, Data & Digital Creative" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • IT, Software, Data & Digital Creative
-                        </div>
-                        <div data-value="Legal, Compliance & Public Service" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Legal, Compliance & Public Service
-                        </div>
-                        <div data-value="Logistics, Transport & Supply Chain" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Logistics, Transport & Supply Chain
-                        </div>
-                        <div data-value="Manufacturing, Production & Technical" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Manufacturing, Production & Technical
-                        </div>
-                        <div data-value="Sales, Marketing, Retail & E-Commerce" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Sales, Marketing, Retail & E-Commerce
-                        </div>
-                        <div data-value="Science, Research & Laboratory" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Science, Research & Laboratory
-                        </div>
-                        <div data-value="Skilled Trades, Maintenance & General Services" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Skilled Trades, Maintenance & General Services
-                        </div>
-                        <div data-value="Tourism, Hospitality & Food Service" 
-                            class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            • Tourism, Hospitality & Food Service
-                        </div>
+        <!-- 9. Standard Job Classifications -->
+        <div class="mb-4">
+            <label class="block text-gray-800 text-sm font-semibold mb-2">
+                Standard Job Classifications / Families: <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+                <button type="button" class="job-classification-btn w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
+                    <span class="job-classification-text text-gray-400">Select job classification</span>
+                    <svg class="job-classification-arrow w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="job-classification-menu dropdown-menu absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
+                    <div data-value="Accounting, Finance & Banking" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Accounting, Finance & Banking
                     </div>
-                    
-                    <input type="hidden" class="job-classification-input" name="job_classification[]" required>
+                    <div data-value="Administrative, HR & Office Support" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Administrative, HR & Office Support
+                    </div>
+                    <div data-value="Agriculture, Forestry & Agribusiness" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Agriculture, Forestry & Agribusiness
+                    </div>
+                    <div data-value="Construction, Engineering & Architecture" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Construction, Engineering & Architecture
+                    </div>
+                    <div data-value="Customer Service & BPO (Contact Center)" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Customer Service & BPO (Contact Center)
+                    </div>
+                    <div data-value="Education, Training & Academe" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Education, Training & Academe
+                    </div>
+                    <div data-value="Healthcare, Medical & Allied Services" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Healthcare, Medical & Allied Services
+                    </div>
+                    <div data-value="IT, Software, Data & Digital Creative" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • IT, Software, Data & Digital Creative
+                    </div>
+                    <div data-value="Legal, Compliance & Public Service" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Legal, Compliance & Public Service
+                    </div>
+                    <div data-value="Logistics, Transport & Supply Chain" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Logistics, Transport & Supply Chain
+                    </div>
+                    <div data-value="Manufacturing, Production & Technical" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Manufacturing, Production & Technical
+                    </div>
+                    <div data-value="Sales, Marketing, Retail & E-Commerce" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Sales, Marketing, Retail & E-Commerce
+                    </div>
+                    <div data-value="Science, Research & Laboratory" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Science, Research & Laboratory
+                    </div>
+                    <div data-value="Skilled Trades, Maintenance & General Services" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Skilled Trades, Maintenance & General Services
+                    </div>
+                    <div data-value="Tourism, Hospitality & Food Service" 
+                        class="job-classification-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        • Tourism, Hospitality & Food Service
+                    </div>
+                </div>
+                
+                <input type="hidden" class="job-classification-input" name="job_classification[]" required>
+            </div>
+        </div>
+
+        <!-- 10. Salary Range -->
+        <div class="mb-4">
+            <label class="block text-gray-800 text-sm font-semibold mb-2">Salary Range: <span class="text-red-500">*</span></label>
+            <div class="relative">
+                <button type="button" class="salary-range-btn w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
+                    <span class="salary-range-text text-gray-400">Select salary range</span>
+                    <svg class="salary-range-arrow w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div class="salary-range-menu absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden hidden">
+                    <div data-value="₱30,000 - ₱59,999" class="salary-range-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">₱30,000 - ₱59,999</div>
+                    <div data-value="₱60,000 - ₱89,999" class="salary-range-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">₱60,000 - ₱89,999</div>
+                    <div data-value="₱90,000 - ₱149,999" class="salary-range-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">₱90,000 - ₱149,999</div>
+                    <div data-value="₱150,000 - ₱499,999" class="salary-range-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">₱150,000 - ₱499,999</div>
+                    <div data-value="₱500,000 and above" class="salary-range-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">₱500,000 and above</div>
+                    <div data-value="Below ₱30,000" class="salary-range-option below-30k-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">Below ₱30,000 (please specify)</div>
+                </div>
+                <input type="hidden" class="salary-range-input" name="salary_range[]" >
+            </div>
+            
+            <!-- Below 30k input field -->
+            <div class="below-30k-input-container mt-3 hidden">
+                <label class="block text-gray-600 text-xs font-medium mb-2">Please specify the exact salary amount:</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">₱</span>
+                    <input type="text" 
+                        class="below-30k-salary-input w-full pl-8 pr-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" 
+                        placeholder="e.g. 25,000"
+                        inputmode="numeric">
                 </div>
             </div>
+        </div>
 
-            <!-- 10. Duration -->
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-medium mb-2">
-                    10. Duration that the Vacancy is Open: <span class="text-red-500">*</span>
-                </label>
-                <div class="relative">
-                    <button type="button" class="duration-btn w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
-                        <span class="duration-text text-gray-400">Select duration</span>
-                        <svg class="duration-arrow w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    
-                    <div class="duration-menu dropdown-menu absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden hidden">
-                        
-                        <div data-value="Less than 30 Days" 
-                            class="duration-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            Less than 30 Days
-                        </div>
-                        <div data-value="30-60 Days" 
-                            class="duration-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            30-60 Days
-                        </div>
-                        <div data-value="60-90 Days" 
-                            class="duration-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            60-90 Days
-                        </div>
-                        <div data-value="90+ Days" 
-                            class="duration-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
-                            90+ Days
-                        </div>
+        <!-- 11. Duration -->
+        <div class="mb-4">
+            <label class="block text-gray-800 text-sm font-semibold mb-2">
+                Duration that the Vacancy is Open: <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+                <button type="button" class="duration-btn w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
+                    <span class="duration-text text-gray-400">Select duration</span>
+                    <svg class="duration-arrow w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                
+                <div class="duration-menu dropdown-menu absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden hidden">
+                    <div data-value="Less than 30 Days" 
+                        class="duration-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        Less than 30 Days
                     </div>
-                    
-                    <input type="hidden" class="duration-input" name="vacancy_duration[]" required>
+                    <div data-value="30-60 Days" 
+                        class="duration-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        30-60 Days
+                    </div>
+                    <div data-value="60-90 Days" 
+                        class="duration-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        60-90 Days
+                    </div>
+                    <div data-value="90+ Days" 
+                        class="duration-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">
+                        90+ Days
+                    </div>
                 </div>
+                
+                <input type="hidden" class="duration-input" name="vacancy_duration[]" required>
             </div>
+        </div>
 
-            <!-- 11. Reasons For Difficulty -->
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-medium mb-2">
-                    11. Reasons For Difficulty (Role-Level) <span class="italic text-gray-500">(Check all that apply)</span>
-                </label>
-                <div class="difficulty-reasons space-y-3">
-                    
-                    <!-- Technical Skills -->
-                    <label class="technical-skills-label flex items-start p-3 border rounded-lg cursor-pointer transition-all border-gray-200 hover:bg-gray-50">
+        <!-- 12. Reasons For Difficulty -->
+        <div class="mb-4">
+            <label class="block text-gray-800 text-sm font-semibold mb-2">
+                 Reasons For Difficulty (Role-Level) <span class="italic text-gray-500">(Check all that apply)</span>
+            </label>
+            <div class="difficulty-reasons space-y-3">
+                
+                <!-- Technical Skills -->
+                <div class="technical-skills-label p-3 border rounded-lg transition-all border-gray-200">
+                    <label class="flex items-start cursor-pointer">
                         <input type="checkbox" 
                             name="difficulty_reasons_${entryIndex}[]" 
                             value="Technical / Hard Skills Missing"
                             class="technical-checkbox mt-1 w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
-                        <div class="ml-3 flex-1">
-                            <div class="font-medium text-gray-700">Technical / Hard Skills Missing</div>
+                        <div class="ml-3">
+                            <div class="font-semibold text-gray-800">Technical / Hard Skills Missing</div>
                             <div class="text-xs text-gray-500 mt-1">Applicants do not have the required tools, software, or technical knowledge</div>
-                            
-                            <!-- Technical Skills Input -->
-                            <div class="technical-details mt-3 hidden">
-                                <label class="block text-gray-600 text-xs font-medium mb-1">
-                                    What specific technical tools, software, or machinery knowledge is missing?
-                                </label>
-                                
-                                <div class="technical-tags-container flex flex-wrap gap-2 mb-2"></div>
-                                
-                                <div class="flex gap-2">
-                                    <input type="text" 
-                                        class="technical-skill-input flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                        placeholder="Type a skill and press Enter..."/>
-                                    <button type="button" 
-                                            class="add-technical-skill px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-medium text-sm transition-colors shadow-sm">Add</button>
-                                </div>
-                                <input type="hidden" class="technical-skills-input" name="technical_skills_missing[]">
-                            </div>
                         </div>
                     </label>
+                    <!-- Technical Skills Input -->
+                    <div class="technical-details mt-3 hidden">
+                        <label class="block text-gray-600 text-xs font-medium mb-1">
+                            What specific technical tools, software, or machinery knowledge is missing?
+                        </label>
+                        
+                        <div class="technical-tags-container flex flex-wrap gap-2 mb-2"></div>
+                        
+                        <div class="flex gap-2">
+                            <input type="text" 
+                                class="technical-skill-input flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                                placeholder="Type a skill and press Enter..."/>
+                            <button type="button" 
+                                    class="add-technical-skill px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-medium text-sm transition-colors shadow-sm">Enter</button>
+                        </div>
+                        <input type="hidden" class="technical-skills-input" name="technical_skills_missing[]">
+                    </div>
+                </div>
 
-                    <!-- Soft Skills -->
-                    <label class="soft-skills-label flex items-start p-3 border rounded-lg cursor-pointer transition-all border-gray-200 hover:bg-gray-50">
+                <!-- Soft Skills -->
+                <div class="soft-skills-label p-3 border rounded-lg transition-all border-gray-200">
+                    <label class="flex items-start cursor-pointer">
                         <input type="checkbox" 
                             name="difficulty_reasons_${entryIndex}[]" 
                             value="Soft / Employability Skills Missing"
                             class="soft-checkbox mt-1 w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
-                        <div class="ml-3 flex-1">
-                            <div class="font-medium text-gray-700">Soft / Employability Skills Missing</div>
+                        <div class="ml-3">
+                            <div class="font-semibold text-gray-800">Soft / Employability Skills Missing</div>
                             <div class="text-xs text-gray-500 mt-1">Applicants cannot communicate effectively, work in teams, or demonstrate professionalism</div>
-                            
-                            <!-- Soft Skills Input -->
-                            <div class="soft-details mt-3 hidden">
-                                <label class="block text-gray-600 text-xs font-medium mb-1">
-                                    What attitude or behavioral traits cause you to reject applicants?
-                                </label>
-                                
-                                <div class="soft-tags-container flex flex-wrap gap-2 mb-2"></div>
-                                
-                                <div class="flex gap-2">
-                                    <input type="text" 
-                                        class="soft-skill-input flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                        placeholder="Type a trait and press Enter..."/>
-                                    <button type="button" 
-                                            class="add-soft-skill px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-medium text-sm transition-colors shadow-sm">Add</button>
-                                </div>
-                                <input type="hidden" class="soft-skills-input" name="soft_skills_missing[]">
-                            </div>
                         </div>
                     </label>
+                    <!-- Soft Skills Input -->
+                    <div class="soft-details mt-3 hidden">
+                        <label class="block text-gray-600 text-xs font-medium mb-1">
+                            What attitude or behavioral traits cause you to reject applicants?
+                        </label>
+                        
+                        <div class="soft-tags-container flex flex-wrap gap-2 mb-2"></div>
+                        
+                        <div class="flex gap-2">
+                            <input type="text" 
+                                class="soft-skill-input flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                                placeholder="Type a trait and press Enter..."/>
+                            <button type="button" 
+                                    class="add-soft-skill px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-medium text-sm transition-colors shadow-sm">Enter</button>
+                        </div>
+                        <input type="hidden" class="soft-skills-input" name="soft_skills_missing[]">
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- 12. Impact Level -->
-            <div class="mb-4 mt-6 pt-4 border-t border-gray-200">
-                <label class="block text-gray-700 text-sm font-medium mb-3">
-                    12. How much does the difficulty finding qualified applicants for this role impact your business operations? 
-                    <span class="text-red-500">*</span>
+        <!-- 13. Impact Level -->
+        <div class="mb-4 mt-6 pt-4 border-t border-gray-200">
+            <label class="block text-gray-800 text-sm font-semibold mb-3">
+                 How much does the difficulty finding qualified applicants for this role impact your business operations? 
+                <span class="text-red-500">*</span>
+            </label>
+            <div class="impact-level space-y-3">
+                <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
+                    <input type="radio" name="impact_level_${entryIndex}" value="High" required
+                        class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
+                    <div class="ml-3 flex-1">
+                        <div class="font-semibold text-gray-900">High Impact</div>
+                        <div class="text-xs text-gray-500 mt-1">Operations are significantly disrupted</div>
+                    </div>
                 </label>
-                <div class="impact-level space-y-3">
-                    <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
-                        <input type="radio" name="impact_level_${entryIndex}" value="High" required
-                            class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
-                        <div class="ml-3 flex-1">
-                            <div class="font-medium text-gray-800">High Impact</div>
-                            <div class="text-xs text-gray-500 mt-1">Operations are significantly disrupted</div>
-                        </div>
-                    </label>
-                    
-                    <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
-                        <input type="radio" name="impact_level_${entryIndex}" value="Medium" required
-                            class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
-                        <div class="ml-3 flex-1">
-                            <div class="font-medium text-gray-800">Medium Impact</div>
-                            <div class="text-xs text-gray-500 mt-1">Operations continue with adjustments</div>
-                        </div>
-                    </label>
-                    
-                    <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
-                        <input type="radio" name="impact_level_${entryIndex}" value="Low" required
-                            class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
-                        <div class="ml-3 flex-1">
-                            <div class="font-medium text-gray-800">Low Impact</div>
-                            <div class="text-xs text-gray-500 mt-1">Minimal operational impact</div>
-                        </div>
-                    </label>
-                </div>
+                
+                <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
+                    <input type="radio" name="impact_level_${entryIndex}" value="Medium" required
+                        class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
+                    <div class="ml-3 flex-1">
+                        <div class="font-semibold text-gray-900">Medium Impact</div>
+                        <div class="text-xs text-gray-500 mt-1">Operations continue with adjustments</div>
+                    </div>
+                </label>
+                
+                <label class="flex items-start p-3 border rounded-lg cursor-pointer transition-all hover:bg-orange-50 hover:border-orange-300">
+                    <input type="radio" name="impact_level_${entryIndex}" value="Low" required
+                        class="mt-1 w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
+                    <div class="ml-3 flex-1">
+                        <div class="font-semibold text-gray-900">Low Impact</div>
+                        <div class="text-xs text-gray-500 mt-1">Minimal operational impact</div>
+                    </div>
+                </label>
             </div>
-        `;
-        
-        jobTitlesContainer.appendChild(newJobEntry);
-        initializeJobEntry(newJobEntry);
-        
-        // Add remove functionality
-        const removeBtn = newJobEntry.querySelector('.remove-job-btn');
-        removeBtn.addEventListener('click', () => {
-            newJobEntry.remove();
-        });
-        
-        // Scroll to new entry
-        newJobEntry.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        </div>
+    `;
+    
+    jobTitlesContainer.appendChild(newJobEntry);
+    initializeJobEntry(newJobEntry);
+    
+    // Add remove functionality
+    const removeBtn = newJobEntry.querySelector('.remove-job-btn');
+    removeBtn.addEventListener('click', () => {
+        newJobEntry.remove();
     });
+    
+    // Scroll to new entry
+    newJobEntry.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
 
     // Other rejection reasons toggle
     const otherRejectionCheckbox = document.querySelector('.other-rejection-checkbox');
@@ -2374,6 +2721,47 @@ document.addEventListener('keydown', (e) => {
         });
     }
 
+    // LMI Features: max 2 selections + Other text toggle
+    const lmiCheckboxes = document.querySelectorAll('.lmi-feature-checkbox');
+    const lmiOtherCheckbox = document.querySelector('.lmi-other-checkbox');
+    const lmiOtherInput = document.querySelector('.lmi-other-input');
+
+    lmiCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            const checked = document.querySelectorAll('.lmi-feature-checkbox:checked');
+
+            // Enforce max 2
+            if (checked.length > 2) {
+                this.checked = false;
+                return;
+            }
+
+            // Disable unchecked when 2 selected, re-enable when below 2
+            if (checked.length === 2) {
+                lmiCheckboxes.forEach(cb => {
+                    if (!cb.checked) {
+                        cb.disabled = true;
+                        const wrapper = cb.closest('label') || cb.closest('.lmi-other-option');
+                        if (wrapper) { wrapper.style.opacity = '0.4'; wrapper.style.cursor = 'not-allowed'; }
+                    }
+                });
+            } else {
+                lmiCheckboxes.forEach(cb => {
+                    cb.disabled = false;
+                    const wrapper = cb.closest('label') || cb.closest('.lmi-other-option');
+                    if (wrapper) { wrapper.style.opacity = ''; wrapper.style.cursor = ''; }
+                });
+            }
+
+            // Toggle "Other" text input
+            if (lmiOtherCheckbox && lmiOtherInput) {
+                lmiOtherCheckbox.checked
+                    ? lmiOtherInput.classList.remove('hidden')
+                    : lmiOtherInput.classList.add('hidden');
+            }
+        });
+    });
+
     // Sector tabs functionality
     document.querySelectorAll('.sector-tab').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -2389,16 +2777,19 @@ document.addEventListener('keydown', (e) => {
             
             // Here you would typically filter the skill gaps based on the selected sector
             // For now, we'll just log the selection
-            console.log('Selected sector:', tab.textContent);
+
         });
     });
 
     // Export analysis button
-    document.querySelector('.export-analysis-btn').addEventListener('click', () => {
-        alert('Export functionality would be implemented here.');
-    });
+    const exportBtn = document.querySelector('.export-analysis-btn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            alert('Export functionality would be implemented here.');
+        });
+    }
 
-    
+}); // end DOMContentLoaded
     </script>
     <script>function toggleRoleDetails(submissionId, roleIndex) {
     const detailsDiv = document.getElementById('role-details-' + submissionId + '-' + roleIndex);
@@ -2487,12 +2878,6 @@ async function fetchAutocompleteData() {
             autocompleteData.jobTitles = data.job_titles || [];
             autocompleteData.technicalSkills = data.technical_skills || [];
             autocompleteData.softSkills = data.soft_skills || [];
-            
-            console.log('✅ Autocomplete data loaded from database:', {
-                jobTitles: autocompleteData.jobTitles.length,
-                technicalSkills: autocompleteData.technicalSkills.length,
-                softSkills: autocompleteData.softSkills.length
-            });
         }
     } catch (error) {
         console.error('❌ Failed to fetch autocomplete data:', error);
@@ -2538,8 +2923,10 @@ function createAutocomplete(inputElement, dataSource, onSelect) {
         );
         
         if (matches.length === 0) {
-            suggestionsDiv.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 italic">No matching suggestions found</div>';
-            suggestionsDiv.classList.remove('hidden');
+            // Bug fix: hide the dropdown silently when there are no matches
+            // instead of showing an annoying "No result found" message.
+            suggestionsDiv.innerHTML = '';
+            suggestionsDiv.classList.add('hidden');
             return;
         }
         
@@ -2851,7 +3238,58 @@ function escapeCSV(value) {
 }
     </script>
     <script>
-        let matrixResultsData = @json($matrix_results);
+        // Helper function to format salary range with peso sign and thousand separators
+        function formatSalaryRange(salaryRange) {
+            if (!salaryRange || salaryRange === 'Not specified') {
+                return salaryRange;
+            }
+            
+            // Convert to string if it's a number
+            let salaryStr = String(salaryRange);
+            
+            // If it contains a range (e.g., "30000 - 59999" or "30000-59999")
+            if (salaryStr.includes('-')) {
+                // Split by dash, allowing spaces around it
+                let parts = salaryStr.split(/\s*-\s*/);
+                
+                if (parts.length === 2) {
+                    // Format each part
+                    let min = parts[0].trim().replace(/[₱,]/g, ''); // Remove existing ₱ and commas
+                    let max = parts[1].trim().replace(/[₱,]/g, '');
+                    
+                    // Check if they're valid numbers
+                    if (!isNaN(min) && !isNaN(max)) {
+                        min = Number(min).toLocaleString();
+                        max = Number(max).toLocaleString();
+                        return '₱' + min + ' - ₱' + max;
+                    }
+                }
+            }
+            
+            // If it's a single number or already formatted
+            let cleaned = salaryStr.replace(/[₱,]/g, ''); // Remove existing ₱ and commas
+            
+            // Check if it's a valid number
+            if (!isNaN(cleaned) && cleaned.trim() !== '') {
+                let formatted = Number(cleaned).toLocaleString();
+                return '₱' + formatted;
+            }
+            
+            // If already has peso sign or is text (like "Below ₱30,000"), return as is
+            if (salaryStr.includes('₱')) {
+                return salaryStr;
+            }
+            
+            // Default: just add peso sign
+            return '₱' + salaryStr;
+        }
+        
+        // Process matrix results to add peso sign to salary ranges
+        let matrixResultsRaw = @json($matrix_results);
+        window.matrixResultsData = matrixResultsRaw.map(result => ({
+            ...result,
+            salary_range: formatSalaryRange(result.salary_range)
+        }));
 
 function exportLMIMatrixToCSV() {
     const csvData = [];
@@ -2963,7 +3401,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
     </script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+       document.addEventListener('DOMContentLoaded', function () {
 
     const steps    = document.querySelectorAll('.lmi-step');   // the 4 <div> wrappers
     const circles  = document.querySelectorAll('.step-circle');
@@ -2971,15 +3409,22 @@ document.addEventListener('DOMContentLoaded', function() {
     let current    = 0;
 
     // ─── INIT: hide all except first ────────────────────────
-    function showStep(n) {
-        steps.forEach((s, i) => s.style.display = (i === n) ? 'block' : 'none');
-        current = n;
-        updateIndicator();
-        updateButtons();
-        // scroll modal back to top
-        const scrollable = document.querySelector('.overflow-y-auto');
-        if (scrollable) scrollable.scrollTop = 0;
+    window.showStep = function showStep(n) {
+    steps.forEach((s, i) => s.style.display = (i === n) ? 'block' : 'none');
+    current = n;
+    updateIndicator();
+    updateButtons();
+    
+    // ► HIDE INTRO SECTION AFTER STEP 1 ◄
+    const introSection = document.getElementById('intro-section');
+    if (introSection) {
+        introSection.style.display = (n === 0) ? 'block' : 'none';
     }
+    
+    // scroll modal back to top
+    const scrollable = document.querySelector('.overflow-y-auto');
+    if (scrollable) scrollable.scrollTop = 0;
+}
 
     // ─── INDICATOR ──────────────────────────────────────────
     function updateIndicator() {
@@ -3030,7 +3475,26 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // -- hidden inputs (dropdowns: industrySelector, companySize, job_classification, vacancy_duration) --
+        // -- Email format check (step 0 only) --
+        if (idx === 0) {
+            const emailInput = step.querySelector('input[type="email"]');
+            const emailError = document.getElementById('emailError');
+            if (emailInput && emailInput.value.trim()) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailInput.value.trim())) {
+                    emailInput.classList.add('border-red-500');
+                    if (emailError) emailError.classList.remove('hidden');
+                    valid = false;
+                } else {
+                    emailInput.classList.remove('border-red-500');
+                    if (emailError) emailError.classList.add('hidden');
+                }
+            } else if (emailInput && !emailInput.value.trim()) {
+                if (emailError) emailError.classList.add('hidden');
+            }
+        }
+
+        // -- hidden inputs (dropdowns: industrySelector, companySize, job_classification, vacancy_duration, salary_range) --
         step.querySelectorAll('input[type="hidden"][required]').forEach(input => {
             const wrapper = input.closest('.relative');
             const btn     = wrapper ? wrapper.querySelector('button[type="button"]') : null;
@@ -3041,6 +3505,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (btn) btn.classList.remove('border-red-500');
             }
         });
+
+        // -- Step 1 (idx 0): Special validation for salary range and "Below ₱30,000" input --
+        if (idx === 0) {
+            step.querySelectorAll('.job-entry').forEach(jobEntry => {
+                const salaryRangeInput = jobEntry.querySelector('.salary-range-input');
+                const salaryRangeBtn = jobEntry.querySelector('.salary-range-btn');
+                const below30kInput = jobEntry.querySelector('.below-30k-salary-input');
+                const below30kContainer = jobEntry.querySelector('.below-30k-input-container');
+                
+                // Check if salary range is selected
+                if (salaryRangeInput && !salaryRangeInput.value) {
+                    valid = false;
+                    if (salaryRangeBtn) salaryRangeBtn.classList.add('border-red-500');
+                } else {
+                    if (salaryRangeBtn) salaryRangeBtn.classList.remove('border-red-500');
+                    
+                    // If "Below ₱30,000" is selected, validate the input field
+                    if (salaryRangeInput && salaryRangeInput.value === 'Below ₱30,000') {
+                        if (below30kInput && !below30kInput.value.trim()) {
+                            valid = false;
+                            below30kInput.classList.add('border-red-500');
+                        } else if (below30kInput) {
+                            below30kInput.classList.remove('border-red-500');
+                            
+                            // Validate that the amount is less than 30,000
+                            const amount = parseInt(below30kInput.value.replace(/,/g, ''));
+                            if (isNaN(amount) || amount >= 30000) {
+                                valid = false;
+                                below30kInput.classList.add('border-red-500');
+                                alert('Salary amount must be less than ₱30,000');
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
         // -- radio groups --
         const radioNames = new Set();
@@ -3115,91 +3615,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+        
 
+    
+  
     // ─── INIT ───────────────────────────────────────────────
     showStep(0);
-});
-    </script>
-    <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Get the data from Laravel
-    const comparisonData = @json($comparison_data ?? []);
-    
-    if (comparisonData.length === 0) {
-        console.log('No comparison data available');
-        return;
-    }
-    
-    // Prepare data for Chart.js
-    const labels = comparisonData.map(item => item.title);
-    const currentYearData = comparisonData.map(item => item.current_count);
-    const previousYearData = comparisonData.map(item => item.previous_count);
-    
-    const currentYear = comparisonData[0]?.current_year || {{ $selected_year }};
-    const previousYear = comparisonData[0]?.previous_year || {{ $selected_year - 1 }};
-    
-    // Create the chart
-    const ctx = document.getElementById('highVolumeHorizontalChart');
-    
-    if (ctx) {
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: previousYear.toString(),
-                        data: previousYearData,
-                        backgroundColor: 'rgba(34, 197, 94, 0.7)', // Green
-                        borderColor: 'rgba(34, 197, 94, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: currentYear.toString(),
-                        data: currentYearData,
-                        backgroundColor: 'rgba(59, 130, 246, 0.7)', // Blue
-                        borderColor: 'rgba(59, 130, 246, 1)',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                indexAxis: 'y', // Makes it horizontal
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ' + context.parsed.x + ' jobs';
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        grid: {
-                            display: true,
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        },
-                        ticks: {
-                            precision: 0
-                        }
-                    },
-                    y: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
-    }
 });
 </script>
 </body>

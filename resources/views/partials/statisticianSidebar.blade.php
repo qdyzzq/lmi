@@ -62,122 +62,82 @@
                 Main Menu
             </p>
 
-            <!-- Regional Statistics -->
+            <!-- Statistician Review -->
             <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.dashboard') }}"
+                <a href="{{ route('statistician.review') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.dashboard')
+                        {{ request()->routeIs('statistician.review')
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.dashboard') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('statistician.review') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5h4.5v7.5H3zM9.75 9h4.5v12h-4.5zM16.5 4.5H21V21h-4.5z"/>
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Regional Statistics</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Statistician Review</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    Regional Statistics
+                    Statistician Review
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
 
-            <!-- Job Titles Form -->
+            <!-- Job Titles Pending -->
             <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.job-titles.form') }}"
+                <a href="{{ route('statistician.job-titles.pending') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.job-titles.form')
+                        {{ request()->routeIs('statistician.job-titles.pending')
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.job-titles.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('statistician.job-titles.pending') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Job Titles Form</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Job Titles Pending</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    Job Titles Form
+                    Job Titles Pending
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
 
-            <!-- Licensure Passing Rates -->
+            <!-- Supply Side Editor -->
             <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.licensure-rates.form') }}"
+                <a href="{{ route('statistician.supply-side-editor') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.licensure-rates.form')
+                        {{ request()->routeIs('statistician.supply-side-editor')
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.licensure-rates.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('statistician.supply-side-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Licensure Passing Rates</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Supply Side Editor</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    Licensure Passing Rates
+                    Supply Side Editor
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
 
-            <!-- Enrollment Form -->
+            <!-- Analysis Editor -->
             <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.discipline-enrollment.form') }}"
+                <a href="{{ route('statistician.templates') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.discipline-enrollment.form')
+                        {{ request()->routeIs('statistician.templates')
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.discipline-enrollment.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('statistician.templates') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Enrollment Form</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis Editor</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    Enrollment Form
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
-                </div>
-            </div>
-
-            <!-- Graduate Form -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.discipline-graduate.form') }}"
-                    class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.discipline-graduate.form')
-                            ? 'text-blue-700 bg-blue-50 border-blue-500'
-                            : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.discipline-graduate.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/>
-                    </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Graduate Form</span>
-                </a>
-                <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    Graduate Form
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
-                </div>
-            </div>
-
-            <!-- LMI Submissions -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.lmi-submissions.index') }}"
-                    class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.lmi-submissions.*')
-                            ? 'text-blue-700 bg-blue-50 border-blue-500'
-                            : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.lmi-submissions.*') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z"/>
-                    </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">LMI Submissions</span>
-                </a>
-                <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    LMI Submissions
+                    Analysis Editor
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>

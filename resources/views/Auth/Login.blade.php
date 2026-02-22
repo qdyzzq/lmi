@@ -30,14 +30,14 @@
         <!-- Logo & Header -->
         <div class="text-center mb-10 animate-slide-in-left">
             <!-- Logo Container -->
-            <div class="inline-flex items-center gap-4 mb-5 px-6 py-3 bg-gradient-to-r from-dole-blue/5 to-dole-red/5 rounded-2xl border-2 border-dole-blue/10">
+            <div class="inline-flex flex-col items-center gap-2 mb-5 px-6 py-4 bg-gradient-to-r from-dole-blue/5 to-dole-red/5 rounded-2xl border-2 border-dole-blue/10">
                 <img src="{{ asset('images/dole_logo.png') }}" alt="DOLE Logo" class="w-16 h-16 object-contain drop-shadow-md">
-                <div class="text-left">
-                    <div class="font-dole-display text-2xl font-extrabold bg-gradient-to-r from-dole-blue to-dole-red bg-clip-text text-transparent tracking-wide">
-                        DOLE
+                <div class="text-center">
+                    <div class="font-dole-display text-sm font-extrabold text-dole-dark uppercase tracking-widest">
+                        Department of Labor and Employment
                     </div>
-                    <div class="text-[11px] font-semibold text-dole-blue uppercase tracking-widest -mt-0.5">
-                        Philippines
+                    <div class="text-base font-bold text-dole-dark uppercase tracking-widest mt-0.5">
+                        Region XI
                     </div>
                 </div>
             </div>

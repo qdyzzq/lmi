@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @vite('resources/css/app.css')
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <title>LMI - Discipline Graduate Form</title>
+</head>
+<body class="bg-slate-100 flex h-screen overflow-hidden" >
+    @include('partials.sidebar')
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- HEADER -->
+        <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 shadow-sm shrink-0">
+            <h2 class="text-xl font-bold text-slate-800">Graduate Form • Admin</h2>
+            <div class="flex items-center gap-4">
+                <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">
+                    📅 Region XI • 2024
+                </div>
+                <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
+            </div>
+        </header>
+        <!-- Main Form Area -->
+        <div class="flex-1 overflow-auto p-8">
+            <div class="max-w-5xl mx-auto">
+                <!-- Year Selection Card -->
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Select Academic Year</h3>
+                            <p class="text-sm text-gray-600">Enter an academic year to create new data or edit existing graduate data</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div id="yearInputGroup" class="flex items-center gap-4">
+                                <input 
+                                    type="text" 
+                                    id="academicYear" 
+                                    placeholder="e.g. 2024-2025" 
+                                    pattern="\d{4}-\d{4}"
+                                    required 
+                                    class="w-48 px-4 py-3 border-2 border-gray-300 rounded-lg text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                >
+                                <button 
+                                    type="button"
+                                    onclick="checkAndLoadYear()"
+                                    class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    Check / Edit Year
+                                </button>
+                            </div>
+                            <div id="yearDisplay" class="hidden items-center gap-3">
+                                <span id="displayYear" class="text-2xl font-bold text-purple-600">----</span>
+                                <button 
+                                    type="button"
+                                    onclick="changeYear()"
+                                    title="Change to a different year"
+                                    class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2 text-sm"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                    Change Year
+                                </button>
+                            </div>
+                            <button 
+                                type="button"
+                                id="cancelYearChangeBtn"
+                                onclick="cancelYearChange()"
+                                class="hidden px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2 text-sm"
+                                title="Cancel and go back"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Notification -->
+                <div id="statusNotification" class="hidden mb-8 p-6 rounded-2xl shadow-lg">
+                    <div class="flex items-start gap-4">
+                        <div id="statusIcon" class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full"></div>
+                        <div class="flex-1">
+                            <h4 id="statusTitle" class="text-lg font-bold mb-1"></h4>
+                            <p id="statusMessage" class="text-sm"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GRADUATION RATE PROJECTION CARD - NEW SECTION -->
+                <div id="graduationRateCard" class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-xl p-8 mb-8 border-2 border-green-200" style="display: none;">
+                    <div class="flex items-start justify-between mb-6">
+                        <div>
+                            <h3 class="text-2xl font-bold text-green-800 mb-2 flex items-center gap-2">
+                                <span>📊</span>
+                                Graduation Rate & Projections
+                            </h3>
+                            <p class="text-sm text-green-700">Set graduation rate to project graduates based on enrollment from 4 years ago</p>
+                        </div>
+                        <button 
+                            type="button"
+                            onclick="saveGraduationRate()"
+                            class="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Save Rate
+                        </button>
+                    </div>
+
+                    <!-- Warning: Future Graduate Year -->
+                    <div id="futureYearWarning" class="hidden mb-6 bg-blue-50 border-2 border-blue-500 rounded-xl p-5">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-bold text-blue-800 mb-1">📅 Data Not Yet Available — Future Academic Year</h4>
+                                <p class="text-sm text-blue-700 mb-2">
+                                    <strong id="futureGraduateYear" class="text-blue-900"></strong> is still an upcoming academic year.
+                                    The enrollment base is shown below as a <strong>preview only</strong> — no graduation data can be recorded until this year is reached.
+                                </p>
+                                <div class="bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 inline-flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-blue-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                                    </svg>
+                                    <span class="text-xs font-semibold text-blue-800">
+                                        Saving is locked until <strong id="futureYearUnlockYear" class="text-blue-900"></strong>. Come back then to record the actual graduation rate.
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Warning: Missing Enrollment Data -->
+                    <div id="missingEnrollmentWarning" class="hidden mb-6 bg-amber-50 border-2 border-amber-400 rounded-xl p-5">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-bold text-amber-800 mb-1">Enrollment Data Not Found</h4>
+                                <p class="text-sm text-amber-700">
+                                    No enrollment records exist for <strong id="missingEnrollmentYear" class="text-amber-900"></strong> (4 years before the graduate year).
+                                    Projections cannot be calculated without this base data.
+                                </p>
+                                <p class="text-xs text-amber-600 mt-2">
+                                    → Please enter enrollment data for that year in the <strong>Discipline Enrollment Form</strong> first, then come back here.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Left Column: Input & Calculation -->
+                        <div class="space-y-6">
+                            <!-- Enrollment Base Information -->
+                            <div class="bg-white rounded-xl p-5 shadow-sm border border-green-200">
+                                <h4 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Base Enrollment Data</h4>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Graduate Year:</span>
+                                        <span id="projGraduateYear" class="text-lg font-bold text-green-700">----</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Enrollment Year (4 yrs ago):</span>
+                                        <span id="projEnrollmentYear" class="text-lg font-bold text-blue-700">----</span>
+                                    </div>
+                                    <div class="h-px bg-gray-200"></div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-semibold text-gray-700">Total Enrollees:</span>
+                                        <span id="projBaseEnrollees" class="text-2xl font-bold text-purple-700">0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Graduation Rate Input -->
+                            <div class="bg-white rounded-xl p-5 shadow-sm border border-green-200">
+                                <h4 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Set Graduation Rate</h4>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-1">
+                                        <input 
+                                            type="number" 
+                                            id="graduationRateInput" 
+                                            min="0" 
+                                            max="100" 
+                                            step="0.01"
+                                            value="60.00"
+                                            oninput="calculateProjection()"
+                                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        >
+                                    </div>
+                                    <span class="text-3xl font-bold text-gray-400">%</span>
+                                </div>
+                                <div class="mt-3">
+                                    <input 
+                                        type="range" 
+                                        id="graduationRateSlider" 
+                                        min="0" 
+                                        max="100" 
+                                        step="1"
+                                        value="60"
+                                        oninput="updateRateFromSlider(this.value)"
+                                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                                    >
+                                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                        <span>0%</span>
+                                        <span>50%</span>
+                                        <span>100%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+                        <!-- Right Column: Projection Results -->
+                        <div class="space-y-6">
+                            <!-- Projection Result -->
+                            <div class="bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl p-8 shadow-lg text-white">
+                                <div class="text-center">
+                                    <p class="text-sm font-semibold opacity-90 mb-2 uppercase tracking-wide">Projected Graduates</p>
+                                    <p id="projectedGraduates" class="text-6xl font-extrabold mb-4">0</p>
+                                    <div class="h-px bg-white/30 mb-4"></div>
+                                    <div class="text-sm opacity-80">
+                                        <p class="mb-1">
+                                            <span id="projCalcEnrollees" class="font-bold">0</span> enrollees × 
+                                            <span id="projCalcRate" class="font-bold">60%</span>
+                                        </p>
+                                        <p class="text-xs">= <span id="projCalcResult" class="font-bold">0</span> projected graduates</p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <!-- Status Indicator -->
+                            <div id="rateStatusSaved" class="bg-green-100 border border-green-300 rounded-xl p-4 text-center" style="display: none;">
+                                <p class="text-sm font-semibold text-green-700 flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Rate Saved Successfully!
+                                </p>
+                            </div>
+
+                            <div id="rateStatusUnsaved" class="bg-yellow-100 border border-yellow-300 rounded-xl p-4 text-center" style="display: none;">
+                                <p class="text-sm font-semibold text-yellow-700 flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                    </svg>
+                                    Unsaved Changes
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Existing Data Found -->
+    <div id="existingDataModal" class="hidden fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full transform transition-all">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-gray-900">Existing Data Found</h3>
+                        <p class="text-sm text-gray-600 mt-1">This year already has graduation rate data</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div class="bg-purple-50 border-l-4 border-purple-500 p-4 mb-4">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="font-semibold text-purple-900">Year: <span id="existingDataYear" class="text-purple-700"></span></p>
+                            <p class="text-sm text-purple-800 mt-1">Graduation Rate: <span id="existingDataRate" class="font-bold"></span>%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-gray-700 mb-6">
+                    Data already exists for this academic year. Would you like to <strong>edit the existing data</strong> or <strong>enter a different year</strong>?
+                </p>
+
+                <div class="flex flex-col gap-3">
+                    <button
+                        onclick="confirmLoadExistingData()"
+                        class="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Yes, Edit Existing Data
+                    </button>
+                    <button
+                        onclick="closeExistingDataModal()"
+                        class="w-full px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        No, Enter Different Year
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Confirm Year Change -->
+    <div id="changeYearModal" class="hidden fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full transform transition-all">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-gray-900">Confirm Year Change</h3>
+                        <p class="text-sm text-gray-600 mt-1">Are you sure you want to change the year?</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 mb-4">
+                    <p class="font-semibold text-amber-900">Current Year: <span id="changeYearCurrent" class="text-amber-700"></span></p>
+                </div>
+
+                <p class="text-gray-700 mb-2">
+                    Changing the year will clear the current graduation rate data. Any unsaved changes will be lost.
+                </p>
+                <p class="text-sm text-gray-600 mb-6">
+                    Make sure you've saved your current work before proceeding.
+                </p>
+
+                <div class="flex gap-3">
+                    <button
+                        onclick="closeChangeYearModal()"
+                        class="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onclick="confirmChangeYear()"
+                        class="flex-1 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
+                    >
+                        Yes, Change Year
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Year Collision (changing TO a year that already has data) -->
+    <div id="yearCollisionModal" class="hidden fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full transform transition-all">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-gray-900">Year Already Has Data</h3>
+                        <p class="text-sm text-gray-600 mt-1">Cannot change to a year with existing data</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div class="space-y-3 mb-4">
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4">
+                        <p class="font-semibold text-red-900">Target Year: <span id="collisionTargetYear" class="text-red-700"></span></p>
+                    </div>
+                    <div class="bg-purple-50 border-l-4 border-purple-500 p-4">
+                        <p class="font-semibold text-purple-900">Current Year: <span id="collisionCurrentYear" class="text-purple-700"></span></p>
+                    </div>
+                </div>
+
+                <p class="text-gray-700 mb-6">
+                    The year you're trying to switch to already contains graduation rate data. Please choose a different year or edit the existing data directly.
+                </p>
+
+                <button
+                    onclick="closeYearCollisionModal()"
+                    class="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
+                >
+                    Understood, Choose Different Year
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Confirm Save Rate -->
+    <div id="confirmSaveModal" class="hidden fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full transform transition-all">
+            <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+                <h3 class="text-2xl font-bold text-gray-900">Confirm Save</h3>
+                <p class="text-sm text-gray-600 mt-1">Please review before saving the graduation rate</p>
+            </div>
+
+            <div class="p-6">
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-4 mb-6">
+                    <div class="flex items-center gap-2 mb-2">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="font-semibold text-gray-900">
+                            You are about to <span id="confirmSaveAction" class="text-green-700"></span> data for:
+                        </p>
+                    </div>
+                    <p class="font-bold text-lg text-gray-900" id="confirmSaveYear"></p>
+                </div>
+
+                <div id="confirmSaveDeletionWarning" class="hidden bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+                    <p class="text-sm font-semibold text-red-800">
+                        ⚠️ This will replace the existing graduation rate data for this academic year!
+                    </p>
+                </div>
+
+                <div class="space-y-3 mb-6">
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-sm font-medium text-gray-700">Graduation Rate</span>
+                        <span id="confirmSaveRate" class="text-lg font-bold text-green-600"></span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-sm font-medium text-gray-700">Projected Graduates</span>
+                        <span id="confirmSaveProjected" class="text-lg font-bold text-purple-600"></span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-sm font-medium text-gray-700">Based on Enrollees</span>
+                        <span id="confirmSaveEnrollees" class="text-lg font-bold text-blue-600"></span>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button
+                        onclick="closeConfirmSaveModal()"
+                        class="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onclick="confirmSaveRate()"
+                        class="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
+                    >
+                        <span id="confirmSaveBtnText">Save</span> Rate
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastContainer" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none" style="min-width: 340px;"></div>
+
+    <!-- MODAL: Success -->
+    <div id="successModal" class="hidden fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all">
+            <div class="p-8 text-center">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
+                <p class="text-gray-600 mb-6">Graduation rate has been saved successfully.</p>
+                <button
+                    onclick="closeSuccessModal()"
+                    class="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
+                >
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentYear = null;
+        let graduationRateData = null;
+        let isChangingYear = false;
+        let pendingYearData = null;
+
+        // ─── Toast Notification System ──────────────────────────────────────────
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toastContainer');
+
+            const configs = {
+                error: {
+                    bg: 'bg-red-50 border-red-400',
+                    icon: `<svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                           </svg>`,
+                    text: 'text-red-800',
+                    bar: 'bg-red-400',
+                },
+                warning: {
+                    bg: 'bg-amber-50 border-amber-400',
+                    icon: `<svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                           </svg>`,
+                    text: 'text-amber-800',
+                    bar: 'bg-amber-400',
+                },
+                success: {
+                    bg: 'bg-green-50 border-green-400',
+                    icon: `<svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                           </svg>`,
+                    text: 'text-green-800',
+                    bar: 'bg-green-400',
+                },
+                info: {
+                    bg: 'bg-blue-50 border-blue-400',
+                    icon: `<svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                           </svg>`,
+                    text: 'text-blue-800',
+                    bar: 'bg-blue-400',
+                },
+            };
+
+            const c = configs[type] || configs.error;
+
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto w-full border-l-4 ${c.bg} rounded-xl shadow-xl overflow-hidden
+                               transform transition-all duration-300 translate-x-full opacity-0`;
+
+            toast.innerHTML = `
+                <div class="flex items-start gap-3 px-4 py-4">
+                    ${c.icon}
+                    <p class="text-sm font-medium ${c.text} flex-1 leading-snug">${message}</p>
+                    <button onclick="this.closest('.pointer-events-auto').remove()"
+                            class="text-gray-400 hover:text-gray-600 transition ml-1 flex-shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="h-1 ${c.bar} animate-shrink" style="animation: shrink 4s linear forwards;"></div>
+            `;
+
+            container.appendChild(toast);
+
+            // Slide in
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    toast.classList.remove('translate-x-full', 'opacity-0');
+                });
+            });
+
+            // Auto-remove after 4s
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // CSS for the shrink progress bar
+        if (!document.getElementById('toastStyle')) {
+            const style = document.createElement('style');
+            style.id = 'toastStyle';
+            style.textContent = `@keyframes shrink { from { width: 100%; } to { width: 0%; } }`;
+            document.head.appendChild(style);
+        }
+
+        // ─── Year Format Validation ─────────────────────────────────────────────
+        async function checkAndLoadYear() {
+            const yearInput = document.getElementById('academicYear');
+            const year = yearInput.value.trim();
+
+            if (!year) {
+                showToast('Please enter an academic year (e.g., 2024-2025)', 'error');
+                return;
+            }
+
+            if (!/^\d{4}-\d{4}$/.test(year)) {
+                showToast('Please enter a valid academic year format (e.g., 2024-2025)', 'error');
+                return;
+            }
+
+            const [startYear, endYear] = year.split('-').map(Number);
+            if (endYear !== startYear + 1) {
+                showToast('Invalid academic year — the second year must be exactly one after the first (e.g., 2024-2025)', 'error');
+                return;
+            }
+
+            try {
+                // Use the existing endpoint — it always returns 200.
+                // A real saved record has an `id` field. A computed default has id = null.
+                const response = await fetch(`/api/graduation-rate/${year}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                // result.data.id is only present on a real DB-saved record.
+                // A computed/default response has id = null or missing.
+                const hasSavedRecord = result.success && result.data && result.data.id;
+
+                if (hasSavedRecord) {
+                    // Real existing data found — show modal, do NOT auto-load
+                    if (isChangingYear) {
+                        showYearCollisionModal(year);
+                        isChangingYear = false;
+                        return;
+                    }
+                    pendingYearData = { year, data: result.data };
+                    showExistingDataModal(year, result.data.graduation_rate);
+                } else {
+                    // No saved record — load as new year
+                    loadNewYear(year);
+                }
+            } catch (error) {
+                console.error('Error checking year:', error);
+                showToast('An error occurred while checking the year. Please try again.', 'error');
+                isChangingYear = false;
+            }
+        }
+
+        function loadNewYear(year) {
+            currentYear = year;
+            document.getElementById('displayYear').textContent = year;
+            graduationRateData = null;
+            showStatusNotification(year, false);
+            toggleYearDisplay(true);
+            document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
+            isChangingYear = false;
+            // Only fetch the enrollment context (base enrollees, years) for display
+            // Do NOT call loadGraduationRateData — that would silently overwrite with existing data
+            loadEnrollmentContext(year);
+        }
+
+        // ─── Existing Data Modal ────────────────────────────────────────────────
+        function showExistingDataModal(year, rate) {
+            document.getElementById('existingDataYear').textContent = year;
+            document.getElementById('existingDataRate').textContent = parseFloat(rate || 0).toFixed(2);
+            document.getElementById('existingDataModal').classList.remove('hidden');
+        }
+
+        function closeExistingDataModal() {
+            document.getElementById('existingDataModal').classList.add('hidden');
+            pendingYearData = null;
+            document.getElementById('academicYear').value = '';
+            setTimeout(() => document.getElementById('academicYear').focus(), 100);
+        }
+
+        function confirmLoadExistingData() {
+            if (!pendingYearData) return;
+            const { year, data } = pendingYearData;
+            currentYear = year;
+            document.getElementById('displayYear').textContent = year;
+            graduationRateData = data;
+            displayGraduationRateData(data);
+            document.getElementById('graduationRateCard').style.display = 'block';
+            showStatusNotification(year, true);
+            toggleYearDisplay(true);
+            document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
+            document.getElementById('existingDataModal').classList.add('hidden');
+            pendingYearData = null;
+            isChangingYear = false;
+        }
+
+        // ─── Change Year Modal ──────────────────────────────────────────────────
+        function changeYear() {
+            document.getElementById('changeYearCurrent').textContent = document.getElementById('displayYear').textContent;
+            document.getElementById('changeYearModal').classList.remove('hidden');
+        }
+
+        function closeChangeYearModal() {
+            document.getElementById('changeYearModal').classList.add('hidden');
+        }
+
+        function confirmChangeYear() {
+            document.getElementById('changeYearModal').classList.add('hidden');
+            isChangingYear = true;
+            document.getElementById('academicYear').value = '';
+            document.getElementById('displayYear').textContent = '----';
+            hideStatusNotification();
+            clearMissingEnrollmentWarning();
+            hideFutureYearWarning();
+            currentYear = null;
+            graduationRateData = null;
+            document.getElementById('graduationRateCard').style.display = 'none';
+            toggleYearDisplay(false);
+            setTimeout(() => document.getElementById('academicYear').focus(), 100);
+        }
+
+        // ─── Year Collision Modal ───────────────────────────────────────────────
+        function showYearCollisionModal(targetYear) {
+            document.getElementById('collisionTargetYear').textContent = targetYear;
+            document.getElementById('collisionCurrentYear').textContent = currentYear || '----';
+            document.getElementById('yearCollisionModal').classList.remove('hidden');
+        }
+
+        function closeYearCollisionModal() {
+            document.getElementById('yearCollisionModal').classList.add('hidden');
+            document.getElementById('academicYear').value = '';
+            document.getElementById('academicYear').focus();
+        }
+
+        // ─── Cancel Year Change ─────────────────────────────────────────────────
+        function cancelYearChange() {
+            document.getElementById('academicYear').value = '';
+            document.getElementById('displayYear').textContent = '----';
+            hideStatusNotification();
+            clearMissingEnrollmentWarning();
+            hideFutureYearWarning();
+            document.getElementById('graduationRateCard').style.display = 'none';
+            toggleYearDisplay(false);
+            isChangingYear = false;
+            currentYear = null;
+            graduationRateData = null;
+            document.getElementById('cancelYearChangeBtn').classList.add('hidden');
+            setTimeout(() => document.getElementById('academicYear').focus(), 100);
+        }
+
+        // ─── Status Notification ───────────────────────────────────────────────
+        function showStatusNotification(year, exists) {
+            const notification = document.getElementById('statusNotification');
+            const icon = document.getElementById('statusIcon');
+            const title = document.getElementById('statusTitle');
+            const message = document.getElementById('statusMessage');
+
+            if (exists) {
+                notification.className = 'mb-8 p-6 rounded-2xl shadow-lg bg-purple-50 border-2 border-purple-200';
+                icon.className = 'flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-purple-500 text-white text-2xl';
+                icon.innerHTML = '📝';
+                title.textContent = 'Editing Existing Data';
+                title.className = 'text-lg font-bold mb-1 text-purple-900';
+                message.textContent = `Loading graduation rate data for ${year}. You can now edit the existing rate.`;
+                message.className = 'text-sm text-purple-800';
+            } else {
+                notification.className = 'mb-8 p-6 rounded-2xl shadow-lg bg-green-50 border-2 border-green-200';
+                icon.className = 'flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-green-500 text-white text-2xl';
+                icon.innerHTML = '✨';
+                title.textContent = 'Creating New Data';
+                title.className = 'text-lg font-bold mb-1 text-green-900';
+                message.textContent = `No existing graduation rate found for ${year}. You can now set a new rate.`;
+                message.className = 'text-sm text-green-800';
+            }
+
+            notification.classList.remove('hidden');
+        }
+
+        function hideStatusNotification() {
+            document.getElementById('statusNotification').classList.add('hidden');
+        }
+
+        // ─── Toggle Year Display ────────────────────────────────────────────────
+        function toggleYearDisplay(showDisplay) {
+            const inputGroup = document.getElementById('yearInputGroup');
+            const yearDisplay = document.getElementById('yearDisplay');
+
+            if (showDisplay) {
+                inputGroup.classList.add('hidden');
+                yearDisplay.classList.remove('hidden');
+                yearDisplay.classList.add('flex');
+            } else {
+                inputGroup.classList.remove('hidden');
+                yearDisplay.classList.add('hidden');
+                yearDisplay.classList.remove('flex');
+            }
+        }
+
+        // ─── Load & Display Graduation Rate Data (used ONLY after modal confirmation) ─
+        async function loadGraduationRateData(graduateYear) {
+            try {
+                const response = await fetch(`/api/graduation-rate/${graduateYear}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                if (!response.ok) return;
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    graduationRateData = result.data;
+                    displayGraduationRateData(result.data);
+                    document.getElementById('graduationRateCard').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading graduation rate:', error);
+            }
+        }
+
+        // ─── Future Year Detection ──────────────────────────────────────────────
+        function isGraduateYearInFuture(graduateYear) {
+            // graduateYear format: "YYYY-YYYY" e.g. "2026-2027"
+            // Graduates finish at the END year (2027), around mid-year (July)
+            const endYear = parseInt(graduateYear.split('-')[1]);
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth() + 1; // 1-12
+
+            // The year is "past" only when we've reached July of the END year
+            // e.g. "2026-2027" is available from July 2027 onward
+            if (endYear > currentYear) return true;
+            if (endYear === currentYear && currentMonth < 7) return true;
+            return false;
+        }
+
+        function showFutureYearWarning(graduateYear) {
+            document.getElementById('futureGraduateYear').textContent = graduateYear;
+
+            // Unlock at July of the END year — that's when graduates actually finish
+            // e.g. "2026-2027" → unlocks July 2027
+            const endYear = graduateYear.split('-')[1];
+            document.getElementById('futureYearUnlockYear').textContent = `July ${endYear}`;
+
+            document.getElementById('futureYearWarning').classList.remove('hidden');
+
+            // Disable Save Rate button — data integrity: can't save future data
+            const saveBtn = document.querySelector('button[onclick="saveGraduationRate()"]');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                const endYear = graduateYear.split('-')[1];
+                saveBtn.title = `Saving locked until July ${endYear} — this academic year has not ended yet`;
+            }
+        }
+
+        function hideFutureYearWarning() {
+            document.getElementById('futureYearWarning').classList.add('hidden');
+
+            // Re-enable Save Rate button (only if not also blocked by missing enrollment)
+            const saveBtn = document.querySelector('button[onclick="saveGraduationRate()"]');
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                saveBtn.title = '';
+            }
+        }
+
+        // ─── Missing Enrollment Handler ─────────────────────────────────────────
+        function handleMissingEnrollment(enrollmentYear) {
+            // Show the warning banner
+            document.getElementById('missingEnrollmentYear').textContent = enrollmentYear || '(unknown year)';
+            document.getElementById('missingEnrollmentWarning').classList.remove('hidden');
+
+            // Disable Save Rate button — no point saving a rate with no enrollment base
+            const saveBtn = document.querySelector('button[onclick="saveGraduationRate()"]');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                saveBtn.title = 'Cannot save — enrollment data for the base year is missing';
+            }
+
+            // Grey out the rate input and slider
+            document.getElementById('graduationRateInput').disabled = true;
+            document.getElementById('graduationRateInput').classList.add('bg-gray-100', 'cursor-not-allowed');
+            document.getElementById('graduationRateSlider').disabled = true;
+        }
+
+        function clearMissingEnrollmentWarning() {
+            document.getElementById('missingEnrollmentWarning').classList.add('hidden');
+
+            // Re-enable Save Rate button
+            const saveBtn = document.querySelector('button[onclick="saveGraduationRate()"]');
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                saveBtn.title = '';
+            }
+
+            // Re-enable rate input and slider
+            document.getElementById('graduationRateInput').disabled = false;
+            document.getElementById('graduationRateInput').classList.remove('bg-gray-100', 'cursor-not-allowed');
+            document.getElementById('graduationRateSlider').disabled = false;
+        }
+
+        // ─── Load Enrollment Context Only (for NEW year — no existing rate) ────────
+        // Fetches base enrollees and years so the card can display context,
+        // but does NOT populate the graduation rate input with any saved value.
+        async function loadEnrollmentContext(graduateYear) {
+            try {
+                const response = await fetch(`/api/graduation-rate/${graduateYear}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const data = result.data;
+
+                    document.getElementById('projGraduateYear').textContent = data.graduate_year || graduateYear;
+                    document.getElementById('projEnrollmentYear').textContent = data.enrollment_year || '----';
+                    document.getElementById('projBaseEnrollees').textContent = (data.base_enrollees || 0).toLocaleString();
+
+                    // Check 1: Is this a future year? — locks Save button
+                    if (isGraduateYearInFuture(graduateYear)) {
+                        showFutureYearWarning(graduateYear);
+                    } else {
+                        hideFutureYearWarning();
+                    }
+
+                    // Check 2: Is enrollment base data missing? — also locks Save + disables inputs
+                    if (!data.base_enrollees || data.base_enrollees === 0) {
+                        handleMissingEnrollment(data.enrollment_year);
+                    } else {
+                        clearMissingEnrollmentWarning();
+                        document.getElementById('graduationRateInput').value = '60.00';
+                        document.getElementById('graduationRateSlider').value = 60;
+                        document.getElementById('rateStatusSaved').style.display = 'none';
+                        document.getElementById('rateStatusUnsaved').style.display = 'none';
+                        calculateProjection();
+                    }
+
+                    document.getElementById('graduationRateCard').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading enrollment context:', error);
+            }
+        }
+
+        function displayGraduationRateData(data) {
+            document.getElementById('projGraduateYear').textContent = data.graduate_year;
+            document.getElementById('projEnrollmentYear').textContent = data.enrollment_year;
+            document.getElementById('projBaseEnrollees').textContent = (data.base_enrollees || 0).toLocaleString();
+            document.getElementById('graduationRateInput').value = parseFloat(data.graduation_rate || 60).toFixed(2);
+            document.getElementById('graduationRateSlider').value = Math.round(data.graduation_rate || 60);
+
+            // Check 1: Future year?
+            if (data.graduate_year && isGraduateYearInFuture(data.graduate_year)) {
+                showFutureYearWarning(data.graduate_year);
+            } else {
+                hideFutureYearWarning();
+            }
+
+            // Check 2: Missing enrollment base?
+            if (!data.base_enrollees || data.base_enrollees === 0) {
+                handleMissingEnrollment(data.enrollment_year);
+            } else {
+                clearMissingEnrollmentWarning();
+                calculateProjection();
+                if (!data.is_default) {
+                    document.getElementById('rateStatusSaved').style.display = 'block';
+                    document.getElementById('rateStatusUnsaved').style.display = 'none';
+                } else {
+                    document.getElementById('rateStatusSaved').style.display = 'none';
+                    document.getElementById('rateStatusUnsaved').style.display = 'none';
+                }
+            }
+        }
+
+        // ─── Projection Calculation ─────────────────────────────────────────────
+        function calculateProjection() {
+            const baseEnrollees = parseInt(document.getElementById('projBaseEnrollees').textContent.replace(/,/g, '')) || 0;
+            const rate = parseFloat(document.getElementById('graduationRateInput').value) || 0;
+            const projected = Math.round(baseEnrollees * (rate / 100));
+
+            document.getElementById('projectedGraduates').textContent = projected.toLocaleString();
+            document.getElementById('projCalcEnrollees').textContent = baseEnrollees.toLocaleString();
+            document.getElementById('projCalcRate').textContent = rate.toFixed(2) + '%';
+            document.getElementById('projCalcResult').textContent = projected.toLocaleString();
+
+            document.getElementById('rateStatusSaved').style.display = 'none';
+            document.getElementById('rateStatusUnsaved').style.display = 'block';
+        }
+
+        function updateRateFromSlider(value) {
+            document.getElementById('graduationRateInput').value = parseFloat(value).toFixed(2);
+            calculateProjection();
+        }
+
+        document.getElementById('graduationRateInput')?.addEventListener('input', function() {
+            let val = parseFloat(this.value);
+            if (!isNaN(val)) {
+                if (val < 0) { this.value = '0.00'; val = 0; }
+                if (val > 100) { this.value = '100.00'; val = 100; }
+            }
+            document.getElementById('graduationRateSlider').value = Math.round(isNaN(val) ? 0 : val);
+        });
+
+        // ─── Confirm Save Modal ─────────────────────────────────────────────────
+        function saveGraduationRate() {
+            if (!currentYear) {
+                showToast('Please select an academic year first', 'warning');
+                return;
+            }
+
+            // Guard: block saving for future years — data integrity
+            if (isGraduateYearInFuture(currentYear)) {
+                const endYear = currentYear.split('-')[1];
+                showToast(`Saving is locked — ${currentYear} is a future academic year. Come back in July ${endYear} to record the actual graduation rate.`, 'warning');
+                return;
+            }
+
+            const graduationRate = parseFloat(document.getElementById('graduationRateInput').value);
+
+            if (isNaN(graduationRate) || graduationRate < 0 || graduationRate > 100) {
+                showToast('Graduation rate must be between 0 and 100', 'error');
+                return;
+            }
+
+            const isUpdate = graduationRateData && !graduationRateData.is_default;
+            const projected = document.getElementById('projectedGraduates').textContent;
+            const enrollees = document.getElementById('projBaseEnrollees').textContent;
+
+            document.getElementById('confirmSaveYear').textContent = currentYear;
+            document.getElementById('confirmSaveAction').textContent = isUpdate ? 'update' : 'create new';
+            document.getElementById('confirmSaveBtnText').textContent = isUpdate ? 'Update' : 'Save';
+            document.getElementById('confirmSaveRate').textContent = graduationRate.toFixed(2) + '%';
+            document.getElementById('confirmSaveProjected').textContent = projected;
+            document.getElementById('confirmSaveEnrollees').textContent = enrollees;
+
+            if (isUpdate) {
+                document.getElementById('confirmSaveDeletionWarning').classList.remove('hidden');
+            } else {
+                document.getElementById('confirmSaveDeletionWarning').classList.add('hidden');
+            }
+
+            document.getElementById('confirmSaveModal').classList.remove('hidden');
+        }
+
+        function closeConfirmSaveModal() {
+            document.getElementById('confirmSaveModal').classList.add('hidden');
+        }
+
+        async function confirmSaveRate() {
+            closeConfirmSaveModal();
+
+            const graduationRate = parseFloat(document.getElementById('graduationRateInput').value);
+
+            try {
+                const response = await fetch('/api/graduation-rate/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        graduate_year: currentYear,
+                        graduation_rate: graduationRate
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    graduationRateData = result.data;
+                    document.getElementById('rateStatusSaved').style.display = 'block';
+                    document.getElementById('rateStatusUnsaved').style.display = 'none';
+                    showSuccessModal();
+                    setTimeout(() => {
+                        document.getElementById('rateStatusSaved').style.display = 'none';
+                    }, 3000);
+                } else {
+                    showToast('Error saving graduation rate: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('An error occurred while saving the graduation rate. Please try again.', 'error');
+            }
+        }
+
+        // ─── Success Modal ──────────────────────────────────────────────────────
+        function showSuccessModal() {
+            document.getElementById('successModal').classList.remove('hidden');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

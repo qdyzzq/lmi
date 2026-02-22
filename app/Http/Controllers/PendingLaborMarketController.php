@@ -9,6 +9,14 @@ use Illuminate\Support\Facades\Auth;
 
 class LaborMarketController extends Controller
 {
+    // Live polling endpoint — returns current pending record count
+    public function counts()
+    {
+        return response()->json([
+            'pending' => PendingLaborMarketData::count(),
+        ]);
+    }
+
     // Display the statistician review page
     public function index()
     {
