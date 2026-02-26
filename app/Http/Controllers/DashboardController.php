@@ -95,7 +95,8 @@ class DashboardController extends Controller
                 $groupedRoles[$normalizedTitle][] = [
                     'role' => $role,
                     'submission' => $submission,
-                    'index' => $index
+                    'index' => $index,
+                    'display_title' => mb_strtoupper(trim($role->job_title), 'UTF-8'),
                 ];
             }
         }
@@ -126,7 +127,7 @@ class DashboardController extends Controller
                     foreach ($techSkills as $skill) {
                         if (!empty($skill)) {
                             $dynamicTechSkills[] = [
-                                'name' => $skill,
+                                'name' => mb_strtoupper(trim($skill), 'UTF-8'),
                                 'sector' => $sector,
                                 'job_title' => $role->job_title
                             ];
@@ -143,7 +144,7 @@ class DashboardController extends Controller
                     foreach ($softSkills as $skill) {
                         if (!empty($skill)) {
                             $dynamicSoftSkills[] = [
-                                'name' => $skill,
+                                'name' => mb_strtoupper(trim($skill), 'UTF-8'),
                                 'sector' => $sector,
                                 'job_title' => $role->job_title
                             ];
@@ -216,7 +217,7 @@ class DashboardController extends Controller
                         $hasTechnicalSkills = true;
                         $hardSkillsArray = array_map(function($skill) use ($role) {
                             return [
-                                'name' => $skill,
+                                'name' => mb_strtoupper(trim($skill), 'UTF-8'),
                                 'category' => $role->job_classification ?? 'General'
                             ];
                         }, $filteredTechSkills);
@@ -234,7 +235,7 @@ class DashboardController extends Controller
                         $hasSoftSkills = true;
                         $softSkillsArray = array_map(function($skill) use ($role) {
                             return [
-                                'name' => $skill,
+                                'name' => mb_strtoupper(trim($skill), 'UTF-8'),
                                 'category' => $role->job_classification ?? 'General'
                             ];
                         }, $filteredSoftSkills);
@@ -403,7 +404,7 @@ class DashboardController extends Controller
             ->get()
             ->map(function($job) {
                 return [
-                    'title' => $job->title,
+                    'title' => mb_strtoupper(trim($job->title), 'UTF-8'),
                     'count' => $job->count,
                     'year' => $job->year
                 ];

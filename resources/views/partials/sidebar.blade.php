@@ -111,7 +111,7 @@
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.licensure-rates.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-.44 3.899 3.745 3.745 0 01-3.899.44A3.745 3.745 0 0112 21a3.745 3.745 0 01-3.068-1.593 3.745 3.745 0 01-3.899-.44 3.745 3.745 0 01-.44-3.899A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 01.44-3.899 3.745 3.745 0 013.899-.44A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.899.44 3.746 3.746 0 01.44 3.899A3.746 3.746 0 0121 12z"/>
                     </svg>
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Licensure Passing Rates</span>
                 </a>
@@ -161,6 +161,46 @@
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
+                <!-- Analysis Template -->
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+                <a href="{{ route('admin.supply-side-editor') }}"   {{-- ← changed --}}
+                    class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
+                        {{ request()->routeIs('admin.supply-side-editor')   {{-- ← changed --}}
+                            ? 'text-blue-700 bg-blue-50 border-blue-500'
+                            : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.supply-side-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"   {{-- ← changed --}}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z"/>
+                    </svg>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis Labor Supply</span>
+                </a>
+                <div x-show="!sidebarExpanded && hovered"
+                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    Analysis Labor Supply
+                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                </div>
+            </div>
+            <!-- Analysis Template JobMarketDemand Side -->
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+                <a href="{{ route('admin.template-editor') }}"   {{-- ← changed --}}
+                    class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
+                        {{ request()->routeIs('admin.template-editor')   {{-- ← changed --}}
+                            ? 'text-blue-700 bg-blue-50 border-blue-500'
+                            : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.stemplate-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"   {{-- ← changed --}}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.073a2.25 2.25 0 01-2.25 2.25H5.25a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 015.25 4.5h7.5M9 4.5V3a.75.75 0 01.75-.75h4.5A.75.75 0 0115 3v1.5m-5.25 6h6M3.75 10.5h7.5"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5l1.5-1.5a1.06 1.06 0 00-1.5-1.5L18 9l1.5 1.5zm0 0l-4.5 4.5-2 .5.5-2 4-3z"/>
+                    </svg>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis JobMarketDemands</span>
+                </a>
+                <div x-show="!sidebarExpanded && hovered"
+                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    Analysis JobMarketDemands
+                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                </div>
+            </div>
+
 
             <!-- LMI Submissions -->
             <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
@@ -171,7 +211,7 @@
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.lmi-submissions.*') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z"/>
                     </svg>
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">LMI Submissions</span>
                 </a>

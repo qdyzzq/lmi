@@ -50,13 +50,13 @@
 
         <!-- Error Messages -->
         @if (session('error'))
-            <div class="bg-gradient-to-r from-red-50 to-red-100 border-[1.5px] border-red-300 text-red-900 px-5 py-3.5 rounded-xl mb-6 text-sm font-medium animate-slide-in-left">
+            <div data-flash class="bg-gradient-to-r from-red-50 to-red-100 border-[1.5px] border-red-300 text-red-900 px-5 py-3.5 rounded-xl mb-6 text-sm font-medium animate-slide-in-left">
                 {{ session('error') }}
             </div>
         @endif
 
         @if (session('success'))
-            <div class="bg-gradient-to-r from-green-50 to-green-100 border-[1.5px] border-green-300 text-green-900 px-5 py-3.5 rounded-xl mb-6 text-sm font-medium animate-slide-in-left">
+            <div data-flash class="bg-gradient-to-r from-green-50 to-green-100 border-[1.5px] border-green-300 text-green-900 px-5 py-3.5 rounded-xl mb-6 text-sm font-medium animate-slide-in-left">
                 {{ session('success') }}
             </div>
         @endif
@@ -136,6 +136,17 @@
             const btn = this.querySelector('button[type="submit"]');
             btn.disabled = true;
             btn.textContent = 'Logging in...';
+        });
+
+        // Auto-dismiss flash messages after 4 seconds
+        const flashMessages = document.querySelectorAll('[data-flash]');
+        flashMessages.forEach(msg => {
+            setTimeout(() => {
+                msg.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateY(-10px)';
+                setTimeout(() => msg.remove(), 500);
+            }, 4000);
         });
     </script>
 </body>

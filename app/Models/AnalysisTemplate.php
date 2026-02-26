@@ -18,12 +18,16 @@ class AnalysisTemplate extends Model
         'template_text',
         'is_active',
         'updated_by',
+        'status',
+        'submitted_by',
+        'submitted_at',
     ];
 
     protected $casts = [
-        'year'  => 'integer',
-        'month' => 'integer',
-        'is_active' => 'boolean',
+        'year'         => 'integer',
+        'month'        => 'integer',
+        'is_active'    => 'boolean',
+        'submitted_at' => 'datetime',
     ];
 
     /**

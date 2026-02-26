@@ -17,13 +17,7 @@ class GraduationRateController extends Controller
     {
         try {
             // Get total enrollees for the specified year from ENROLLMENT table
-            $totalEnrollees = DisciplineEnrollment::where('academic_year', $academicYear)
-                ->sum(DB::raw('
-                    agriculture + architecture + business + criminal_justice + 
-                    education + engineering + arts + humanities + it + law + 
-                    maritime + mass_comm + mathematics + medical + 
-                    natural_science + religion + service_trades + social_sciences
-                '));
+            $totalEnrollees = $this->getTotalEnrollees($academicYear);
 
             return response()->json([
                 'success' => true,
@@ -57,13 +51,7 @@ class GraduationRateController extends Controller
         }
 
         // Get enrollees from 4 years ago from ENROLLMENT table
-        $totalEnrollees = DisciplineEnrollment::where('academic_year', $enrollmentYear)
-            ->sum(DB::raw('
-                agriculture + architecture + business + criminal_justice + 
-                education + engineering + arts + humanities + it + law + 
-                maritime + mass_comm + mathematics + medical + 
-                natural_science + religion + service_trades + social_sciences
-            '));
+        $totalEnrollees = $this->getTotalEnrollees($enrollmentYear);
 
         // Calculate projected graduates
         $projectedGraduates = round($totalEnrollees * ($graduationRate / 100));
@@ -93,13 +81,7 @@ class GraduationRateController extends Controller
             $enrollmentYear = GraduationRate::calculateEnrollmentYear($validated['graduate_year']);
 
             // Get enrollees from 4 years ago from ENROLLMENT table
-            $totalEnrollees = DisciplineEnrollment::where('academic_year', $enrollmentYear)
-                ->sum(DB::raw('
-                    agriculture + architecture + business + criminal_justice + 
-                    education + engineering + arts + humanities + it + law + 
-                    maritime + mass_comm + mathematics + medical + 
-                    natural_science + religion + service_trades + social_sciences
-                '));
+            $totalEnrollees = $this->getTotalEnrollees($enrollmentYear);
 
             // Calculate projected graduates
             $projectedGraduates = round($totalEnrollees * ($validated['graduation_rate'] / 100));
@@ -137,32 +119,32 @@ class GraduationRateController extends Controller
         try {
             $graduationRate = GraduationRate::where('graduate_year', $graduateYear)->first();
 
+            // Always recalculate base_enrollees live from the enrollment table
+            // so stale saved values never show up
+            $enrollmentYear = GraduationRate::calculateEnrollmentYear($graduateYear);
+            $liveEnrollees  = $this->getTotalEnrollees($enrollmentYear);
+
             if ($graduationRate) {
+                // Update the stored base_enrollees + projected_graduates to stay in sync
+                $graduationRate->base_enrollees      = $liveEnrollees;
+                $graduationRate->projected_graduates = round($liveEnrollees * ($graduationRate->graduation_rate / 100));
+
                 return response()->json([
                     'success' => true,
-                    'data' => $graduationRate
+                    'data'    => $graduationRate
                 ]);
             }
 
-            // If no rate exists, calculate default (60%) projection
-            $enrollmentYear = GraduationRate::calculateEnrollmentYear($graduateYear);
-            $totalEnrollees = DisciplineEnrollment::where('academic_year', $enrollmentYear)
-                ->sum(DB::raw('
-                    agriculture + architecture + business + criminal_justice + 
-                    education + engineering + arts + humanities + it + law + 
-                    maritime + mass_comm + mathematics + medical + 
-                    natural_science + religion + service_trades + social_sciences
-                '));
-
+            // No saved record — return default (60%) projection
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'graduate_year' => $graduateYear,
-                    'enrollment_year' => $enrollmentYear,
-                    'graduation_rate' => 60.00,
-                    'base_enrollees' => $totalEnrollees,
-                    'projected_graduates' => round($totalEnrollees * 0.6),
-                    'is_default' => true
+                    'graduate_year'       => $graduateYear,
+                    'enrollment_year'     => $enrollmentYear,
+                    'graduation_rate'     => 60.00,
+                    'base_enrollees'      => $liveEnrollees,
+                    'projected_graduates' => round($liveEnrollees * 0.6),
+                    'is_default'          => true
                 ]
             ]);
         } catch (\Exception $e) {
@@ -238,4 +220,26 @@ class GraduationRateController extends Controller
         ],
     ], 200);
 }
+
+    /**
+     * Get total enrollees for a given academic year.
+     * Prefers the Davao Region / Total row (region-wide figure).
+     * Falls back to summing all specific-province rows if no Total row exists.
+     */
+    private function getTotalEnrollees(string $year): int
+    {
+        $regionRow = DisciplineEnrollment::where('academic_year', $year)
+            ->where('province', 'Davao Region')
+            ->where('institution_type', 'Total')
+            ->first();
+
+        if ($regionRow) {
+            return (int) $regionRow->grand_total;
+        }
+
+        // Fallback: sum individual province rows (exclude Davao Region to avoid double-count)
+        return (int) DisciplineEnrollment::where('academic_year', $year)
+            ->where('province', '!=', 'Davao Region')
+            ->sum('grand_total');
+    }
 }

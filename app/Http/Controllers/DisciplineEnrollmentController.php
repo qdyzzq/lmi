@@ -27,7 +27,7 @@ class DisciplineEnrollmentController extends Controller
         $validator = Validator::make($request->all(), [
             'academic_year' => 'required|string|regex:/^\d{4}-\d{4}$/',
             'province' => 'required|string',
-            'institution_type' => 'required|in:Private,Public',
+            'institution_type' => 'required|in:Private,Public,Total',
             'disciplines' => 'required|array',
             'disciplines.agriculture' => 'nullable|integer|min:0',
             'disciplines.architecture' => 'nullable|integer|min:0',
@@ -68,11 +68,18 @@ class DisciplineEnrollmentController extends Controller
             $institutionType = $request->institution_type;
             $submittedBy = Auth::id();
 
-            // Prevent saving "All Provinces" - it's view-only for aggregated data
-            if ($province === 'All Provinces') {
+            // "Davao Region" must use institution_type "Total" (region-wide entry).
+            // Specific provinces must use Private or Public only.
+            if ($province === 'Davao Region' && $institutionType !== 'Total') {
                 return response()->json([
                     'success' => false,
-                    'message' => '"All Provinces" cannot be saved. Please select a specific province to submit data.'
+                    'message' => '"Davao Region" entries must use institution type "Total".'
+                ], 400);
+            }
+            if ($province !== 'Davao Region' && $institutionType === 'Total') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Institution type "Total" is only allowed for "Davao Region".'
                 ], 400);
             }
 
@@ -132,6 +139,14 @@ class DisciplineEnrollmentController extends Controller
     }
 
     /**
+     * Helper: check if province means "all" (supports both old and new label)
+     */
+    private function isAllProvinces(?string $province): bool
+    {
+        return !$province || $province === 'All Provinces' || $province === 'Davao Region';
+    }
+
+    /**
      * Check if data exists for a specific year + province + institution type and return it
      */
     public function checkYear($academicYear, Request $request)
@@ -148,13 +163,14 @@ class DisciplineEnrollmentController extends Controller
                 ], 400);
             }
 
-            // Handle "All Provinces" - aggregate data from all provinces
-            if ($province === 'All Provinces') {
-                $records = DisciplineEnrollment::where('academic_year', $academicYear)
-                    ->where('institution_type', $institutionType)
-                    ->get();
+            // Handle "Davao Region" — fetch the directly stored "Total" record
+            if ($this->isAllProvinces($province)) {
+                $data = DisciplineEnrollment::where('academic_year', $academicYear)
+                    ->where('province', 'Davao Region')
+                    ->where('institution_type', 'Total')
+                    ->first();
 
-                if ($records->isEmpty()) {
+                if (!$data) {
                     return response()->json([
                         'success' => true,
                         'exists' => false,
@@ -162,44 +178,41 @@ class DisciplineEnrollmentController extends Controller
                     ], 404);
                 }
 
-                // Aggregate all disciplines across all provinces
-                $aggregated = [
-                    'id' => null, // No single ID for aggregated data
-                    'academic_year' => $academicYear,
-                    'province' => 'All Provinces',
-                    'institution_type' => $institutionType,
-                    'disciplines' => [
-                        'agriculture' => $records->sum('agriculture'),
-                        'architecture' => $records->sum('architecture'),
-                        'business' => $records->sum('business'),
-                        'criminal_justice' => $records->sum('criminal_justice'),
-                        'education' => $records->sum('education'),
-                        'engineering' => $records->sum('engineering'),
-                        'arts' => $records->sum('arts'),
-                        'general' => $records->sum('general'),
-                        'home_economics' => $records->sum('home_economics'),
-                        'humanities' => $records->sum('humanities'),
-                        'it' => $records->sum('it'),
-                        'law' => $records->sum('law'),
-                        'maritime' => $records->sum('maritime'),
-                        'mass_comm' => $records->sum('mass_comm'),
-                        'mathematics' => $records->sum('mathematics'),
-                        'medical' => $records->sum('medical'),
-                        'natural_science' => $records->sum('natural_science'),
-                        'other_disciplines' => $records->sum('other_disciplines'),
-                        'religion' => $records->sum('religion'),
-                        'service_trades' => $records->sum('service_trades'),
-                        'social_sciences' => $records->sum('social_sciences'),
-                    ],
-                    'created_at' => null,
-                    'updated_at' => null,
-                    'is_aggregated' => true, // Flag to indicate this is aggregated data
-                ];
-
                 return response()->json([
                     'success' => true,
                     'exists' => true,
-                    'data' => $aggregated
+                    'data' => [
+                        'id'               => $data->id,
+                        'academic_year'    => $data->academic_year,
+                        'province'         => $data->province,
+                        'institution_type' => $data->institution_type,
+                        'disciplines'      => [
+                            'agriculture'       => $data->agriculture,
+                            'architecture'      => $data->architecture,
+                            'business'          => $data->business,
+                            'criminal_justice'  => $data->criminal_justice,
+                            'education'         => $data->education,
+                            'engineering'       => $data->engineering,
+                            'arts'              => $data->arts,
+                            'general'           => $data->general ?? 0,
+                            'home_economics'    => $data->home_economics ?? 0,
+                            'humanities'        => $data->humanities,
+                            'it'                => $data->it,
+                            'law'               => $data->law,
+                            'maritime'          => $data->maritime,
+                            'mass_comm'         => $data->mass_comm,
+                            'mathematics'       => $data->mathematics,
+                            'medical'           => $data->medical,
+                            'natural_science'   => $data->natural_science,
+                            'other_disciplines' => $data->other_disciplines ?? 0,
+                            'religion'          => $data->religion,
+                            'service_trades'    => $data->service_trades,
+                            'social_sciences'   => $data->social_sciences,
+                        ],
+                        'created_at'    => $data->created_at,
+                        'updated_at'    => $data->updated_at,
+                        'is_aggregated' => false,
+                    ]
                 ], 200);
             }
 
@@ -217,7 +230,6 @@ class DisciplineEnrollmentController extends Controller
                 ], 404);
             }
             
-            // Return data in a structured format for the form
             return response()->json([
                 'success' => true,
                 'exists' => true,
@@ -270,17 +282,12 @@ class DisciplineEnrollmentController extends Controller
     {
         $query = DisciplineEnrollment::query();
 
-        // Filter by academic year if provided
         if ($request->has('academic_year')) {
             $query->where('academic_year', $request->academic_year);
         }
-
-        // Filter by province if provided
         if ($request->has('province')) {
             $query->where('province', $request->province);
         }
-
-        // Filter by institution type if provided
         if ($request->has('institution_type')) {
             $query->where('institution_type', $request->institution_type);
         }
@@ -317,13 +324,11 @@ class DisciplineEnrollmentController extends Controller
     public function show($id)
     {
         $enrollment = DisciplineEnrollment::with(['submitter'])->findOrFail($id);
-
         return response()->json($enrollment);
     }
 
     /**
      * Delete a specific combination
-     * Used when changing year - deletes old combination data
      */
     public function deleteYear($academicYear, Request $request)
     {
@@ -367,15 +372,9 @@ class DisciplineEnrollmentController extends Controller
         
         $query = DisciplineEnrollment::query();
         
-        if ($academicYear) {
-            $query->where('academic_year', $academicYear);
-        }
-        if ($province) {
-            $query->where('province', $province);
-        }
-        if ($institutionType) {
-            $query->where('institution_type', $institutionType);
-        }
+        if ($academicYear) $query->where('academic_year', $academicYear);
+        if ($province) $query->where('province', $province);
+        if ($institutionType) $query->where('institution_type', $institutionType);
 
         $enrollments = $query->get();
         
@@ -383,41 +382,28 @@ class DisciplineEnrollmentController extends Controller
             'total_records' => $enrollments->count(),
             'total_enrollment' => $enrollments->sum('grand_total'),
             'average_per_record' => $enrollments->avg('grand_total'),
-            'by_province' => [],
-            'by_institution_type' => [],
-            'by_discipline' => []
-        ];
-
-        // Group by province
-        $stats['by_province'] = $enrollments->groupBy('province')
-            ->map(fn($group) => $group->sum('grand_total'))
-            ->toArray();
-
-        // Group by institution type
-        $stats['by_institution_type'] = $enrollments->groupBy('institution_type')
-            ->map(fn($group) => $group->sum('grand_total'))
-            ->toArray();
-
-        // Aggregate disciplines
-        $stats['by_discipline'] = [
-            'Agriculture, Forestry, Fisheries' => $enrollments->sum('agriculture'),
-            'Architecture and Town Planning' => $enrollments->sum('architecture'),
-            'Business Administration and Related' => $enrollments->sum('business'),
-            'Criminal Justice Education' => $enrollments->sum('criminal_justice'),
-            'Education Science and Teacher Training' => $enrollments->sum('education'),
-            'Engineering and Technology' => $enrollments->sum('engineering'),
-            'Fine and Applied Arts' => $enrollments->sum('arts'),
-            'Humanities' => $enrollments->sum('humanities'),
-            'IT-Related Disciplines' => $enrollments->sum('it'),
-            'Law and Jurisprudence' => $enrollments->sum('law'),
-            'Maritime' => $enrollments->sum('maritime'),
-            'Mass Communication and Documentation' => $enrollments->sum('mass_comm'),
-            'Mathematics' => $enrollments->sum('mathematics'),
-            'Medical and Allied' => $enrollments->sum('medical'),
-            'Natural Science' => $enrollments->sum('natural_science'),
-            'Religion and Theology' => $enrollments->sum('religion'),
-            'Service Trades' => $enrollments->sum('service_trades'),
-            'Social and Behavioral Sciences' => $enrollments->sum('social_sciences'),
+            'by_province' => $enrollments->groupBy('province')->map(fn($g) => $g->sum('grand_total'))->toArray(),
+            'by_institution_type' => $enrollments->groupBy('institution_type')->map(fn($g) => $g->sum('grand_total'))->toArray(),
+            'by_discipline' => [
+                'Agriculture, Forestry, Fisheries' => $enrollments->sum('agriculture'),
+                'Architecture and Town Planning' => $enrollments->sum('architecture'),
+                'Business Administration and Related' => $enrollments->sum('business'),
+                'Criminal Justice Education' => $enrollments->sum('criminal_justice'),
+                'Education Science and Teacher Training' => $enrollments->sum('education'),
+                'Engineering and Technology' => $enrollments->sum('engineering'),
+                'Fine and Applied Arts' => $enrollments->sum('arts'),
+                'Humanities' => $enrollments->sum('humanities'),
+                'IT-Related Disciplines' => $enrollments->sum('it'),
+                'Law and Jurisprudence' => $enrollments->sum('law'),
+                'Maritime' => $enrollments->sum('maritime'),
+                'Mass Communication and Documentation' => $enrollments->sum('mass_comm'),
+                'Mathematics' => $enrollments->sum('mathematics'),
+                'Medical and Allied' => $enrollments->sum('medical'),
+                'Natural Science' => $enrollments->sum('natural_science'),
+                'Religion and Theology' => $enrollments->sum('religion'),
+                'Service Trades' => $enrollments->sum('service_trades'),
+                'Social and Behavioral Sciences' => $enrollments->sum('social_sciences'),
+            ]
         ];
 
         return response()->json($stats);
@@ -425,18 +411,25 @@ class DisciplineEnrollmentController extends Controller
 
     /**
      * Get all available academic years, optionally filtered by province.
-     * Used by the frontend to populate the year dropdown per-province.
      */
     public function getYears(Request $request)
     {
+        $province = $request->query('province');
+
         $query = DisciplineEnrollment::distinct()
             ->orderBy('academic_year', 'desc');
 
-        // If a specific province is requested, only return years that have data for it
-        $province = $request->query('province');
-        if ($province && $province !== 'All Provinces') {
-            $query->where('province', $province);
+        if ($province) {
+            if ($this->isAllProvinces($province)) {
+                // For Davao Region: only return years that have a Total row
+                $query->where('province', 'Davao Region')
+                      ->where('institution_type', 'Total');
+            } else {
+                // Specific province: filter by that province
+                $query->where('province', $province);
+            }
         }
+        // No province param = return all years (used by KPI cards, etc.)
 
         $years = $query->pluck('academic_year');
 
@@ -467,26 +460,16 @@ class DisciplineEnrollmentController extends Controller
         
         $query = DisciplineEnrollment::query();
         
-        if ($academicYear) {
-            $query->where('academic_year', $academicYear);
-        }
-        if ($province) {
-            $query->where('province', $province);
-        }
-        if ($institutionType) {
-            $query->where('institution_type', $institutionType);
-        }
+        if ($academicYear) $query->where('academic_year', $academicYear);
+        if ($province) $query->where('province', $province);
+        if ($institutionType) $query->where('institution_type', $institutionType);
         
         $enrollments = $query->get();
         
         if ($enrollments->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No data found'
-            ], 404);
+            return response()->json(['success' => false, 'message' => 'No data found'], 404);
         }
 
-        // Aggregate all disciplines
         $disciplines = [
             'Agriculture, Forestry, Fisheries' => $enrollments->sum('agriculture'),
             'Architecture and Town Planning' => $enrollments->sum('architecture'),
@@ -524,35 +507,23 @@ class DisciplineEnrollmentController extends Controller
 
         $query = DisciplineEnrollment::query();
 
-        if ($province) {
-            $query->where('province', $province);
-        }
-        if ($institutionType) {
-            $query->where('institution_type', $institutionType);
-        }
+        if ($province) $query->where('province', $province);
+        if ($institutionType) $query->where('institution_type', $institutionType);
 
         $enrollments = $query->orderBy('academic_year', 'asc')
             ->orderBy('province', 'asc')
             ->orderBy('institution_type', 'asc')
             ->get();
 
-        $trends = [
-            'data' => [],
-        ];
-
-        // Group by academic year for aggregation
+        $trends = ['data' => []];
         $groupedByYear = $enrollments->groupBy('academic_year');
 
         foreach ($groupedByYear as $year => $yearEnrollments) {
             $trends['data'][] = [
                 'academic_year' => $year,
                 'total_enrollment' => $yearEnrollments->sum('grand_total'),
-                'by_province' => $yearEnrollments->groupBy('province')
-                    ->map(fn($group) => $group->sum('grand_total'))
-                    ->toArray(),
-                'by_institution_type' => $yearEnrollments->groupBy('institution_type')
-                    ->map(fn($group) => $group->sum('grand_total'))
-                    ->toArray(),
+                'by_province' => $yearEnrollments->groupBy('province')->map(fn($g) => $g->sum('grand_total'))->toArray(),
+                'by_institution_type' => $yearEnrollments->groupBy('institution_type')->map(fn($g) => $g->sum('grand_total'))->toArray(),
             ];
         }
 
@@ -560,28 +531,15 @@ class DisciplineEnrollmentController extends Controller
     }
 
     /**
-     * Get enrollment trend data for the "Enrollment Trend in Davao Region" chart
-     * Returns data formatted for a stacked horizontal bar chart comparing Public vs Private
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     * 
-     * Query Parameters:
-     * - year (required): Academic year (e.g., "2024-2025")
-     * - province (optional): Province name or "All Provinces" (default: "All Provinces")
-     * 
-     * Example Usage:
-     * GET /api/discipline-enrollment/trend?year=2024-2025&province=Davao City
-     * GET /api/discipline-enrollment/trend?year=2024-2025&province=All Provinces
+     * Get enrollment trend data for the "Enrollment Trend" chart
+     * Supports both "Davao Region" and "All Provinces" as the all-data sentinel value.
      */
     public function getEnrollmentTrend(Request $request)
     {
         try {
-            // Get query parameters
             $year = $request->query('year');
-            $province = $request->query('province', 'All Provinces');
+            $province = $request->query('province', 'Davao Region');
             
-            // Validate year parameter
             if (!$year) {
                 return response()->json([
                     'error' => 'Year parameter is required',
@@ -589,18 +547,15 @@ class DisciplineEnrollmentController extends Controller
                 ], 400);
             }
             
-            // Start building the query
             $query = DisciplineEnrollment::where('academic_year', $year);
             
-            // Filter by province if not "All Provinces"
-            if ($province !== 'All Provinces') {
+            // Only filter by province if it's a specific one
+            if (!$this->isAllProvinces($province)) {
                 $query->where('province', $province);
             }
             
-            // Get the data
             $enrollmentData = $query->get();
             
-            // If no data found
             if ($enrollmentData->isEmpty()) {
                 return response()->json([
                     'year' => $year,
@@ -608,19 +563,13 @@ class DisciplineEnrollmentController extends Controller
                     'disciplines' => [],
                     'publicSchools' => [],
                     'privateSchools' => [],
-                    'totals' => [
-                        'public' => 0,
-                        'private' => 0,
-                        'combined' => 0
-                    ],
+                    'totals' => ['public' => 0, 'private' => 0, 'combined' => 0],
                     'message' => 'No data found for the specified year and province'
                 ]);
             }
             
-            // Aggregate data by discipline and institution type
             $aggregated = [];
             
-            // Map discipline keys to display names
             $disciplineMap = [
                 'agriculture' => 'Agri & Forestry',
                 'architecture' => 'Architecture',
@@ -646,60 +595,66 @@ class DisciplineEnrollmentController extends Controller
             ];
             
             foreach ($enrollmentData as $record) {
-                $institutionType = $record->institution_type; // 'Public' or 'Private'
+                $institutionType = $record->institution_type;
                 
-                // Process each discipline
                 foreach ($disciplineMap as $key => $displayName) {
                     $count = (int)($record->$key ?? 0);
                     
                     if (!isset($aggregated[$displayName])) {
-                        $aggregated[$displayName] = [
-                            'public' => 0,
-                            'private' => 0
-                        ];
+                        $aggregated[$displayName] = ['public' => 0, 'private' => 0, 'total' => 0];
                     }
                     
-                    // Add to the appropriate institution type
                     if ($institutionType === 'Public') {
                         $aggregated[$displayName]['public'] += $count;
                     } elseif ($institutionType === 'Private') {
                         $aggregated[$displayName]['private'] += $count;
+                    } elseif ($institutionType === 'Total') {
+                        // Davao Region stores combined total — put it in 'total' bucket
+                        $aggregated[$displayName]['total'] += $count;
                     }
                 }
             }
             
-            // Sort disciplines by total enrollment (descending)
             uasort($aggregated, function ($a, $b) {
-                $totalA = $a['public'] + $a['private'];
-                $totalB = $b['public'] + $b['private'];
-                return $totalB - $totalA;
+                $aSum = ($a['public'] + $a['private']) ?: $a['total'];
+                $bSum = ($b['public'] + $b['private']) ?: $b['total'];
+                return $bSum - $aSum;
             });
             
-            // Prepare the response arrays
             $disciplines = [];
             $publicSchools = [];
             $privateSchools = [];
             $totalPublic = 0;
             $totalPrivate = 0;
+            $isDavaoTotal = false;
             
             foreach ($aggregated as $discipline => $data) {
-                // Only include disciplines with enrollment > 0
-                if ($data['public'] > 0 || $data['private'] > 0) {
+                $hasPrivatePublic = $data['public'] > 0 || $data['private'] > 0;
+                $hasTotal = $data['total'] > 0;
+
+                if ($hasPrivatePublic) {
                     $disciplines[] = $discipline;
                     $publicSchools[] = $data['public'];
                     $privateSchools[] = $data['private'];
                     $totalPublic += $data['public'];
                     $totalPrivate += $data['private'];
+                } elseif ($hasTotal) {
+                    // Davao Region / Total — treat the whole value as combined
+                    $isDavaoTotal = true;
+                    $disciplines[] = $discipline;
+                    $publicSchools[] = $data['total']; // shown as single bar
+                    $privateSchools[] = 0;
+                    $totalPublic += $data['total'];
                 }
             }
             
-            // Return the formatted response
             return response()->json([
                 'year' => $year,
                 'province' => $province,
                 'disciplines' => $disciplines,
                 'publicSchools' => $publicSchools,
                 'privateSchools' => $privateSchools,
+                'is_davao_total' => $isDavaoTotal ?? false,
                 'totals' => [
                     'public' => $totalPublic,
                     'private' => $totalPrivate,
@@ -723,10 +678,10 @@ class DisciplineEnrollmentController extends Controller
         $validator = Validator::make($request->all(), [
             'record1_year' => 'required|string',
             'record1_province' => 'required|string',
-            'record1_type' => 'required|in:Private,Public',
+            'record1_type' => 'required|in:Private,Public,Total',
             'record2_year' => 'required|string',
             'record2_province' => 'required|string',
-            'record2_type' => 'required|in:Private,Public',
+            'record2_type' => 'required|in:Private,Public,Total',
         ]);
 
         if ($validator->fails()) {
@@ -754,7 +709,7 @@ class DisciplineEnrollmentController extends Controller
             ], 404);
         }
 
-        $comparison = [
+        return response()->json([
             'record1' => [
                 'academic_year' => $enrollment1->academic_year,
                 'province' => $enrollment1->province,
@@ -773,8 +728,6 @@ class DisciplineEnrollmentController extends Controller
                     ? round((($enrollment2->grand_total - $enrollment1->grand_total) / $enrollment1->grand_total) * 100, 2)
                     : 0,
             ]
-        ];
-
-        return response()->json($comparison);
+        ]);
     }
 }

@@ -13,32 +13,10 @@
     <title>LMI</title>
 
     <style>
-        html {
+        3 html {
             scroll-behavior: smooth;
-        }
-        
-        /* Ensure smooth scrolling works properly */
-        body {
-            scroll-behavior: smooth;
-        }
-        
-        /* Additional animation for the scroll button */
-        @keyframes bounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-        
-        .scroll-indicator {
-            animation: bounce 2s infinite;
         }
     </style>
-    
-    <!-- Polyfill for smooth scroll in older browsers -->
-    <script src="https://unpkg.com/smoothscroll-polyfill@0.4.4/dist/smoothscroll.min.js"></script>
 </head>
 
 <body class="bg-slate-100 min-h-screen">
@@ -53,7 +31,7 @@
 
         <div class="relative w-full h-[900px] overflow-hidden">
             <div class="absolute inset-0">
-                <img src="{{ asset('images/navbar-bg.png') }}" alt="Background"
+                <img src="{{ asset('images/navbar-bg.jpg') }}" alt="Background"
                     class="w-full h-full object-cover object-top">
                 <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-100"></div>
             </div>
@@ -68,34 +46,17 @@
                     </p>
                 </div>
             </div>
-            <!-- Scroll Button with improved implementation -->
-            <div class="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-20 scroll-indicator">
-                <a href="#kpi-section" 
-                   id="scroll-to-kpi-btn"
-                   class="flex flex-col items-center cursor-pointer group"
-                   @click.prevent="() => {
-                       const element = document.getElementById('kpi-section');
-                       if (element) {
-                           element.scrollIntoView({ 
-                               behavior: 'smooth', 
-                               block: 'start' 
-                           });
-                       }
-                   }">
-                    <svg class="w-8 h-8 text-white group-hover:text-blue-300 transition-colors" 
-                         fill="none" 
-                         stroke="currentColor" 
-                         viewBox="0 0 24 24">
-                        <path stroke-linecap="round" 
-                              stroke-linejoin="round" 
-                              stroke-width="2"
-                              d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            <a href="#kpi-section"
+                class="absolute bottom-32 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-20"
+                @click.prevent="document.getElementById('kpi-section').scrollIntoView({ behavior: 'smooth' })">
+                <div class="flex flex-col items-center">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                     </svg>
-                    <p class="text-white text-sm mt-2 font-medium group-hover:text-blue-300 transition-colors">
-                        Scroll to explore
-                    </p>
-                </a>
-            </div>
+                    <p class="text-white text-sm mt-2 font-medium">Scroll to explore</p>
+                </div>
+            </a>
         </div>
 
         <div class="flex-1 flex flex-col overflow-y-auto mt-10 relative z-30">
@@ -103,7 +64,24 @@
                 <div class="space-y-6 m-5">
                     <div x-data="kpiPeriodFilter()" class="pt-10 relative z-20" id="kpi-section">
                         <div class="max-w-7xl mx-auto px-6 space-y-6">
-
+                            <!-- Period Header KPI Cards -->
+                            <div
+                                class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-xl px-6 py-4 flex items-center justify-between shadow-lg">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-white font-bold text-lg">Labor Force Survey</h3>
+                                        <p class="text-slate-300 text-sm" x-text="selectedPeriodLabel">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
                                 <div
@@ -180,7 +158,8 @@
                                 <div
                                     class="group bg-white/95 backdrop-blur-sm border-l-4 border-[#D30000] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300">
                                     <div class="flex justify-between items-center mb-3">
-                                        <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">Unemployment
+                                        <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">
+                                            Unemployment
                                         </p>
                                         <div
                                             class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center group-hover:bg-[#D30000] transition-colors">
@@ -204,7 +183,8 @@
 
                             <!--  ANALYSIS BOX -->
                             <div class="bg-white border border-slate-200 rounded-xl shadow-lg overflow-visible">
-                                <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-6 py-4">
+                                <div
+                                    class="bg-gradient-to-r from-slate-900 via-slate-800 rounded-t-xl to-slate-900 px-6 py-4">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-3">
                                             <div
@@ -218,7 +198,7 @@
                                             </div>
                                             <div>
                                                 <h3 class="text-white font-bold text-lg">
-                                                    Labor Market Analysis
+                                                    Labor Force Analysis
                                                 </h3>
                                                 <p class="text-slate-300 text-sm" x-text="selectedPeriodLabel">
                                                     Loading...</p>
@@ -377,7 +357,7 @@
                     <script>
                         Chart.register(ChartDataLabels);
                     </script>
-                    <!-- Charts Section - Replace your existing charts div -->
+                    <!-- Charts Section -->
                     <div x-data="{ ...chartFilters(), activeChart: 'labor', chartsExpanded: true }" class="max-w-7xl mx-auto px-6 space-y-4 mt-6">
                         <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
 
@@ -541,7 +521,7 @@
                                                                 </div>
                                                             </div>
                                                             <button @click="applyLaborFilter()"
-                                                                class="w-full bg-slate-700 hover:bg-slate-800 text-white text-sm py-2 px-4 rounded-lg font-medium transition">
+                                                                class="w-full bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 hover:from-slate-800 hover:via-slate-700 hover:to-slate-800 text-white text-sm py-2 px-4 rounded-lg font-bold transition">
                                                                 Apply Filter
                                                             </button>
                                                         </div>
@@ -651,7 +631,7 @@
                                                                 </div>
                                                             </div>
                                                             <button @click="applyUnempFilter()"
-                                                                class="w-full bg-slate-700 hover:bg-slate-800 text-white text-sm py-2 px-4 rounded-lg font-medium transition">
+                                                                class="w-full bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 hover:from-slate-800 hover:via-slate-700 hover:to-slate-800 text-white text-sm py-2 px-4 rounded-lg font-bold transition">
                                                                 Apply Filter
                                                             </button>
                                                         </div>
@@ -663,7 +643,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- Modal (keep your existing modal code) -->
+                                        <!-- Modal -->
                                         <div x-show="expandedChart !== null"
                                             x-transition:enter="transition ease-out duration-300"
                                             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
@@ -716,9 +696,8 @@
                                 </div>
                             </div>
                         </div>
-
                         <!-- Table Section -->
-                        <div x-data="{ tableExpanded: true, startYear: '', endYear: '', ...statsFilter() }" class="mt-6">
+                        <div x-data="statsFilter()" class="mt-6">
                             <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
 
                                 <!-- Dark Header with Icon -->
@@ -750,72 +729,76 @@
                                     </button>
                                 </div>
 
-                                <!-- Controls -->
-                                <div
-                                    class="p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-end gap-3">
-                                    <div class="flex items-center gap-2">
-                                        <div class="relative" x-data="{ open: false }">
-                                            <button @click="open = !open"
-                                                class="text-xs bg-white hover:bg-slate-50 border border-slate-300 px-4 py-2 rounded-lg flex items-center gap-2 transition shadow-sm">
-                                                <span x-text="displayRange" class="font-medium text-slate-700"></span>
-                                                <svg class="w-4 h-4 text-slate-500" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                </svg>
-                                            </button>
-                                            <div x-show="open" @click.away="open = false" x-transition
-                                                class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50 p-5">
-                                                <label class="block text-xs font-semibold text-slate-700 mb-3">Select
-                                                    Year Range</label>
-                                                <div class="flex items-center gap-3 mb-4">
-                                                    <div class="flex-1">
-                                                        <label
-                                                            class="text-[10px] text-slate-500 mb-1 block">From</label>
-                                                        <select x-model="startYear"
-                                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 cursor-pointer">
-                                                            <option value="">Select year</option>
-                                                            <template x-for="year in availableYears"
-                                                                :key="year">
-                                                                <option :value="year" x-text="year">
-                                                                </option>
-                                                            </template>
-                                                        </select>
-                                                    </div>
-                                                    <span class="text-slate-400 mt-5">—</span>
-                                                    <div class="flex-1">
-                                                        <label class="text-[10px] text-slate-500 mb-1 block">To</label>
-                                                        <select x-model="endYear"
-                                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 cursor-pointer">
-                                                            <option value="">Select year</option>
-                                                            <template x-for="year in availableYears"
-                                                                :key="year">
-                                                                <option :value="year" x-text="year">
-                                                                </option>
-                                                            </template>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <button @click="applyFilter(); open = false;"
-                                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg font-medium transition">
-                                                    Apply Filter
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <button @click="exportCSV()"
-                                            class="flex items-center gap-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-4 py-2 rounded-lg hover:bg-blue-100 transition shadow-sm">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                            Export CSV
-                                        </button>
-                                    </div>
-                                </div>
 
-                                <!-- Table -->
                                 <div x-show="tableExpanded" x-collapse>
+                                    <!-- Controls -->
+                                    <div
+                                        class="p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-end gap-3">
+                                        <div class="flex items-center gap-2">
+                                            <div class="relative" x-data="{ open: false }">
+                                                <button @click="open = !open"
+                                                    class="text-xs bg-white hover:bg-slate-50 border border-slate-300 px-4 py-2 rounded-lg flex items-center gap-2 transition shadow-sm">
+                                                    <span x-text="displayRange"
+                                                        class="font-medium text-slate-700"></span>
+                                                    <svg class="w-4 h-4 text-slate-500" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                    </svg>
+                                                </button>
+                                                <div x-show="open" @click.away="open = false" x-transition
+                                                    class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50 p-5">
+                                                    <label
+                                                        class="block text-xs font-semibold text-slate-700 mb-3">Select
+                                                        Year Range</label>
+                                                    <div class="flex items-center gap-3 mb-4">
+                                                        <div class="flex-1">
+                                                            <label
+                                                                class="text-[10px] text-slate-500 mb-1 block">From</label>
+                                                            <select x-model="startYear"
+                                                                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                                                                <option value="">Select year</option>
+                                                                <template x-for="year in availableYears"
+                                                                    :key="year">
+                                                                    <option :value="year" x-text="year">
+                                                                    </option>
+                                                                </template>
+                                                            </select>
+                                                        </div>
+                                                        <span class="text-slate-400 mt-5">—</span>
+                                                        <div class="flex-1">
+                                                            <label
+                                                                class="text-[10px] text-slate-500 mb-1 block">To</label>
+                                                            <select x-model="endYear"
+                                                                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                                                                <option value="">Select year</option>
+                                                                <template x-for="year in availableYears"
+                                                                    :key="year">
+                                                                    <option :value="year" x-text="year">
+                                                                    </option>
+                                                                </template>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <button @click="applyFilter(); open = false;"
+                                                        class="w-full bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 hover:from-slate-800 hover:via-slate-700 hover:to-slate-800 text-white text-sm py-2 px-4 rounded-lg font-bold transition">
+                                                        Apply Filter
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <button @click="exportCSV()"
+                                                class="flex items-center gap-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-4 py-2 rounded-lg hover:bg-blue-100 transition shadow-sm">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                Export CSV
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <!-- Table -->
                                     <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
                                         <table class="w-full text-sm border-collapse">
                                             <thead class="sticky top-0">
@@ -840,13 +823,13 @@
                                                         Employment Rate</th>
                                                     <th
                                                         class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
-                                                        Underemp. Rate</th>
+                                                        Underemployment Rate</th>
                                                     <th
                                                         class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
-                                                        Unemp. Rate</th>
+                                                        Unemployment Rate</th>
                                                     <th
                                                         class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                                        Particip. Rate</th>
+                                                        Participation Rate</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -885,14 +868,14 @@
                                     </div>
                                 </div>
 
-                                <!-- Footer -->
-                                <div class="p-4 bg-slate-50 border-t border-slate-200 text-center">
-                                    <p class="text-xs text-slate-500">Source: Philippine Statistics Authority; Labor
-                                        Force Survey</p>
-                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
+                <!-- Footer -->
+                <div class="p-4 bg-slate-50 border-t border-slate-200 text-center">
+                    <p class="text-xs text-slate-500">Source: Philippine Statistics Authority; Labor
+                        Force Survey</p>
                 </div>
             </div>
         </div>
@@ -900,6 +883,7 @@
     <script>
         function statsFilter() {
             return {
+                tableExpanded: true,
                 allData: @json($regionalStats ?? []),
                 filteredData: [],
                 startYear: '',
@@ -907,11 +891,10 @@
                 availableYears: [],
                 loading: false,
 
+                appliedRange: 'Select Range',
+
                 get displayRange() {
-                    if (this.startYear && this.endYear) {
-                        return `${this.startYear} — ${this.endYear}`;
-                    }
-                    return 'Select Range';
+                    return this.appliedRange;
                 },
 
                 async init() {
@@ -925,8 +908,13 @@
                         this.startYear = String(this.availableYears[0]);
                     }
 
+
+                    if (this.startYear && this.endYear) {
+                        this.appliedRange = `${this.startYear} — ${this.endYear}`;
+                    }
+
                     this.$nextTick(() => {
-                        this.applyFilter();
+                        this._applyFilterSilent();
                     });
                 },
 
@@ -949,23 +937,13 @@
                     }
                 },
 
-                applyFilter() {
-                    if (!this.startYear || !this.endYear || this.startYear === '' || this.endYear === '') {
-                        alert('Please select both start and end years');
-                        return;
-                    }
-
-                    if (parseInt(this.startYear) > parseInt(this.endYear)) {
-                        alert('Start year cannot be greater than end year');
-                        return;
-                    }
-
-                    this.loading = true;
+                // ✅ Silent version used on init (no alert, no label update)
+                _applyFilterSilent() {
+                    if (!this.startYear || !this.endYear) return;
 
                     this.filteredData = this.allData.filter(stat => {
                         const yearMatch = stat.period.match(/\d{4}/);
                         if (!yearMatch) return false;
-
                         const year = parseInt(yearMatch[0]);
                         return year >= parseInt(this.startYear) && year <= parseInt(this.endYear);
                     });
@@ -975,7 +953,25 @@
                         const yearB = parseInt(b.period.match(/\d{4}/)[0]);
                         return yearB - yearA;
                     });
+                },
 
+
+                applyFilter() {
+                    if (!this.startYear || !this.endYear) {
+                        alert('Please select both start and end years');
+                        return;
+                    }
+
+                    if (parseInt(this.startYear) > parseInt(this.endYear)) {
+                        alert('Start year cannot be greater than end year');
+                        return;
+                    }
+
+
+                    this.appliedRange = `${this.startYear} — ${this.endYear}`;
+
+                    this.loading = true;
+                    this._applyFilterSilent();
                     this.loading = false;
                 },
 
@@ -1210,7 +1206,7 @@
     </script>
 
     <script>
-        // Chart Filters - UPDATED VERSION WITH EXPAND MODAL
+        // Chart Filters 
         function chartFilters() {
             return {
                 activeChart: 'labor',
@@ -1251,7 +1247,7 @@
                     await this.initializeUnempChart();
                 },
 
-                // Modal methods
+                // Modal 
                 openChartModal(chartType) {
                     this.expandedChart = chartType;
                     this.$nextTick(() => {
@@ -1471,88 +1467,105 @@
                     const originalChart = window.unempChart;
                     if (!originalChart) return;
 
+                    const datasetConfigs = [{
+                            label: 'LABOR FORCE PARTICIPATION RATE',
+                            color: '#023E8A',
+                            dataIndex: 0,
+                            align: 'top',
+                            anchor: 'end',
+                            offset: 10
+                        },
+                        {
+                            label: 'EMPLOYMENT RATE',
+                            color: '#006400',
+                            dataIndex: 1,
+                            align: 'top',
+                            anchor: 'end',
+                            offset: 10
+                        },
+                        {
+                            label: 'UNDEREMPLOYMENT RATE',
+                            color: '#FF8C00',
+                            dataIndex: 2,
+                            align: 'top',
+                            anchor: 'end',
+                            offset: 10
+                        },
+                        {
+                            label: 'UNEMPLOYMENT RATE',
+                            color: '#D30000',
+                            dataIndex: 3,
+                            align: 'bottom',
+                            anchor: 'start',
+                            offset: 10
+                        },
+                    ];
+
+                    const datasets = datasetConfigs.map(cfg => ({
+                        label: cfg.label,
+                        data: originalChart.data.datasets[cfg.dataIndex].data,
+                        borderColor: cfg.color,
+                        backgroundColor: cfg.color,
+                        borderWidth: 4,
+                        pointRadius: 6,
+                        pointBackgroundColor: cfg.color,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        fill: false,
+                        tension: 0.3,
+                        datalabels: {
+                            display: true,
+                            align: cfg.align,
+                            anchor: cfg.align === 'top' ? 'end' : 'start',
+                            offset: cfg.offset,
+                            color: '#1e293b',
+                            backgroundColor: 'rgba(255,255,255,0.92)',
+                            borderRadius: 5,
+                            padding: {
+                                top: 3,
+                                bottom: 3,
+                                left: 5,
+                                right: 5
+                            },
+                            font: {
+                                family: 'Inter, system-ui, -apple-system, sans-serif',
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            formatter: (value) => value.toFixed(1) + '%'
+                        }
+                    }));
+
                     window.expandedChartInstance = new Chart(ctx.getContext('2d'), {
                         type: 'line',
                         data: {
                             labels: originalChart.data.labels,
-                            datasets: [{
-                                    label: 'LABOR FORCE PARTICIPATION RATE',
-                                    data: originalChart.data.datasets[0].data,
-                                    borderColor: '#023E8A',
-                                    backgroundColor: '#023E8A',
-                                    borderWidth: 4,
-                                    pointRadius: 6,
-                                    pointBackgroundColor: '#023E8A',
-                                    pointBorderColor: '#fff',
-                                    pointBorderWidth: 2,
-                                    fill: false,
-                                    tension: 0.3,
-                                },
-                                {
-                                    label: 'EMPLOYMENT RATE',
-                                    data: originalChart.data.datasets[1].data,
-                                    borderColor: '#006400', // ✅ KPI colors
-                                    backgroundColor: '#006400',
-                                    borderWidth: 4,
-                                    pointRadius: 6,
-                                    pointBackgroundColor: '#006400',
-                                    pointBorderColor: '#fff',
-                                    pointBorderWidth: 2,
-                                    fill: false,
-                                    tension: 0.3,
-                                },
-                                {
-                                    label: 'UNDEREMPLOYMENT RATE',
-                                    data: originalChart.data.datasets[2].data,
-                                    borderColor: '#FF8C00', // ✅ KPI colors
-                                    backgroundColor: '#FF8C00',
-                                    borderWidth: 4,
-                                    pointRadius: 6,
-                                    pointBackgroundColor: '#FF8C00',
-                                    pointBorderColor: '#fff',
-                                    pointBorderWidth: 2,
-                                    fill: false,
-                                    tension: 0.3,
-                                },
-                                {
-                                    label: 'UNEMPLOYMENT RATE',
-                                    data: originalChart.data.datasets[3].data,
-                                    borderColor: '#D30000', // ✅ KPI colors
-                                    backgroundColor: '#D30000',
-                                    borderWidth: 4,
-                                    pointRadius: 6,
-                                    pointBackgroundColor: '#D30000',
-                                    pointBorderColor: '#fff',
-                                    pointBorderWidth: 2,
-                                    fill: false,
-                                    tension: 0.3,
-                                }
-                            ]
+                            datasets: datasets
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
                             layout: {
                                 padding: {
-                                    left: 40,
-                                    right: 80,
-                                    top: 20,
-                                    bottom: 60
+                                    top: 50,
+                                    bottom: 60,
+                                    left: 20,
+                                    right: 40
                                 }
                             },
                             plugins: {
                                 legend: {
                                     display: true,
-                                    position: 'top',
+                                    position: 'bottom',
                                     align: 'center',
                                     labels: {
-                                        padding: 20,
-                                        boxWidth: 12,
-                                        boxHeight: 12,
+                                        padding: 24,
+                                        boxWidth: 14,
+                                        boxHeight: 14,
                                         color: '#1e293b',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 14,
+                                            size: 13,
                                             weight: '600'
                                         },
                                         usePointStyle: true,
@@ -1560,20 +1573,8 @@
                                     }
                                 },
                                 datalabels: {
-                                    display: true,
-                                    color: '#1e293b',
-                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                    borderRadius: 6,
-                                    padding: 8,
-                                    align: 'top',
-                                    anchor: 'end',
-                                    offset: 8,
-                                    font: {
-                                        family: 'Inter, system-ui, -apple-system, sans-serif',
-                                        size: 18,
-                                        weight: 'bold'
-                                    },
-                                    formatter: (value) => value.toFixed(1) + '%'
+
+                                    display: false
                                 }
                             },
                             scales: {
@@ -1582,11 +1583,10 @@
                                         autoSkip: false,
                                         maxRotation: 45,
                                         minRotation: 45,
-                                        padding: 15,
+                                        padding: 30,
                                         color: '#475569',
                                         font: {
-                                            family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 20,
+                                            size: 16,
                                             weight: '600'
                                         }
                                     },
@@ -1605,8 +1605,7 @@
                                         stepSize: 20,
                                         color: '#64748b',
                                         font: {
-                                            family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 20,
+                                            size: 14,
                                             weight: '500'
                                         }
                                     },
@@ -1615,8 +1614,7 @@
                                         text: 'Rate (%)',
                                         color: '#1e293b',
                                         font: {
-                                            family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 15,
+                                            size: 14,
                                             weight: '600'
                                         },
                                         padding: 12
@@ -1922,7 +1920,7 @@
                                     title: {
                                         display: true,
                                         text: 'Labor Force (thousands)',
-                                        color: '#1e293b', // Slate 800
+                                        color: '#1e293b',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
                                             size: 13,
@@ -1932,7 +1930,7 @@
                                     },
                                     ticks: {
                                         color: '#000000',
-                                        color: '#64748b', // Slate 500
+                                        color: '#64748b',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
                                             size: 12,
@@ -1943,7 +1941,7 @@
                                             .format(value * 1000)
                                     },
                                     grid: {
-                                        color: '#f1f5f9', // Very light slate
+                                        color: '#f1f5f9',
                                         lineWidth: 1
                                     },
                                     border: {
@@ -2042,7 +2040,7 @@
                             datasets: [{
                                     label: 'LABOR FORCE PARTICIPATION RATE',
                                     data: lfprData,
-                                    borderColor: '#023E8A', // ← Matches KPI card
+                                    borderColor: '#023E8A',
                                     backgroundColor: '#023E8A',
                                     borderWidth: 3,
                                     pointRadius: 5,
@@ -2061,7 +2059,7 @@
                                 {
                                     label: 'EMPLOYMENT RATE',
                                     data: empRateData,
-                                    borderColor: '#006400', // ← Matches KPI card
+                                    borderColor: '#006400',
                                     backgroundColor: '#006400',
                                     borderWidth: 3,
                                     pointRadius: 5,
@@ -2079,7 +2077,7 @@
                                 {
                                     label: 'UNDEREMPLOYMENT RATE',
                                     data: underempData,
-                                    borderColor: '#FF8C00', // ← Matches KPI card
+                                    borderColor: '#FF8C00',
                                     backgroundColor: '#FF8C00',
                                     borderWidth: 3,
                                     pointRadius: 5,
@@ -2097,7 +2095,7 @@
                                 {
                                     label: 'UNEMPLOYMENT RATE',
                                     data: unempRateData,
-                                    borderColor: '#D30000', // ← Matches KPI card
+                                    borderColor: '#D30000',
                                     backgroundColor: '#D30000',
                                     borderWidth: 3,
                                     pointRadius: 5,
@@ -2251,71 +2249,6 @@
                 }
             }
         }
-    </script>
-    
-    <!-- Fallback scroll implementation (works without Alpine.js) -->
-    <script>
-        // This ensures scroll works even if Alpine.js fails to load
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Scroll fallback script loaded');
-            
-            // Initialize smooth scroll polyfill
-            if (typeof window !== 'undefined' && window.__forceSmoothScrollPolyfill__) {
-                window.__forceSmoothScrollPolyfill__ = true;
-            }
-            
-            // Get the scroll button
-            const scrollButton = document.getElementById('scroll-to-kpi-btn');
-            
-            if (scrollButton) {
-                console.log('Scroll button found, attaching listener');
-                
-                // Add click event listener as fallback
-                scrollButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('Scroll button clicked');
-                    
-                    const targetElement = document.getElementById('kpi-section');
-                    
-                    if (targetElement) {
-                        console.log('Target element found, scrolling...');
-                        
-                        // Try modern smooth scroll first
-                        try {
-                            targetElement.scrollIntoView({
-                                behavior: 'smooth',
-                                block: 'start'
-                            });
-                        } catch (error) {
-                            // Fallback for browsers that don't support smooth scroll
-                            console.log('Using fallback scroll');
-                            targetElement.scrollIntoView(true);
-                        }
-                    } else {
-                        console.error('Target element #kpi-section not found');
-                    }
-                });
-            } else {
-                console.error('Scroll button not found');
-            }
-            
-            // Also handle any other anchor links
-            const anchorLinks = document.querySelectorAll('a[href^="#"]');
-            anchorLinks.forEach(link => {
-                if (link.id !== 'scroll-to-kpi-btn') { // Skip the main button (already handled)
-                    link.addEventListener('click', function(e) {
-                        const href = this.getAttribute('href');
-                        if (href && href.startsWith('#') && href.length > 1) {
-                            e.preventDefault();
-                            const target = document.querySelector(href);
-                            if (target) {
-                                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            }
-                        }
-                    });
-                }
-            });
-        });
     </script>
 </body>
 

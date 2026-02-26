@@ -103,8 +103,9 @@ Route::middleware(['auth', 'role:statistician'])->prefix('statistician')->name('
     Route::get('/templates', [AnalysisTemplateController::class, 'editor'])
         ->name('templates');
 
+    // Supply Side Analysis Editor (statistician publishes directly)
     Route::get('/supply-side-editor', [SupplySideAnalysisController::class, 'editor'])
-    ->name('supply-side-editor');
+        ->name('supply-side-editor');
 });
 
 // Routes accessible by both Admin and Statistician
@@ -176,7 +177,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/discipline-enrollment/form', [DisciplineEnrollmentController::class, 'showForm'])
         ->name('discipline-enrollment.form');
     
-    
     // Store enrollment data (POST from form)
     Route::post('/discipline-enrollment', [DisciplineEnrollmentController::class, 'store'])
         ->name('discipline-enrollment.store');
@@ -190,17 +190,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         ->name('discipline-enrollment.destroy');
     
     // Delete all data for a specific year
-
-        Route::delete('/discipline-enrollment/delete/{year}', [DisciplineEnrollmentController::class, 'deleteYear'])
+    Route::delete('/discipline-enrollment/delete/{year}', [DisciplineEnrollmentController::class, 'deleteYear'])
         ->name('discipline-enrollment.delete');
 
-        // DISCIPLINE GRADUATE Routes
+    // ==================== DISCIPLINE GRADUATE Routes ====================
     
     // Show the graduate form/dashboard
     Route::get('/discipline-graduate/form', [DisciplineGraduateController::class, 'showForm'])
         ->name('discipline-graduate.form');
-    
-    
     
     // Store graduate data (POST from form)
     Route::post('/discipline-graduate', [DisciplineGraduateController::class, 'store'])
@@ -217,8 +214,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Delete all data for a specific year
     Route::delete('/discipline-graduate/delete/{year}', [DisciplineGraduateController::class, 'deleteYear'])
         ->name('discipline-graduate.delete');
-
-
 
     // Live polling — returns submission counts for real-time badge updates
     // ⚠️ MUST be before /{id} wildcard routes
@@ -247,6 +242,16 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/lmi-submissions/{id}/reject', [LmiSubmissionController::class, 'reject'])
         ->name('lmi-submissions.reject');
         
-        Route::post('/lmi-submissions/{id}/restore-pending', [LmiSubmissionController::class, 'restorePending'])
-    ->name('lmi-submissions.restore-pending');
+    Route::post('/lmi-submissions/{id}/restore-pending', [LmiSubmissionController::class, 'restorePending'])
+        ->name('lmi-submissions.restore-pending');
+
+    // ==================== SUPPLY SIDE ANALYSIS Routes ====================
+    // NEW: Admin drafts and submits for statistician to review & publish
+    Route::get('/supply-side-editor', [SupplySideAnalysisController::class, 'adminEditor'])
+        ->name('supply-side-editor');
+
+    // ==================== ANALYSIS TEMPLATE Routes ====================
+    // Admin drafts templates and submits for statistician to review & publish
+    Route::get('/template-editor', [AnalysisTemplateController::class, 'adminEditor'])
+        ->name('template-editor');
 });

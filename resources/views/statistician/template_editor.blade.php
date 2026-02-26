@@ -5,332 +5,621 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .tab-active { position: relative; }
+        .tab-active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0; right: 0;
+            height: 2px;
+            background: #2563eb;
+            border-radius: 2px 2px 0 0;
+        }
+        .template-textarea {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            resize: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .template-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+        .ph-chip {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .ph-chip:hover { transform: translateY(-1px); }
     </style>
-    <title>Economic Analysis Editor</title>
+    <title>Analysis Template Editor</title>
 </head>
-<body class="bg-slate-100 flex h-screen overflow-hidden" >
+<body x-data="templateEditor()" x-init="init()" class="bg-slate-100 flex h-screen overflow-hidden">
     @include('partials.statisticianSidebar')
 
-    <!-- Main Content Area -->
     <div class="flex-1 flex flex-col overflow-hidden">
-        <div x-data="analysisEditor()" x-init="init()" class="flex-1 flex flex-col overflow-hidden">
 
-            <!-- Top Bar -->
-            <div class="bg-white border-b border-slate-200 p-4 flex items-center justify-between shadow-sm flex-shrink-0">
-                <div class="flex items-center gap-6">
-                    <h1 class="text-xl font-bold text-slate-800">Economic Analysis Editor</h1>
-
-                    <!-- Year Selector (moved first) -->
-                    <div class="flex items-center gap-1.5">
-                        <label class="text-sm text-slate-500 font-medium">Year</label>
-                        <select
-                            x-model.number="selectedYear"
-                            @change="onYearChange()"
-                            class="border border-slate-300 rounded px-3 py-1 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
-                            :disabled="availableYears.length === 0">
-                            <template x-if="availableYears.length === 0">
-                                <option value="">Loading...</option>
-                            </template>
-                            <template x-for="year in availableYears" :key="year">
-                                <option :value="year" x-text="year"></option>
-                            </template>
-                        </select>
-                    </div>
-
-                    <!-- Quarter Selector -->
-                    <div class="flex items-center gap-1.5">
-                        <label class="text-sm text-slate-500 font-medium">Quarter</label>
-                        <select
-                            x-model.number="selectedMonth"
-                            @change="loadTemplates()"
-                            class="border border-slate-300 rounded px-3 py-1 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
-                            :disabled="availableMonths.length === 0">
-                            <template x-if="availableMonths.length === 0">
-                                <option value="">—</option>
-                            </template>
-                            <template x-for="m in availableMonths" :key="m">
-                                <option :value="m" x-text="quarterLabels[m] || m"></option>
-                            </template>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Editor / Preview Toggle -->
-                <div class="flex gap-2">
-                    <button @click="viewMode = 'edit'" :class="viewMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'" class="px-4 py-1 rounded text-sm font-medium transition">Editor</button>
-                    <button @click="viewMode = 'preview'" :class="viewMode === 'preview' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'" class="px-4 py-1 rounded text-sm font-medium transition">Live Preview</button>
-                </div>
+        <!-- Header -->
+        <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 shadow-sm flex-shrink-0">
+            <h2 class="text-xl font-bold text-slate-800">Analysis Template Editor • Statistician</h2>
+            <div class="flex items-center gap-4">
+                <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">📅 Region XI • {{ date('Y') }}</div>
+                <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
             </div>
+        </header>
 
-            <!-- Scrollable Content -->
-            <div class="flex-1 overflow-y-auto bg-blue-50/30 p-8">
-                <div class="max-w-6xl mx-auto">
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+        <!-- Canvas -->
+        <div class="flex-1 overflow-y-auto bg-slate-100 p-6">
+            <div class="flex gap-6 items-stretch">
 
-                        <!-- Title: dynamic based on selected quarter + year -->
-                        <div class="flex items-center gap-2 mb-8">
-                            <span class="text-xl">✨</span>
-                            <h3 class="text-blue-600 font-bold text-lg">
-                                Analysis for <span x-text="currentPeriodLabel"></span>
-                            </h3>
+                <!-- LEFT PANEL -->
+                <div class="w-72 flex-shrink-0 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-200 bg-white flex items-center justify-between">
+                        <p class="text-sm font-bold text-slate-700 uppercase tracking-wide">Filters</p>
+                        <span x-show="!isUnlocked" class="text-xs text-slate-400 flex items-center gap-1">🔒 Locked</span>
+                        <button x-show="isUnlocked" @click="lockEditor()" class="text-xs text-slate-500 hover:text-red-500 flex items-center gap-1 transition">
+                            🔓 Lock Filters
+                        </button>
+                    </div>
+                    <div class="p-5 space-y-5">
+                        <div>
+                            <label class="text-xs font-semibold block mb-1.5" :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'">📅 Year</label>
+                            <select x-model.number="selectedYear" @change="isUnlocked && loadSidebarOnly()" :disabled="!isUnlocked"
+                                class="w-full border rounded-lg px-3 py-2 text-sm transition"
+                                :class="isUnlocked ? 'border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 text-slate-700' : 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'">
+                                <template x-for="year in availableYears" :key="year">
+                                    <option :value="year" x-text="year"></option>
+                                </template>
+                            </select>
                         </div>
-
-                        <!-- Loading -->
-                        <div x-show="loading" class="flex flex-col items-center py-20">
-                            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
-                            <p class="mt-4 text-slate-500">Fetching templates...</p>
+                        <div>
+                            <label class="text-xs font-semibold block mb-1.5" :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'">📖 Quarter</label>
+                            <select x-model.number="selectedMonth" @change="isUnlocked && loadSidebarOnly()" :disabled="!isUnlocked"
+                                class="w-full border rounded-lg px-3 py-2 text-sm transition"
+                                :class="isUnlocked ? 'border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 text-slate-700' : 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'">
+                                <template x-for="m in availableMonths" :key="m">
+                                    <option :value="m" x-text="quarterLabels[m] || m"></option>
+                                </template>
+                            </select>
                         </div>
-
-                        <!-- EDITOR -->
-                        <div x-show="!loading && viewMode === 'edit'" class="space-y-8">
-
-                            <!-- Placeholder Toolbar -->
-                            <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 flex-wrap">
-                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Insert:</span>
-                                <template x-for="ph in allPlaceholders" :key="ph.key">
-                                    <button
-                                        @click="insertAtCursor(ph.key)"
-                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 rounded-md text-xs text-slate-600 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition cursor-pointer">
-                                        <span class="text-slate-400" x-html="ph.icon"></span>
-                                        <code class="font-mono" x-text="ph.key"></code>
-                                    </button>
+                        <div x-show="!isUnlocked" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-400 text-center">
+                            🔒 Load a draft below to unlock filters &amp; editor
+                        </div>
+                        <div x-show="isUnlocked && lastSaved" class="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <p class="text-xs font-bold text-green-800 mb-0.5">✅ Last Saved</p>
+                            <p class="text-xs text-green-600" x-text="lastSaved"></p>
+                        </div>
+                        <div class="border-t border-slate-200 pt-4">
+                            <div class="flex items-center justify-between mb-1">
+                                <p class="text-sm font-bold text-slate-600">📬 Pending Drafts</p>
+                                <span x-show="allPendingDrafts.length > 0" class="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" x-text="allPendingDrafts.length"></span>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-3">Load a draft to unlock the editor.</p>
+                            <div x-show="loadingAllPending" class="flex justify-center py-4">
+                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-500"></div>
+                            </div>
+                            <div x-show="!loadingAllPending" class="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+                                <template x-for="draft in allPendingDrafts" :key="draft.id">
+                                    <div class="border border-amber-200 rounded-lg p-3 bg-amber-50 hover:border-amber-400 hover:bg-amber-100 transition">
+                                        <div class="flex items-center justify-between mb-0.5">
+                                            <p class="font-semibold text-xs text-amber-900">
+                                                <span x-text="quarterLabels[draft.month] || draft.month"></span>
+                                                <span x-text="draft.year"></span>
+                                            </p>
+                                        </div>
+                                        <p class="text-xs text-amber-700 mb-0.5">By <strong x-text="draft.submitted_by"></strong></p>
+                                        <p class="text-xs text-amber-500 mb-1.5" x-text="formatDate(draft.submitted_at)"></p>
+                                        <div class="flex flex-wrap gap-1 mb-2">
+                                            <template x-for="key in draft.template_keys" :key="key">
+                                                <span class="text-xs bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded font-medium capitalize" x-text="key"></span>
+                                            </template>
+                                        </div>
+                                        <button @click="loadDraftIntoEditor(draft)" class="w-full text-xs bg-amber-600 hover:bg-amber-700 text-white py-1.5 rounded-lg font-medium transition">
+                                            📥 Load Draft
+                                        </button>
+                                    </div>
+                                </template>
+                                <div x-show="allPendingDrafts.length === 0" class="text-center py-6 text-slate-400">
+                                    <p class="text-sm">No pending drafts</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div x-show="isUnlocked" class="border-t border-slate-200 pt-4">
+                            <p class="text-sm font-bold text-slate-600 mb-2">🔍 Validation</p>
+                            <div class="space-y-1.5">
+                                <template x-for="key in templateKeys" :key="key">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-slate-600 capitalize" x-text="labelFor(key)"></span>
+                                        <span x-show="validation[key] && validation[key].valid" class="text-xs text-green-600 font-medium">✓ Valid</span>
+                                        <span x-show="validation[key] && !validation[key].valid" class="text-xs text-red-500 font-medium">⚠️ Error</span>
+                                    </div>
                                 </template>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <!-- Fields -->
-                            <template x-for="(text, key) in templates" :key="key">
-                                <div>
-                                    <label class="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-2 block" x-text="key.replace('_', ' ')"></label>
+                <!-- RIGHT PANEL -->
+                <div class="flex-1 flex flex-col gap-0 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative">
 
-                                    <textarea
-                                        :id="'textarea-' + key"
-                                        x-model="templates[key]"
-                                        @input="onInput(key)"
-                                        @focus="activeField = key"
-                                        rows="3"
-                                        class="w-full p-3 border rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-700 leading-relaxed text-sm resize-none transition outline-none"
-                                        :class="validation[key] && !validation[key].valid ? 'border-red-300 bg-red-50/20' : 'border-slate-200'"
-                                        placeholder="Write analysis template here..."></textarea>
+                    <!-- Lock overlay -->
+                    <div x-show="!isUnlocked" class="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-xl">
+                        <div class="text-4xl mb-3">🔒</div>
+                        <p class="text-sm font-bold text-slate-600 mb-1">Editor Locked</p>
+                        <p class="text-xs text-slate-400">Load a pending draft to start editing</p>
+                    </div>
 
-                                    <div x-show="validation[key] && !validation[key].valid" class="mt-2 flex items-center gap-2 flex-wrap">
-                                        <span class="text-xs text-red-500 font-medium">Missing:</span>
-                                        <template x-for="m in validation[key].missing" :key="m">
-                                            <code class="text-[11px] px-2 py-0.5 bg-red-50 border border-red-200 text-red-600 rounded" x-text="m"></code>
-                                        </template>
-                                    </div>
+                    <!-- Top Bar -->
+                    <div class="border-b border-slate-200 px-5 py-3 flex items-center justify-between flex-shrink-0 bg-white">
+                        <div class="flex items-center gap-2">
+                            <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-1.5 rounded-lg">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-700">✏️ ANALYSIS TEMPLATES</p>
+                                <p class="text-xs text-slate-400" x-text="currentPeriodLabel ? `Period: ${currentPeriodLabel}` : 'No period selected'"></p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <!-- Edit / Preview toggle — no Split -->
+                            <div class="flex rounded-lg border border-slate-200 overflow-hidden text-xs">
+                                <button @click="viewMode = 'edit'" class="px-3 py-1.5 font-medium transition"
+                                    :class="viewMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'">
+                                    ✏️ Edit
+                                </button>
+                                <button @click="viewMode = 'preview'" class="px-3 py-1.5 font-medium transition"
+                                    :class="viewMode === 'preview' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'">
+                                    👁️ Preview
+                                </button>
+                            </div>
+                            <button @click="resetAll()" :disabled="!isUnlocked"
+                                class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition disabled:opacity-40">
+                                Reset
+                            </button>
+                            <button @click="confirmBeforeSave()" :disabled="!isUnlocked || saving || hasValidationErrors()"
+                                class="text-xs px-4 py-1.5 rounded-lg font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed"
+                                :class="isUnlocked && !hasValidationErrors() ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'">
+                                <span x-text="saving ? 'Saving...' : '💾 Save & Publish'"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Metric Tabs — SVG icons, no emojis -->
+                    <div class="flex border-b border-slate-200 bg-white flex-shrink-0">
+                        <button @click="activeTab = 'employment'" class="relative px-5 py-3 text-xs font-semibold transition border-b-2"
+                                :class="activeTab === 'employment' ? 'border-blue-600 text-blue-700 bg-blue-50/50' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'">
+                            <div class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                <span>Employment</span>
+                                <span x-show="validation['employment'] && !validation['employment'].valid" class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                <span x-show="isTabChanged('employment')" class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+                            </div>
+                        </button>
+                        <button @click="activeTab = 'underemployment'" class="relative px-5 py-3 text-xs font-semibold transition border-b-2"
+                                :class="activeTab === 'underemployment' ? 'border-blue-600 text-blue-700 bg-blue-50/50' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'">
+                            <div class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <span>Underemployment</span>
+                                <span x-show="validation['underemployment'] && !validation['underemployment'].valid" class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                <span x-show="isTabChanged('underemployment')" class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+                            </div>
+                        </button>
+                        <button @click="activeTab = 'unemployment'" class="relative px-5 py-3 text-xs font-semibold transition border-b-2"
+                                :class="activeTab === 'unemployment' ? 'border-blue-600 text-blue-700 bg-blue-50/50' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'">
+                            <div class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+                                <span>Unemployment</span>
+                                <span x-show="validation['unemployment'] && !validation['unemployment'].valid" class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                <span x-show="isTabChanged('unemployment')" class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+                            </div>
+                        </button>
+                        <button @click="activeTab = 'lfpr'" class="relative px-5 py-3 text-xs font-semibold transition border-b-2"
+                                :class="activeTab === 'lfpr' ? 'border-blue-600 text-blue-700 bg-blue-50/50' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'">
+                            <div class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                <span>Participation Rate</span>
+                                <span x-show="validation['lfpr'] && !validation['lfpr'].valid" class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                <span x-show="isTabChanged('lfpr')" class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Loading -->
+                    <div x-show="loading" class="flex items-center justify-center py-20">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span class="ml-3 text-slate-500 text-sm">Loading templates...</span>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div x-show="!loading" class="flex-1 overflow-hidden">
+                        <template x-for="key in templateKeys" :key="key">
+                            <div x-show="activeTab === key" class="h-full flex flex-col">
+
+                                <!-- Placeholder toolbar -->
+                                <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2 flex-wrap flex-shrink-0">
+                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">Insert:</span>
+                                    <template x-for="ph in allPlaceholders" :key="ph.key">
+                                        <button @click="insertAtCursor(ph.key, key)"
+                                            class="ph-chip inline-flex items-center gap-1 px-2 py-1 bg-white border border-slate-200 rounded text-slate-600 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700">
+                                            <span x-text="ph.icon"></span>
+                                            <code x-text="ph.key"></code>
+                                        </button>
+                                    </template>
                                 </div>
+
+                                <!-- Edit / Preview area -->
+                                <div class="flex-1 overflow-hidden flex">
+
+                                    <!-- EDIT pane -->
+                                    <div class="flex-1 overflow-auto p-5 flex flex-col gap-3" x-show="viewMode === 'edit'">
+                                        <div x-show="originalSubmittedTemplates[key]">
+                                            <p class="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1.5">🟡 Admin Submitted</p>
+                                            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm font-mono text-amber-900 leading-relaxed whitespace-pre-wrap"
+                                                 x-text="originalSubmittedTemplates[key]"></div>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs font-bold text-blue-700 uppercase tracking-wide mb-1.5" x-show="originalSubmittedTemplates[key]">🔵 Your Edited Version</p>
+                                            <textarea :id="'textarea-' + key" x-model="templates[key]" @input="onInput(key)" @focus="activeField = key" rows="5"
+                                                class="template-textarea w-full p-3 border rounded-lg text-slate-700"
+                                                :class="validation[key] && !validation[key].valid ? 'border-red-300 bg-red-50/20' : 'border-slate-200 bg-white'"
+                                                placeholder="Write analysis template here..."></textarea>
+                                            <div x-show="validation[key] && !validation[key].valid" class="mt-2 flex items-center gap-2 flex-wrap">
+                                                <span class="text-xs text-red-500 font-medium">Missing placeholders:</span>
+                                                <template x-for="m in (validation[key] ? validation[key].missing : [])" :key="m">
+                                                    <code class="text-xs px-2 py-0.5 bg-red-50 border border-red-200 text-red-600 rounded font-mono" x-text="m"></code>
+                                                </template>
+                                            </div>
+                                            <div x-show="isTabChanged(key)" class="mt-2 text-xs text-orange-500 font-medium">⚠️ Unsaved changes</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- PREVIEW pane — 2x2 equal-height grid with word-level diff -->
+                                    <div class="flex-1 overflow-auto p-5 bg-slate-50/50" x-show="viewMode === 'preview'">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Live Preview</p>
+                                            <span x-show="hasPreviewData" class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Real Data</span>
+                                            <span x-show="!hasPreviewData" class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">Sample Data</span>
+                                            <span x-show="hasAnyChanges()" class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z"/></svg>
+                                                Changes highlighted
+                                            </span>
+                                        </div>
+
+                                        <!-- 2x2 equal-height grid -->
+                                        <div class="grid grid-cols-2 gap-4 auto-rows-fr">
+
+                                            <!-- LFPR card -->
+                                            <div class="group relative flex flex-col rounded-lg p-5 border-l-4 border-l-[#023E8A] shadow-sm hover:shadow-md transition-all duration-200"
+                                                 :class="isTabChanged('lfpr') ? 'bg-blue-50/60 border border-blue-300 ring-2 ring-blue-400 ring-offset-2' : 'bg-white border border-[#023E8A]/20'">
+                                                <div x-show="isTabChanged('lfpr')" class="absolute -top-2.5 -right-2.5 flex items-center gap-1 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
+                                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z"/></svg>
+                                                    Edited
+                                                </div>
+                                                <div class="flex items-center gap-2 mb-3">
+                                                    <div class="w-8 h-8 bg-blue-50 group-hover:bg-[#023E8A] rounded-lg flex items-center justify-center transition-colors flex-shrink-0">
+                                                        <svg class="w-4 h-4 text-[#023E8A] group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                                    </div>
+                                                    <p class="text-xs font-bold text-[#023E8A] uppercase tracking-wide">Participation Rate</p>
+                                                </div>
+                                                <div x-show="loadingPreview" class="flex items-center gap-2 text-slate-400"><div class="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-400"></div><span class="text-xs">Loading...</span></div>
+                                                <div x-show="!loadingPreview" x-html="renderDiffPreview(templates['lfpr'], 'lfpr')" class="text-sm text-slate-700 leading-relaxed flex-1"></div>
+                                            </div>
+
+                                            <!-- Employment card -->
+                                            <div class="group relative flex flex-col rounded-lg p-5 border-l-4 border-l-[#006400] shadow-sm hover:shadow-md transition-all duration-200"
+                                                 :class="isTabChanged('employment') ? 'bg-green-50/60 border border-green-300 ring-2 ring-green-400 ring-offset-2' : 'bg-white border border-[#006400]/20'">
+                                                <div x-show="isTabChanged('employment')" class="absolute -top-2.5 -right-2.5 flex items-center gap-1 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
+                                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z"/></svg>
+                                                    Edited
+                                                </div>
+                                                <div class="flex items-center gap-2 mb-3">
+                                                    <div class="w-8 h-8 bg-green-50 group-hover:bg-[#006400] rounded-lg flex items-center justify-center transition-colors flex-shrink-0">
+                                                        <svg class="w-4 h-4 text-[#006400] group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                                    </div>
+                                                    <p class="text-xs font-bold text-[#006400] uppercase tracking-wide">Employment Rate</p>
+                                                </div>
+                                                <div x-show="loadingPreview" class="flex items-center gap-2 text-slate-400"><div class="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-400"></div><span class="text-xs">Loading...</span></div>
+                                                <div x-show="!loadingPreview" x-html="renderDiffPreview(templates['employment'], 'employment')" class="text-sm text-slate-700 leading-relaxed flex-1"></div>
+                                            </div>
+
+                                            <!-- Underemployment card -->
+                                            <div class="group relative flex flex-col rounded-lg p-5 border-l-4 border-l-[#FF8C00] shadow-sm hover:shadow-md transition-all duration-200"
+                                                 :class="isTabChanged('underemployment') ? 'bg-orange-50/60 border border-orange-300 ring-2 ring-orange-400 ring-offset-2' : 'bg-white border border-[#FF8C00]/20'">
+                                                <div x-show="isTabChanged('underemployment')" class="absolute -top-2.5 -right-2.5 flex items-center gap-1 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
+                                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z"/></svg>
+                                                    Edited
+                                                </div>
+                                                <div class="flex items-center gap-2 mb-3">
+                                                    <div class="w-8 h-8 bg-orange-50 group-hover:bg-[#FF8C00] rounded-lg flex items-center justify-center transition-colors flex-shrink-0">
+                                                        <svg class="w-4 h-4 text-[#FF8C00] group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    </div>
+                                                    <p class="text-xs font-bold text-[#FF8C00] uppercase tracking-wide">Underemployment Rate</p>
+                                                </div>
+                                                <div x-show="loadingPreview" class="flex items-center gap-2 text-slate-400"><div class="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-400"></div><span class="text-xs">Loading...</span></div>
+                                                <div x-show="!loadingPreview" x-html="renderDiffPreview(templates['underemployment'], 'underemployment')" class="text-sm text-slate-700 leading-relaxed flex-1"></div>
+                                            </div>
+
+                                            <!-- Unemployment card -->
+                                            <div class="group relative flex flex-col rounded-lg p-5 border-l-4 border-l-[#D30000] shadow-sm hover:shadow-md transition-all duration-200"
+                                                 :class="isTabChanged('unemployment') ? 'bg-red-50/60 border border-red-300 ring-2 ring-red-400 ring-offset-2' : 'bg-white border border-[#D30000]/20'">
+                                                <div x-show="isTabChanged('unemployment')" class="absolute -top-2.5 -right-2.5 flex items-center gap-1 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
+                                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z"/></svg>
+                                                    Edited
+                                                </div>
+                                                <div class="flex items-center gap-2 mb-3">
+                                                    <div class="w-8 h-8 bg-red-50 group-hover:bg-[#D30000] rounded-lg flex items-center justify-center transition-colors flex-shrink-0">
+                                                        <svg class="w-4 h-4 text-[#D30000] group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+                                                    </div>
+                                                    <p class="text-xs font-bold text-[#D30000] uppercase tracking-wide">Unemployment Rate</p>
+                                                </div>
+                                                <div x-show="loadingPreview" class="flex items-center gap-2 text-slate-400"><div class="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-400"></div><span class="text-xs">Loading...</span></div>
+                                                <div x-show="!loadingPreview" x-html="renderDiffPreview(templates['unemployment'], 'unemployment')" class="text-sm text-slate-700 leading-relaxed flex-1"></div>
+                                            </div>
+
+                                        </div><!-- end 2x2 grid -->
+
+                                        <!-- No data warning -->
+                                        <div x-show="!hasPreviewData && !loadingPreview" class="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                                            <p class="text-xs text-yellow-700">⚠️ No real data for <strong x-text="currentPeriodLabel"></strong>. Showing sample values.</p>
+                                        </div>
+                                    </div>
+                                </div><!-- end edit/preview area -->
+
+                            </div><!-- end tab content -->
+                        </template>
+                    </div><!-- end tab content wrapper -->
+
+                    <!-- Status Bar -->
+                    <div class="border-t border-slate-100 px-5 py-2 bg-slate-50 flex items-center justify-between flex-shrink-0">
+                        <span class="text-xs text-slate-400">
+                            <span x-show="!hasValidationErrors() && isUnlocked" class="text-green-600 font-medium">✓ All templates valid</span>
+                            <span x-show="hasValidationErrors() && isUnlocked" class="text-red-500 font-medium">⚠️ Fix errors before saving</span>
+                            <span x-show="!isUnlocked" class="text-slate-400">Editor locked</span>
+                        </span>
+                        <span x-show="hasAnyChanges() && isUnlocked" class="text-xs text-orange-500 font-medium">⚠️ Unsaved changes</span>
+                    </div>
+
+                </div><!-- end right panel -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Confirm Save Modal -->
+    <div x-show="showSaveModal" x-cloak
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20 p-4"
+         @click.self="showSaveModal = false">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto" @click.stop>
+            <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+                <h3 class="text-xl font-bold text-gray-900">Confirm &amp; Save Templates</h3>
+                <p class="text-sm text-gray-500 mt-1">Review changes before publishing to the analysis reports</p>
+            </div>
+            <div class="p-6">
+
+                <!-- Info banner — always shows the LOCKED publish target -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-600 p-4 mb-4 rounded-lg">
+                    <p class="font-semibold text-gray-900">Saving templates for:</p>
+                    <p class="text-lg font-bold text-gray-900 mt-0.5" x-text="(quarterLabels[publishTargetMonth || selectedMonth] || '') + ' ' + (publishTargetYear || selectedYear)"></p>
+                    <p class="text-sm text-gray-600 mt-1">These templates will be used to generate analysis reports for the selected period.</p>
+                </div>
+
+                <!-- Warning: filters point somewhere different from publish target -->
+                <template x-if="publishTargetYear && (publishTargetYear !== selectedYear || publishTargetMonth !== selectedMonth)">
+                    <div class="bg-amber-50 border-l-4 border-amber-500 p-3 mb-4 rounded-lg flex items-start gap-2">
+                        <span class="text-amber-500 flex-shrink-0">⚠️</span>
+                        <p class="text-sm text-amber-800">
+                            Your filters are on <strong x-text="(quarterLabels[selectedMonth] || selectedMonth) + ' ' + selectedYear"></strong>
+                            — but this will still save to
+                            <strong x-text="(quarterLabels[publishTargetMonth] || publishTargetMonth) + ' ' + publishTargetYear"></strong>.
+                        </p>
+                    </div>
+                </template>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3 mb-5 rounded-lg">
+                    <p class="text-sm font-semibold text-yellow-800">⚠️ This will update the live analysis templates immediately.</p>
+                </div>
+
+                <!-- Per-template smart diff -->
+                <template x-for="key in templateKeys" :key="key">
+                    <div class="mb-8 pb-6 border-b border-slate-100 last:border-b-0 last:mb-0 last:pb-0">
+
+                        <!-- Template header -->
+                        <div class="flex items-center gap-2 mb-3">
+                            <span x-html="iconFor(key)"></span>
+                            <p class="font-semibold text-slate-800 text-sm" x-text="labelFor(key)"></p>
+                            <!-- Badge: 3-way, edited, unchanged -->
+                            <template x-if="originalSubmittedTemplates[key] && currentlyPublishedTemplates[key] && originalSubmittedTemplates[key] !== templates[key]">
+                                <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">3-Way Diff</span>
+                            </template>
+                            <template x-if="originalSubmittedTemplates[key] && originalSubmittedTemplates[key] !== templates[key] && !(currentlyPublishedTemplates[key])">
+                                <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">Modified</span>
+                            </template>
+                            <template x-if="!originalSubmittedTemplates[key] || originalSubmittedTemplates[key] === templates[key]">
+                                <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">No changes</span>
                             </template>
                         </div>
 
-                        <!-- PREVIEW -->
-                        <div x-show="!loading && viewMode === 'preview'" class="space-y-5">
-                            <!-- No Preview Data Warning -->
-                            <div x-show="!hasPreviewData && !loadingPreview" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                                <div class="flex items-start gap-3">
-                                    <span class="text-yellow-600 text-xl">⚠️</span>
+                        <!-- Scenario 1a: Draft loaded + live exists + statistician edited → 3 columns -->
+                        <template x-if="originalSubmittedTemplates[key] && currentlyPublishedTemplates[key] && originalSubmittedTemplates[key] !== templates[key]">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="h-px flex-1 bg-slate-200"></div>
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">3-Way Comparison</p>
+                                    <div class="h-px flex-1 bg-slate-200"></div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-3">
                                     <div>
-                                        <h4 class="font-semibold text-yellow-800 mb-1">No Data Available</h4>
-                                        <p class="text-sm text-yellow-700">
-                                            There is no statistical data available for <strong x-text="currentPeriodLabel"></strong>. 
-                                            The preview below shows example data for demonstration purposes.
-                                        </p>
+                                        <p class="text-xs font-bold text-green-700 mb-1.5">🟢 Currently Live</p>
+                                        <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-xs font-mono text-green-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="currentlyPublishedTemplates[key]"></div>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-amber-700 mb-1.5">🟡 Admin Submitted</p>
+                                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs font-mono text-amber-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="originalSubmittedTemplates[key]"></div>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-blue-700 mb-1.5">🔵 Your Edit</p>
+                                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs font-mono text-blue-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="templates[key]"></div>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Loading Preview Data -->
-                            <div x-show="loadingPreview" class="flex items-center justify-center py-8">
-                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                                <span class="ml-3 text-slate-500">Loading preview data...</span>
-                            </div>
-
-                            <!-- Preview Cards — new design matching home blade -->
-                            <div class="grid md:grid-cols-2 gap-4">
-                                <!-- Participation Rate -->
-                                <div class="group bg-white rounded-lg p-5 border border-[#023E8A]/20 border-l-4 hover:border-[#023E8A] hover:bg-blue-50/30 shadow-sm hover:shadow-md transition-all">
-                                    <div class="flex items-center gap-2 mb-3">
-                                        <div class="w-8 h-8 bg-blue-50 group-hover:bg-[#023E8A] rounded-lg flex items-center justify-center transition-colors">
-                                            <svg class="w-4 h-4 text-[#023E8A] group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                            </svg>
-                                        </div>
-                                        <p class="text-xs font-bold text-[#023E8A] uppercase tracking-wide">Participation Rate</p>
-                                    </div>
-                                    <div x-html="renderPreview(templates.lfpr, 'lfpr')" class="text-sm text-slate-700 leading-relaxed"></div>
-                                </div>
-
-                                <!-- Employment Rate -->
-                                <div class="group bg-white rounded-lg p-5 border border-[#006400]/20 border-l-4 hover:border-[#006400] hover:bg-green-50/30 shadow-sm hover:shadow-md transition-all">
-                                    <div class="flex items-center gap-2 mb-3">
-                                        <div class="w-8 h-8 bg-green-50 group-hover:bg-[#006400] rounded-lg flex items-center justify-center transition-colors">
-                                            <svg class="w-4 h-4 text-[#006400] group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                            </svg>
-                                        </div>
-                                        <p class="text-xs font-bold text-[#006400] uppercase tracking-wide">Employment Rate</p>
-                                    </div>
-                                    <div x-html="renderPreview(templates.employment, 'employment')" class="text-sm text-slate-700 leading-relaxed"></div>
-                                </div>
-
-                                <!-- Underemployment Rate -->
-                                <div class="group bg-white rounded-lg p-5 border border-[#FF8C00]/20 border-l-4 hover:border-[#FF8C00] hover:bg-orange-50/30 shadow-sm hover:shadow-md transition-all">
-                                    <div class="flex items-center gap-2 mb-3">
-                                        <div class="w-8 h-8 bg-orange-50 group-hover:bg-[#FF8C00] rounded-lg flex items-center justify-center transition-colors">
-                                            <svg class="w-4 h-4 text-[#FF8C00] group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                        <p class="text-xs font-bold text-[#FF8C00] uppercase tracking-wide">Underemployment Rate</p>
-                                    </div>
-                                    <div x-html="renderPreview(templates.underemployment, 'underemployment')" class="text-sm text-slate-700 leading-relaxed"></div>
-                                </div>
-
-                                <!-- Unemployment Rate -->
-                                <div class="group bg-white rounded-lg p-5 border border-[#D30000]/20 border-l-4 hover:border-[#D30000] hover:bg-red-50/30 shadow-sm hover:shadow-md transition-all">
-                                    <div class="flex items-center gap-2 mb-3">
-                                        <div class="w-8 h-8 bg-red-50 group-hover:bg-[#D30000] rounded-lg flex items-center justify-center transition-colors">
-                                            <svg class="w-4 h-4 text-[#D30000] group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                                            </svg>
-                                        </div>
-                                        <p class="text-xs font-bold text-[#D30000] uppercase tracking-wide">Unemployment Rate</p>
-                                    </div>
-                                    <div x-html="renderPreview(templates.unemployment, 'unemployment')" class="text-sm text-slate-700 leading-relaxed"></div>
+                                <div class="mt-2 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 flex items-center gap-2">
+                                    <span class="text-orange-500">✏️</span>
+                                    <p class="text-xs font-semibold text-orange-700">You've edited the admin draft — this will overwrite the currently live version.</p>
                                 </div>
                             </div>
-                        </div>
+                        </template>
 
-                        <!-- Footer — Save/Reset buttons only (no preview buttons) -->
-                        <div class="mt-12 pt-6 border-t border-slate-100 flex justify-between items-center">
-                            <div class="text-sm">
-                                <span x-show="hasValidationErrors()" class="text-red-500 font-medium">⚠️ Fix errors before saving</span>
-                                <span x-show="!hasValidationErrors()" class="text-green-600 font-medium">✓ All templates valid</span>
+                        <!-- Scenario 1b: Draft loaded + live exists + NO changes → 2 columns (no redundant "Your Edit") -->
+                        <template x-if="originalSubmittedTemplates[key] && currentlyPublishedTemplates[key] && originalSubmittedTemplates[key] === templates[key]">
+                            <div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <p class="text-xs font-bold text-green-700 mb-1.5">🟢 Currently Live</p>
+                                        <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-xs font-mono text-green-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="currentlyPublishedTemplates[key]"></div>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-amber-700 mb-1.5">🟡 Admin Submitted <span class="text-slate-400 font-normal">(unchanged)</span></p>
+                                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs font-mono text-amber-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="originalSubmittedTemplates[key]"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-center gap-2">
+                                    <span class="text-green-500">✅</span>
+                                    <p class="text-xs font-semibold text-green-700">Publishing admin's submission as-is — this will overwrite the currently live version.</p>
+                                </div>
                             </div>
-                            <div class="flex gap-3" x-show="viewMode === 'edit'">
-                                <button @click="resetAll()" class="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition font-semibold">Reset Defaults</button>
-                                <button
-                                    @click="saveAll()"
-                                    :disabled="saving || hasValidationErrors()"
-                                    class="px-8 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <span x-text="saving ? 'Saving...' : 'Save All Changes'"></span>
-                                </button>
+                        </template>
+
+                        <!-- Scenario 2: Draft loaded + nothing published yet → 2 columns -->
+                        <template x-if="originalSubmittedTemplates[key] && !currentlyPublishedTemplates[key]">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <p class="text-xs font-bold text-amber-700 mb-1.5">🟡 Admin Submitted</p>
+                                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs font-mono text-amber-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="originalSubmittedTemplates[key]"></div>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-blue-700 mb-1.5">🔵 Your Edited Version</p>
+                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs font-mono text-blue-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="templates[key]"></div>
+                                </div>
                             </div>
-                        </div>
+                        </template>
+
+                        <!-- Scenario 3: No draft, single preview -->
+                        <template x-if="!originalSubmittedTemplates[key]">
+                            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-mono text-slate-700 leading-relaxed whitespace-pre-wrap" x-text="templates[key]"></div>
+                        </template>
+
                     </div>
+                </template>
+
+            </div><!-- end p-6 -->
+            <div class="p-6 border-t border-gray-200 bg-gray-50 flex gap-3 sticky bottom-0">
+                <button @click="showSaveModal = false" class="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition">Cancel</button>
+                <button @click="confirmSave()" :disabled="saving" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg transition disabled:opacity-50">
+                    <span x-text="saving ? 'Saving...' : '💾 Save All Templates'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Modal -->
+    <div x-show="showResetModal" x-cloak class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-black/20" @click.self="showResetModal = false">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4" @click.stop>
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100">
+                    <svg class="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">Reset to Original Draft</h3>
+                    <p class="text-sm text-gray-600 mb-1">This will restore all templates back to the originally loaded draft:</p>
+                    <p class="text-sm font-semibold text-slate-700 mb-3">
+                        📅 <span x-text="(quarterLabels[draftMonth] || draftMonth || '—') + ' ' + (draftYear || '')"></span>
+                    </p>
+                    <p class="text-xs text-orange-600 font-semibold">⚠️ Any changes you made to all 4 templates will be lost!</p>
                 </div>
             </div>
-
-            <!-- ── MODALS ── -->
-
-            <!-- Reset Modal -->
-            <div x-show="showResetModal" x-cloak class="fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
-                <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-                    <div class="text-center">
-                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-orange-100 mb-4">
-                            <svg class="h-8 w-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3">Reset to Defaults?</h3>
-                        <p class="text-sm text-gray-600 mb-6">Are you sure you want to reset all templates to their default text? This will overwrite any changes you've made.</p>
-                        <div class="flex gap-3">
-                            <button @click="showResetModal = false" class="flex-1 px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium border border-gray-300 rounded-lg transition">Cancel</button>
-                            <button @click="confirmReset()" class="flex-1 px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg transition">Yes, Reset</button>
-                        </div>
-                    </div>
-                </div>
+            <div class="flex gap-3 mt-6">
+                <button @click="showResetModal = false" class="flex-1 px-6 py-2.5 bg-white text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                <button @click="confirmReset()" class="flex-1 px-6 py-2.5 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 transition">Reset to Original Draft</button>
             </div>
+        </div>
+    </div>
 
-            <!-- Save Modal -->
-            <div x-show="showSaveModal" x-cloak class="fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
-                <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-                    <div class="text-center">
-                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
-                            <svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3">Confirm Changes</h3>
-                        <p class="text-sm text-gray-600 mb-6">Are you sure you want to save all template changes for <span x-text="currentPeriodLabel" class="font-semibold"></span>? This will update the analysis templates used for generating reports.</p>
-                        <div class="flex gap-3">
-                            <button @click="showSaveModal = false" class="flex-1 px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium border border-gray-300 rounded-lg transition">Cancel</button>
-                            <button @click="confirmSave()" class="flex-1 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition">Yes, Save All</button>
-                        </div>
-                    </div>
+    <!-- Success Modal -->
+    <div x-show="showSuccessModal" x-cloak class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-black/20" @click.self="showSuccessModal = false">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4" @click.stop>
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                    <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </div>
-            </div>
-
-            <!-- Success Modal -->
-            <div x-show="showSuccessModal" x-cloak class="fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
-                <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-                    <div class="text-center">
-                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
-                            <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3" x-text="successTitle"></h3>
-                        <p class="text-sm text-gray-600 mb-6" x-text="successMessage"></p>
-                        <button @click="showSuccessModal = false" class="w-full px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition">OK</button>
-                    </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Templates Saved!</h3>
+                <p class="text-sm text-gray-600 mb-2" x-text="successMessage"></p>
+                <div class="bg-green-50 rounded-lg p-3 mb-6 border border-green-200">
+                    <p class="text-xs text-green-700">Period: <strong x-text="currentPeriodLabel"></strong></p>
                 </div>
+                <button @click="showSuccessModal = false" class="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition">Continue</button>
             </div>
+        </div>
+    </div>
 
-            <!-- Error Modal -->
-            <div x-show="showErrorModal" x-cloak class="fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
-                <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-                    <div class="text-center">
-                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
-                            <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3" x-text="errorTitle"></h3>
-                        <p class="text-sm text-gray-600 mb-6" x-text="errorMessage"></p>
-                        <button @click="showErrorModal = false" class="w-full px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition">Close</button>
-                    </div>
+    <!-- Error Modal -->
+    <div x-show="showErrorModal" x-cloak class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-black/20" @click.self="showErrorModal = false">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4" @click.stop>
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                    <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-3" x-text="errorTitle"></h3>
+                <p class="text-sm text-gray-600 mb-6" x-text="errorMessage"></p>
+                <button @click="showErrorModal = false" class="w-full px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition">Close</button>
             </div>
+        </div>
+    </div>
 
-        </div><!-- end x-data -->
-    </div><!-- end main -->
+    <!-- Toast -->
+    <div x-show="showToast"
+         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         class="fixed bottom-6 right-6 z-50 bg-slate-800 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-medium flex items-center gap-2">
+        ✅ <span x-text="toastMessage"></span>
+    </div>
 
     <script>
-        function analysisEditor() {
+        function templateEditor() {
             return {
-                loading: true,
-                saving: false,
-                viewMode: 'edit',
+                // ── State ──────────────────────────────────────────
+                loading:        true,
+                saving:         false,
+                isUnlocked:     false,
+                viewMode:       'edit',
+                activeTab:      'employment',
+                activeField:    'employment',
+                lastSaved:      null,
 
-                // ── Selection ──
+                // ── Filters ────────────────────────────────────────
                 selectedYear:    null,
                 selectedMonth:   null,
                 availableYears:  [],
                 availableMonths: [],
-                quarterLabels:   {},  // { 1: "January", 4: "April", 7: "July", 10: "October" }
+                quarterLabels:   {},
 
-                activeField: null,
-
-                // ── Modals ──
-                showResetModal:   false,
-                showSaveModal:    false,
-                showSuccessModal: false,
-                showErrorModal:   false,
-                successTitle:     '',
-                successMessage:   '',
-                errorTitle:       '',
-                errorMessage:     '',
-
-                // ── Templates ──
-                templates: {
-                    employment:      '',
-                    underemployment: '',
-                    unemployment:    '',
-                    lfpr:            ''
-                },
+                // ── Templates ──────────────────────────────────────
+                templateKeys: ['employment', 'underemployment', 'unemployment', 'lfpr'],
+                templates: { employment: '', underemployment: '', unemployment: '', lfpr: '' },
+                originalSubmittedTemplates: { employment: null, underemployment: null, unemployment: null, lfpr: null },
+                savedTemplates: { employment: '', underemployment: '', unemployment: '', lfpr: '' },
 
                 validation: {
                     employment:      { valid: true, missing: [] },
@@ -340,130 +629,196 @@
                 },
 
                 allPlaceholders: [
-                    { key: '{current_period}',   icon: '📅' },
-                    { key: '{previous_period}',  icon: '📅' },
-                    { key: '{current_rate}',     icon: '📊' },
-                    { key: '{previous_rate}',    icon: '📊' },
-                    { key: '{trend}',            icon: '📈' }
+                    { key: '{current_period}',  icon: '📅' },
+                    { key: '{previous_period}', icon: '📅' },
+                    { key: '{current_rate}',    icon: '📊' },
+                    { key: '{previous_rate}',   icon: '📊' },
+                    { key: '{trend}',           icon: '📈' }
                 ],
+                requiredPlaceholders: ['{current_period}', '{previous_period}', '{current_rate}', '{previous_rate}', '{trend}'],
 
-                requiredPlaceholders: [
-                    '{current_period}', '{previous_period}',
-                    '{current_rate}',   '{previous_rate}',
-                    '{trend}'
-                ],
+                allPendingDrafts:  [],
+                loadingAllPending: false,
+                previewData:     {},
+                hasPreviewData:  false,
+                loadingPreview:  false,
 
-                // ── Preview data (real data from database) ──
-                previewData: {},
-                hasPreviewData: false,
-                loadingPreview: false,
+                // Locked publish target — set when a draft is loaded, never changed by filter dropdowns
+                publishTargetYear:  null,
+                publishTargetMonth: null,
 
-                // ── Computed ──
+                // What's currently live for the publish target period (for 3-way diff)
+                currentlyPublishedTemplates: { employment: null, underemployment: null, unemployment: null, lfpr: null },
+
+                // Draft snapshot — used by Reset to restore exactly what was loaded
+                draftYear:      null,
+                draftMonth:     null,
+                draftTemplates: { employment: null, underemployment: null, unemployment: null, lfpr: null },
+
+                showSaveModal: false, showResetModal: false, showSuccessModal: false, showErrorModal: false,
+                successMessage: '', errorTitle: '', errorMessage: '',
+                showToast: false, toastMessage: '',
+
                 get currentPeriodLabel() {
                     const name = this.quarterLabels[this.selectedMonth] || '';
                     return name ? `${name} ${this.selectedYear}` : '—';
                 },
 
-                // ── Init ──
                 async init() {
-                    await this.loadTemplates();
+                    await Promise.all([this.loadTemplates(), this.loadAllPending()]);
                 },
 
-                // ── Load ──
+                labelFor(key) {
+                    return { employment: 'Employment', underemployment: 'Underemployment', unemployment: 'Unemployment', lfpr: 'Participation Rate' }[key] || key;
+                },
+                iconFor(key) {
+                    const svgs = {
+                        employment:      '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>',
+                        underemployment: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+                        unemployment:    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>',
+                        lfpr:            '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>'
+                    };
+                    return svgs[key] || '';
+                },
+                borderColorFor(key) {
+                    return { employment: 'border-l-4 border-green-600/30', underemployment: 'border-l-4 border-orange-500/30', unemployment: 'border-l-4 border-red-600/30', lfpr: 'border-l-4 border-blue-600/30' }[key] || '';
+                },
+                iconBgFor(key) {
+                    return { employment: 'bg-green-50', underemployment: 'bg-orange-50', unemployment: 'bg-red-50', lfpr: 'bg-blue-50' }[key] || 'bg-slate-50';
+                },
+                textColorFor(key) {
+                    return { employment: 'text-green-700', underemployment: 'text-orange-700', unemployment: 'text-red-700', lfpr: 'text-blue-700' }[key] || 'text-slate-700';
+                },
+
+                isTabChanged(key) {
+                    return this.originalSubmittedTemplates[key] != null && this.templates[key].trim() !== this.originalSubmittedTemplates[key].trim();
+                },
+                hasAnyChanges() {
+                    return this.templateKeys.some(k => this.isTabChanged(k));
+                },
+                formatDate(dateStr) {
+                    if (!dateStr) return '—';
+                    return new Date(dateStr).toLocaleString();
+                },
+
                 async loadTemplates() {
                     this.loading = true;
                     try {
                         const params = new URLSearchParams();
                         if (this.selectedYear)  params.set('year',  this.selectedYear);
                         if (this.selectedMonth) params.set('month', this.selectedMonth);
-
                         const res  = await fetch('/api/analysis-templates?' + params.toString());
                         if (!res.ok) throw new Error(`HTTP ${res.status}`);
                         const json = await res.json();
-
                         if (json.success) {
-                            this.availableYears  = json.years           || [];
-                            this.availableMonths = json.months          || [];
-                            this.quarterLabels   = json.quarter_labels  || {};
+                            this.availableYears  = json.years          || [];
+                            this.availableMonths = json.months         || [];
+                            this.quarterLabels   = json.quarter_labels || {};
                             this.selectedYear    = json.selected_year;
                             this.selectedMonth   = json.selected_month;
-
-                            Object.keys(this.templates).forEach(k => this.templates[k] = '');
-                            Object.keys(json.data).forEach(k => {
-                                if (this.templates.hasOwnProperty(k)) {
-                                    this.templates[k] = json.data[k].template_text || '';
-                                }
+                            this.templateKeys.forEach(k => {
+                                const text = json.data[k]?.template_text || '';
+                                this.templates[k]      = text;
+                                this.savedTemplates[k] = text;
                             });
                             this.validateAll();
-
-                            // Load preview data
                             await this.loadPreviewData();
                         }
                     } catch (e) {
                         console.error('Load error:', e);
-                        this.errorTitle     = 'Loading Error';
-                        this.errorMessage   = 'An error occurred while loading the templates. Please refresh and try again.';
+                        this.errorTitle = 'Loading Error';
+                        this.errorMessage = 'Could not load templates. Please refresh and try again.';
                         this.showErrorModal = true;
                     } finally {
                         this.loading = false;
                     }
                 },
 
-                // Year changed → reload everything
-                async onYearChange() {
-                    await this.loadTemplates();
+                async loadSidebarOnly() { await this.loadPreviewData(); },
+
+                async loadAllPending() {
+                    this.loadingAllPending = true;
+                    try {
+                        const res  = await fetch('/api/analysis-templates/pending-all');
+                        const data = await res.json();
+                        if (data.success) { this.allPendingDrafts = data.data; }
+                    } catch (e) { console.error('Error loading pending drafts:', e); }
+                    finally { this.loadingAllPending = false; }
                 },
 
-                // ── Load real preview data from database ──
                 async loadPreviewData() {
                     if (!this.selectedYear || !this.selectedMonth) return;
-                    
                     this.loadingPreview = true;
                     try {
-                        const params = new URLSearchParams({
-                            year: this.selectedYear,
-                            month: this.selectedMonth
-                        });
-
-                        const r = await fetch(`/api/analysis-templates/preview-data?${params.toString()}`, {
-                            headers: { 'Accept': 'application/json' }
-                        });
-
-                        if (!r.ok) {
-                            console.warn('No preview data available for this period');
-                            this.hasPreviewData = false;
-                            return;
-                        }
-
+                        const params = new URLSearchParams({ year: this.selectedYear, month: this.selectedMonth });
+                        const r    = await fetch(`/api/analysis-templates/preview-data?${params}`);
                         const json = await r.json();
-                        
                         if (json.success && json.has_data) {
-                            this.previewData = json.data;
+                            this.previewData    = json.data;
                             this.hasPreviewData = true;
-                        } else {
-                            this.hasPreviewData = false;
-                        }
-
-                    } catch (e) {
-                        console.error('Preview data error:', e);
-                        this.hasPreviewData = false;
-                    } finally {
-                        this.loadingPreview = false;
-                    }
+                        } else { this.hasPreviewData = false; }
+                    } catch (e) { this.hasPreviewData = false; }
+                    finally { this.loadingPreview = false; }
                 },
 
-                // ── Insert placeholder ──
-                insertAtCursor(placeholder) {
-                    const key      = this.activeField || 'employment';
+                async loadDraftIntoEditor(draft) {
+                    const yr  = draft.year;
+                    const mo  = draft.month;
+                    this.selectedYear  = yr;
+                    this.selectedMonth = mo;
+                    this.templateKeys.forEach(k => {
+                        if (draft.templates[k] !== undefined) {
+                            this.originalSubmittedTemplates[k] = draft.templates[k];
+                            this.templates[k]                  = draft.templates[k];
+                        }
+                    });
+                    // Lock publish target — never changes even if filters move
+                    this.publishTargetYear  = yr;
+                    this.publishTargetMonth = mo;
+                    // Snapshot for Reset — restores exactly what was loaded
+                    this.draftYear  = yr;
+                    this.draftMonth = mo;
+                    this.templateKeys.forEach(k => { this.draftTemplates[k] = draft.templates[k] ?? null; });
+                    // Fetch what's currently live for this period (for 3-way diff in save modal)
+                    try {
+                        const params = new URLSearchParams({ year: yr, month: mo });
+                        const res  = await fetch(`/api/analysis-templates?${params}`);
+                        const json = await res.json();
+                        if (json.success) {
+                            this.templateKeys.forEach(k => {
+                                this.currentlyPublishedTemplates[k] = json.data[k]?.template_text || null;
+                            });
+                        }
+                    } catch (e) {
+                        this.templateKeys.forEach(k => { this.currentlyPublishedTemplates[k] = null; });
+                    }
+                    this.validateAll();
+                    this.isUnlocked = true;
+                    this.activeTab  = this.templateKeys[0];
+                    this.loadPreviewData();
+                    this.showSuccessToast(`Draft loaded: ${this.quarterLabels[mo] || mo} ${yr}`);
+                },
+
+                lockEditor() {
+                    this.isUnlocked = false;
+                    this.templateKeys.forEach(k => {
+                        this.originalSubmittedTemplates[k]  = null;
+                        this.currentlyPublishedTemplates[k] = null;
+                        this.draftTemplates[k]              = null;
+                    });
+                    this.publishTargetYear  = null;
+                    this.publishTargetMonth = null;
+                    this.draftYear  = null;
+                    this.draftMonth = null;
+                },
+
+                insertAtCursor(placeholder, key) {
                     const textarea = document.getElementById('textarea-' + key);
                     if (!textarea) return;
-
                     const start = textarea.selectionStart;
                     const end   = textarea.selectionEnd;
                     const text  = this.templates[key];
-
                     this.templates[key] = text.substring(0, start) + placeholder + text.substring(end);
-
                     this.$nextTick(() => {
                         textarea.focus();
                         const pos = start + placeholder.length;
@@ -472,80 +827,102 @@
                     });
                 },
 
-                // ── Validation ──
                 onInput(key) { this.validateTemplate(key); },
-
                 validateTemplate(key) {
                     const text    = this.templates[key] || '';
                     const missing = this.requiredPlaceholders.filter(p => !text.includes(p));
                     this.validation[key] = { valid: missing.length === 0, missing };
                 },
+                validateAll() { this.templateKeys.forEach(k => this.validateTemplate(k)); },
+                hasValidationErrors() { return this.templateKeys.some(k => this.validation[k] && !this.validation[k].valid); },
 
-                validateAll() {
-                    Object.keys(this.templates).forEach(k => this.validateTemplate(k));
-                },
-
-                hasValidationErrors() {
-                    return Object.values(this.validation).some(v => !v.valid);
-                },
-
-                // ── Preview ──
-                renderPreview(text, key) {
-                    if (!text || !text.trim()) return '<span class="text-slate-300 italic">No content</span>';
-                    
-                    let out = text;
-                    
-                    // Use real preview data if available for this metric
-                    if (this.hasPreviewData && this.previewData[key]) {
-                        Object.entries(this.previewData[key]).forEach(([placeholder, value]) => {
-                            out = out.replaceAll(placeholder, value);
-                        });
-                    } else {
-                        // Fallback to mock data
-                        const mockData = this.getMockData();
-                        Object.entries(mockData).forEach(([k, v]) => { out = out.replaceAll(k, v); });
+                // ── Word-level diff ────────────────────────────────
+                wordDiff(original, current) {
+                    const tokenize = str => str.match(/(\s+|\S+)/g) || [];
+                    const a = tokenize(original);
+                    const b = tokenize(current);
+                    const m = a.length, n = b.length;
+                    const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+                    for (let i = 1; i <= m; i++)
+                        for (let j = 1; j <= n; j++)
+                            dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] + 1 : Math.max(dp[i-1][j], dp[i][j-1]);
+                    const ops = [];
+                    let i = m, j = n;
+                    while (i > 0 || j > 0) {
+                        if (i > 0 && j > 0 && a[i-1] === b[j-1]) {
+                            ops.unshift({ type: 'eq', val: b[j-1] }); i--; j--;
+                        } else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) {
+                            ops.unshift({ type: 'ins', val: b[j-1] }); j--;
+                        } else {
+                            ops.unshift({ type: 'del', val: a[i-1] }); i--;
+                        }
                     }
-                    
+                    return ops.map(op => {
+                        const isSpace = /^\s+$/.test(op.val);
+                        if (op.type === 'eq')  return op.val;
+                        if (op.type === 'ins') return isSpace ? op.val : `<mark class="bg-yellow-200 text-yellow-900 rounded px-0.5 font-medium">${op.val}</mark>`;
+                        if (op.type === 'del') return isSpace ? '' : `<span class="line-through text-red-400 opacity-75 text-xs">${op.val}</span>`;
+                    }).join('');
+                },
+
+                renderDiffPreview(text, key) {
+                    if (!text || !text.trim()) return '<span class="text-slate-300 italic">No content</span>';
+                    const original = this.originalSubmittedTemplates[key];
+                    const renderText = (t) => {
+                        let out = t;
+                        if (this.hasPreviewData && this.previewData[key]) {
+                            Object.entries(this.previewData[key]).forEach(([ph, val]) => { out = out.replaceAll(ph, val); });
+                        } else {
+                            Object.entries(this.getMockData()).forEach(([k, v]) => { out = out.replaceAll(k, v); });
+                        }
+                        return out;
+                    };
+                    if (!original) return renderText(text);
+                    const diffHtml = this.wordDiff(original.trim(), text.trim());
+                    let out = diffHtml;
+                    if (this.hasPreviewData && this.previewData[key]) {
+                        Object.entries(this.previewData[key]).forEach(([ph, val]) => { out = out.replaceAll(ph, val); });
+                    } else {
+                        Object.entries(this.getMockData()).forEach(([k, v]) => { out = out.replaceAll(k, v); });
+                    }
                     return out;
                 },
 
-                // ── Mock data for preview (fallback when no real data) ──
+                renderPreview(text, key) {
+                    if (!text || !text.trim()) return '<span class="text-slate-300 italic">No content</span>';
+                    let out = text;
+                    if (this.hasPreviewData && this.previewData[key]) {
+                        Object.entries(this.previewData[key]).forEach(([ph, val]) => { out = out.replaceAll(ph, val); });
+                    } else {
+                        Object.entries(this.getMockData()).forEach(([k, v]) => { out = out.replaceAll(k, v); });
+                    }
+                    return out;
+                },
+
                 getMockData() {
                     const currentName = this.quarterLabels[this.selectedMonth] || 'January';
                     const prev        = this.getPreviousPeriod(this.selectedMonth, this.selectedYear);
                     const prevName    = this.quarterLabels[prev.month] || 'October';
-
                     return {
                         '{current_period}':  `<strong>${currentName} ${this.selectedYear}</strong>`,
                         '{previous_period}': `<strong>${prevName} ${prev.year}</strong>`,
                         '{current_rate}':    '<strong>89.0%</strong>',
-                        '{previous_rate}':   '<strong>99.0%</strong>',
+                        '{previous_rate}':   '<strong>92.5%</strong>',
                         '{trend}':           '<span class="text-red-600 font-semibold">lower ↓</span>'
                     };
                 },
 
-                // Get previous period (Jan→Jan prev year, others→prev quarter)
                 getPreviousPeriod(month, year) {
-                    // January compares to January of previous year (annual data)
-                    if (month == 1) {
-                        return { month: 1, year: parseInt(year) - 1 };
-                    }
-                    
-                    // Other quarters compare to previous quarter in same year
-                    const map = {
-                        4:  { month: 1,  yearOffset:  0 },  // April → January
-                        7:  { month: 4,  yearOffset:  0 },  // July → April
-                        10: { month: 7,  yearOffset:  0 }   // October → July
-                    };
+                    if (month == 1) return { month: 1, year: parseInt(year) - 1 };
+                    const map = { 4: { month: 1, yearOffset: 0 }, 7: { month: 4, yearOffset: 0 }, 10: { month: 7, yearOffset: 0 } };
                     const prev = map[month] || { month: 1, yearOffset: -1 };
                     return { month: prev.month, year: parseInt(year) + prev.yearOffset };
                 },
 
-                // ── Save ──
-                saveAll() {
+                confirmBeforeSave() {
                     if (this.hasValidationErrors()) {
-                        this.errorTitle     = 'Validation Errors';
-                        this.errorMessage   = 'Please fix validation errors before saving.';
+                        this.errorTitle   = 'Validation Errors';
+                        this.errorMessage = 'Please fix all validation errors before saving.';
                         this.showErrorModal = true;
                         return;
                     }
@@ -553,12 +930,15 @@
                 },
 
                 async confirmSave() {
+                    if (this.saving) return;
                     this.showSaveModal = false;
                     this.saving = true;
-                    let errors  = 0;
-
+                    // Use locked publish target if set, fall back to filter dropdowns
+                    const saveYear  = this.publishTargetYear  || this.selectedYear;
+                    const saveMonth = this.publishTargetMonth || this.selectedMonth;
+                    let errors = 0;
                     try {
-                        for (const key of Object.keys(this.templates)) {
+                        for (const key of this.templateKeys) {
                             const r = await fetch(`/api/analysis-templates/${key}`, {
                                 method: 'PUT',
                                 headers: {
@@ -566,66 +946,64 @@
                                     'Accept':       'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                                 },
-                                body: JSON.stringify({
-                                    template_text: this.templates[key],
-                                    year:          this.selectedYear,
-                                    month:         this.selectedMonth
-                                })
+                                body: JSON.stringify({ template_text: this.templates[key], year: saveYear, month: saveMonth })
                             });
                             if (!r.ok) { errors++; console.error(`Save ${key} failed`, await r.text()); }
                         }
-
                         if (errors === 0) {
-                            this.successTitle   = 'Successfully Saved!';
-                            this.successMessage = `All templates have been saved for ${this.currentPeriodLabel}. The changes will be reflected in the analysis reports.`;
+                            this.templateKeys.forEach(k => { this.savedTemplates[k] = this.templates[k]; });
+                            this.lastSaved      = new Date().toLocaleString();
+                            this.isUnlocked     = false;
+                            this.successMessage = `All templates saved for ${this.quarterLabels[saveMonth] || saveMonth} ${saveYear}.`;
                             this.showSuccessModal = true;
+                            // Clear all snapshot/publish-target/diff state after successful save
+                            this.templateKeys.forEach(k => {
+                                this.originalSubmittedTemplates[k]  = null;
+                                this.currentlyPublishedTemplates[k] = null;
+                                this.draftTemplates[k]              = null;
+                            });
+                            this.publishTargetYear  = null;
+                            this.publishTargetMonth = null;
+                            this.draftYear  = null;
+                            this.draftMonth = null;
+                            await this.loadAllPending();
                         } else {
-                            this.errorTitle     = 'Save Error';
-                            this.errorMessage   = `${errors} error(s) occurred while saving. Please check the console for details.`;
+                            this.errorTitle   = 'Save Error';
+                            this.errorMessage = `${errors} error(s) occurred. Please check the console.`;
                             this.showErrorModal = true;
                         }
                     } catch (e) {
-                        this.errorTitle     = 'Save Error';
-                        this.errorMessage   = 'An unexpected error occurred. Please try again.';
+                        this.errorTitle   = 'Save Error';
+                        this.errorMessage = 'An unexpected error occurred. Please try again.';
                         this.showErrorModal = true;
                         console.error(e);
-                    } finally {
-                        this.saving = false;
-                    }
+                    } finally { this.saving = false; }
                 },
 
-                // ── Reset ──
-                resetAll() {
-                    this.showResetModal = true;
-                },
+                resetAll() { this.showResetModal = true; },
 
-                async confirmReset() {
+                confirmReset() {
                     this.showResetModal = false;
-                    try {
-                        for (const key of Object.keys(this.templates)) {
-                            const r = await fetch(`/api/analysis-templates/${key}/reset`, {
-                                method: 'POST',
-                                headers: {
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                    'Accept':       'application/json'
-                                }
-                            });
-                            if (!r.ok) { console.error(`Reset ${key} failed`); continue; }
-                            const json = await r.json();
-                            if (json.success) this.templates[key] = json.default_text;
+                    if (!this.draftYear) return; // nothing to restore
+                    // Restore year, month, and all template texts exactly as loaded
+                    this.selectedYear  = this.draftYear;
+                    this.selectedMonth = this.draftMonth;
+                    this.templateKeys.forEach(k => {
+                        if (this.draftTemplates[k] !== null) {
+                            this.templates[k]                  = this.draftTemplates[k];
+                            this.originalSubmittedTemplates[k] = this.draftTemplates[k];
                         }
-                        this.validateAll();
-                        this.successTitle   = 'Reset Complete!';
-                        this.successMessage = 'All templates have been reset to their default values.';
-                        this.showSuccessModal = true;
-                    } catch (e) {
-                        this.errorTitle     = 'Reset Error';
-                        this.errorMessage   = 'An error occurred while resetting. Please try again.';
-                        this.showErrorModal = true;
-                        console.error(e);
-                    }
-                }
-            }
+                    });
+                    this.validateAll();
+                    this.showSuccessToast(`Reset to original draft: ${this.quarterLabels[this.draftMonth] || this.draftMonth} ${this.draftYear}`);
+                },
+
+                showSuccessToast(message) {
+                    this.toastMessage = message;
+                    this.showToast    = true;
+                    setTimeout(() => { this.showToast = false; }, 3000);
+                },
+            };
         }
     </script>
 </body>

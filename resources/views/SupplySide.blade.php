@@ -110,7 +110,7 @@
 
                         <!-- Card 1: Total Enrollees -->
                         <div class="bg-white rounded-2xl p-8 border-l-4 border-blue-500 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden">
-                            <div x-show="loadingGraduationRate" class="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center z-10">
+                            <div x-show="loadingGraduationRate || loadingLatestEnrollment" class="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center z-10">
                                 <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
                             </div>
                             <!-- Background decoration -->
@@ -120,7 +120,7 @@
                                 <div class="flex items-start justify-between mb-5">
                                     <div>
                                         <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">Total Enrollees</p>
-                                        <p class="text-xs text-slate-400">Base enrollment cohort</p>
+                                        <p class="text-xs text-slate-400">Latest enrollment data</p>
                                     </div>
                                     <div class="bg-blue-100 p-3.5 rounded-2xl">
                                         <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,10 +128,10 @@
                                         </svg>
                                     </div>
                                 </div>
-                                <p class="text-6xl font-black text-slate-800 mb-3 tracking-tight" x-text="formatNumber(graduationRateData.base_enrollees || 0)">0</p>
+                                <p class="text-6xl font-black text-slate-800 mb-3 tracking-tight" x-text="formatNumber(latestEnrollmentTotal || 0)">0</p>
                                 <div class="flex items-center gap-3">
                                     <div class="w-2 h-2 rounded-full bg-blue-400"></div>
-                                    <p class="text-sm text-slate-500 font-medium" x-text="graduationRateData.enrollment_year ?? 'No data'">No data</p>
+                                    <p class="text-sm text-slate-500 font-medium" x-text="latestEnrollmentYear ?? 'No data'">No data</p>
                                 </div>
                             </div>
                             <!-- Tooltip -->
@@ -140,7 +140,7 @@
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
                                 </button>
                                 <div x-show="showTooltip" x-transition class="absolute right-0 top-6 w-64 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl z-50">
-                                    Enrollment data from 4 years ago. These students are projected to graduate in the current year.
+                                    Total number of students currently enrolled across all disciplines for the latest available academic year.
                                 </div>
                             </div>
                         </div>
@@ -172,6 +172,14 @@
                                           x-show="graduationRateData.graduation_rate"
                                           x-text="`${graduationRateData.graduation_rate}% rate`"></span>
                                 </div>
+                                <div class="flex items-center gap-2 mt-2" x-show="graduationRateData.enrollment_year">
+                                    <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <p class="text-xs text-slate-400">
+                                        Based on <span class="font-semibold text-slate-500" x-text="graduationRateData.enrollment_year"></span> enrollment data <span class="italic">(4 years ago)</span>
+                                    </p>
+                                </div>
                             </div>
                             <div class="absolute top-5 right-5" x-data="{ showTooltip: false }">
                                 <button @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" class="text-slate-300 hover:text-slate-500 transition">
@@ -200,7 +208,9 @@
                                     </svg>
                                 </div>
                                 <div class="text-left">
-                                    <h3 class="text-base font-bold text-white">Enrollment Overview</h3>
+                                    <h3 class="text-base font-bold text-white">
+                                        Enrollment Overview — <span x-text="selectedEnrollmentProvince"></span>
+                                    </h3>
                                     <p class="text-xs text-slate-400">Discipline market share &amp; executive supply analysis
                                         <span x-show="!enrollmentOverviewExpanded" class="text-slate-500 ml-2">• Click to expand</span>
                                     </p>
@@ -227,27 +237,26 @@
 
                         <!-- Panel Filter Bar -->
                         <div class="flex items-center justify-end px-6 py-3 bg-white border-b border-slate-200">
-                            
                             <div class="flex items-center gap-3">
-                                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 hover:border-blue-300 transition-colors">
-                                    <span class="text-slate-400 text-sm">📍</span>
-                                    <span class="text-xs text-slate-500 font-medium">Province:</span>
+                                <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+                                    <span class="text-slate-400">📍</span>
+                                    <span class="text-sm text-slate-500 font-medium">Province:</span>
                                     <select 
                                         x-model="selectedEnrollmentProvince" 
                                         @change="loadEnrollmentYearsForProvince(selectedEnrollmentProvince).then(() => loadEnrollmentData())"
-                                        class="text-xs font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
+                                        class="text-sm font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
                                         <template x-for="province in availableEnrollmentProvinces" :key="province">
                                             <option :value="province" x-text="province"></option>
                                         </template>
                                     </select>
                                 </div>
-                                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 hover:border-blue-300 transition-colors">
-                                    <span class="text-slate-400 text-sm">📖</span>
-                                    <span class="text-xs text-slate-500 font-medium">Academic Year:</span>
+                                <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+                                    <span class="text-slate-400">📅</span>
+                                    <span class="text-sm text-slate-500 font-medium">Year:</span>
                                     <select 
                                         x-model="selectedEnrollmentYear" 
                                         @change="loadEnrollmentData()"
-                                        class="text-xs font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
+                                        class="text-sm font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
                                         <template x-for="year in availableEnrollmentYears" :key="year">
                                             <option :value="year" x-text="year"></option>
                                         </template>
@@ -484,7 +493,9 @@
                                     </svg>
                                 </div>
                                 <div class="text-left">
-                                    <h3 class="text-base font-bold text-white">Enrollment Trend in Davao Region</h3>
+                                    <h3 class="text-base font-bold text-white">
+                                        Enrollment Trend — <span x-text="selectedTrendProvince"></span>
+                                    </h3>
                                     <p class="text-xs text-slate-400">
                                         Comparing Public vs. Private Sector
                                         <span x-show="!enrollmentTrendExpanded" class="text-slate-500 ml-2">• Click to expand</span>
@@ -512,15 +523,22 @@
                             x-transition:leave-start="opacity-100 transform translate-y-0"
                             x-transition:leave-end="opacity-0 transform -translate-y-4">
                             
-                            <!-- Filters Bar (right-aligned) -->
-                            <div class="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200 px-6 py-3 flex items-center justify-end gap-3">
+                            <!-- Filters Bar -->
+                            <div class="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200 px-6 py-3 flex items-center justify-between gap-3">
+                                <!-- Left: dynamic label -->
+                                <p class="text-xs text-slate-500">
+                                    Student enrollment public and private - <span x-text="selectedTrendYear" class="font-semibold text-blue-600"></span>
+                                    <span x-show="selectedTrendProvince !== 'Davao Region'" class="text-slate-400"> • </span>
+                                    <span x-show="selectedTrendProvince !== 'Davao Region'" x-text="selectedTrendProvince" class="font-semibold text-green-600"></span>
+                                </p>
+                                <!-- Right: filters + expand grouped together -->
                                 <div class="flex items-center gap-3">
                                     <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
                                         <span class="text-slate-400">📍</span>
                                         <span class="text-sm text-slate-500 font-medium">Province:</span>
                                         <select 
                                             x-model="selectedTrendProvince"
-                                            @change="updateTrendChart()"
+                                            @change="loadTrendYearsForProvince(selectedTrendProvince).then(() => buildEnrollmentTrendChart())"
                                             class="text-sm font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
                                             <template x-for="province in availableTrendProvinces" :key="province">
                                                 <option :value="province" x-text="province"></option>
@@ -539,16 +557,16 @@
                                             </template>
                                         </select>
                                     </div>
+                                    <!-- Expand Button -->
+                                    <button
+                                        @click="enrollmentTrendModalOpen = true"
+                                        class="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 text-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                                        </svg>
+                                        Expand
+                                    </button>
                                 </div>
-                                <!-- Expand Button -->
-                                <button
-                                    @click="enrollmentTrendModalOpen = true"
-                                    class="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 text-sm">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
-                                    </svg>
-                                    Expand
-                                </button>
                             </div>
 
                             <!-- Stats Cards (separate) -->
@@ -569,31 +587,11 @@
 
                             <!-- Chart Container -->
                             <div class="p-6">
-                                <div class="relative w-full border-2 border-slate-200 rounded-lg p-3 bg-white" style="height: 500px;">
-                                    <canvas id="enrollmentTrendChart"></canvas>
+                                <div class="relative w-full border-2 border-slate-200 rounded-lg p-3 bg-white"
+                                     :style="`height: ${Math.max(500, trendDataCount * 55)}px`">
+                                    <canvas id="enrollmentTrendChart" class="w-full h-full"></canvas>
                                 </div>
                             </div>
-
-                            <!-- Legend Section -->
-                            <div class="bg-gradient-to-r from-slate-50 to-white border-t border-slate-200 p-6">
-                                <p class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Chart Legend
-                                </p>
-                                <div class="flex gap-6 flex-wrap">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-6 h-4 bg-blue-600 rounded"></div>
-                                        <span class="text-sm text-slate-700">Public Schools</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-6 h-4 bg-sky-400 rounded"></div>
-                                        <span class="text-sm text-slate-700">Private Schools</span>
-                                    </div>
-                                </div>
-                            </div>
-
                             <!-- Enrollment Trend Modal -->
                             <template x-teleport="body">
                                 <div
@@ -611,7 +609,9 @@
                                         <!-- Modal Header -->
                                         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 flex-shrink-0">
                                             <div>
-                                                <h2 class="text-xl font-bold text-slate-800">Enrollment Trend in Davao Region — Expanded View</h2>
+                                                <h2 class="text-xl font-bold text-slate-800">
+                                                    Enrollment Trend — <span x-text="selectedTrendProvince"></span> — Expanded View
+                                                </h2>
                                                 <p class="text-sm text-slate-500 mt-0.5">
                                                     Public vs. Private &bull; <span x-text="selectedTrendProvince"></span> &bull; <span x-text="selectedTrendYear"></span>
                                                 </p>
@@ -665,7 +665,10 @@
                                         </svg>
                                     </div>
                                     <div class="text-left">
-                                        <h3 class="text-base font-bold text-white">Enrollment by Discipline</h3>
+                                        <h3 class="text-base font-bold text-white">
+                                            Enrollment by Discipline — <span x-text="selectedEnrollmentProvince"></span>
+                                        </h3>
+                                        
                                         <p class="text-xs text-slate-400">
                                             Student enrollment by academic discipline
                                             <span x-show="!disciplineEnrollmentExpanded" class="text-slate-500 ml-2">• Click to expand</span>
@@ -699,20 +702,34 @@
                                         <div class="flex items-center gap-3">
                                             <p class="text-xs text-slate-500">
                                                 Student enrollment by discipline - <span x-text="selectedEnrollmentYear" class="font-semibold text-blue-600"></span>
-                                                <span x-show="selectedEnrollmentProvince !== 'All Provinces'" class="text-slate-400"> • </span>
-                                                <span x-show="selectedEnrollmentProvince !== 'All Provinces'" x-text="selectedEnrollmentProvince" class="font-semibold text-green-600"></span>
+                                                <span x-show="selectedEnrollmentProvince !== 'Davao Region'" class="text-slate-400"> • </span>
+                                                <span x-show="selectedEnrollmentProvince !== 'Davao Region'" x-text="selectedEnrollmentProvince" class="font-semibold text-green-600"></span>
                                             </p>
                                         </div>
                                         
                                         <div class="flex items-center gap-3">
+                                            <!-- Province Selector -->
+                                            <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+                                                <span class="text-slate-400">📍</span>
+                                                <span class="text-sm text-slate-500 font-medium">Province:</span>
+                                                <select
+                                                    x-model="selectedEnrollmentProvince"
+                                                    @change="loadEnrollmentYearsForProvince(selectedEnrollmentProvince).then(() => loadEnrollmentData())"
+                                                    class="text-sm font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer"
+                                                >
+                                                    <template x-for="province in availableEnrollmentProvinces" :key="province">
+                                                        <option :value="province" x-text="province"></option>
+                                                    </template>
+                                                </select>
+                                            </div>
                                             <!-- Year Selector -->
                                             <div x-show="availableEnrollmentYears.length > 0" class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
                                                 <span class="text-slate-400">📅</span>
-                                                <label class="text-sm font-semibold text-slate-700">Year:</label>
+                                                <span class="text-sm text-slate-500 font-medium">Year:</span>
                                                 <select 
                                                     x-model="selectedEnrollmentYear"
                                                     @change="loadEnrollmentData()"
-                                                    class="px-3 py-2 bg-white border-2 border-slate-200 rounded-lg font-medium text-slate-700 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                                    class="text-sm font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer"
                                                 >
                                                     <template x-for="year in availableEnrollmentYears" :key="year">
                                                         <option :value="year" x-text="year"></option>
@@ -764,15 +781,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Legend -->
-                                <div class="bg-gradient-to-r from-slate-50 to-white border-t border-slate-200 px-6 py-4">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-24 h-4 rounded" style="background: linear-gradient(to right, #1e3a8a, #bfdbfe);"></div>
-                                        <span class="text-xs text-slate-500">Dark = Highest Enrollment &rarr; Light = Lowest</span>
-                                    </div>
-                                </div>
-
                                 <!-- Discipline Enrollment Modal -->
                                 <template x-teleport="body">
                                     <div
@@ -793,7 +801,7 @@
                                                     <h2 class="text-xl font-bold text-slate-800">Enrollment by Discipline — Expanded View</h2>
                                                     <p class="text-sm text-slate-500 mt-0.5">
                                                         <span x-text="enrollmentData.length"></span> disciplines &bull; <span x-text="selectedEnrollmentYear"></span>
-                                                        <span x-show="selectedEnrollmentProvince !== 'All Provinces'" x-text="' • ' + selectedEnrollmentProvince"></span>
+                                                        <span x-show="selectedEnrollmentProvince !== 'Davao Region'" x-text="' • ' + selectedEnrollmentProvince"></span>
                                                     </p>
                                                 </div>
                                                 <div class="flex items-center gap-3">
@@ -920,7 +928,7 @@
                                         <!-- Expand Button -->
                                         <button 
                                             @click="expanded = !expanded"
-                                            class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 text-sm"
+                                            class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 text-sm"
                                         >
                                             <svg x-show="!expanded" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
@@ -1051,7 +1059,7 @@
             // Enrollment data variables
             selectedEnrollmentYear: '',
             availableEnrollmentYears: [],
-            selectedEnrollmentProvince: 'All Provinces',
+            selectedEnrollmentProvince: 'Davao Region',
             availableEnrollmentProvinces: [], // Will be loaded from API
             enrollmentData: [],
             enrollmentChart: null,
@@ -1063,7 +1071,7 @@
             selectedProvince: 'Davao City',
             selectedTrendYear: '',
             availableTrendYears: [], // Will be loaded from API
-            selectedTrendProvince: 'All Provinces',
+            selectedTrendProvince: 'Davao City',
             availableTrendProvinces: [], // Will be loaded from API
             
             // Enrollment Trend totals for stats display
@@ -1072,6 +1080,7 @@
                 private: 0,
                 combined: 0
             },
+            trendDataCount: 0,
             
             // NEW: Enrollment Overview Data (for top cards and pie chart)
             totalEnrollees: 0,
@@ -1091,6 +1100,9 @@
                 is_default: true
             },
             loadingGraduationRate: false,
+            latestEnrollmentTotal: 0,
+            latestEnrollmentYear: null,
+            loadingLatestEnrollment: false,
             
             
             // === INITIALIZATION FLAGS === (PREVENTS INFINITE RECURSION)
@@ -1113,14 +1125,17 @@
             async init() {
                 await this.loadAvailableYears();
                 await this.loadData();
-                await this.loadEnrollmentYears();
-                await this.loadEnrollmentProvinces(); // Load provinces from API
+                await this.loadEnrollmentProvinces(); // Load provinces first so selectedEnrollmentProvince is valid
+                await this.loadEnrollmentYearsForProvince(this.selectedEnrollmentProvince); // Years filtered by default province
                 await this.loadEnrollmentData();
                 await this.loadTrendYears(); // Load trend years from API
                 await this.loadTrendProvinces(); // Load trend provinces from API
                 
                 // NEW: Load graduation rate data (for top metric cards)
                 await this.loadGraduationRateData();
+                
+                // Load latest enrollment total for the Total Enrollees KPI card
+                await this.loadLatestEnrollmentTotal();
                 
                 setTimeout(() => this.initOtherCharts(), 100);
                 setTimeout(() => this.initEnrollmentTrendChart(), 100);
@@ -1251,6 +1266,43 @@
                 }
             },
 
+            // Load the latest enrollment total for the Total Enrollees KPI card
+            async loadLatestEnrollmentTotal() {
+                this.loadingLatestEnrollment = true;
+                try {
+                    // Get the most recent available enrollment year
+                    const yearsResponse = await fetch('/api/discipline-enrollment/meta/years');
+                    const years = await yearsResponse.json();
+                    if (!years || years.length === 0) return;
+
+                    const latestYear = years[0];
+                    this.latestEnrollmentYear = latestYear;
+
+                    // Use Davao Region / Total row as the authoritative region-wide figure
+                    const result = await fetch(`/api/discipline-enrollment/check/${encodeURIComponent(latestYear)}?province=Davao+Region&institution_type=Total`);
+                    if (result.ok) {
+                        const raw = await result.json();
+                        if (raw.exists && raw.data) {
+                            this.latestEnrollmentTotal = parseInt(raw.data.grand_total) || 0;
+                            return;
+                        }
+                    }
+                    // Fallback: sum grand_total of all specific province rows
+                    const fallback = await fetch(`/api/discipline-enrollment/?academic_year=${encodeURIComponent(latestYear)}`);
+                    if (fallback.ok) {
+                        const rows = await fallback.json();
+                        const total = rows
+                            .filter(r => r.province !== 'Davao Region')
+                            .reduce((sum, r) => sum + (parseInt(r.grand_total) || 0), 0);
+                        this.latestEnrollmentTotal = total;
+                    }
+                } catch (error) {
+                    // silently fail — card will show 0
+                } finally {
+                    this.loadingLatestEnrollment = false;
+                }
+            },
+
             // Helper function to format numbers with commas
             formatNumber(num) {
                 if (!num && num !== 0) return '0';
@@ -1260,20 +1312,21 @@
             // Helper function to format discipline names (convert snake_case to Title Case)
             formatDisciplineName(discipline) {
                 const fullNames = {
-                    'agriculture':      'Agricultural, Forestry, and Fisheries',
+                    // snake_case keys (from enrollment by discipline API)
+                    'agriculture':      'Agriculture, Forestry, Fisheries',
                     'architecture':     'Architecture and Town Planning',
-                    'business':         'Business Administration and Related',
-                    'criminal_justice': 'Criminal Justice / Criminology',
-                    'education':        'Education Science and Teacher Training',
+                    'business':         'Business Administration',
+                    'criminal_justice': 'Criminal Justice Education',
+                    'education':        'Education Science',
                     'engineering':      'Engineering and Technology',
                     'arts':             'Fine and Applied Arts',
-                    'general':          'General',
+                    'general':          'General Programs',
                     'home_economics':   'Home Economics',
                     'humanities':       'Humanities',
                     'it':               'IT-Related Disciplines',
                     'law':              'Law and Jurisprudence',
                     'maritime':         'Maritime',
-                    'mass_comm':        'Mass Communication and Documentation',
+                    'mass_comm':        'Mass Communication',
                     'mathematics':      'Mathematics',
                     'medical':          'Medical and Allied',
                     'natural_science':  'Natural Science',
@@ -1282,6 +1335,27 @@
                     'religion':         'Religion and Theology',
                     'service_trades':   'Service Trades',
                     'social_sciences':  'Social and Behavioral Sciences',
+                    // Short display strings (from trend API)
+                    'Education':             'Education Science',
+                    'Business & Admin':      'Business Administration',
+                    'Medical & Allied':      'Medical and Allied',
+                    'Engineering & Tech':    'Engineering and Technology',
+                    'Criminal Justice':      'Criminal Justice Education',
+                    'IT & Related':          'IT-Related Disciplines',
+                    'Social Sciences':       'Social and Behavioral Sciences',
+                    'Maritime':              'Maritime',
+                    'Architecture':          'Architecture and Town Planning',
+                    'Service Trades':        'Service Trades',
+                    'Agri & Forestry':       'Agriculture, Forestry, Fisheries',
+                    'Other Disciplines':     'Other Disciplines',
+                    'Humanities':            'Humanities',
+                    'Natural Science':       'Natural Science',
+                    'Law':                   'Law and Jurisprudence',
+                    'Fine Arts':             'Fine and Applied Arts',
+                    'Religion':              'Religion and Theology',
+                    'Mass Comm':             'Mass Communication',
+                    'Mathematics':           'Mathematics',
+                    'Home Economics':        'Home Economics',
                 };
                 return fullNames[discipline] || discipline
                     .split('_')
@@ -1380,14 +1454,16 @@
                 try {
                     const response = await fetch('/api/discipline-enrollment/provinces');
                     const provinces = await response.json();
-                    // Always include "All Provinces" as the first option
-                    this.availableEnrollmentProvinces = ['All Provinces', ...provinces];
+                    // Always include "Davao Region" as the first option
+                    // Filter out 'Davao Region' from API results to avoid duplicate, then prepend it
+                    const filteredProvinces = provinces.filter(p => p !== 'Davao Region');
+                    this.availableEnrollmentProvinces = ['Davao Region', ...filteredProvinces];
                     // removed debug log
                 } catch (error) {
                     // removed error
                     // Fallback to Davao Region provinces
                     this.availableEnrollmentProvinces = [
-                        'All Provinces',
+                        'Davao Region',
                         'Davao del Norte',
                         'Davao del Sur', 
                         'Davao Oriental',
@@ -1399,8 +1475,9 @@
 
             async loadEnrollmentYearsForProvince(province) {
                 try {
+                    // Always pass province so the API returns only years with data for that province
                     let url = '/api/discipline-enrollment/meta/years';
-                    if (province && province !== 'All Provinces') {
+                    if (province) {
                         url += '?province=' + encodeURIComponent(province);
                     }
                     const response = await fetch(url);
@@ -1436,18 +1513,43 @@
                 }
             },
 
+            async loadTrendYearsForProvince(province) {
+                try {
+                    let url = '/api/discipline-enrollment/meta/years';
+                    if (province) {
+                        url += '?province=' + encodeURIComponent(province);
+                    }
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Failed');
+                    const years = await response.json();
+                    if (years.length > 0) {
+                        this.availableTrendYears = years;
+                        if (!years.includes(this.selectedTrendYear)) {
+                            this.selectedTrendYear = years[0];
+                        }
+                    } else {
+                        this.availableTrendYears = [];
+                        this.selectedTrendYear = '';
+                    }
+                } catch (error) {
+                    // Fallback: keep existing year list
+                }
+            },
+
+
             async loadTrendProvinces() {
                 try {
                     const response = await fetch('/api/discipline-enrollment/provinces');
                     const provinces = await response.json();
-                    // Always include "All Provinces" as the first option
-                    this.availableTrendProvinces = ['All Provinces', ...provinces];
+                    // Always include "Davao Region" as the first option
+                    // Exclude Davao Region from trend — no Private/Public split available
+                    this.availableTrendProvinces = provinces.filter(p => p !== 'Davao Region');
                     // removed debug log
                 } catch (error) {
                     // removed error
                     // Fallback to Davao Region provinces
                     this.availableTrendProvinces = [
-                        'All Provinces',
+                        'Davao Region',
                         'Davao del Norte',
                         'Davao del Sur',
                         'Davao Oriental',
@@ -1458,30 +1560,45 @@
             },
 
 
+
+            // Smart enrollment fetch: uses Total for Davao Region, Private+Public for specific provinces
+            async fetchEnrollmentByProvince(year, province) {
+                if (province === 'Davao Region') {
+                    const result = await fetch(`/api/discipline-enrollment/check/${encodeURIComponent(year)}?province=Davao+Region&institution_type=Total`);
+                    let totalData = { disciplines: {} };
+                    if (result.ok) {
+                        const raw = await result.json();
+                        if (raw.exists && raw.data) { totalData = raw.data; }
+                    }
+                    // Return same shape as private+public pair but merged into one
+                    return { privateData: totalData, publicData: { disciplines: {} }, isDavaoTotal: true };
+                } else {
+                    const [privateResult, publicResult] = await Promise.allSettled([
+                        fetch(`/api/discipline-enrollment/check/${encodeURIComponent(year)}?province=${encodeURIComponent(province)}&institution_type=Private`),
+                        fetch(`/api/discipline-enrollment/check/${encodeURIComponent(year)}?province=${encodeURIComponent(province)}&institution_type=Public`)
+                    ]);
+                    let privateData = { disciplines: {} };
+                    let publicData = { disciplines: {} };
+                    if (privateResult.status === 'fulfilled' && privateResult.value.ok) {
+                        const raw = await privateResult.value.json();
+                        if (raw.exists && raw.data) { privateData = raw.data; }
+                    }
+                    if (publicResult.status === 'fulfilled' && publicResult.value.ok) {
+                        const raw = await publicResult.value.json();
+                        if (raw.exists && raw.data) { publicData = raw.data; }
+                    }
+                    return { privateData, publicData, isDavaoTotal: false };
+                }
+            },
             async loadEnrollmentData() {
                 try {
                     // Fetch aggregated data based on selected province for both Private and Public
                     const province = this.selectedEnrollmentProvince;
 
-                    const [privateResult, publicResult] = await Promise.allSettled([
-                        fetch(`/api/discipline-enrollment/check/${encodeURIComponent(this.selectedEnrollmentYear)}?province=${encodeURIComponent(province)}&institution_type=Private`),
-                        fetch(`/api/discipline-enrollment/check/${encodeURIComponent(this.selectedEnrollmentYear)}?province=${encodeURIComponent(province)}&institution_type=Public`)
-                    ]);
+                    // Smart fetch: uses Total for Davao Region, Private+Public for specific provinces
+                    const { privateData, publicData } = await this.fetchEnrollmentByProvince(this.selectedEnrollmentYear, province);
 
-                    let privateData = { disciplines: {} };
-                    let publicData = { disciplines: {} };
-
-                    if (privateResult.status === 'fulfilled' && privateResult.value.ok) {
-                        const privateRaw = await privateResult.value.json();
-                        if (privateRaw.exists && privateRaw.data) { privateData = privateRaw.data; }
-                    }
-
-                    if (publicResult.status === 'fulfilled' && publicResult.value.ok) {
-                        const publicRaw = await publicResult.value.json();
-                        if (publicRaw.exists && publicRaw.data) { publicData = publicRaw.data; }
-                    }
-                    
-                    // Combine Private and Public for total enrollment
+                    // Combine for total enrollment
                     this.enrollmentData = [
                         { 
                             discipline: 'Agriculture, Forestry, Fisheries', 
@@ -1813,8 +1930,8 @@
                                             padding: 8
                                         },
                                         // Match Licensure chart spacing
-                                        categoryPercentage: 0.5,  // Thinner bars with more space
-                                        barPercentage: 0.7,        // Bar width within category
+                                        categoryPercentage: 0.9,  // Thinner bars with more space
+                                        barPercentage: 0.95,        // Bar width within category
                                         title: {
                                             display: true,
                                             text: 'DISCIPLINES',
@@ -2012,7 +2129,7 @@
                 try {
                     const res = await fetch(`/api/discipline-enrollment/trend?year=${encodeURIComponent(this.selectedTrendYear)}&province=${encodeURIComponent(this.selectedTrendProvince)}`);
                     const d = await res.json();
-                    labels = d.disciplines || [];
+                    labels = (d.disciplines || []).map(d => this.formatDisciplineName(d));
                     publicData = (d.publicSchools || []).map(v => Number(v) || 0);
                     privateData = (d.privateSchools || []).map(v => Number(v) || 0);
                 } catch(e) { return; }
@@ -2102,7 +2219,7 @@
                                 grid: { display: false },
                                 title: { display: true, text: 'DISCIPLINE', font: { size: 12, weight: 'bold' }, color: '#475569' },
                                 ticks: { font: { size: 13, weight: 'bold' }, color: '#1e293b', autoSkip: false },
-                                categoryPercentage: 0.6, barPercentage: 0.8
+                                categoryPercentage: 0.9, barPercentage: 0.95
                             }
                         }
                     }
@@ -2584,272 +2701,194 @@
                 // removed debug log
             },
 
-            async initEnrollmentTrendChart() {
-                // === PREVENT DOUBLE INITIALIZATION ===
-                if (this.chartInitialized.enrollmentTrend) {
-                    // removed debug log
-                    return;
-                }
-                
+            // ── Shared builder: fetch data + (re)build the Enrollment Trend chart ──
+            async buildEnrollmentTrendChart() {
                 const ctx = document.getElementById('enrollmentTrendChart');
-                if (!ctx) {
-                    // removed debug log
-                    return;
+                if (!ctx) return;
+
+                // Destroy existing chart
+                const existing = Chart.getChart(ctx);
+                if (existing) existing.destroy();
+                if (this.enrollmentTrendChart) {
+                    try { this.enrollmentTrendChart.destroy(); } catch(e) {}
+                    this.enrollmentTrendChart = null;
                 }
 
-                // Load initial data from API
                 try {
                     const response = await fetch(
                         `/api/discipline-enrollment/trend?year=${encodeURIComponent(this.selectedTrendYear)}&province=${encodeURIComponent(this.selectedTrendProvince)}`
                     );
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     const apiData = await response.json();
-                    
-                    // removed debug log
-                    
+
                     // Update stats
                     this.enrollmentTrendTotals = apiData.totals;
-                    
-                    // === SANITIZE DATA - Create clean copies to avoid circular references ===
-                    const cleanLabels = Array.isArray(apiData.disciplines) ? [...apiData.disciplines] : [];
-                    const cleanPublic = Array.isArray(apiData.publicSchools) ? apiData.publicSchools.map(val => Number(val) || 0) : [];
-                    const cleanPrivate = Array.isArray(apiData.privateSchools) ? apiData.privateSchools.map(val => Number(val) || 0) : [];
-                    
-                    const chartData = {
-                        labels: cleanLabels,
-                        datasets: [
-                            {
-                                label: 'Public Schools',
-                                data: cleanPublic,
-                                backgroundColor: 'rgba(37, 99, 235, 0.8)',
-                                borderColor: 'rgb(29, 78, 216)',
-                                borderWidth: 0,
-                                borderRadius: {
-                                    topLeft: 8,
-                                    topRight: 0,
-                                    bottomLeft: 8,
-                                    bottomRight: 0
-                                },
-                                borderSkipped: false
-                            },
-                            {
-                                label: 'Private Schools',
-                                data: cleanPrivate,
-                                backgroundColor: 'rgba(125, 211, 252, 0.8)',
-                                borderColor: 'rgb(56, 189, 248)',
-                                borderWidth: 0,
-                                borderRadius: {
-                                    topLeft: 0,
-                                    topRight: 8,
-                                    bottomLeft: 0,
-                                    bottomRight: 8
-                                },
-                                borderSkipped: false
-                            }
-                        ]
-                    };
+                    // Sanitize data — map raw DB keys to full display names
+                    const cleanLabels  = Array.isArray(apiData.disciplines)   ? apiData.disciplines.map(d => this.formatDisciplineName(d)) : [];
+                    const cleanPublic  = Array.isArray(apiData.publicSchools)  ? apiData.publicSchools.map(v  => Number(v)  || 0)     : [];
+                    const cleanPrivate = Array.isArray(apiData.privateSchools) ? apiData.privateSchools.map(v => Number(v) || 0)      : [];
 
-                    this.enrollmentTrendChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: chartData,
-                        options: {
-                            // ✅ ENHANCED ANIMATION OPTIONS
-                            animation: {
-                                duration: 1500,
-                                easing: 'easeOutQuart',
-                                delay: (context) => {
-                                    let delay = 0;
-                                    if (context.type === 'data' && context.mode === 'default') {
-                                        delay = context.dataIndex * 30;
+                    // Update dynamic height via Alpine state
+                    this.trendDataCount = cleanLabels.length;
+
+                    // Wait one tick so Alpine resizes the container before Chart.js measures it
+                    await this.$nextTick();
+
+                    setTimeout(() => {
+                        this.enrollmentTrendChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: cleanLabels,
+                                datasets: [
+                                    {
+                                        label: 'Public Schools',
+                                        data: cleanPublic,
+                                        backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                                        borderColor: 'rgb(29, 78, 216)',
+                                        borderWidth: 0,
+                                        borderRadius: { topLeft: 8, topRight: 0, bottomLeft: 8, bottomRight: 0 },
+                                        borderSkipped: false
+                                    },
+                                    {
+                                        label: 'Private Schools',
+                                        data: cleanPrivate,
+                                        backgroundColor: 'rgba(125, 211, 252, 0.8)',
+                                        borderColor: 'rgb(56, 189, 248)',
+                                        borderWidth: 0,
+                                        borderRadius: { topLeft: 0, topRight: 8, bottomLeft: 0, bottomRight: 8 },
+                                        borderSkipped: false
                                     }
-                                    return delay;
-                                }
+                                ]
                             },
-                            animations: {
-                                x: {
+                            options: {
+                                // ✅ Same animation as Enrollment by Discipline
+                                animation: {
                                     duration: 1500,
-                                    from: 0,
-                                    easing: 'easeOutQuart'
-                                }
-                            },
-                            transitions: {
-                                active: {
-                                    animation: {
-                                        duration: 400
-                                    }
-                                }
-                            },
-                            
-                            indexAxis: 'y',
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            layout: {
-                                padding: {
-                                    right: 100
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: true,
-                                    position: 'top',
-                                    labels: {
-                                        font: { size: 13, weight: 'bold' },
-                                        color: '#334155',
-                                        padding: 15,
-                                        usePointStyle: true,
-                                        pointStyle: 'rect'
+                                    easing: 'easeOutQuart',
+                                    delay: (context) => {
+                                        if (context.type === 'data' && context.mode === 'default') {
+                                            return context.dataIndex * 30;
+                                        }
+                                        return 0;
                                     }
                                 },
-                                tooltip: {
-                                    enabled: true,
-                                    backgroundColor: 'rgba(0, 0, 0, 0.95)',
-                                    padding: 16,
-                                    titleFont: { size: 16, weight: 'bold' },
-                                    bodyFont: { size: 15 },
-                                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                                    borderWidth: 2,
-                                    displayColors: true,
-                                    callbacks: {
-                                        label: function(context) {
-                                            return context.dataset.label + ': ' + context.parsed.x.toLocaleString() + ' students';
+                                animations: {
+                                    x: { duration: 1500, from: 0, easing: 'easeOutQuart' }
+                                },
+                                transitions: {
+                                    active: { animation: { duration: 400 } }
+                                },
+                                indexAxis: 'y',
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                layout: { padding: { right: 100 } },
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'top',
+                                        labels: {
+                                            font: { size: 13, weight: 'bold' },
+                                            color: '#334155',
+                                            padding: 15,
+                                            usePointStyle: true,
+                                            pointStyle: 'rect'
+                                        }
+                                    },
+                                    tooltip: {
+                                        enabled: true,
+                                        backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                                        padding: 16,
+                                        titleFont: { size: 16, weight: 'bold' },
+                                        bodyFont: { size: 15 },
+                                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                                        borderWidth: 2,
+                                        displayColors: true,
+                                        callbacks: {
+                                            label: (c) => `${c.dataset.label}: ${c.parsed.x.toLocaleString()} students`
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        stacked: true,
+                                        beginAtZero: true,
+                                        grid: { color: 'rgba(148, 163, 184, 0.1)', borderDash: [8, 4] },
+                                        ticks: {
+                                            font: { size: 14, weight: 'bold' },
+                                            color: '#1e293b',
+                                            callback: (v) => v.toLocaleString()
+                                        },
+                                        title: {
+                                            display: true,
+                                            text: 'NUMBER OF STUDENTS',
+                                            font: { size: 15, weight: 'bold' },
+                                            color: '#1e293b',
+                                            padding: { top: 10 }
+                                        }
+                                    },
+                                    y: {
+                                        stacked: true,
+                                        grid: { display: false },
+                                        ticks: {
+                                            font: { size: 14, weight: 'bold' },
+                                            color: '#1e293b',
+                                            autoSkip: false,
+                                            padding: 8
+                                        },
+                                        // ✅ Same thickness as Enrollment by Discipline
+                                        categoryPercentage: 0.9,
+                                        barPercentage: 0.95,
+                                        title: {
+                                            display: true,
+                                            text: 'DISCIPLINES',
+                                            font: { size: 15, weight: 'bold' },
+                                            color: '#1e293b',
+                                            padding: { bottom: 10 }
                                         }
                                     }
                                 }
                             },
-                            scales: {
-                                x: {
-                                    stacked: true,
-                                    beginAtZero: true,
-                                    grid: {
-                                        color: 'rgba(148, 163, 184, 0.1)',
-                                        borderDash: [8, 4]
-                                    },
-                                    ticks: {
-                                        font: { size: 14, weight: 'bold' },
-                                        color: '#1e293b',
-                                        callback: function(value) {
-                                            return value.toLocaleString();
-                                        }
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: 'NUMBER OF STUDENTS',
-                                        font: { size: 15, weight: 'bold' },
-                                        color: '#1e293b',
-                                        padding: { top: 10 }
-                                    }
-                                },
-                                y: {
-                                    stacked: true,
-                                    grid: {
-                                        display: false
-                                    },
-                                    ticks: {
-                                        font: { size: 14, weight: 'bold' },
-                                        color: '#1e293b',
-                                        autoSkip: false,
-                                        padding: 8
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: 'DISCIPLINES',
-                                        font: { size: 15, weight: 'bold' },
-                                        color: '#1e293b',
-                                        padding: { bottom: 10 }
-                                    }
-                                }
-                            }
-                        },
-                        plugins: [{
-                            id: 'enrollmentTrendValueLabels',
-                            afterDatasetsDraw: function(chart) {
-                                const ctx = chart.ctx;
-                                
-                                chart.data.datasets.forEach((dataset, datasetIndex) => {
-                                    const meta = chart.getDatasetMeta(datasetIndex);
-                                    
-                                    if (!meta || !meta.data || meta.data.length === 0) {
-                                        return;
-                                    }
-                                    
-                                    ctx.save();
-                                    
-                                    meta.data.forEach((element, index) => {
-                                        const value = dataset.data[index];
-                                        
-                                        if (value && value > 0) {
-                                            const base = element.base;
-                                            const x = element.x;
-                                            const y = element.y;
-                                            
-                                            // Draw value in center of bar segment
-                                            ctx.textAlign = 'center';
-                                            ctx.textBaseline = 'middle';
-                                            ctx.font = 'bold 13px Arial, sans-serif';
-                                            
-                                            const valueText = value.toLocaleString();
-                                            const centerX = base + ((x - base) / 2);
-                                            
-                                            // White text with black outline for contrast
-                                            ctx.strokeStyle = '#000000';
-                                            ctx.lineWidth = 3;
-                                            ctx.strokeText(valueText, centerX, y);
-                                            
-                                            ctx.fillStyle = '#ffffff';
-                                            ctx.fillText(valueText, centerX, y);
-                                        }
+                            plugins: [{
+                                id: 'enrollmentTrendValueLabels',
+                                afterDatasetsDraw(chart) {
+                                    const ctx = chart.ctx;
+                                    chart.data.datasets.forEach((dataset, datasetIndex) => {
+                                        const meta = chart.getDatasetMeta(datasetIndex);
+                                        if (!meta?.data?.length) return;
+                                        ctx.save();
+                                        ctx.font = 'bold 13px Arial, sans-serif';
+                                        meta.data.forEach((element, index) => {
+                                            const value = dataset.data[index];
+                                            if (value && value > 0) {
+                                                const barWidth = Math.abs(element.x - element.base);
+                                                if (barWidth > 40) {
+                                                    const centerX = element.base + (barWidth / 2);
+                                                    ctx.textAlign = 'center';
+                                                    ctx.textBaseline = 'middle';
+                                                    ctx.strokeStyle = '#000000';
+                                                    ctx.lineWidth = 3;
+                                                    ctx.strokeText(value.toLocaleString(), centerX, element.y);
+                                                    ctx.fillStyle = '#ffffff';
+                                                    ctx.fillText(value.toLocaleString(), centerX, element.y);
+                                                }
+                                            }
+                                        });
+                                        ctx.restore();
                                     });
-                                    
-                                    ctx.restore();
-                                });
-                            }
-                        }]
-                    });
-                    
-                    // === MARK AS INITIALIZED ===
-                    this.chartInitialized.enrollmentTrend = true;
-                    // removed debug log
-                    
-                } catch (error) {
-                    // removed error
-                    
-                    // Fall back to empty chart
-                    const emptyData = {
-                        labels: [],
-                        datasets: [
-                            {
-                                label: 'Public Schools',
-                                data: [],
-                                backgroundColor: 'rgba(37, 99, 235, 0.8)',
-                                borderColor: 'rgb(29, 78, 216)',
-                                borderWidth: 0
-                            },
-                            {
-                                label: 'Private Schools',
-                                data: [],
-                                backgroundColor: 'rgba(125, 211, 252, 0.8)',
-                                borderColor: 'rgb(56, 189, 248)',
-                                borderWidth: 0
-                            }
-                        ]
-                    };
+                                }
+                            }]
+                        });
+                    }, 50);
 
-                    this.enrollmentTrendChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: emptyData,
-                        options: {
-                            indexAxis: 'y',
-                            responsive: true,
-                            maintainAspectRatio: false
-                        }
-                    });
-                    
-                    // removed debug log
+                } catch (error) {
+                    // Fall back silently
                 }
+            },
+
+            async initEnrollmentTrendChart() {
+                if (this.chartInitialized.enrollmentTrend) return;
+                await this.buildEnrollmentTrendChart();
+                this.chartInitialized.enrollmentTrend = true;
             },
 
             // NEW: Load Enrollment Overview Data (for top cards and pie chart)
@@ -2862,28 +2901,9 @@
                 try {
                     // removed debug log
                     
-                    // Fetch both Private and Public data, same as loadEnrollmentData
+                    // Smart fetch: uses Total for Davao Region, Private+Public for specific provinces
                     const province = this.selectedEnrollmentProvince;
-
-                    const [privateResult, publicResult] = await Promise.allSettled([
-                        fetch(`/api/discipline-enrollment/check/${encodeURIComponent(this.selectedEnrollmentYear)}?province=${encodeURIComponent(province)}&institution_type=Private`),
-                        fetch(`/api/discipline-enrollment/check/${encodeURIComponent(this.selectedEnrollmentYear)}?province=${encodeURIComponent(province)}&institution_type=Public`)
-                    ]);
-
-                    let privateData = { disciplines: {} };
-                    let publicData = { disciplines: {} };
-
-                    if (privateResult.status === 'fulfilled' && privateResult.value.ok) {
-                        const privateRaw = await privateResult.value.json();
-                        if (privateRaw.exists && privateRaw.data) { privateData = privateRaw.data; }
-                    }
-
-                    if (publicResult.status === 'fulfilled' && publicResult.value.ok) {
-                        const publicRaw = await publicResult.value.json();
-                        if (publicRaw.exists && publicRaw.data) { publicData = publicRaw.data; }
-                    }
-                    
-                    // removed debug log
+                    const { privateData, publicData } = await this.fetchEnrollmentByProvince(this.selectedEnrollmentYear, province);
 
                     // Calculate totals and discipline shares
                     this.calculateEnrollmentMetrics(privateData, publicData);
@@ -3122,54 +3142,8 @@
             },
 
             async updateTrendChart() {
-                // removed debug log
-                // removed debug log
-                // removed debug log
-                
-                try {
-                    // Fetch enrollment trend data from the API
-                    const response = await fetch(
-                        `/api/discipline-enrollment/trend?year=${encodeURIComponent(this.selectedTrendYear)}&province=${encodeURIComponent(this.selectedTrendProvince)}`
-                    );
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    
-                    // removed debug log
-                    
-                    // Update the chart if it exists
-                    if (this.enrollmentTrendChart) {
-                        // === SANITIZE DATA - Create clean copies to avoid circular references ===
-                        const cleanLabels = Array.isArray(data.disciplines) ? [...data.disciplines] : [];
-                        const cleanPublic = Array.isArray(data.publicSchools) ? data.publicSchools.map(val => Number(val) || 0) : [];
-                        const cleanPrivate = Array.isArray(data.privateSchools) ? data.privateSchools.map(val => Number(val) || 0) : [];
-                        
-                        // Update chart data
-                        this.enrollmentTrendChart.data.labels = cleanLabels;
-                        this.enrollmentTrendChart.data.datasets[0].data = cleanPublic;
-                        this.enrollmentTrendChart.data.datasets[1].data = cleanPrivate;
-                        
-                        // Update the chart with animation
-                        this.enrollmentTrendChart.update('active');
-                        
-                        // removed debug log
-                    } else {
-                        // removed warning
-                        return;  // === PREVENT INFINITE RECURSION - Don't call init again ===
-                    }
-                    
-                    // Update the stats totals
-                    this.enrollmentTrendTotals = data.totals;
-                    
-                } catch (error) {
-                    // removed error
-                    
-                    // Show user-friendly error
-                    alert(`Failed to load enrollment trend data: ${error.message}`);
-                }
+                // Full rebuild so dynamic height + animations always fire
+                await this.buildEnrollmentTrendChart();
             }
         }));
     });
@@ -3395,31 +3369,8 @@ document.addEventListener('alpine:init', () => {
         if (alpineComponent) {
             // removed debug log
             
-            // Override initEnrollmentTrendChart
-            alpineComponent.initEnrollmentTrendChart = async function() {
-                if (!this.selectedTrendYear || !this.selectedTrendProvince) {
-                    // removed warning
-                    return;
-                }
-                const totals = await window.cleanChartManager.enrollmentTrend(
-                    this.selectedTrendYear,
-                    this.selectedTrendProvince
-                );
-                this.enrollmentTrendTotals = totals;
-            };
-            
-            // Override updateTrendChart
-            alpineComponent.updateTrendChart = async function() {
-                if (!this.selectedTrendYear || !this.selectedTrendProvince) {
-                    // removed warning
-                    return;
-                }
-                const totals = await window.cleanChartManager.enrollmentTrend(
-                    this.selectedTrendYear,
-                    this.selectedTrendProvince
-                );
-                this.enrollmentTrendTotals = totals;
-            };
+            // initEnrollmentTrendChart and updateTrendChart now use buildEnrollmentTrendChart()
+            // No override needed — cleanChartManager is no longer used for enrollment trend.
             
             // removed debug log
         } else {

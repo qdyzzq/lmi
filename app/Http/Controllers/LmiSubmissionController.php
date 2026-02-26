@@ -16,25 +16,21 @@ class LmiSubmissionController extends Controller
     // UPDATED: Now supports pending, approved, and rejected tabs
     public function adminIndex(Request $request)
     {
-        // Get the status from query parameter, default to 'pending'
         $status = $request->query('status', 'pending');
         
-        // Validate status
         if (!in_array($status, ['pending', 'approved', 'rejected'])) {
             $status = 'pending';
         }
         
-        // Get counts for all statuses (for badges in header and tabs)
-        $pendingCount = LmiSubmission::where('status', 'pending')->count();
+        $pendingCount  = LmiSubmission::where('status', 'pending')->count();
         $approvedCount = LmiSubmission::where('status', 'approved')->count();
         $rejectedCount = LmiSubmission::where('status', 'rejected')->count();
         
-        // Get submissions for the selected status
         $submissions = LmiSubmission::with(['hardToFillRoles', 'diagnosis', 'engagement'])
             ->where('status', $status)
             ->orderBy('created_at', 'asc')
             ->paginate(1)
-            ->appends(['status' => $status]); // Keep status in pagination links
+            ->appends(['status' => $status]);
     
         return view('admin.LmiSubmissions', compact(
             'submissions', 
@@ -44,7 +40,7 @@ class LmiSubmissionController extends Controller
         ))->with('activeTab', $status);
     }
 
-    // Live polling endpoint — returns current submission counts for real-time badge updates
+    // Live polling endpoint
     public function counts()
     {
         return response()->json([
@@ -60,13 +56,11 @@ class LmiSubmissionController extends Controller
             $submission = LmiSubmission::findOrFail($id);
             $engagement = LmiEngagement::findOrFail($request->engagement_id);
             
-            // Ensure lmi_features is an array
             $lmiFeatures = $request->lmi_features ?? [];
             if (!is_array($lmiFeatures)) {
                 $lmiFeatures = [$lmiFeatures];
             }
 
-            // If "Other" was selected and a custom value was typed, replace "Other" with the actual text
             if (in_array('Other', $lmiFeatures) && !empty($request->lmi_features_other)) {
                 $lmiFeatures = array_diff($lmiFeatures, ['Other']);
                 $lmiFeatures[] = 'Other: ' . trim($request->lmi_features_other);
@@ -74,7 +68,7 @@ class LmiSubmissionController extends Controller
             }
             
             $engagement->update([
-                'lmi_features' => $lmiFeatures,
+                'lmi_features'   => $lmiFeatures,
                 'specific_inputs' => $request->specific_inputs,
             ]);
             
@@ -90,12 +84,12 @@ class LmiSubmissionController extends Controller
     {
         try {
             $submission = LmiSubmission::findOrFail($id);
-            $diagnosis = LmiDiagnosis::findOrFail($request->diagnosis_id);
+            $diagnosis  = LmiDiagnosis::findOrFail($request->diagnosis_id);
             
             $diagnosis->update([
-                'rejection_reasons' => $request->rejection_reasons ?? [],
-                'rejection_reasons_other' => $request->rejection_reasons_other,
-                'coordination_frequency' => $request->coordination_frequency === 'Other' 
+                'rejection_reasons'          => $request->rejection_reasons ?? [],
+                'rejection_reasons_other'    => $request->rejection_reasons_other,
+                'coordination_frequency'     => $request->coordination_frequency === 'Other' 
                     ? $request->coordination_frequency_other 
                     : $request->coordination_frequency,
                 'coordination_frequency_other' => $request->coordination_frequency_other,
@@ -115,13 +109,14 @@ class LmiSubmissionController extends Controller
             $submission = LmiSubmission::findOrFail($id);
             
             $validated = $request->validate([
-                'company_name' => 'required|string|max:255',
+                'company_name'    => 'required|string|max:255',
                 'respondent_name' => 'required|string|max:255',
-                'position' => 'required|string|max:255',
-                'contact_number' => 'required|string|max:20',
-                'email' => 'required|email|max:255',
+                'position'        => 'required|string|max:255',
+                'contact_number'  => 'required|string|min:9|max:20',
+                'contact_type'    => 'required|in:mobile,telephone', // ← ADDED
+                'email'           => 'required|email|max:255',
                 'industry_sector' => 'required|string',
-                'company_size' => 'required|string',
+                'company_size'    => 'required|string',
             ]);
             
             $submission->update($validated);
@@ -151,19 +146,25 @@ class LmiSubmissionController extends Controller
                     : [];
                 
                 $salaryRange = $roleData['salary_range'] ?? null;
-                
-                if (is_numeric($salaryRange)) {
+
+                // If "Below ₱30,000" was selected, use the exact amount field instead
+                if ($salaryRange === 'Below ₱30,000') {
+                    $exactAmount = isset($roleData['below_30k_salary'])
+                        ? (int) preg_replace('/[^0-9]/', '', $roleData['below_30k_salary'])
+                        : null;
+                    $salaryRange = $exactAmount ?: null;
+                } elseif (is_numeric(str_replace(',', '', $salaryRange ?? ''))) {
                     $salaryRange = (int) str_replace(',', '', $salaryRange);
                 }
                 
                 $role->update([
-                    'job_title' => $roleData['job_title'],
-                    'job_classification' => $roleData['job_classification'],
-                    'salary_range' => $salaryRange,
-                    'vacancy_duration' => $roleData['vacancy_duration'],
-                    'difficulty_reasons' => $roleData['difficulty_reasons'] ?? [],
+                    'job_title'               => $roleData['job_title'],
+                    'job_classification'      => $roleData['job_classification'],
+                    'salary_range'            => $salaryRange,
+                    'vacancy_duration'        => $roleData['vacancy_duration'],
+                    'difficulty_reasons'      => $roleData['difficulty_reasons'] ?? [],
                     'technical_skills_missing' => array_filter($techSkills),
-                    'soft_skills_missing' => array_filter($softSkills),
+                    'soft_skills_missing'     => array_filter($softSkills),
                 ]);
                 
                 if (isset($roleData['diagnosis_id']) && isset($roleData['impact_level'])) {
@@ -181,57 +182,54 @@ class LmiSubmissionController extends Controller
         }
     }
 
-    // UPDATED: Now changes status to 'approved' instead of deleting
     public function approve($id)
     {
         try {
             $submission = LmiSubmission::findOrFail($id);
             $submission->update([
-                'status' => 'approved',
+                'status'      => 'approved',
                 'reviewed_at' => now(),
                 'reviewed_by' => auth()->id(),
             ]);
             
             return redirect()->route('admin.lmi-submissions.index', ['status' => 'pending'])
-                           ->with('success', 'Submission approved successfully!');
+                             ->with('success', 'Submission approved successfully!');
         } catch (\Exception $e) {
             Log::error('Approve submission error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to approve submission: ' . $e->getMessage());
         }
     }
 
-    // UPDATED: Now changes status to 'rejected' instead of deleting
     public function reject($id)
     {
         try {
             $submission = LmiSubmission::findOrFail($id);
             $submission->update([
-                'status' => 'rejected',
+                'status'      => 'rejected',
                 'reviewed_at' => now(),
                 'reviewed_by' => auth()->id(),
             ]);
             
             return redirect()->route('admin.lmi-submissions.index', ['status' => 'pending'])
-                           ->with('success', 'Submission rejected successfully!');
+                             ->with('success', 'Submission rejected successfully!');
         } catch (\Exception $e) {
             Log::error('Reject submission error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to reject submission: ' . $e->getMessage());
         }
     }
 
-    // NEW: Restore rejected submission back to pending
     public function restorePending($id)
     {
         try {
             $submission = LmiSubmission::findOrFail($id);
             $submission->update([
-                'status' => 'pending',
+                'status'      => 'pending',
                 'reviewed_at' => null,
                 'reviewed_by' => null,
             ]);
             
             return redirect()->route('admin.lmi-submissions.index', ['status' => 'pending'])
-                           ->with('success', 'Submission restored to pending status successfully!');
+                             ->with('success', 'Submission restored to pending status successfully!');
         } catch (\Exception $e) {
             Log::error('Restore pending error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to restore submission: ' . $e->getMessage());
@@ -248,33 +246,34 @@ class LmiSubmissionController extends Controller
             
             $validated = $request->validate([
                 // Part I: Company Profile
-                'company' => 'required|string|max:255',
-                'respondent' => 'required|string|max:255',
-                'position' => 'required|string|max:255',
-                'contact_number' => 'required|string|max:20',
-                'email' => 'required|email|max:255',
+                'company'        => 'required|string|max:255',
+                'respondent'     => 'required|string|max:255',
+                'position'       => 'required|string|max:255',
+                'contact_number' => 'required|string|min:9|max:20',
+                'contact_type'   => 'required|in:mobile,telephone', // ← ADDED
+                'email'          => 'required|email|max:255',
                 'industrySelector' => 'required|string',
-                'companySize' => 'required|string',
+                'companySize'    => 'required|string',
                 
                 // Part II: Hard-to-Fill Roles
-                'job_title' => 'required|array|min:1',
-                'job_title.*' => 'required|string|max:255',
-                'job_classification' => 'required|array',
-                'job_classification.*' => 'required|string',
-                'salary_range' => 'required|array',
-                'vacancy_duration' => 'required|array',
-                'vacancy_duration.*' => 'required|string',
+                'job_title'               => 'required|array|min:1',
+                'job_title.*'             => 'required|string|max:255',
+                'job_classification'      => 'required|array',
+                'job_classification.*'    => 'required|string',
+                'salary_range'            => 'required|array',
+                'vacancy_duration'        => 'required|array',
+                'vacancy_duration.*'      => 'required|string',
                 'technical_skills_missing' => 'nullable|array',
-                'soft_skills_missing' => 'nullable|array',
+                'soft_skills_missing'     => 'nullable|array',
                 
                 // Part III: Diagnosis
-                'rejection_reasons' => 'nullable|array',
-                'rejection_reasons_other' => 'nullable|string|max:500',
-                'coordination_frequency' => 'nullable|string',
+                'rejection_reasons'          => 'nullable|array',
+                'rejection_reasons_other'    => 'nullable|string|max:500',
+                'coordination_frequency'     => 'nullable|string',
                 'coordination_frequency_other' => 'nullable|string|max:255',
                 
                 // Part IV: Engagement
-                'lmi_features' => 'nullable|array',
+                'lmi_features'   => 'nullable|array',
                 'specific_inputs' => 'nullable|string',
             ]);
             
@@ -289,7 +288,7 @@ class LmiSubmissionController extends Controller
                         return response()->json([
                             'success' => false,
                             'message' => $errorMessage,
-                            'errors' => ["impact_level_{$index}" => [$errorMessage]]
+                            'errors'  => ["impact_level_{$index}" => [$errorMessage]]
                         ], 422);
                     }
                     
@@ -303,17 +302,18 @@ class LmiSubmissionController extends Controller
 
             DB::beginTransaction();
 
-            // Create main submission
+            // Create main submission — now includes contact_type
             $submission = LmiSubmission::create([
-                'company_name' => $request->company,
+                'company_name'    => $request->company,
                 'respondent_name' => $request->respondent,
-                'position' => $request->position,
-                'contact_number' => $request->contact_number,
-                'email' => $request->email,
+                'position'        => $request->position,
+                'contact_number'  => $request->contact_number,
+                'contact_type'    => $request->contact_type,  // ← ADDED
+                'email'           => $request->email,
                 'industry_sector' => $request->industrySelector,
-                'company_size' => $request->companySize,
-                'status' => 'pending',
-                'submitted_at' => now(),
+                'company_size'    => $request->companySize,
+                'status'          => 'pending',
+                'submitted_at'    => now(),
             ]);
 
             Log::info('Main submission created: ' . $submission->id);
@@ -341,28 +341,33 @@ class LmiSubmissionController extends Controller
                 }
 
                 $salaryRange = $request->salary_range[$index];
-                
-                if (is_numeric($salaryRange)) {
+
+                // If "Below ₱30,000" was selected, use the exact amount field instead
+                if ($salaryRange === 'Below ₱30,000') {
+                    $rawBelow = $request->input("below_30k_salary.{$index}");
+                    $exactAmount = $rawBelow ? (int) preg_replace('/[^0-9]/', '', $rawBelow) : null;
+                    $salaryRange = $exactAmount ?: null;
+                } elseif (is_numeric(str_replace(',', '', $salaryRange ?? ''))) {
                     $salaryRange = (int) str_replace(',', '', $salaryRange);
                 }
 
                 $hardToFillRole = LmiHardToFillRole::create([
-                    'lmi_submission_id' => $submission->id,
-                    'job_title' => $jobTitle,
-                    'job_classification' => $request->job_classification[$index],
-                    'salary_range' => $salaryRange,
-                    'vacancy_duration' => $request->vacancy_duration[$index],
-                    'difficulty_reasons' => $jobDifficultyReasons,
+                    'lmi_submission_id'        => $submission->id,
+                    'job_title'                => $jobTitle,
+                    'job_classification'       => $request->job_classification[$index],
+                    'salary_range'             => $salaryRange,
+                    'vacancy_duration'         => $request->vacancy_duration[$index],
+                    'difficulty_reasons'       => $jobDifficultyReasons,
                     'technical_skills_missing' => $technicalSkillsArray,
-                    'soft_skills_missing' => $softSkillsArray,
+                    'soft_skills_missing'      => $softSkillsArray,
                 ]);
 
                 $impactLevel = $request->input("impact_level_{$index}");
 
                 $diagnosisData = [
-                    'lmi_submission_id' => $submission->id,
+                    'lmi_submission_id'       => $submission->id,
                     'lmi_hard_to_fill_role_id' => $hardToFillRole->id,
-                    'impact_level' => $impactLevel,
+                    'impact_level'            => $impactLevel,
                 ];
 
                 if ($index === 0) {
@@ -370,9 +375,9 @@ class LmiSubmissionController extends Controller
                     if (!is_array($rejectionReasons)) {
                         $rejectionReasons = [$rejectionReasons];
                     }
-                    $diagnosisData['rejection_reasons'] = $rejectionReasons;
-                    $diagnosisData['rejection_reasons_other'] = $request->rejection_reasons_other;
-                    $diagnosisData['coordination_frequency'] = $request->coordination_frequency;
+                    $diagnosisData['rejection_reasons']          = $rejectionReasons;
+                    $diagnosisData['rejection_reasons_other']    = $request->rejection_reasons_other;
+                    $diagnosisData['coordination_frequency']     = $request->coordination_frequency;
                     $diagnosisData['coordination_frequency_other'] = $request->coordination_frequency_other;
                 }
 
@@ -392,8 +397,8 @@ class LmiSubmissionController extends Controller
             
             LmiEngagement::create([
                 'lmi_submission_id' => $submission->id,
-                'lmi_features' => $lmiFeatures,
-                'specific_inputs' => $request->specific_inputs,
+                'lmi_features'      => $lmiFeatures,
+                'specific_inputs'   => $request->specific_inputs,
             ]);
 
             DB::commit();
@@ -413,7 +418,7 @@ class LmiSubmissionController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Validation failed. Please check your inputs.',
-                    'errors' => $e->errors()
+                    'errors'  => $e->errors()
                 ], 422);
             }
             return back()->withErrors($e->errors())->withInput();

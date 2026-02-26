@@ -191,7 +191,7 @@
 
                     <!-- Job entries -->
                     <p class="text-[10px] font-700 uppercase tracking-widest text-slate-700 font-bold mb-3">Job Entries</p>
-                    <div id="jobEntries" class="space-y-3 mb-4">
+                    <div id="jobEntries" class="space-y-3 mb-4" style="max-height: 350px; overflow-y: auto; padding-right: 4px;">
                         <!-- entries injected here -->
                     </div>
 
@@ -225,54 +225,120 @@
 
     <!-- Confirmation Modal -->
     <div id="confirmModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-            <div class="text-center">
-                <!-- Warning Icon -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4" style="max-height: 90vh; overflow-y: auto;">
+            <!-- Warning Icon + Title -->
+            <div class="text-center mb-5">
                 <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
                     <svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                     </svg>
                 </div>
-                
-                <h3 class="text-xl font-bold text-gray-900 mb-3">Confirm Submission</h3>
-                <p class="text-sm text-gray-600 mb-6">Are you sure you want to submit this data to the pending queue? The statistician will review and verify it before posting to the database.</p>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Confirm Submission</h3>
+                <p class="text-sm text-gray-600">Please review the data below before submitting. The statistician will verify it before posting to the database.</p>
+            </div>
 
-                <div class="flex gap-3">
-                    <button 
-                        onclick="closeConfirmModal()"
-                        class="flex-1 px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium border border-gray-300 rounded-lg transition"
-                    >
-                        Cancel
-                    </button>
-                    <button 
-                        onclick="confirmSubmit()"
-                        class="flex-1 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition"
-                    >
-                        Yes, Submit
-                    </button>
+            <!-- Summary Preview -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 text-left">
+                <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-3">Submission Preview</p>
+
+                <!-- Year badge -->
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-xs font-semibold text-slate-500">Year:</span>
+                    <span id="confirmSummaryYear" class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full"></span>
                 </div>
+
+                <!-- Job entries table -->
+                <div class="rounded-lg overflow-hidden border border-slate-200" style="max-height: 260px; overflow-y: auto;">
+                    <table class="w-full text-sm">
+                        <thead class="sticky top-0">
+                            <tr class="bg-slate-100">
+                                <th class="text-left px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">#</th>
+                                <th class="text-left px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Job Title</th>
+                                <th class="text-right px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="confirmSummaryTableBody">
+                            <!-- rows injected by JS -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-blue-50 border-t border-slate-200">
+                                <td colspan="2" class="px-3 py-2 text-xs font-bold text-blue-700">Total Employment</td>
+                                <td id="confirmSummaryTotal" class="px-3 py-2 text-xs font-bold text-blue-700 text-right"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button 
+                    onclick="closeConfirmModal()"
+                    class="flex-1 px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium border border-gray-300 rounded-lg transition"
+                >
+                    Cancel
+                </button>
+                <button 
+                    onclick="confirmSubmit()"
+                    class="flex-1 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition"
+                >
+                    Yes, Submit
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Success Modal -->
     <div id="successModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4" style="max-height: 90vh; overflow-y: auto;">
             <div class="text-center">
                 <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
                     <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
                 </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-3">Successfully Submitted!</h3>
-                <p class="text-sm text-gray-600 mb-6">Your data has been successfully submitted to the pending queue. It will be reviewed by a statistician before being posted to the database.</p>
-                <button 
-                    onclick="closeSuccessModal()"
-                    class="w-full px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition"
-                >
-                    OK
-                </button>
+                <h3 class="text-xl font-bold text-gray-900 mb-1">Successfully Submitted!</h3>
+                <p class="text-sm text-gray-500 mb-5">Your data has been submitted to the pending queue and will be reviewed by a statistician.</p>
             </div>
+
+            <!-- Summary Section -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 text-left">
+                <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-3">Submission Summary</p>
+
+                <!-- Year badge -->
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-xs font-semibold text-slate-500">Year:</span>
+                    <span id="summaryYear" class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full"></span>
+                </div>
+
+                <!-- Job entries table -->
+                <div class="rounded-lg overflow-hidden border border-slate-200" style="max-height: 280px; overflow-y: auto;">
+                    <table class="w-full text-sm">
+                        <thead class="sticky top-0">
+                            <tr class="bg-slate-100">
+                                <th class="text-left px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">#</th>
+                                <th class="text-left px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Job Title</th>
+                                <th class="text-right px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryTableBody">
+                            <!-- rows injected by JS -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-blue-50 border-t border-slate-200">
+                                <td colspan="2" class="px-3 py-2 text-xs font-bold text-blue-700">Total Employment</td>
+                                <td id="summaryTotal" class="px-3 py-2 text-xs font-bold text-blue-700 text-right"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <button 
+                onclick="closeSuccessModal()"
+                class="w-full px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition"
+            >
+                OK
+            </button>
         </div>
     </div>
 
@@ -419,12 +485,15 @@
                 <div>
                     <label class="jt-label">Count</label>
                     <input
-                        type="number"
+                        type="text"
+                        inputmode="numeric"
                         name="jobCount[]"
-                        placeholder="e.g. 1250"
-                        min="0"
+                        placeholder="e.g. 1,250"
                         required
-                        class="jt-input"
+                        class="jt-input num-input text-right"
+                        oninput="formatNumInput(this)"
+                        onfocus="stripCommas(this)"
+                        onblur="refornatOnBlur(this)"
                     >
                 </div>
                 <button
@@ -473,6 +542,27 @@
 
         function showConfirmModal(data) {
             pendingData = data;
+
+            // Populate year
+            document.getElementById('confirmSummaryYear').textContent = data.year;
+
+            // Populate table rows
+            const tbody = document.getElementById('confirmSummaryTableBody');
+            tbody.innerHTML = '';
+            let total = 0;
+            data.jobs.forEach((job, i) => {
+                total += job.count;
+                const row = document.createElement('tr');
+                row.className = i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60';
+                row.innerHTML = `
+                    <td class="px-3 py-2 text-xs text-slate-400 font-semibold">${i + 1}</td>
+                    <td class="px-3 py-2 text-xs text-slate-700">${job.title}</td>
+                    <td class="px-3 py-2 text-xs text-slate-700 text-right font-medium">${job.count.toLocaleString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            document.getElementById('confirmSummaryTotal').textContent = total.toLocaleString();
+
             document.getElementById('confirmModal').classList.remove('hidden');
         }
 
@@ -481,7 +571,29 @@
             pendingData = null;
         }
 
-        function showSuccessModal() {
+        function showSuccessModal(data) {
+            // Populate year
+            document.getElementById('summaryYear').textContent = data ? data.year : '';
+
+            // Populate table rows
+            const tbody = document.getElementById('summaryTableBody');
+            tbody.innerHTML = '';
+            let total = 0;
+            if (data && data.jobs) {
+                data.jobs.forEach((job, i) => {
+                    total += job.count;
+                    const row = document.createElement('tr');
+                    row.className = i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60';
+                    row.innerHTML = `
+                        <td class="px-3 py-2 text-xs text-slate-400 font-semibold">${i + 1}</td>
+                        <td class="px-3 py-2 text-xs text-slate-700">${job.title}</td>
+                        <td class="px-3 py-2 text-xs text-slate-700 text-right font-medium">${job.count.toLocaleString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+            document.getElementById('summaryTotal').textContent = total.toLocaleString();
+
             document.getElementById('successModal').classList.remove('hidden');
         }
 
@@ -511,7 +623,7 @@
         const result = await response.json();
 
         if (response.ok && result.success) {
-            showSuccessModal();
+            showSuccessModal(dataToSubmit);
         } else {
             showToast('Error: ' + (result.message || 'An error occurred while saving the data.'), 'error');
         }
@@ -533,7 +645,7 @@
                 if (titles[i].value && counts[i].value) {
                     jobData.push({
                         title: titles[i].value,
-                        count: parseInt(counts[i].value)
+                        count: parseInt(counts[i].value.replace(/,/g, ''))
                     });
                 }
             }
@@ -546,6 +658,22 @@
             // Show confirmation modal instead of directly submitting
             showConfirmModal(dataToSave);
         });
+
+
+        // ─── Comma formatting for number inputs ─────────────────────────────────
+        function formatNumInput(el) {
+            const raw = el.value.replace(/[^0-9]/g, '');
+            el.value = raw === '' ? '' : parseInt(raw).toLocaleString();
+        }
+
+        function stripCommas(el) {
+            el.value = el.value.replace(/,/g, '');
+        }
+
+        function refornatOnBlur(el) {
+            const raw = parseInt(el.value.replace(/[^0-9]/g, ''));
+            el.value = isNaN(raw) ? '' : raw.toLocaleString();
+        }
 
         // Add initial entry when page loads
         addJobEntry();

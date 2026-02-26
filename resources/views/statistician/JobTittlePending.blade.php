@@ -394,13 +394,19 @@
         <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeRejectModal()"></div>
         
         <!-- Modal Content -->
-        <div class="relative bg-white rounded-xl shadow-2xl p-8 max-w-lg w-full mx-4">
-            <h3 class="text-2xl font-bold text-gray-900 mb-4">Reject Submission</h3>
-            <p class="text-base text-gray-600 mb-4">Please provide a reason for rejection:</p>
-            <textarea id="rejectionReason" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Enter rejection reason..."></textarea>
-            <div class="flex gap-3 mt-6">
-                <button onclick="closeRejectModal()" class="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition text-base">Cancel</button>
-                <button onclick="confirmReject()" class="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition text-base">Reject</button>
+        <div class="relative bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <div class="flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Reject Submission</h3>
+                <p class="text-sm text-gray-600 mb-6">Are you sure you want to reject this submission? The admin will be notified.</p>
+                <div class="flex gap-3 w-full">
+                    <button onclick="closeRejectModal()" class="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition text-base">Cancel</button>
+                    <button onclick="confirmReject()" class="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition text-base">Yes, Reject</button>
+                </div>
             </div>
         </div>
     </div>
@@ -420,7 +426,7 @@
                 </div>
                 <h3 class="text-xl font-bold text-slate-800 mb-2">Submission Rejected</h3>
                 <p class="text-sm text-slate-600 mb-6">
-                    The job titles submission has been rejected and the admin has been notified.
+                    The job titles submission has been rejected.
                 </p>
                 <button 
                     onclick="closeRejectSuccessModal()"
@@ -695,7 +701,6 @@
         function showRejectModal(year) {
             selectedYear = year;
             document.getElementById('rejectModal').classList.remove('hidden');
-            document.getElementById('rejectionReason').value = '';
         }
 
         function closeRejectModal() {
@@ -704,14 +709,7 @@
         }
 
         async function confirmReject() {
-            const reason = document.getElementById('rejectionReason').value.trim();
-            if (!reason) { 
-                showToast('Please provide a reason for rejection', 'warning'); 
-                return; 
-            }
-
-            const yearToReject = selectedYear; // ✅ capture before closeRejectModal nulls it
-
+            const yearToReject = selectedYear;
             closeRejectModal();
 
             try {
@@ -721,7 +719,7 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
-                    body: JSON.stringify({ reason })
+                    body: JSON.stringify({})
                 });
                 const result = await response.json();
                 

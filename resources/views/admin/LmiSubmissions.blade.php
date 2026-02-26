@@ -217,10 +217,107 @@
                 <tr>
                     <td class="px-6 py-4 text-sm font-semibold text-slate-600 bg-slate-50/60">📞 Contact Number</td>
                     <td class="px-6 py-4">
-                        <input type="text" name="contact_number" value="{{ $submission->contact_number }}" 
-                               data-original="{{ $submission->contact_number }}"
-                               data-label="Contact Number"
-                               class="editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" disabled>
+                        <div id="contact-field-wrapper-{{ $submission->id }}" class="space-y-2">
+
+                            {{-- VIEW MODE: show type badge + number --}}
+                            <div class="contact-view-display flex items-center gap-2">
+                                @if($submission->contact_type === 'telephone')
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">☎️ Telephone</span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-teal-100 text-teal-700 border border-teal-200">📱 Mobile</span>
+                                @endif
+                                <span class="text-sm text-slate-700 font-medium">
+                                    @if($submission->contact_type === 'mobile')
+                                        +63 {{ $submission->contact_number }}
+                                    @else
+                                        {{ $submission->contact_number }}
+                                    @endif
+                                </span>
+                            </div>
+
+                            {{-- EDIT MODE: hidden until Edit is clicked --}}
+                            <div class="contact-edit-controls hidden space-y-2">
+
+                                {{-- Type toggle --}}
+                                <div class="inline-flex bg-gray-100 rounded-lg p-1">
+                                    <button type="button"
+                                        id="admin-toggle-mobile-{{ $submission->id }}"
+                                        onclick="adminSwitchContactType('mobile', '{{ $submission->id }}')"
+                                        class="admin-contact-type-btn flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold transition-all duration-200
+                                            {{ $submission->contact_type !== 'telephone' ? 'bg-white text-teal-700 shadow-sm border border-gray-200' : 'text-gray-500' }}">
+                                        📱 Mobile
+                                    </button>
+                                    <button type="button"
+                                        id="admin-toggle-telephone-{{ $submission->id }}"
+                                        onclick="adminSwitchContactType('telephone', '{{ $submission->id }}')"
+                                        class="admin-contact-type-btn flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold transition-all duration-200
+                                            {{ $submission->contact_type === 'telephone' ? 'bg-white text-teal-700 shadow-sm border border-gray-200' : 'text-gray-500' }}">
+                                        ☎️ Telephone
+                                    </button>
+                                </div>
+
+                                {{-- Mobile input --}}
+                                <div id="admin-mobile-wrapper-{{ $submission->id }}"
+                                    class="relative {{ $submission->contact_type === 'telephone' ? 'hidden' : '' }}">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-2 pr-2 border-r border-gray-300 pointer-events-none">
+                                        <span>🇵🇭</span>
+                                        <span class="ml-1 text-xs font-semibold text-gray-600">+63</span>
+                                    </div>
+                                    <input type="tel"
+                                        id="admin-mobile-input-{{ $submission->id }}"
+                                        name="contact_number"
+                                        value="{{ $submission->contact_type !== 'telephone' ? $submission->contact_number : '' }}"
+                                        data-original="{{ $submission->contact_number }}"
+                                        data-label="Contact Number"
+                                        maxlength="10"
+                                        inputmode="numeric"
+                                        placeholder="9123456789"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                        class="editable-field admin-mobile-field w-full pl-16 pr-3 py-2 border border-slate-300 rounded text-sm"
+                                        {{ $submission->contact_type === 'telephone' ? 'disabled' : '' }}>
+                                </div>
+
+                                {{-- Telephone input with area code suggestions --}}
+                                <div id="admin-telephone-wrapper-{{ $submission->id }}"
+                                    class="relative {{ $submission->contact_type !== 'telephone' ? 'hidden' : '' }}">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-2 pr-2 border-r border-gray-300 pointer-events-none">
+                                        <span>☎️</span>
+                                        <span class="ml-1 text-xs font-semibold text-gray-600">PH</span>
+                                    </div>
+                                    <input type="tel"
+                                        id="admin-telephone-input-{{ $submission->id }}"
+                                        name="contact_number"
+                                        value="{{ $submission->contact_type === 'telephone' ? $submission->contact_number : '' }}"
+                                        data-original="{{ $submission->contact_number }}"
+                                        data-label="Contact Number"
+                                        maxlength="12"
+                                        inputmode="numeric"
+                                        autocomplete="off"
+                                        placeholder="e.g. 082-123-4567"
+                                        class="editable-field admin-telephone-field w-full pl-16 pr-3 py-2 border border-slate-300 rounded text-sm"
+                                        {{ $submission->contact_type !== 'telephone' ? 'disabled' : '' }}>
+                                    {{-- Area code suggestions --}}
+                                    <div id="admin-area-suggestions-{{ $submission->id }}"
+                                        class="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-50 hidden overflow-hidden">
+                                        <div class="px-3 py-1.5 bg-gray-50 border-b border-gray-100">
+                                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Matching Area Codes</p>
+                                        </div>
+                                        <div id="admin-area-list-{{ $submission->id }}" class="max-h-48 overflow-y-auto"></div>
+                                    </div>
+                                </div>
+
+                                {{-- Hidden contact_type field --}}
+                                <input type="hidden"
+                                    id="admin-contact-type-{{ $submission->id }}"
+                                    name="contact_type"
+                                    value="{{ $submission->contact_type ?? 'mobile' }}">
+
+                                <p class="text-xs text-gray-400" id="admin-contact-hint-{{ $submission->id }}">
+                                    {{ $submission->contact_type === 'telephone' ? 'Auto-formats to 082-123-4567' : '10-digit mobile number' }}
+                                </p>
+                            </div>
+
+                        </div>
                     </td>
                 </tr>
                 <tr>
@@ -328,9 +425,44 @@
                         <tr>
                             <td class="px-6 py-4 font-medium">Salary Range</td>
                             <td class="px-6 py-4">
-                                <input type="text" name="roles[{{ $index }}][salary_range]" 
-                                       value="{{ $role->salary_range }}" 
-                                       class="role-editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" disabled>
+                                @php
+                                    $salaryOptions = ['₱30,000 - ₱59,999','₱60,000 - ₱89,999','₱90,000 - ₱149,999','₱150,000 - ₱499,999','₱500,000 and above','Below ₱30,000'];
+                                    $currentSalary = $role->salary_range ?? '';
+                                    // Detect a raw numeric amount (below 30k) — strip commas/peso sign before checking
+                                    $strippedSalary = preg_replace('/[^0-9.]/', '', $currentSalary);
+                                    $isBelow30k = !in_array($currentSalary, $salaryOptions) && !empty($strippedSalary) && is_numeric($strippedSalary);
+                                    $salaryDropdownVal = $isBelow30k ? 'Below ₱30,000' : $currentSalary;
+                                    // Format with thousands separator for display
+                                    $below30kVal = $isBelow30k ? number_format((float)$strippedSalary) : '';
+                                @endphp
+
+                                <select name="roles[{{ $index }}][salary_range]"
+                                        class="role-editable-field salary-range-select-{{ $index }} w-full border border-slate-300 rounded px-3 py-2 text-sm"
+                                        onchange="handleAdminSalaryChange({{ $index }}, this.value)"
+                                        disabled>
+                                    <option value="">Select salary range</option>
+                                    @foreach($salaryOptions as $opt)
+                                        <option value="{{ $opt }}" {{ $salaryDropdownVal === $opt ? 'selected' : '' }}>
+                                            {{ $opt }}{{ $opt === 'Below ₱30,000' ? ' (please specify)' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                {{-- Below ₱30,000 exact amount --}}
+                                <div class="below-30k-container-{{ $index }} mt-2 {{ $isBelow30k ? '' : 'hidden' }}">
+                                    <label class="block text-xs text-gray-500 mb-1">Please specify the exact salary amount:</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₱</span>
+                                        <input type="text"
+                                               class="below-30k-exact-{{ $index }} role-editable-field w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-sm"
+                                               placeholder="e.g. 25,000"
+                                               value="{{ $below30kVal }}"
+                                               inputmode="numeric"
+                                               name="roles[{{ $index }}][below_30k_salary]"
+                                               oninput="formatAdminSalaryInput(this)"
+                                               disabled>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         <tr>
@@ -543,7 +675,7 @@
                         <td class="px-6 py-4 font-medium">Coordination with Schools</td>
                         <td class="px-6 py-4">
                             <input type="text" name="coordination_frequency" 
-                                   value="{{ $firstDiagnosis->coordination_frequency }}" 
+                                   value="{{ $firstDiagnosis->coordination_frequency === 'Other' && $firstDiagnosis->coordination_frequency_other ? $firstDiagnosis->coordination_frequency_other : $firstDiagnosis->coordination_frequency }}" 
                                    class="diagnosis-editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" disabled>
                         </td>
                     </tr>
@@ -1257,6 +1389,12 @@ function toggleEdit(button) {
     card.querySelector('.edit-btn').classList.add('hidden');
     card.querySelector('.save-btn').classList.remove('hidden');
     card.querySelector('.cancel-btn').classList.remove('hidden');
+
+    // Show contact edit controls, hide view display
+    const viewDisplay  = form.querySelector('.contact-view-display');
+    const editControls = form.querySelector('.contact-edit-controls');
+    if (viewDisplay)  viewDisplay.classList.add('hidden');
+    if (editControls) editControls.classList.remove('hidden');
 }
 
 function cancelEdit(button) {
@@ -1267,6 +1405,12 @@ function cancelEdit(button) {
     card.querySelector('.edit-btn').classList.remove('hidden');
     card.querySelector('.save-btn').classList.add('hidden');
     card.querySelector('.cancel-btn').classList.add('hidden');
+
+    // Restore contact view display, hide edit controls
+    const viewDisplay  = form.querySelector('.contact-view-display');
+    const editControls = form.querySelector('.contact-edit-controls');
+    if (viewDisplay)  viewDisplay.classList.remove('hidden');
+    if (editControls) editControls.classList.add('hidden');
 }
 
 // Roles Edit
@@ -1955,6 +2099,240 @@ document.addEventListener('DOMContentLoaded', initAjaxPagination);
         }, 1500);
     };
 })();
+
+// ─── Admin Contact Number: Toggle + Formatter + Area Code Suggestions ─────────
+
+const PH_AREA_CODES_ADMIN = [
+    { code: "02",  label: "Metro Manila, Rizal, Bacoor, San Pedro" },
+    { code: "032", label: "Cebu" },
+    { code: "033", label: "Guimaras, Iloilo (part)" },
+    { code: "034", label: "Iloilo, Negros Occidental" },
+    { code: "035", label: "Negros Oriental, Siquijor" },
+    { code: "036", label: "Aklan, Antique, Capiz" },
+    { code: "038", label: "Bohol" },
+    { code: "042", label: "Aurora, Marinduque, Quezon" },
+    { code: "043", label: "Batangas, Occidental Mindoro, Oriental Mindoro" },
+    { code: "044", label: "Bulacan, Nueva Ecija" },
+    { code: "045", label: "Pampanga, Tarlac" },
+    { code: "046", label: "Cavite (except Bacoor)" },
+    { code: "047", label: "Bataan, Zambales" },
+    { code: "048", label: "Palawan" },
+    { code: "049", label: "Laguna (except San Pedro)" },
+    { code: "052", label: "Albay, Catanduanes" },
+    { code: "053", label: "Biliran, Leyte, Southern Leyte" },
+    { code: "054", label: "Camarines Norte, Camarines Sur, Romblon" },
+    { code: "055", label: "Eastern Samar, Northern Samar, Samar" },
+    { code: "056", label: "Masbate, Sorsogon" },
+    { code: "062", label: "Basilan, Zamboanga del Sur, Zamboanga Sibugay" },
+    { code: "063", label: "Lanao del Norte" },
+    { code: "064", label: "Lanao del Sur, Maguindanao, North Cotabato, Sultan Kudarat" },
+    { code: "065", label: "Zamboanga del Norte" },
+    { code: "068", label: "Tawi-Tawi" },
+    { code: "072", label: "La Union" },
+    { code: "074", label: "Abra, Benguet, Ifugao, Kalinga, Mountain Province" },
+    { code: "075", label: "Pangasinan" },
+    { code: "077", label: "Ilocos Norte, Ilocos Sur" },
+    { code: "078", label: "Apayao, Batanes, Cagayan, Isabela, Nueva Vizcaya, Quirino" },
+    { code: "082", label: "Davao del Sur, Davao Occidental" },
+    { code: "083", label: "Sarangani, South Cotabato" },
+    { code: "084", label: "Compostela Valley, Davao del Norte" },
+    { code: "085", label: "Agusan del Norte, Agusan del Sur, Sulu" },
+    { code: "086", label: "Dinagat Islands, Surigao del Norte, Surigao del Sur" },
+    { code: "087", label: "Davao de Oro, Davao Oriental" },
+    { code: "088", label: "Bukidnon, Camiguin, Misamis Occidental, Misamis Oriental" },
+];
+
+function adminFormatTelephone(digits) {
+    if (!digits) return "";
+    if (!digits.startsWith("0")) digits = "0" + digits;
+    const withoutTrunk = digits.slice(1);
+    if (withoutTrunk.startsWith("2")) {
+        const local = withoutTrunk.slice(1);
+        if (local.length === 0) return "02";
+        if (local.length <= 4)  return "02-" + local;
+        return "02-" + local.slice(0, 4) + "-" + local.slice(4);
+    }
+    const area  = withoutTrunk.slice(0, 2);
+    const local = withoutTrunk.slice(2);
+    if (local.length === 0) return "0" + area;
+    if (local.length <= 3)  return "0" + area + "-" + local;
+    return "0" + area + "-" + local.slice(0, 3) + "-" + local.slice(3);
+}
+
+function adminSwitchContactType(type, id) {
+    const mobileWrapper    = document.getElementById("admin-mobile-wrapper-" + id);
+    const telephoneWrapper = document.getElementById("admin-telephone-wrapper-" + id);
+    const mobileInput      = document.getElementById("admin-mobile-input-" + id);
+    const telephoneInput   = document.getElementById("admin-telephone-input-" + id);
+    const contactType      = document.getElementById("admin-contact-type-" + id);
+    const hint             = document.getElementById("admin-contact-hint-" + id);
+    const toggleMobile     = document.getElementById("admin-toggle-mobile-" + id);
+    const toggleTelephone  = document.getElementById("admin-toggle-telephone-" + id);
+
+    [toggleMobile, toggleTelephone].forEach(btn => {
+        btn.classList.remove("bg-white", "text-teal-700", "shadow-sm", "border", "border-gray-200");
+        btn.classList.add("text-gray-500");
+    });
+
+    if (type === "mobile") {
+        mobileWrapper.classList.remove("hidden");
+        telephoneWrapper.classList.add("hidden");
+        mobileInput.disabled = false;
+        telephoneInput.disabled = true;
+        telephoneInput.value = "";
+        contactType.value = "mobile";
+        hint.textContent = "10-digit mobile number";
+        toggleMobile.classList.add("bg-white", "text-teal-700", "shadow-sm", "border", "border-gray-200");
+        toggleMobile.classList.remove("text-gray-500");
+        mobileInput.focus();
+    } else {
+        telephoneWrapper.classList.remove("hidden");
+        mobileWrapper.classList.add("hidden");
+        telephoneInput.disabled = false;
+        mobileInput.disabled = true;
+        mobileInput.value = "";
+        contactType.value = "telephone";
+        hint.textContent = "Auto-formats to 082-123-4567";
+        toggleTelephone.classList.add("bg-white", "text-teal-700", "shadow-sm", "border", "border-gray-200");
+        toggleTelephone.classList.remove("text-gray-500");
+        telephoneInput.focus();
+    }
+    // Close any open suggestions
+    const suggBox = document.getElementById("admin-area-suggestions-" + id);
+    if (suggBox) suggBox.classList.add("hidden");
+}
+
+function adminShowAreaSuggestions(telInput, suggestBox, suggestList, typedDigits) {
+    if (!typedDigits || typedDigits.length < 2 || typedDigits.length > 3) {
+        suggestBox.classList.add("hidden");
+        return;
+    }
+    const matches = PH_AREA_CODES_ADMIN.filter(ac => ac.code.startsWith(typedDigits));
+    if (matches.length === 0) { suggestBox.classList.add("hidden"); return; }
+
+    suggestList.innerHTML = "";
+    matches.forEach(ac => {
+        const item = document.createElement("div");
+        item.className = "flex items-center gap-3 px-3 py-2 hover:bg-teal-50 cursor-pointer border-b border-gray-50 last:border-b-0 text-sm transition-colors";
+        const typed    = typedDigits;
+        const codeHtml = `<span class="font-bold text-teal-600">${ac.code.slice(0, typed.length)}</span><span class="font-bold text-gray-800">${ac.code.slice(typed.length)}</span>`;
+        item.innerHTML = `
+            <span class="shrink-0 text-xs font-mono bg-teal-50 text-teal-700 border border-teal-200 rounded px-1.5 py-0.5">${codeHtml}</span>
+            <span class="text-gray-600 truncate text-xs">${ac.label}</span>
+        `;
+        item.addEventListener("mousedown", function(e) {
+            e.preventDefault();
+            telInput.value = ac.code + "-";
+            suggestBox.classList.add("hidden");
+            telInput.focus();
+        });
+        suggestList.appendChild(item);
+    });
+    suggestBox.classList.remove("hidden");
+}
+
+// ── Admin Salary Range (native select) ───────────────────────────────────────
+function formatAdminSalaryInput(input) {
+    const raw = input.value.replace(/[^0-9]/g, '');
+    input.value = raw ? Number(raw).toLocaleString('en-US') : '';
+}
+
+// Block non-numeric keypresses on below-30k salary inputs
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[class*="below-30k-exact-"]').forEach(function (el) {
+        el.addEventListener('keydown', function (e) {
+            const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','Tab','Home','End'];
+            if (!allowed.includes(e.key) && !(e.key >= '0' && e.key <= '9') && !(e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+            }
+        });
+    });
+});
+
+function handleAdminSalaryChange(index, value) {
+    const below30kContainer = document.querySelector('.below-30k-container-' + index);
+    const below30kInput = document.querySelector('.below-30k-exact-' + index);
+    if (value === 'Below ₱30,000') {
+        below30kContainer.classList.remove('hidden');
+        if (below30kInput) below30kInput.focus();
+    } else {
+        below30kContainer.classList.add('hidden');
+        if (below30kInput) below30kInput.value = '';
+    }
+}
+
+// Format any pre-filled below-30k inputs on page load
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[class*="below-30k-exact-"]').forEach(function (input) {
+        if (input.value) {
+            const raw = input.value.replace(/[^0-9]/g, '');
+            input.value = raw ? Number(raw).toLocaleString('en-US') : '';
+        }
+    });
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".admin-telephone-field").forEach(function(telInput) {
+        // Extract submission ID from input id: "admin-telephone-input-{id}"
+        const id          = telInput.id.replace("admin-telephone-input-", "");
+        const suggestBox  = document.getElementById("admin-area-suggestions-" + id);
+        const suggestList = document.getElementById("admin-area-list-" + id);
+        if (!suggestBox || !suggestList) return;
+
+        telInput.addEventListener("input", function(e) {
+            let digits = e.target.value.replace(/\D/g, "");
+            if (digits.length > 10) digits = digits.slice(0, 10);
+            e.target.value = adminFormatTelephone(digits);
+            adminShowAreaSuggestions(telInput, suggestBox, suggestList, digits.length <= 3 ? digits : null);
+        });
+
+        telInput.addEventListener("keydown", function(e) {
+            const allowedKeys = ["Backspace","Delete","ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Tab","Home","End"];
+            const isDigit = e.key >= "0" && e.key <= "9";
+            const isCtrl  = e.ctrlKey || e.metaKey;
+            if (!isDigit && !allowedKeys.includes(e.key) && !isCtrl) e.preventDefault();
+        });
+
+        telInput.addEventListener("paste", function(e) {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData).getData("text");
+            let digits   = pasted.replace(/\D/g, "").slice(0, 10);
+            e.target.value = adminFormatTelephone(digits);
+            suggestBox.classList.add("hidden");
+        });
+
+        telInput.addEventListener("blur", function() {
+            setTimeout(() => suggestBox.classList.add("hidden"), 150);
+        });
+    });
+
+    // Also hook toggleEdit / cancelEdit to show-hide contact controls
+    // by overriding after original definition
+    const origToggle = window.toggleEdit;
+    window.toggleEdit = function(button) {
+        origToggle(button);
+        const form         = button.closest(".admin-review-card").querySelector('[id^="form-company-"]');
+        if (!form) return;
+        const viewDisplay  = form.querySelector(".contact-view-display");
+        const editControls = form.querySelector(".contact-edit-controls");
+        if (viewDisplay)  viewDisplay.classList.add("hidden");
+        if (editControls) editControls.classList.remove("hidden");
+    };
+
+    const origCancel = window.cancelEdit;
+    window.cancelEdit = function(button) {
+        origCancel(button);
+        const form         = button.closest(".admin-review-card").querySelector('[id^="form-company-"]');
+        if (!form) return;
+        const viewDisplay  = form.querySelector(".contact-view-display");
+        const editControls = form.querySelector(".contact-edit-controls");
+        if (viewDisplay)  viewDisplay.classList.remove("hidden");
+        if (editControls) editControls.classList.add("hidden");
+    };
+});
+
 </script>
 
 <!-- TOAST NOTIFICATION -->

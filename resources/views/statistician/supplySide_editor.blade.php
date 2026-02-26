@@ -12,13 +12,18 @@
     
     <!-- Custom Quill Toolbar Styling -->
     <style>
-        .ql-toolbar.ql-snow { padding: 12px 8px; border-radius: 8px 8px 0 0; }
+        .ql-toolbar.ql-snow { padding: 8px 8px; border-radius: 0; border-left: none; border-right: none; }
+        /* Custom scrollbar — same as public page */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .ql-toolbar.ql-snow .ql-formats { margin-right: 20px; }
         .ql-toolbar.ql-snow button { width: 32px !important; height: 32px !important; padding: 4px; }
         .ql-toolbar.ql-snow .ql-stroke { stroke-width: 2.5; }
         .ql-toolbar.ql-snow select { height: 32px !important; padding: 4px 8px; }
-        .ql-container.ql-snow { border-radius: 0 0 8px 8px; max-height: 500px; overflow-y: auto; }
-        .ql-editor { min-height: 400px; font-size: 14px; line-height: 1.6; }
+        .ql-container.ql-snow { border-left: none; border-right: none; border-bottom: none; }
+        .ql-editor { min-height: 580px; font-size: 14px; line-height: 1.7; padding: 20px 24px; }
         .ql-editor::-webkit-scrollbar { width: 8px; }
         .ql-editor::-webkit-scrollbar-track { background: #f1f5f9; }
         .ql-editor::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -55,8 +60,8 @@
         .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="72pt"]::before { content: '72'; }
         .ql-snow .ql-picker.ql-size .ql-picker-label:not([data-value])::before,
         .ql-snow .ql-picker.ql-size .ql-picker-item:not([data-value])::before { content: '11'; }
-        .ql-editor .ql-size-8pt { font-size: 8pt; }
-        .ql-editor .ql-size-9pt { font-size: 9pt; }
+        .ql-editor .ql-size-8pt  { font-size: 8pt;  }
+        .ql-editor .ql-size-9pt  { font-size: 9pt;  }
         .ql-editor .ql-size-10pt { font-size: 10pt; }
         .ql-editor .ql-size-11pt { font-size: 11pt; }
         .ql-editor .ql-size-12pt { font-size: 12pt; }
@@ -72,127 +77,335 @@
         .ql-editor .ql-size-72pt { font-size: 72pt; }
     </style>
     
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <title>Supply Side Analysis Editor</title>
 </head>
-<body class="bg-slate-100 flex h-screen overflow-hidden" >
+<body x-data="supplySideEditor()" x-init="init()" class="bg-slate-100 flex h-screen overflow-hidden">
     @include('partials.statisticianSidebar')
 
     <!-- MAIN CONTENT -->
     <div class="flex-1 flex flex-col overflow-hidden">
-        <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 shadow-sm">
+        <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 shadow-sm flex-shrink-0">
             <h2 class="text-xl font-bold text-slate-800">Supply Side Analysis Editor • Statistician</h2>
             <div class="flex items-center gap-4">
                 <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">📅 Region XI • {{ date('Y') }}</div>
                 <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
             </div>
         </header>
-        <div class="flex-1 overflow-auto">
-            <div x-data="supplySideEditor()" x-init="init()" class="p-6">
-                <!-- Header -->
-                <div class="mb-6">
-                    <h1 class="text-3xl font-bold text-slate-800">Supply Side Analysis Editor</h1>
-                    <p class="text-slate-600 mt-2">Edit executive analysis for different provinces and academic years</p>
+
+        <!-- Side Drawer Layout — bg canvas with cards inside -->
+        <div class="flex-1 overflow-y-auto bg-slate-100 p-6">
+
+            <!-- ── EDITOR MODE: two-column layout ── -->
+            <div x-show="!showPreviewModal" class="flex gap-6 items-stretch">
+
+            <!-- ═══════════════════════════════════════════
+                 LEFT CARD — Filters + Status
+            ════════════════════════════════════════════ -->
+            <div class="w-72 flex-shrink-0 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+
+                <!-- Panel Header -->
+                <div class="px-5 py-4 border-b border-slate-200 bg-white flex items-center justify-between">
+                    <p class="text-sm font-bold text-slate-700 uppercase tracking-wide">Filters</p>
+                    <span x-show="!isUnlocked" class="text-xs text-slate-400 flex items-center gap-1">🔒 Locked</span>
+                    <button
+                        x-show="isUnlocked"
+                        @click="isUnlocked = false"
+                        class="text-xs text-slate-500 hover:text-red-500 flex items-center gap-1 transition">
+                        🔓 Lock Filters
+                    </button>
                 </div>
 
-                <!-- Filters -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Province Select -->
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                📍 Province
-                            </label>
-                            <select 
-                                x-model="selectedProvince" 
-                                @change="loadAnalysis(); loadArchivedAnalyses();"
-                                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <template x-for="province in provinces" :key="province">
-                                    <option :value="province" x-text="province"></option>
-                                </template>
-                            </select>
+                <!-- Content -->
+                <div class="p-5 space-y-5">
+
+                    <!-- Province -->
+                    <div>
+                        <label class="text-xs font-semibold block mb-1.5"
+                               :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'">📍 Province</label>
+                        <select
+                            x-model="selectedProvince"
+                            @change="if (isUnlocked) { await loadYears(); await loadSidebarOnly(); }"
+                            :disabled="!isUnlocked"
+                            class="w-full border rounded-lg px-3 py-2 text-sm transition"
+                            :class="isUnlocked
+                                ? 'border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700'
+                                : 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'">
+                            <template x-for="province in provinces" :key="province">
+                                <option :value="province" x-text="province"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- Academic Year -->
+                    <div>
+                        <label class="text-xs font-semibold block mb-1.5"
+                               :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'">📖 Academic Year</label>
+                        <select
+                            x-model="selectedAcademicYear"
+                            @change="isUnlocked && loadSidebarOnly()"
+                            :disabled="!isUnlocked"
+                            class="w-full border rounded-lg px-3 py-2 text-sm transition"
+                            :class="isUnlocked
+                                ? 'border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700'
+                                : 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'">
+                            <template x-for="year in academicYears" :key="year">
+                                <option :value="year" x-text="year"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- Lock notice -->
+                    <div x-show="!isUnlocked" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-400 text-center">
+                        🔒 Load a draft below to unlock filters &amp; editor
+                    </div>
+
+                    <!-- Currently Published Card -->
+                    <div x-show="lastUpdated && isUnlocked"
+                         class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <p class="text-sm font-bold text-green-800 mb-1">✅ Currently Published</p>
+                        <p class="text-xs text-green-600">Last updated: <span x-text="lastUpdated"></span></p>
+                    </div>
+
+                    <!-- ── All Pending Submissions ── -->
+                    <div class="border-t border-slate-200 pt-4">
+                        <div class="flex items-center justify-between mb-1">
+                            <p class="text-sm font-bold text-slate-600">📬 Pending Submissions</p>
+                            <span x-show="allPendingSubmissions.length > 0"
+                                  class="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"
+                                  x-text="allPendingSubmissions.length"></span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-3">Load a draft to unlock the editor.</p>
+
+                        <div x-show="loadingAllPending" class="flex justify-center py-4">
+                            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-500"></div>
                         </div>
 
-                        <!-- Academic Year Select -->
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                📖 Academic Year
-                            </label>
-                            <select 
-                                x-model="selectedAcademicYear" 
-                                @change="loadAnalysis(); loadArchivedAnalyses();"
-                                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <template x-for="year in academicYears" :key="year">
-                                    <option :value="year" x-text="year"></option>
-                                </template>
-                            </select>
+                        <!-- Scrollable list -->
+                        <div x-show="!loadingAllPending" class="space-y-2 max-h-56 overflow-y-auto pr-1 custom-scrollbar">
+                            <template x-for="item in allPendingSubmissions" :key="item.id">
+                                <div class="border border-amber-200 rounded-lg p-3 bg-amber-50 hover:border-amber-400 hover:bg-amber-100 transition">
+                                    <div class="flex items-center justify-between mb-0.5">
+                                        <p class="font-semibold text-xs text-amber-900 truncate" x-text="item.province"></p>
+                                        <span class="text-xs bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded font-medium ml-1 flex-shrink-0" x-text="item.academic_year"></span>
+                                    </div>
+                                    <p class="text-xs text-amber-700 mb-0.5">By <strong x-text="item.submitted_by"></strong></p>
+                                    <p class="text-xs text-amber-500 mb-2" x-text="formatDate(item.submitted_at)"></p>
+                                    <button
+                                        @click="loadPendingItemIntoEditor(item)"
+                                        class="w-full text-xs bg-amber-600 hover:bg-amber-700 text-white py-1.5 rounded-lg font-medium transition">
+                                        📥 Load Draft
+                                    </button>
+                                </div>
+                            </template>
+
+                            <div x-show="allPendingSubmissions.length === 0" class="text-center py-6 text-slate-400">
+                                <p class="text-sm">No pending submissions</p>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Archived Analysis — always visible, no pending gate -->
+                    <div class="border-t border-slate-200 pt-4">
+                        <p class="text-sm font-bold text-slate-600 mb-1">🗄️ Archived Analysis</p>
+                        <p class="text-xs text-slate-400 mb-3">Click an archive to copy its text into the editor.</p>
+
+                        <div x-show="loadingArchives" class="flex  justify-center py-4">
+                            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500"></div>
+                        </div>
+
+                        <div x-show="!loadingArchives" class="space-y-2 max-h-30 overflow-y-auto pr-1 custom-scrollbars">
+                            <template x-for="archive in archivedAnalysis" :key="archive.id">
+                                <div class="border border-slate-200 rounded-lg bg-white hover:border-indigo-300 hover:bg-indigo-50 transition group overflow-y-auto">
+
+                                    <!-- Header row — click to toggle preview -->
+                                    <div class="flex items-center justify-between p-3 cursor-pointer min-h-[56px]"
+                                         @click="archive._open = !archive._open">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-sm text-slate-800 truncate" x-text="archive.academic_year"></p>
+                                            <p class="text-xs text-slate-400 mt-0.5 truncate" x-text="archive.province + ' • ' + archive.updated_at"></p>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <!-- Eye toggle -->
+                                            <span class="text-slate-400 hover:text-indigo-500 transition p-1 rounded">
+                                                <svg x-show="!archive._open" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                </svg>
+                                                <svg x-show="archive._open" class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.956 9.956 0 012.223-3.592M6.343 6.343A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.97 9.97 0 01-1.284 2.482M3 3l18 18"/>
+                                                </svg>
+                                            </span>
+                                            <!-- Copy icon on hover -->
+                                            <svg class="w-4 h-4 text-indigo-500 opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <!-- Expandable preview -->
+                                    <div x-show="archive._open"
+                                         x-transition:enter="transition ease-out duration-150"
+                                         x-transition:enter-start="opacity-0 -translate-y-1"
+                                         x-transition:enter-end="opacity-100 translate-y-0"
+                                         class="px-3 pb-3 border-t border-slate-100">
+                                        <div class="mt-2 max-h-40 overflow-y-auto custom-scrollbar rounded bg-slate-50 border border-slate-200 p-2 text-xs text-slate-600 leading-relaxed"
+                                             x-html="archive.analysis_text || '<em class=\'text-slate-400\'>No content.</em>'">
+                                        </div>
+                                        <button
+                                            @click="copyFromArchive(archive)"
+                                            class="mt-2 w-full text-xs bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 rounded-lg font-medium transition">
+                                            📋 Copy to Editor
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </template>
+
+                            <div x-show="archivedAnalysis.length === 0" class="text-center py-6 text-slate-400">
+                                <p class="text-sm">No archived analysis</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- end content -->
+            </div><!-- end left card -->
+
+            <!-- ═══════════════════════════════════════════
+                 RIGHT CARD — Editor / Preview Toggle
+            ════════════════════════════════════════════ -->
+            <div class="flex-1 flex flex-col gap-6">
+
+                <!-- ── EDITOR MODE ── -->
+                <div x-show="!showPreviewModal" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col relative">
+
+                    <!-- Lock overlay -->
+                    <div x-show="!isUnlocked"
+                         class="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-xl">
+                        <div class="text-4xl mb-3">🔒</div>
+                        <p class="text-sm font-bold text-slate-600 mb-1">Editor Locked</p>
+                        <p class="text-xs text-slate-400">Load a pending draft to start editing</p>
+                    </div>
+
+                    <!-- Top Bar -->
+                    <div class="border-b border-slate-200 px-5 py-3 flex items-center justify-between flex-shrink-0">
+                        <div class="flex items-center gap-2">
+                            <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-1.5 rounded-lg">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-sm font-bold text-slate-700">✏️ EXECUTIVE ANALYSIS: SUPPLY SIDE</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button
+                                @click="showPreviewModal = true"
+                                class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 px-3 py-1.5 rounded-lg transition font-medium">
+                                👁️ Preview
+                            </button>
+                            <button
+                                @click="resetToDefault()"
+                                :disabled="loading"
+                                class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition disabled:opacity-50">
+                                Reset
+                            </button>
+                            <button
+                                @click="showConfirmModal = true"
+                                :disabled="loading || !hasChanges"
+                                class="text-xs px-4 py-1.5 rounded-lg font-semibold transition disabled:opacity-50"
+                                :class="hasChanges
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'">
+                                💾 Save &amp; Publish
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading -->
+                    <div x-show="loading" class="flex items-center justify-center py-20">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+
+                    <!-- Quill -->
+                    <div x-show="!loading">
+                        <div id="quillEditor"></div>
+                        <input type="hidden" x-model="analysisText">
+                    </div>
+
+                    <!-- Status Bar -->
+                    <div class="border-t border-slate-100 px-5 py-2 bg-slate-50 flex items-center justify-between">
+                        <span class="text-xs text-slate-400"><span x-text="getWordCount()"></span> words</span>
+                        <span x-show="hasChanges" class="text-xs text-orange-500 font-medium">⚠️ Unsaved changes</span>
+                    </div>
+
+                </div><!-- end editor mode -->
+
+            </div><!-- end right card -->
+            </div><!-- end editor flex row -->
+
+            <!-- ── PREVIEW MODE — fixed full viewport, independent of parent ── -->
+            <div x-show="showPreviewModal"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 class="fixed inset-0 z-40 bg-slate-100 overflow-y-auto">
+
+                <!-- Back to editor sticky bar at top -->
+                <div class="bg-slate-900 px-6 py-2 flex items-center justify-end sticky top-0 z-10">
+                    <button @click="showPreviewModal = false"
+                            class="flex items-center gap-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition">
+                        ✏️ Back to Editor
+                    </button>
                 </div>
 
-                <!-- Main Content Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    <!-- Editor Card (2 columns) -->
-                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <!-- Card Header -->
-                        <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+                <!-- Same outer wrapper as real public page -->
+                <div class="max-w-screen-xl mx-auto px-4">
+                    <div class="mt-6 rounded-2xl overflow-hidden shadow-lg">
+
+                        <!-- Dark header — exact copy from main UI (but not a button, no collapse) -->
+                        <div class="w-full bg-slate-800 px-6 py-4 flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 rounded-xl">
+                                <div class="bg-white/10 p-2.5 rounded-xl">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                     </svg>
                                 </div>
-                                <div>
-                                    <h3 class="text-lg font-bold text-slate-800">EXECUTIVE ANALYSIS: SUPPLY SIDE</h3>
-                                    <p class="text-xs text-slate-500" x-show="lastUpdated">
-                                        Last updated: <span x-text="lastUpdated"></span>
-                                    </p>
+                                <div class="text-left">
+                                    <h3 class="text-base font-bold text-white">Enrollment Overview</h3>
+                                    <p class="text-xs text-slate-400">Discipline market share &amp; executive supply analysis</p>
                                 </div>
                             </div>
+                            <svg class="w-5 h-5 text-slate-400 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
 
-                            <!-- Action Buttons -->
-                            <div class="flex gap-2">
-                                <button 
-                                    @click="resetToDefault()"
-                                    :disabled="loading"
-                                    class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition disabled:opacity-50">
-                                    Reset to Default
-                                </button>
-                                <button 
-                                    @click="showConfirmModal = true"
-                                    :disabled="loading || !hasChanges"
-                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition disabled:opacity-50"
-                                    :class="{'bg-green-600 hover:bg-green-700': hasChanges}">
-                                    💾 Save Changes
-                                </button>
+                    <!-- Content area — exact copy from main UI -->
+                    <div class="bg-slate-50 border border-t-0 border-slate-200 rounded-b-2xl overflow-hidden">
+
+                        <!-- Panel Filter Bar — exact copy -->
+                        <div class="flex items-center justify-end px-6 py-3 bg-white border-b border-slate-200">
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+                                    <span class="text-slate-400">📍</span>
+                                    <span class="text-sm text-slate-500 font-medium">Province:</span>
+                                    <span class="text-sm font-bold text-slate-800" x-text="selectedProvince"></span>
+                                </div>
+                                <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+                                    <span class="text-slate-400">📅</span>
+                                    <span class="text-sm text-slate-500 font-medium">Year:</span>
+                                    <span class="text-sm font-bold text-slate-800" x-text="selectedAcademicYear"></span>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Loading State -->
-                        <div x-show="loading" class="flex items-center justify-center py-12">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        </div>
+                        <!-- Cards Row — exact copy from main UI -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
 
-                        <!-- Editor Textarea -->
-                        <div x-show="!loading">
-                            <div id="quillEditor" style="height: 400px; max-height: 500px; overflow-y: auto;"></div>
-                            <input type="hidden" x-model="analysisText">
-                            <div class="mt-2 flex items-center justify-between text-xs text-slate-500">
-                                <span>
-                                    <span x-text="getWordCount()"></span> words
-                                </span>
-                                <span x-show="hasChanges" class="text-orange-600 font-semibold">
-                                    ⚠️ Unsaved changes
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Preview Section -->
-                        <div x-show="!loading" class="mt-6 pt-6 border-t border-slate-200">
-                            <h4 class="text-sm font-bold text-slate-700 mb-3">📄 Preview (How it will appear on public page)</h4>
-                            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
-                                <div class="flex items-start gap-3 mb-4">
+                            <!-- Executive Analysis: Supply Side — exact copy -->
+                            <div class="col-span-1 bg-white rounded-2xl shadow-xl border border-slate-200 p-6 flex flex-col">
+                                <div class="flex items-start gap-3 mb-4 flex-shrink-0">
                                     <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 rounded-xl shadow-lg">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -202,375 +415,922 @@
                                         <h3 class="text-lg font-bold text-slate-800">EXECUTIVE ANALYSIS: SUPPLY SIDE</h3>
                                     </div>
                                 </div>
-                                <div class="space-y-4 text-sm text-slate-700 prose prose-sm max-w-none" 
-                                     x-html="analysisText || '<span class=\'text-slate-400 italic\'>No content to preview</span>'">
+                                <!-- Dynamic Analysis Text — scrollable when content is long (exact copy) -->
+                                <div class="flex-1 overflow-y-auto custom-scrollbar space-y-4 text-sm text-slate-700 whitespace-pre-line pr-1"
+                                     style="max-height: 380px;"
+                                     x-html="analysisText || '<em class=\'text-slate-400\'>No content yet.</em>'">
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <!-- Archive Sidebar (1 column) -->
-                    <div class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <div class="flex items-center gap-2 mb-4">
-                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
-                            </svg>
-                            <h3 class="text-lg font-bold text-slate-800">Archived Analyses</h3>
-                        </div>
-                        
-                        <p class="text-xs text-slate-500 mb-4">
-                            Copy text from previous analyses to save time
-                        </p>
-
-                        <div x-show="loadingArchives" class="flex items-center justify-center py-8">
-                            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
-                        </div>
-
-                        <div x-show="!loadingArchives" class="space-y-3 max-h-[600px] overflow-y-auto">
-                            <template x-for="archive in archivedAnalyses" :key="archive.id">
-                                <div class="border border-slate-200 rounded-lg p-3 hover:border-indigo-300 hover:bg-indigo-50 transition cursor-pointer group"
-                                     @click="copyFromArchive(archive)">
-                                    <div class="flex items-start justify-between mb-2">
-                                        <div>
-                                            <p class="font-semibold text-sm text-slate-800" x-text="archive.academic_year"></p>
-                                            <p class="text-xs text-slate-500" x-text="archive.updated_at"></p>
-                                        </div>
-                                        <button class="text-indigo-600 opacity-0 group-hover:opacity-100 transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            <!-- Discipline Market Share Pie Chart — exact copy -->
+                            <div class="col-span-2 bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
+                                <div class="flex items-start justify-between gap-3 mb-4">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-gradient-to-br from-purple-500 to-pink-600 p-2.5 rounded-xl shadow-lg">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
                                             </svg>
-                                        </button>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-lg font-bold text-slate-800">Distribution of enrollees</h3>
+                                        </div>
                                     </div>
-                                    <p class="text-xs text-slate-600 line-clamp-3" x-text="archive.analysis_text"></p>
+                                    <!-- Expand Button — exact copy (disabled in preview) -->
+                                    <button class="flex-shrink-0 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold rounded-lg shadow-md flex items-center gap-2 text-sm opacity-60 cursor-not-allowed">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                                        </svg>
+                                        Expand
+                                    </button>
                                 </div>
-                            </template>
 
-                            <div x-show="archivedAnalyses.length === 0" class="text-center py-8 text-slate-400">
-                                <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                                </svg>
-                                <p class="text-sm">No archived analyses</p>
+                                <!-- Pie Chart with Side Legends — exact copy layout -->
+                                <div class="flex items-start gap-4 mt-6">
+                                    <!-- LEFT LEGEND (Top Half - Highest Values) — exact copy -->
+                                    <div class="flex-1 min-w-0 space-y-2.5">
+                                        <template x-for="(item, index) in previewDisciplineLeft" :key="item.name">
+                                            <div class="flex items-center gap-1.5 min-w-0">
+                                                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                                     :style="`background-color: ${item.color}`"></div>
+                                                <div class="text-slate-700 font-medium text-xs" style="white-space: nowrap;"
+                                                     x-text="item.name + ' ' + item.pct + '%'"></div>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- CENTER PIE CHART — exact copy canvas size -->
+                                    <div class="flex-shrink-0">
+                                        <canvas id="previewDonutChart" width="210" height="210"></canvas>
+                                    </div>
+
+                                    <!-- RIGHT LEGEND (Bottom Half - Lower Values) — exact copy -->
+                                    <div class="flex-1 min-w-0 space-y-2.5">
+                                        <template x-for="(item, index) in previewDisciplineRight" :key="item.name">
+                                            <div class="flex items-center gap-1.5 min-w-0">
+                                                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                                     :style="`background-color: ${item.color}`"></div>
+                                                <div class="text-slate-700 font-medium text-xs" style="white-space: nowrap;"
+                                                     x-text="item.name + ' ' + item.pct + '%'"></div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-400 text-center mt-4 italic">* Sample data shown for preview layout purposes</p>
                             </div>
-                        </div>
+
+                        </div><!-- end Cards Row -->
+                    </div><!-- end content area -->
+                    </div><!-- end rounded-2xl panel -->
+                </div><!-- end max-w-screen-xl -->
+            </div><!-- end preview mode -->
+
+        </div><!-- end bg canvas -->
+
+        </div><!-- end side drawer flex -->
+    </div><!-- end main content -->
+
+    <!-- ══════════════════════════════════════════════════════
+         MODALS + TOASTS — outside all overflow-hidden containers
+         so fixed positioning works correctly across all browsers
+    ══════════════════════════════════════════════════════ -->
+
+    <!-- ── CONFIRM PUBLISH MODAL ── -->
+    <div x-show="showConfirmModal"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20 p-4"
+         @click.self="showConfirmModal = false">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[92vh] overflow-y-auto" @click.stop>
+
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+                <h3 class="text-2xl font-bold text-gray-900">Confirm &amp; Publish</h3>
+                <p class="text-sm text-gray-600 mt-1">Review changes before publishing to the public page</p>
+            </div>
+
+            <div class="p-6">
+
+                <!-- Info banner — always shows the LOCKED publish target, not the filter dropdowns -->
+                <div class="bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-600 p-4 mb-4 rounded-lg">
+                    <div class="flex items-center gap-2 mb-1">
+                        <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="font-semibold text-gray-900">Publishing analysis for:</p>
                     </div>
+                    <p class="font-bold text-lg text-gray-900" x-text="publishTargetYear || selectedAcademicYear"></p>
+                    <p class="text-sm text-gray-700">Province: <span x-text="publishTargetProvince || selectedProvince"></span></p>
                 </div>
 
-                <!-- CONFIRMATION MODAL -->
-                <div x-show="showConfirmModal" 
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30 p-4"
-                     @click.self="showConfirmModal = false">
-                    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" @click.stop>
-                        <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-                            <h3 class="text-2xl font-bold text-gray-900">Confirm Submission</h3>
-                            <p class="text-sm text-gray-600 mt-1">Please review your analysis before submitting</p>
+                <!-- Warning: filter dropdowns point somewhere different from the publish target -->
+                <template x-if="publishTargetProvince && (publishTargetProvince !== selectedProvince || publishTargetYear !== selectedAcademicYear)">
+                    <div class="bg-amber-50 border-l-4 border-amber-500 p-3 mb-4 rounded-lg flex items-start gap-2">
+                        <span class="text-amber-500 text-base flex-shrink-0">⚠️</span>
+                        <p class="text-sm text-amber-800">
+                            Your filters are currently showing
+                            <strong x-text="selectedProvince"></strong> • <strong x-text="selectedAcademicYear"></strong>
+                            — but this will still publish to
+                            <strong x-text="publishTargetProvince"></strong> • <strong x-text="publishTargetYear"></strong>.
+                        </p>
+                    </div>
+                </template>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3 mb-5 rounded-lg">
+                    <p class="text-sm font-semibold text-yellow-800">
+                        ⚠️ This will immediately make the analysis visible on the public Supply Side page.
+                    </p>
+                </div>
+
+                <!-- ─────────────────────────────────────────────────────────
+                     SMART COMPARISON — 4 scenarios
+                     1. Draft loaded + something already published → 3 columns
+                     2. Draft loaded + nothing published yet      → 2 columns
+                     3. No draft (direct edit) + overwriting live → 2 columns
+                     4. Brand new, nothing published              → single preview
+                ──────────────────────────────────────────────────────── -->
+
+                <!-- Scenario 1a: Draft loaded + live exists + statistician EDITED → true 3-col -->
+                <template x-if="originalSubmittedText && currentlyPublishedText && originalSubmittedText !== analysisText">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="h-px flex-1 bg-slate-200"></div>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">3-Way Comparison</p>
+                            <div class="h-px flex-1 bg-slate-200"></div>
                         </div>
-                        <div class="p-6">
-                            <div class="bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-600 p-4 mb-6">
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            <div>
                                 <div class="flex items-center gap-2 mb-2">
-                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    <p class="font-semibold text-gray-900">You are about to save analysis for:</p>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0"></span>
+                                    <p class="text-xs font-bold text-green-700 uppercase tracking-wide">Currently Live</p>
                                 </div>
-                                <p class="font-bold text-lg text-gray-900" x-text="selectedAcademicYear"></p>
-                                <p class="text-sm text-gray-700">Province: <span x-text="selectedProvince"></span></p>
-                            </div>
-                            <div x-show="analysisId" class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
-                                <p class="text-sm font-semibold text-yellow-800">
-                                    ⚠️ This will create a new version and mark the current analysis as inactive!
+                                <div class="bg-green-50 border border-green-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
+                                    <div x-html="currentlyPublishedText"></div>
+                                </div>
+                                <p class="text-xs text-green-600 mt-1.5 text-right">
+                                    <span x-text="currentlyPublishedText.replace(/<[^>]*>/g,'').trim().split(/\s+/).filter(w=>w.length>0).length"></span> words
                                 </p>
                             </div>
-                            <h4 class="font-semibold text-gray-900 mb-3">Analysis Content:</h4>
-                            <div class="bg-gray-50 rounded-lg p-4 mb-6 max-h-96 overflow-y-auto border border-gray-200 prose prose-sm max-w-none">
-                                <div x-html="analysisText"></div>
-                            </div>
-                            <div class="bg-gray-100 rounded-lg p-4 flex justify-between items-center">
-                                <span class="font-bold text-gray-900">Word Count:</span>
-                                <span class="text-lg font-bold text-blue-600" x-text="analysisText.trim().split(/\s+/).filter(w => w.length > 0).length + ' words'"></span>
-                            </div>
-                        </div>
-                        <div class="p-6 border-t border-gray-200 bg-gray-50 flex gap-3">
-                            <button @click="showConfirmModal = false" class="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg">Cancel</button>
-                            <button @click="confirmSave()" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg">Save Analysis</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SUCCESS MODAL -->
-                <div x-show="showSuccessModal" 
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30 p-4"
-                     @click.self="showSuccessModal = false">
-                    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all" @click.stop>
-                        <div class="p-8 text-center">
-                            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
-                            <p class="text-gray-600 mb-2">Analysis has been saved successfully.</p>
-                            <div class="bg-green-50 rounded-lg p-3 mb-6 border border-green-200">
-                                <p class="text-xs text-green-700">
-                                    <strong x-text="selectedProvince"></strong> • <strong x-text="selectedAcademicYear"></strong>
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                                    <p class="text-xs font-bold text-amber-700 uppercase tracking-wide">Admin Submitted</p>
+                                </div>
+                                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
+                                    <div x-html="originalSubmittedText"></div>
+                                </div>
+                                <p class="text-xs text-amber-600 mt-1.5 text-right">
+                                    <span x-text="originalSubmittedText.replace(/<[^>]*>/g,'').trim().split(/\s+/).filter(w=>w.length>0).length"></span> words
                                 </p>
                             </div>
-                            <button @click="showSuccessModal = false" class="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg">Continue</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- COPY ARCHIVE MODAL -->
-                <div x-show="showCopyModal" 
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
-                     @click.self="showCopyModal = false">
-                    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" @click.stop>
-                        <div class="flex items-start gap-4 mb-4">
-                            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="text-lg font-bold text-slate-800 mb-2">Copy from Archive</h3>
-                                <p class="text-sm text-slate-600 mb-4">Copy analysis text from <strong x-text="selectedArchive?.version"></strong>?</p>
-                                <div class="bg-slate-50 rounded-lg p-3 mb-4 border border-slate-200 max-h-32 overflow-y-auto">
-                                    <p class="text-xs text-slate-600" x-text="selectedArchive?.analysis_text"></p>
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+                                    <p class="text-xs font-bold text-blue-700 uppercase tracking-wide">Your Edit</p>
                                 </div>
-                                <p class="text-xs text-slate-500">This will replace your current text. Any unsaved changes will be lost.</p>
+                                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
+                                    <div x-html="analysisText"></div>
+                                </div>
+                                <p class="text-xs text-blue-600 mt-1.5 text-right">
+                                    <span x-text="getWordCount()"></span> words
+                                </p>
                             </div>
                         </div>
-                        <div class="flex gap-3 justify-end">
-                            <button @click="showCopyModal = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition">Cancel</button>
-                            <button @click="confirmCopy()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition">Copy Text</button>
+                        <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
+                            <span class="text-orange-500">✏️</span>
+                            <p class="text-xs font-semibold text-orange-700">You've edited the admin draft — this will overwrite the currently live version.</p>
                         </div>
                     </div>
-                </div>
+                </template>
 
-                <!-- RESET MODAL -->
-                <div x-show="showResetModal" 
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
-                     @click.self="showResetModal = false">
-                    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" @click.stop>
-                        <div class="flex items-start gap-4 mb-4">
-                            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                                </svg>
+                <!-- Scenario 1b: Draft loaded + live exists + NO changes → 2-col (skip redundant "Your Edit" column) -->
+                <template x-if="originalSubmittedText && currentlyPublishedText && originalSubmittedText === analysisText">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="h-px flex-1 bg-slate-200"></div>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Comparison</p>
+                            <div class="h-px flex-1 bg-slate-200"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0"></span>
+                                    <p class="text-xs font-bold text-green-700 uppercase tracking-wide">Currently Live</p>
+                                </div>
+                                <div class="bg-green-50 border border-green-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
+                                    <div x-html="currentlyPublishedText"></div>
+                                </div>
+                                <p class="text-xs text-green-600 mt-1.5 text-right">
+                                    <span x-text="currentlyPublishedText.replace(/<[^>]*>/g,'').trim().split(/\s+/).filter(w=>w.length>0).length"></span> words
+                                </p>
                             </div>
-                            <div class="flex-1">
-                                <h3 class="text-lg font-bold text-slate-800 mb-2">Reset to Default</h3>
-                                <p class="text-sm text-slate-600 mb-4">Are you sure you want to reset to the default text?</p>
-                                <p class="text-xs text-orange-600 font-semibold">⚠️ Any unsaved changes will be lost!</p>
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                                    <p class="text-xs font-bold text-amber-700 uppercase tracking-wide">Admin Submitted <span class="text-slate-400 font-normal normal-case">(unchanged)</span></p>
+                                </div>
+                                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
+                                    <div x-html="originalSubmittedText"></div>
+                                </div>
+                                <p class="text-xs text-amber-600 mt-1.5 text-right">
+                                    <span x-text="originalSubmittedText.replace(/<[^>]*>/g,'').trim().split(/\s+/).filter(w=>w.length>0).length"></span> words
+                                </p>
                             </div>
                         </div>
-                        <div class="flex gap-3 justify-end">
-                            <button @click="showResetModal = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition">Cancel</button>
-                            <button @click="confirmReset()" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition">Reset to Default</button>
+                        <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
+                            <span class="text-green-500">✅</span>
+                            <p class="text-xs font-semibold text-green-700">Publishing admin's submission as-is — this will overwrite the currently live version.</p>
                         </div>
                     </div>
-                </div>
+                </template>
 
-                <!-- Error Toast -->
-                <div x-show="showError" x-transition @click="showError = false"
-                     class="fixed bottom-6 right-6 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg cursor-pointer z-50">
-                    ❌ <span x-text="errorMessage"></span>
-                </div>
+                <!-- Scenario 2: Admin draft loaded, nothing published yet → 2 columns -->
+                <template x-if="originalSubmittedText && !currentlyPublishedText">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="h-px flex-1 bg-slate-200"></div>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Comparison</p>
+                            <div class="h-px flex-1 bg-slate-200"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                                    <p class="text-xs font-bold text-amber-700 uppercase tracking-wide">Admin Submitted</p>
+                                </div>
+                                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
+                                    <div x-html="originalSubmittedText"></div>
+                                </div>
+                                <p class="text-xs text-amber-600 mt-1.5 text-right">
+                                    <span x-text="originalSubmittedText.replace(/<[^>]*>/g,'').trim().split(/\s+/).filter(w=>w.length>0).length"></span> words
+                                </p>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+                                    <p class="text-xs font-bold text-blue-700 uppercase tracking-wide">Your Edited Version</p>
+                                </div>
+                                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
+                                    <div x-html="analysisText"></div>
+                                </div>
+                                <p class="text-xs text-blue-600 mt-1.5 text-right">
+                                    <span x-text="getWordCount()"></span> words
+                                </p>
+                            </div>
+                        </div>
+                        <template x-if="originalSubmittedText !== analysisText">
+                            <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
+                                <span class="text-orange-500">✏️</span>
+                                <p class="text-xs font-semibold text-orange-700">You have made changes from the admin's original submission.</p>
+                            </div>
+                        </template>
+                        <template x-if="originalSubmittedText === analysisText">
+                            <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
+                                <span class="text-green-500">✅</span>
+                                <p class="text-xs font-semibold text-green-700">No changes made — publishing admin's submission as-is.</p>
+                            </div>
+                        </template>
+                    </div>
+                </template>
 
-                <!-- Success Toast -->
-                <div x-show="showSuccessToast" x-transition @click="showSuccessToast = false"
-                     class="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg cursor-pointer z-50">
-                    ✅ <span x-text="successToastMessage"></span>
-                </div>
+                <!-- Scenario 3: No draft loaded, direct edit overwriting live version → 2 columns -->
+                <template x-if="!originalSubmittedText && originalText && originalText !== analysisText">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="h-px flex-1 bg-slate-200"></div>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Comparison</p>
+                            <div class="h-px flex-1 bg-slate-200"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0"></span>
+                                    <p class="text-xs font-bold text-green-700 uppercase tracking-wide">Currently Published</p>
+                                </div>
+                                <div class="bg-green-50 border border-green-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
+                                    <div x-html="originalText"></div>
+                                </div>
+                                <p class="text-xs text-green-600 mt-1.5 text-right">
+                                    <span x-text="originalText.replace(/<[^>]*>/g,'').trim().split(/\s+/).filter(w=>w.length>0).length"></span> words
+                                </p>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+                                    <p class="text-xs font-bold text-blue-700 uppercase tracking-wide">Your New Version</p>
+                                </div>
+                                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
+                                    <div x-html="analysisText"></div>
+                                </div>
+                                <p class="text-xs text-blue-600 mt-1.5 text-right">
+                                    <span x-text="getWordCount()"></span> words
+                                </p>
+                            </div>
+                        </div>
+                        <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
+                            <span class="text-orange-500">✏️</span>
+                            <p class="text-xs font-semibold text-orange-700">You are overwriting the currently published version with your edits.</p>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Scenario 4: Brand new — nothing published, no draft → single preview -->
+                <template x-if="!originalSubmittedText && (!originalText || originalText === analysisText)">
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3">Analysis Content:</h4>
+                        <div class="bg-gray-50 rounded-lg p-4 mb-5 max-h-80 overflow-y-auto border border-gray-200 prose prose-sm max-w-none custom-scrollbar">
+                            <div x-html="analysisText"></div>
+                        </div>
+                    </div>
+                </template>
+
+            </div><!-- end p-6 content -->
+
+            <!-- Footer -->
+            <div class="p-6 border-t border-gray-200 bg-gray-50 flex gap-3 sticky bottom-0">
+                <button @click="showConfirmModal = false"
+                        class="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition">
+                    Cancel
+                </button>
+                <button @click="confirmSave()"
+                        class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition">
+                    💾 Save &amp; Publish
+                </button>
             </div>
         </div>
+    </div>
+
+    <!-- ── SUCCESS MODAL ── -->
+    <div x-show="showSuccessModal"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20 p-4"
+         @click.self="showSuccessModal = false">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full" @click.stop>
+            <div class="p-8 text-center">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">Published!</h3>
+                <p class="text-gray-600 mb-2">The analysis is now live on the public Supply Side page.</p>
+                <div class="bg-green-50 rounded-lg p-3 mb-6 border border-green-200">
+                    <p class="text-xs text-green-700">
+                        <strong x-text="publishTargetProvince || selectedProvince"></strong> • <strong x-text="publishTargetYear || selectedAcademicYear"></strong>
+                    </p>
+                </div>
+                <button @click="showSuccessModal = false"
+                        class="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition">
+                    Continue
+                </button>
+            </div>
         </div>
+    </div>
+
+    <!-- ── COPY ARCHIVE MODAL ── -->
+    <div x-show="showCopyModal"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20"
+         @click.self="showCopyModal = false">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" @click.stop>
+            <div class="flex items-start gap-4 mb-4">
+                <div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">Copy from Archive</h3>
+                    <p class="text-sm text-slate-600 mb-4">Copy analysis text from <strong x-text="selectedArchive?.version"></strong>?</p>
+                    <div class="bg-slate-50 rounded-lg p-3 mb-4 border border-slate-200 max-h-32 overflow-y-auto">
+                        <p class="text-xs text-slate-600" x-text="selectedArchive?.analysis_text"></p>
+                    </div>
+                    <p class="text-xs text-slate-500">This will replace your current text. Any unsaved changes will be lost.</p>
+                </div>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button @click="showCopyModal = false"
+                        class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition">
+                    Cancel
+                </button>
+                <button @click="confirmCopy()"
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition">
+                    Copy Text
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── RESET MODAL ── -->
+    <div x-show="showResetModal"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20"
+         @click.self="showResetModal = false">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" @click.stop>
+            <div class="flex items-start gap-4 mb-4">
+                <div class="flex-shrink-0 w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">Reset to Original Draft</h3>
+                    <p class="text-sm text-slate-600 mb-1">This will restore the editor back to the original loaded draft:</p>
+                    <p class="text-sm font-semibold text-slate-700 mb-3">
+                        📍 <span x-text="draftProvince || '—'"></span> &nbsp;•&nbsp; 📖 <span x-text="draftYear || '—'"></span>
+                    </p>
+                    <p class="text-xs text-orange-600 font-semibold">⚠️ Any changes you made will be lost!</p>
+                </div>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button @click="showResetModal = false"
+                        class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition">
+                    Cancel
+                </button>
+                <button @click="confirmReset()"
+                        class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition">
+                    Reset to Original Draft
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div x-show="showError" x-transition @click="showError = false"
+         class="fixed bottom-6 right-6 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg cursor-pointer z-50">
+        ❌ <span x-text="errorMessage"></span>
+    </div>
+
+    <!-- Success Toast -->
+    <div x-show="showSuccessToast" x-transition @click="showSuccessToast = false"
+         class="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg cursor-pointer z-50">
+        ✅ <span x-text="successToastMessage"></span>
     </div>
 
     <script>
         function supplySideEditor() {
             return {
-                provinces: [],
-                academicYears: [],
-                selectedProvince: 'All Provinces',
+                provinces:            [],
+                academicYears:        [],
+                selectedProvince:     'All Provinces',
                 selectedAcademicYear: null,
-                analysisText: '',
-                originalText: '',
-                analysisId: null,
-                lastUpdated: null,
-                loading: false,
-                hasChanges: false,
-                showError: false,
-                errorMessage: '',
-                quill: null,
+                analysisText:         '',
+                originalText:         '',
+                analysisId:           null,
+                lastUpdated:          null,
+                loading:              false,
+                hasChanges:           false,
+                quill:                null,
+
+                // Pending submission from admin
+                pendingSubmission:     null,
+                loadingPending:        false,
+                allPendingSubmissions: [],
+                loadingAllPending:     false,
+
+                // Lock state — locked until a draft is loaded
+                isUnlocked: false,
+                originalSubmittedText: null,  // admin's original submitted text for diff
+
+                // Snapshot of the originally loaded draft — used by Reset to restore everything
+                draftProvince: null,
+                draftYear:     null,
+                draftText:     null,
+
+                // Locked publish target — set when a draft is loaded, never changed by filter dropdowns
+                publishTargetProvince: null,
+                publishTargetYear:     null,
+                currentlyPublishedText: null, // what's currently live for publishTarget province/year
+
+                // Archives
+                archivedAnalysis: [],
+                loadingArchives:  false,
+                selectedArchive:  null,
+
+                // Modals
                 showConfirmModal: false,
                 showSuccessModal: false,
-                showCopyModal: false,
-                showResetModal: false,
-                selectedArchive: null,
-                archivedAnalyses: [],
-                loadingArchives: false,
-                showSuccessToast: false,
+                showCopyModal:    false,
+                showResetModal:   false,
+                showPreviewModal: false,
+                previewDonutChart: null,
+                previewDisciplineLeft: [
+                    {name:'Business Administration',          pct:'27.1', color:'rgb(37, 99, 235)'},
+                    {name:'Education Science',                pct:'20.6', color:'rgb(220, 38, 38)'},
+                    {name:'Medical and Allied',               pct:'10.8', color:'rgb(22, 163, 74)'},
+                    {name:'Criminal Justice Education',       pct:'10.0', color:'rgb(234, 179, 8)'},
+                    {name:'Engineering and Technology',       pct:'6.9',  color:'rgb(249, 115, 22)'},
+                    {name:'IT-Related Disciplines',           pct:'5.3',  color:'rgb(124, 58, 237)'},
+                    {name:'Service Trades',                   pct:'3.0',  color:'rgb(20, 184, 166)'},
+                    {name:'Social and Behavioral Sciences',   pct:'2.9',  color:'rgb(236, 72, 153)'},
+                    {name:'Agriculture, Forestry, Fisheries', pct:'2.6',  color:'rgb(6, 182, 212)'},
+                    {name:'Maritime',                         pct:'2.5',  color:'rgb(132, 204, 22)'},
+                    {name:'Mathematics',                      pct:'1.6',  color:'rgb(96, 165, 250)'},
+                ],
+                previewDisciplineRight: [
+                    {name:'Other Disciplines',               pct:'1.6',  color:'rgb(248, 113, 113)'},
+                    {name:'Architecture and Town Planning',  pct:'1.3',  color:'rgb(74, 222, 128)'},
+                    {name:'Natural Science',                 pct:'0.9',  color:'rgb(250, 204, 21)'},
+                    {name:'Humanities',                      pct:'0.7',  color:'rgb(251, 146, 60)'},
+                    {name:'Mass Communication',              pct:'0.6',  color:'rgb(167, 139, 250)'},
+                    {name:'Fine and Applied Arts',           pct:'0.6',  color:'rgb(45, 212, 191)'},
+                    {name:'Religion and Theology',           pct:'0.5',  color:'rgb(244, 114, 182)'},
+                    {name:'Law and Jurisprudence',           pct:'0.4',  color:'rgb(34, 211, 238)'},
+                    {name:'Home Economics',                  pct:'0.0',  color:'rgb(163, 230, 53)'},
+                    {name:'General Programs',                pct:'0.0',  color:'rgb(37, 99, 235)'},
+                ],
+
+                // Toasts
+                showError:           false,
+                errorMessage:        '',
+                showSuccessToast:    false,
                 successToastMessage: '',
 
                 async init() {
                     await this.loadOptions();
-                    await this.loadAnalysis();
-                    await this.loadArchivedAnalyses();
-                    this.$nextTick(() => {
-                        this.initQuillEditor();
+                    await Promise.all([this.loadAll(), this.loadAllPending(), this.loadArchivedAnalysis()]);
+                    this.$nextTick(() => { this.initQuillEditor(); });
+                    this.$watch('showPreviewModal', val => {
+                        if (val) this.$nextTick(() => this.initPreviewDonut());
                     });
-                },
-                
-                getWordCount() {
-                    const text = this.analysisText.replace(/<[^>]*>/g, '').trim();
-                    const words = text.split(/\s+/).filter(w => w.length > 0);
-                    return words.length;
                 },
 
-                initQuillEditor() {
-                    if (this.quill) return;
-                    const editorElement = document.getElementById('quillEditor');
-                    if (!editorElement) { console.error('Quill editor element not found'); return; }
-                    const SizeStyle = Quill.import('attributors/style/size');
-                    SizeStyle.whitelist = ['8pt', '9pt', '10pt', '11pt', '12pt', '14pt', '16pt', '18pt', '20pt', '22pt', '24pt', '28pt', '36pt', '48pt', '72pt'];
-                    Quill.register(SizeStyle, true);
-                    this.quill = new Quill('#quillEditor', {
-                        theme: 'snow',
-                        modules: {
-                            toolbar: [
-                                [{ 'font': [] }, { 'size': ['8pt', '9pt', '10pt', '11pt', '12pt', '14pt', '16pt', '18pt', '20pt', '22pt', '24pt', '28pt', '36pt', '48pt', '72pt'] }],
-                                ['bold', 'italic', 'underline', 'strike'],
-                                [{ 'color': [] }, { 'background': [] }],
-                                [{ 'header': [1, 2, 3, false] }],
-                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                                [{ 'align': [] }],
-                                ['link'],
-                                ['clean']
-                            ]
-                        },
-                        placeholder: 'Enter executive analysis for supply side...'
-                    });
-                    this.quill.on('text-change', () => {
-                        this.analysisText = this.quill.root.innerHTML;
-                        this.hasChanges = true;
-                    });
-                    if (this.analysisText) { this.quill.root.innerHTML = this.analysisText; }
+                // ── Helpers ──────────────────────────────────────
+
+                getWordCount() {
+                    const text = this.analysisText.replace(/<[^>]*>/g, '').trim();
+                    return text.split(/\s+/).filter(w => w.length > 0).length;
                 },
+
+                formatDate(dateStr) {
+                    if (!dateStr) return '—';
+                    return new Date(dateStr).toLocaleString();
+                },
+
+                // ── Data Loading ─────────────────────────────────
 
                 async loadOptions() {
                     try {
-                        const response = await fetch('/api/supply-side-analysis/options');
-                        const data = await response.json();
+                        const res  = await fetch('/api/supply-side-analysis/options');
+                        const data = await res.json();
                         if (data.success) {
-                            this.provinces = data.provinces;
+                            this.provinces     = data.provinces;
                             this.academicYears = data.academic_years;
-                            if (this.academicYears.length > 0) { this.selectedAcademicYear = this.academicYears[0]; }
+                            if (this.academicYears.length > 0) {
+                                this.selectedAcademicYear = this.academicYears[0];
+                            }
                         }
-                    } catch (error) { console.error('Error loading options:', error); this.showErrorToast('Failed to load options'); }
+                    } catch (e) {
+                        this.showErrorToast('Failed to load options');
+                    }
+                },
+
+                // Reload academic years whenever the province dropdown changes.
+                // Mirrors the fix applied to the admin blade.
+                async loadYears() {
+                    try {
+                        const res  = await fetch(`/api/supply-side-analysis/years?province=${encodeURIComponent(this.selectedProvince)}`);
+                        const data = await res.json();
+                        if (data.success) {
+                            this.academicYears        = data.academic_years;
+                            // Reset to first available year for the newly selected province
+                            this.selectedAcademicYear = this.academicYears[0] ?? null;
+                        }
+                    } catch (e) {
+                        console.error('Error loading years:', e);
+                    }
+                },
+
+                async loadAll() {
+                    if (!this.selectedAcademicYear && this.academicYears.length > 0) {
+                        this.selectedAcademicYear = this.academicYears[0];
+                    }
+                    if (!this.selectedAcademicYear) return;
+                    await Promise.all([
+                        this.loadAnalysis(),
+                        this.loadPendingSubmission(),
+                        this.loadArchivedAnalysis(),
+                    ]);
+                },
+
+                // Only refresh sidebar (archives + pending) — never touches the editor.
+                // Used when filters change while a draft is already loaded.
+                async loadSidebarOnly() {
+                    if (!this.selectedAcademicYear) return;
+                    await Promise.all([
+                        this.loadPendingSubmission(),
+                        this.loadArchivedAnalysis(),
+                    ]);
                 },
 
                 async loadAnalysis() {
-                    if (!this.selectedAcademicYear) return;
                     this.loading = true;
                     try {
-                        const params = new URLSearchParams({ province: this.selectedProvince, academic_year: this.selectedAcademicYear });
-                        const response = await fetch(`/api/supply-side-analysis/show?${params}`);
-                        const data = await response.json();
+                        const params = new URLSearchParams({
+                            province:      this.selectedProvince,
+                            academic_year: this.selectedAcademicYear,
+                        });
+                        const res  = await fetch(`/api/supply-side-analysis/show?${params}`);
+                        const data = await res.json();
                         if (data.success) {
-                            this.analysisId = data.data.id;
+                            this.analysisId   = data.data.id;
                             this.analysisText = data.data.analysis_text;
                             this.originalText = data.data.analysis_text;
-                            this.lastUpdated = data.data.updated_at ? new Date(data.data.updated_at).toLocaleString() : null;
+                            this.lastUpdated  = data.data.updated_at
+                                ? new Date(data.data.updated_at).toLocaleString()
+                                : null;
                             this.hasChanges = false;
                             if (this.quill) { this.quill.root.innerHTML = this.analysisText; }
                         }
-                    } catch (error) { console.error('Error loading analysis:', error); this.showErrorToast('Failed to load analysis'); }
-                    finally { this.loading = false; }
+                    } catch (e) {
+                        this.showErrorToast('Failed to load analysis');
+                    } finally {
+                        this.loading = false;
+                    }
                 },
 
-                async loadArchivedAnalyses() {
+                async loadPendingSubmission() {
+                    this.loadingPending = true;
+                    try {
+                        const params = new URLSearchParams({
+                            province:      this.selectedProvince,
+                            academic_year: this.selectedAcademicYear,
+                        });
+                        const res  = await fetch(`/api/supply-side-analysis/pending-show?${params}`);
+                        const data = await res.json();
+                        this.pendingSubmission = data.success ? data.data : null;
+                    } catch (e) {
+                        console.error('Error loading pending:', e);
+                    } finally {
+                        this.loadingPending = false;
+                    }
+                },
+
+                async loadAllPending() {
+                    this.loadingAllPending = true;
+                    try {
+                        const res  = await fetch('/api/supply-side-analysis/pending-all');
+                        const data = await res.json();
+                        if (data.success) { this.allPendingSubmissions = data.data; }
+                    } catch (e) {
+                        console.error('Error loading all pending:', e);
+                    } finally {
+                        this.loadingAllPending = false;
+                    }
+                },
+
+                async loadArchivedAnalysis() {
                     this.loadingArchives = true;
                     try {
-                        const params = new URLSearchParams({ province: this.selectedProvince, academic_year: this.selectedAcademicYear });
-                        const response = await fetch(`/api/supply-side-analysis/archives?${params}`);
-                        const data = await response.json();
-                        if (data.success) { this.archivedAnalyses = data.archives; }
-                    } catch (error) { console.error('Error loading archives:', error); }
-                    finally { this.loadingArchives = false; }
+                        // No province/year filter — load ALL archives so they always
+                        // show on page load, not just after a submission is made.
+                        const res  = await fetch('/api/supply-side-analysis/archives');
+                        const data = await res.json();
+                        if (data.success) { this.archivedAnalysis = data.archives; }
+                    } catch (e) {
+                        console.error('Error loading archives:', e);
+                    } finally {
+                        this.loadingArchives = false;
+                    }
                 },
 
-                copyFromArchive(archive) { this.selectedArchive = archive; this.showCopyModal = true; },
+                // ── Pending Draft Actions ─────────────────────────
+
+                async loadPendingIntoEditor() {
+                    if (!this.pendingSubmission) return;
+                    const prov = this.pendingSubmission.province;
+                    const year = this.pendingSubmission.academic_year;
+                    const text = this.pendingSubmission.analysis_text;
+                    this.selectedProvince      = prov;
+                    this.selectedAcademicYear  = year;
+                    this.analysisText          = text;
+                    this.originalSubmittedText = text;
+                    // Snapshot for Reset — restores exactly what was loaded
+                    this.draftProvince = prov;
+                    this.draftYear     = year;
+                    this.draftText     = text;
+                    if (this.quill) { this.quill.root.innerHTML = this.analysisText; }
+                    this.hasChanges  = true;
+                    this.isUnlocked  = true;
+                    // Lock publish target
+                    this.publishTargetProvince = prov;
+                    this.publishTargetYear     = year;
+                    // Fetch what's currently live for this province/year
+                    try {
+                        const params = new URLSearchParams({ province: prov, academic_year: year });
+                        const res  = await fetch(`/api/supply-side-analysis/show?${params}`);
+                        const data = await res.json();
+                        this.currentlyPublishedText = (data.success && data.data?.analysis_text) ? data.data.analysis_text : null;
+                    } catch (e) {
+                        this.currentlyPublishedText = null;
+                    }
+                    this.showSuccessToastMessage('Admin draft loaded — review and publish when ready');
+                },
+
+                async loadPendingItemIntoEditor(item) {
+                    const prov = item.province;
+                    const year = item.academic_year;
+                    const text = item.analysis_text;
+                    this.selectedProvince      = prov;
+                    this.selectedAcademicYear  = year;
+                    this.analysisText          = text;
+                    this.originalSubmittedText = text;
+                    // Snapshot for Reset — restores exactly what was loaded
+                    this.draftProvince = prov;
+                    this.draftYear     = year;
+                    this.draftText     = text;
+                    if (this.quill) { this.quill.root.innerHTML = this.analysisText; }
+                    this.hasChanges        = true;
+                    this.isUnlocked        = true;
+                    this.pendingSubmission = item;
+                    // Lock publish target
+                    this.publishTargetProvince = prov;
+                    this.publishTargetYear     = year;
+                    // Fetch what's currently live for this province/year
+                    try {
+                        const params = new URLSearchParams({ province: prov, academic_year: year });
+                        const res  = await fetch(`/api/supply-side-analysis/show?${params}`);
+                        const data = await res.json();
+                        this.currentlyPublishedText = (data.success && data.data?.analysis_text) ? data.data.analysis_text : null;
+                    } catch (e) {
+                        this.currentlyPublishedText = null;
+                    }
+                    this.showSuccessToastMessage(`Draft loaded: ${prov} • ${year}`);
+                },
+
+                // ── Save & Publish ────────────────────────────────
+
+                async confirmSave() {
+                    this.showConfirmModal = false;
+                    this.loading = true;
+                    // Use locked publish target if available; fall back to filter dropdowns
+                    const province      = this.publishTargetProvince || this.selectedProvince;
+                    const academic_year = this.publishTargetYear     || this.selectedAcademicYear;
+                    try {
+                        const res = await fetch('/api/supply-side-analysis/save', {
+                            method:  'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            },
+                            body: JSON.stringify({
+                                province,
+                                academic_year,
+                                analysis_text: this.analysisText,
+                            }),
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.originalText          = this.analysisText;
+                            this.hasChanges            = false;
+                            this.analysisId            = data.data.id;
+                            this.lastUpdated           = new Date().toLocaleString();
+                            this.pendingSubmission     = null;
+                            this.originalSubmittedText = null;   // clear diff after publish
+                            this.currentlyPublishedText = null;  // clear 3-way diff state
+                            this.publishTargetProvince = null;
+                            this.publishTargetYear     = null;
+                            this.draftProvince         = null;   // clear reset snapshot
+                            this.draftYear             = null;
+                            this.draftText             = null;
+                            this.isUnlocked            = false;
+                            this.showSuccessModal      = true;
+                            await Promise.all([
+                                this.loadArchivedAnalysis(),  // refresh so newly published appears
+                                this.loadAllPending(),
+                            ]);
+                        } else {
+                            throw new Error(data.error || 'Failed to save');
+                        }
+                    } catch (e) {
+                        this.showErrorToast('Failed to save analysis');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                // ── Archive Copy ──────────────────────────────────
+
+                copyFromArchive(archive) {
+                    this.selectedArchive = archive;
+                    this.showCopyModal   = true;
+                },
 
                 confirmCopy() {
                     if (this.selectedArchive) {
-                        this.analysisText = this.selectedArchive.analysis_text;
-                        this.hasChanges = true;
-                        this.showCopyModal = false;
+                        this.analysisText    = this.selectedArchive.analysis_text;
+                        this.hasChanges      = true;
+                        this.showCopyModal   = false;
                         if (this.quill) { this.quill.root.innerHTML = this.analysisText; }
                         this.showSuccessToastMessage('Text copied from ' + this.selectedArchive.version);
                         this.selectedArchive = null;
                     }
                 },
 
-                async confirmSave() {
-                    this.showConfirmModal = false;
-                    this.loading = true;
-                    try {
-                        const response = await fetch('/api/supply-side-analysis/save', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-                            body: JSON.stringify({ province: this.selectedProvince, academic_year: this.selectedAcademicYear, analysis_text: this.analysisText })
-                        });
-                        const data = await response.json();
-                        if (data.success) {
-                            this.originalText = this.analysisText;
-                            this.hasChanges = false;
-                            this.analysisId = data.data.id;
-                            this.lastUpdated = new Date().toLocaleString();
-                            this.showSuccessModal = true;
-                            await this.loadArchivedAnalyses();
-                        } else { throw new Error(data.error || 'Failed to save'); }
-                    } catch (error) { console.error('Error saving analysis:', error); this.showErrorToast('Failed to save analysis'); }
-                    finally { this.loading = false; }
-                },
+                // ── Reset ─────────────────────────────────────────
 
                 resetToDefault() { this.showResetModal = true; },
 
-                async confirmReset() {
+                confirmReset() {
                     this.showResetModal = false;
-                    try {
-                        const response = await fetch('/api/supply-side-analysis/reset');
-                        const data = await response.json();
-                        if (data.success) {
-                            this.analysisText = data.default_text;
-                            this.hasChanges = true;
-                            if (this.quill) { this.quill.root.innerHTML = this.analysisText; }
-                            this.showSuccessToastMessage('Reset to default text');
-                        }
-                    } catch (error) { console.error('Error resetting:', error); this.showErrorToast('Failed to reset to default'); }
+                    if (!this.draftText) return; // nothing to restore
+                    // Restore province, year, and text exactly as they were when the draft was loaded
+                    this.selectedProvince     = this.draftProvince;
+                    this.selectedAcademicYear = this.draftYear;
+                    this.analysisText         = this.draftText;
+                    this.originalSubmittedText = this.draftText;
+                    if (this.quill) { this.quill.root.innerHTML = this.analysisText; }
+                    this.hasChanges = false; // back to original — no unsaved changes
+                    this.showSuccessToastMessage(`Reset to original draft: ${this.draftProvince} • ${this.draftYear}`);
                 },
 
+                // ── Quill ─────────────────────────────────────────
+
+                initQuillEditor() {
+                    if (this.quill) return;
+                    const el = document.getElementById('quillEditor');
+                    if (!el) { console.error('Quill editor element not found'); return; }
+
+                    const SizeStyle = Quill.import('attributors/style/size');
+                    SizeStyle.whitelist = ['8pt','9pt','10pt','11pt','12pt','14pt','16pt','18pt','20pt','22pt','24pt','28pt','36pt','48pt','72pt'];
+                    Quill.register(SizeStyle, true);
+
+                    this.quill = new Quill('#quillEditor', {
+                        theme: 'snow',
+                        modules: {
+                            toolbar: [
+                                [{ 'font': [] }, { 'size': ['8pt','9pt','10pt','11pt','12pt','14pt','16pt','18pt','20pt','22pt','24pt','28pt','36pt','48pt','72pt'] }],
+                                ['bold', 'italic', 'underline', 'strike'],
+                                [{ 'color': [] }, { 'background': [] }],
+                                [{ 'header': [1, 2, 3, false] }],
+                                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                [{ 'align': [] }],
+                                ['link'],
+                                ['clean'],
+                            ]
+                        },
+                        placeholder: 'Enter executive analysis for supply side...',
+                    });
+
+                    this.quill.on('text-change', () => {
+                        this.analysisText = this.quill.root.innerHTML;
+                        this.hasChanges   = true;
+                    });
+
+                    if (this.analysisText) { this.quill.root.innerHTML = this.analysisText; }
+                },
+
+                // ── Toasts ───────────────────────────────────────
+
                 showErrorToast(message) {
-                    this.errorMessage = message; this.showError = true;
+                    this.errorMessage = message;
+                    this.showError    = true;
                     setTimeout(() => { this.showError = false; }, 3000);
                 },
 
                 showSuccessToastMessage(message) {
-                    this.successToastMessage = message; this.showSuccessToast = true;
+                    this.successToastMessage = message;
+                    this.showSuccessToast    = true;
                     setTimeout(() => { this.showSuccessToast = false; }, 3000);
-                }
+                },
+
+                initPreviewDonut() {
+                    const canvas = document.getElementById('previewDonutChart');
+                    if (!canvas) return;
+                    if (this.previewDonutChart) { this.previewDonutChart.destroy(); }
+                    const all = [...this.previewDisciplineLeft, ...this.previewDisciplineRight];
+                    this.previewDonutChart = new Chart(canvas, {
+                        type: 'doughnut',
+                        data: {
+                            labels: all.map(i => i.name),
+                            datasets: [{
+                                data: all.map(i => parseFloat(i.pct)),
+                                backgroundColor: all.map(i => i.color),
+                                borderWidth: 2,
+                                borderColor: '#fff',
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (c) => `${c.label}: ${c.parsed}%`
+                                    }
+                                }
+                            },
+                            cutout: '60%',
+                        }
+                    });
+                },
             };
         }
     </script>

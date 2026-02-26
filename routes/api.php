@@ -45,6 +45,13 @@ Route::prefix('analysis-templates')->group(function () {
     Route::get('/', [AnalysisTemplateController::class, 'index']);
     Route::get('/placeholders', [AnalysisTemplateController::class, 'placeholders']);
     Route::get('/preview-data', [AnalysisTemplateController::class, 'previewData']);
+
+    // ── NEW: Pending workflow ──
+    Route::get('/pending-all', [AnalysisTemplateController::class, 'allPending']);
+    Route::get('/pending-count', [AnalysisTemplateController::class, 'pendingCount']);
+    Route::post('/submit', [AnalysisTemplateController::class, 'adminSubmit']);
+
+    // ⚠️ Wildcard routes MUST stay last
     Route::get('/{key}', [AnalysisTemplateController::class, 'show']);
     Route::put('/{key}', [AnalysisTemplateController::class, 'update']);
     Route::post('/{key}/reset', [AnalysisTemplateController::class, 'reset']);
@@ -124,10 +131,23 @@ Route::prefix('graduation-rate')->name('graduation-rate.')->group(function () {
 
 // ==================== SUPPLY SIDE ANALYSIS ROUTES ====================
 Route::prefix('supply-side-analysis')->group(function () {
+
+    // ── Existing routes (unchanged) ──
     Route::get('/options', [SupplySideAnalysisController::class, 'index']);
     Route::get('/show', [SupplySideAnalysisController::class, 'show']);
     Route::post('/save', [SupplySideAnalysisController::class, 'save']);
     Route::get('/reset', [SupplySideAnalysisController::class, 'reset']);
     Route::delete('/delete', [SupplySideAnalysisController::class, 'delete']);
-    Route::get('/archives', [SupplySideAnalysisController::class, 'getArchivedAnalyses']);
+    Route::get('/archives', [SupplySideAnalysisController::class, 'getArchivedSis']);
+    Route::get('/years', [SupplySideAnalysisController::class, 'getYears']);
+
+    // ── NEW: Admin submits a draft (saved as 'pending') ──
+    Route::post('/submit', [SupplySideAnalysisController::class, 'adminSubmit']);
+
+    // ── NEW: Load the pending draft (used by both admin & statistician editors) ──
+    // ⚠️ Must be before any wildcard routes
+    Route::get('/pending-show', [SupplySideAnalysisController::class, 'showPending']);
+    Route::get('/pending-all', [SupplySideAnalysisController::class, 'allPending']);
+    // ── NEW: Badge count for statistician sidebar polling ──
+    Route::get('/pending-count', [SupplySideAnalysisController::class, 'pendingCount']);
 });

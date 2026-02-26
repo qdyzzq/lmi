@@ -440,10 +440,16 @@
                     <p class="font-bold text-lg text-gray-900" id="confirmSaveYear"></p>
                 </div>
 
-                <div id="confirmSaveDeletionWarning" class="hidden bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-                    <p class="text-sm font-semibold text-red-800">
-                        ⚠️ This will replace the existing graduation rate data for this academic year!
-                    </p>
+                <div id="confirmSaveDeletionWarning" class="hidden mb-6">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
+                        <p class="text-xs font-semibold text-green-800 mb-2">📝 Modified Field</p>
+                        <div class="flex items-center gap-2 text-sm flex-wrap">
+                            <span class="font-medium text-gray-700">Graduation Rate:</span>
+                            <span id="confirmOldRate" class="text-red-500 font-semibold"></span>
+                            <span class="text-gray-500 font-bold">→</span>
+                            <span id="confirmNewRate" class="text-green-600 font-semibold"></span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="space-y-3 mb-6">
@@ -1049,6 +1055,9 @@
             document.getElementById('confirmSaveEnrollees').textContent = enrollees;
 
             if (isUpdate) {
+                const oldRate = parseFloat(graduationRateData.graduation_rate || 0).toFixed(2) + '%';
+                document.getElementById('confirmOldRate').textContent = oldRate;
+                document.getElementById('confirmNewRate').textContent = graduationRate.toFixed(2) + '%';
                 document.getElementById('confirmSaveDeletionWarning').classList.remove('hidden');
             } else {
                 document.getElementById('confirmSaveDeletionWarning').classList.add('hidden');

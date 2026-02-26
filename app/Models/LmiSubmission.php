@@ -14,6 +14,7 @@ class LmiSubmission extends Model
         'respondent_name',
         'position',
         'contact_number',
+        'contact_type',       // ← ADDED: 'mobile' or 'telephone'
         'email',
         'industry_sector',
         'company_size',
@@ -26,7 +27,7 @@ class LmiSubmission extends Model
 
     protected $casts = [
         'submitted_at' => 'datetime',
-        'reviewed_at' => 'datetime',
+        'reviewed_at'  => 'datetime',
     ];
 
     public function hardToFillRoles()
@@ -38,10 +39,11 @@ class LmiSubmission extends Model
     {
         return $this->hasMany(LmiDiagnosis::class);
     }
+
     public function diagnosis()
-{
-    return $this->hasOne(LmiDiagnosis::class);
-}
+    {
+        return $this->hasOne(LmiDiagnosis::class);
+    }
 
     public function engagement()
     {
@@ -51,6 +53,16 @@ class LmiSubmission extends Model
     public function reviewer()
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    // ── Handy accessor: returns the number with its prefix label ──
+    // e.g. "+63 9123456789" or "082-123-4567"
+    public function getFormattedContactAttribute(): string
+    {
+        if ($this->contact_type === 'telephone') {
+            return $this->contact_number;
+        }
+        return '+63 ' . $this->contact_number;
     }
 
     public function scopePending($query)

@@ -89,7 +89,7 @@
                                         <td class="px-6 py-4 text-sm font-bold text-blue-900">Household Population</td>
                                         <td class="px-6 py-4 text-sm text-slate-600">{{ number_format($record->household_population) }}</td>
                                         <td class="px-6 py-4">
-                                            <input type="number" value="{{ $record->household_population }}" class="calc-trigger calc-lfpr border border-slate-300 rounded px-3 py-1 text-sm w-full max-w-[200px] font-bold" data-field="household_population">
+                                            <input type="text" inputmode="decimal" value="{{ number_format($record->household_population) }}" class="formatted-number calc-trigger calc-lfpr border border-slate-300 rounded px-3 py-1 text-sm w-full max-w-[200px] font-bold" data-field="household_population" data-raw="{{ $record->household_population }}">
                                         </td>
                                     </tr>
                                     <tr class="hover:bg-slate-50 bg-blue-50/30">
@@ -126,28 +126,28 @@
                                         <td class="px-6 py-4 text-sm text-slate-500">Labor Force (Auto)</td>
                                         <td class="px-6 py-4 text-sm text-slate-400">{{ number_format($record->labor_force) }}</td>
                                         <td class="px-6 py-4">
-                                            <input type="number" value="{{ $record->labor_force }}" class="output-labor-force bg-slate-200 border border-slate-300 rounded px-3 py-1 text-sm w-full max-w-[200px] font-bold" data-field="labor_force" readonly>
+                                            <input type="text" value="{{ number_format($record->labor_force) }}" class="output-labor-force formatted-number bg-slate-200 border border-slate-300 rounded px-3 py-1 text-sm w-full max-w-[200px] font-bold" data-field="labor_force" data-raw="{{ $record->labor_force }}" readonly>
                                         </td>
                                     </tr>
                                     <tr class="bg-slate-100 italic">
                                         <td class="px-6 py-4 text-sm text-slate-500">Employed (Auto)</td>
                                         <td class="px-6 py-4 text-sm text-slate-400">{{ number_format($record->employed) }}</td>
                                         <td class="px-6 py-4">
-                                            <input type="number" value="{{ $record->employed }}" class="output-employed bg-slate-200 border border-slate-300 rounded px-3 py-1 text-sm w-full max-w-[200px] font-bold" data-field="employed" readonly>
+                                            <input type="text" value="{{ number_format($record->employed) }}" class="output-employed formatted-number bg-slate-200 border border-slate-300 rounded px-3 py-1 text-sm w-full max-w-[200px] font-bold" data-field="employed" data-raw="{{ $record->employed }}" readonly>
                                         </td>
                                     </tr>
                                     <tr class="bg-slate-100 italic">
                                         <td class="px-6 py-4 text-sm text-slate-500">Unemployed (Auto)</td>
                                         <td class="px-6 py-4 text-sm text-slate-400">{{ number_format($record->unemployed) }}</td>
                                         <td class="px-6 py-4">
-                                            <input type="number" value="{{ $record->unemployed }}" class="output-unemployed bg-slate-200 border border-slate-300 rounded px-3 py-1 text-sm w-full max-w-[200px] font-bold" data-field="unemployed" readonly>
+                                            <input type="text" value="{{ number_format($record->unemployed) }}" class="output-unemployed formatted-number bg-slate-200 border border-slate-300 rounded px-3 py-1 text-sm w-full max-w-[200px] font-bold" data-field="unemployed" data-raw="{{ $record->unemployed }}" readonly>
                                         </td>
                                     </tr>
                                     <tr class="bg-slate-100 italic">
                                         <td class="px-6 py-4 text-sm text-slate-500">Underemployed (Auto)</td>
                                         <td class="px-6 py-4 text-sm text-slate-400">{{ number_format($record->underemployed) }}</td>
                                         <td class="px-6 py-4">
-                                            <input type="number" value="{{ $record->underemployed }}" class="output-underemployed bg-slate-200 border border-slate-300 rounded px-3 py-1 text-sm w-full max-w-[200px] font-bold" data-field="underemployed" readonly>
+                                            <input type="text" value="{{ number_format($record->underemployed) }}" class="output-underemployed formatted-number bg-slate-200 border border-slate-300 rounded px-3 py-1 text-sm w-full max-w-[200px] font-bold" data-field="underemployed" data-raw="{{ $record->underemployed }}" readonly>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -318,14 +318,91 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.currentPostButton = null;
 
+    // --- Number Formatting Helpers ---
+
+    // Format a numeric string with commas, preserving decimals and trailing dot
+    function formatWithCommas(str) {
+        // Allow digits, one dot, and nothing else
+        let clean = str.replace(/[^0-9.]/g, '');
+        // Prevent multiple dots
+        const parts = clean.split('.');
+        if (parts.length > 2) clean = parts[0] + '.' + parts.slice(1).join('');
+        const [intPart, decPart] = clean.split('.');
+        const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return decPart !== undefined ? formatted + '.' + decPart : formatted;
+    }
+
+    // Get raw numeric value from a formatted-number input (strips commas)
+    function getRaw(input) {
+        return parseFloat(input.value.replace(/,/g, '')) || 0;
+    }
+
+    // Set formatted display value on a formatted-number input
+    function setFormatted(input, rawValue) {
+        if (rawValue === '' || isNaN(rawValue)) {
+            input.value = '';
+            return;
+        }
+        const rounded = Math.round(rawValue);
+        input.value = rounded.toLocaleString('en-US');
+    }
+
+    // Attach live formatting to all .formatted-number inputs (not readonly)
+    document.querySelectorAll('input.formatted-number:not([readonly])').forEach(function(input) {
+        input.addEventListener('input', function(e) {
+            const raw = e.target.value;
+            const cursorPos = e.target.selectionStart;
+            const prevLen = raw.length;
+
+            // Allow typing decimals: don't reformat mid-decimal entry
+            if (raw.endsWith('.') || raw.endsWith('.0') || /\.\d*0$/.test(raw)) {
+                // Just clean non-numeric chars except dot, keep as-is for now
+                const cleaned = raw.replace(/[^0-9.]/g, '');
+                const cParts = cleaned.split('.');
+                const intFormatted = cParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                const newVal = cParts.length > 1 ? intFormatted + '.' + cParts[1] : intFormatted;
+                e.target.value = newVal;
+                return;
+            }
+
+            const formatted = formatWithCommas(raw);
+            e.target.value = formatted;
+            // Adjust cursor for added/removed commas
+            const diff = formatted.length - prevLen;
+            try { e.target.setSelectionRange(cursorPos + diff, cursorPos + diff); } catch(ex) {}
+        });
+
+        // On blur: fully clean up (e.g. trailing dot)
+        input.addEventListener('blur', function(e) {
+            const numVal = parseFloat(e.target.value.replace(/,/g, ''));
+            if (!isNaN(numVal)) {
+                e.target.value = numVal.toLocaleString('en-US', { maximumFractionDigits: 4 });
+            }
+        });
+    });
+
     // --- Calculation Logic ---
     function normalizeRate(value) {
         return value > 1 ? value / 100 : value;
     }
 
+    function getRawField(card, field) {
+        const el = card.querySelector(`[data-field="${field}"]`);
+        if (!el) return NaN;
+        // formatted-number inputs need comma-stripped; number inputs read directly
+        return parseFloat(el.value.replace(/,/g, ''));
+    }
+
+    function setAutoField(card, field, rawValue) {
+        const el = card.querySelector(`[data-field="${field}"]`);
+        if (!el) return;
+        const rounded = Math.round(rawValue);
+        el.value = rounded.toLocaleString('en-US');
+    }
+
     function calculateLaborForce(card) {
-        const household = parseFloat(card.querySelector('[data-field="household_population"]').value);
-        const lfpr = parseFloat(card.querySelector('[data-field="lfpr"]').value);
+        const household = getRawField(card, 'household_population');
+        const lfpr = getRawField(card, 'lfpr');
 
         if (isNaN(household) || isNaN(lfpr)) {
             card.querySelector('[data-field="labor_force"]').value = '';
@@ -333,15 +410,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const laborForce = household * normalizeRate(lfpr);
-        card.querySelector('[data-field="labor_force"]').value = Math.round(laborForce);
+        setAutoField(card, 'labor_force', laborForce);
         
         calculateEmployed(card);
         calculateUnemployed(card);
     }
 
     function calculateEmployed(card) {
-        const laborForce = parseFloat(card.querySelector('[data-field="labor_force"]').value);
-        const employmentRate = parseFloat(card.querySelector('[data-field="employment_rate"]').value);
+        const laborForce = getRawField(card, 'labor_force');
+        const employmentRate = getRawField(card, 'employment_rate');
 
         if (isNaN(laborForce) || isNaN(employmentRate)) {
             card.querySelector('[data-field="employed"]').value = '';
@@ -349,13 +426,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const employed = laborForce * normalizeRate(employmentRate);
-        card.querySelector('[data-field="employed"]').value = Math.round(employed);
+        setAutoField(card, 'employed', employed);
         calculateUnderemployed(card);
     }
 
     function calculateUnderemployed(card) {
-        const employed = parseFloat(card.querySelector('[data-field="employed"]').value);
-        const underemploymentRate = parseFloat(card.querySelector('[data-field="underemployment_rate"]').value);
+        const employed = getRawField(card, 'employed');
+        const underemploymentRate = getRawField(card, 'underemployment_rate');
 
         if (isNaN(employed) || isNaN(underemploymentRate)) {
             card.querySelector('[data-field="underemployed"]').value = '';
@@ -363,12 +440,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const underemployed = employed * normalizeRate(underemploymentRate);
-        card.querySelector('[data-field="underemployed"]').value = Math.round(underemployed);
+        setAutoField(card, 'underemployed', underemployed);
     }
 
     function calculateUnemployed(card) {
-        const laborForce = parseFloat(card.querySelector('[data-field="labor_force"]').value);
-        const unemploymentRate = parseFloat(card.querySelector('[data-field="unemployment_rate"]').value);
+        const laborForce = getRawField(card, 'labor_force');
+        const unemploymentRate = getRawField(card, 'unemployment_rate');
 
         if (isNaN(laborForce) || isNaN(unemploymentRate)) {
             card.querySelector('[data-field="unemployed"]').value = '';
@@ -376,7 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const unemployed = laborForce * normalizeRate(unemploymentRate);
-        card.querySelector('[data-field="unemployed"]').value = Math.round(unemployed);
+        setAutoField(card, 'unemployed', unemployed);
     }
 
     // Initialize calculations
@@ -434,11 +511,11 @@ document.addEventListener('DOMContentLoaded', function() {
             pending_id: pendingId,
             year: card.querySelector('[data-field="year"]').value,
             month: card.querySelector('[data-field="month"]').value,
-            household_population: card.querySelector('[data-field="household_population"]').value,
-            labor_force: card.querySelector('[data-field="labor_force"]').value,
-            employed: card.querySelector('[data-field="employed"]').value,
-            underemployed: card.querySelector('[data-field="underemployed"]').value,
-            unemployed: card.querySelector('[data-field="unemployed"]').value,
+            household_population: parseFloat(card.querySelector('[data-field="household_population"]').value.replace(/,/g, '')),
+            labor_force: parseFloat(card.querySelector('[data-field="labor_force"]').value.replace(/,/g, '')),
+            employed: parseFloat(card.querySelector('[data-field="employed"]').value.replace(/,/g, '')),
+            underemployed: parseFloat(card.querySelector('[data-field="underemployed"]').value.replace(/,/g, '')),
+            unemployed: parseFloat(card.querySelector('[data-field="unemployed"]').value.replace(/,/g, '')),
             labor_force_participation_rate: Number(card.querySelector('[data-field="lfpr"]').value),
             employment_rate: Number(card.querySelector('[data-field="employment_rate"]').value),
             underemployment_rate: Number(card.querySelector('[data-field="underemployment_rate"]').value),

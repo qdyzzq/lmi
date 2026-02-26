@@ -17,10 +17,14 @@ class SupplySideAnalysis extends Model
         'analysis_text',
         'is_active',
         'updated_by',
+        'status',        // 'pending' | 'published'
+        'submitted_by',
+        'submitted_at',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_active'    => 'boolean',
+        'submitted_at' => 'datetime',
     ];
 
     // ─── Scopes ───────────────────────────────────────────
@@ -28,6 +32,16 @@ class SupplySideAnalysis extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
     }
 
     public function scopeForProvince($query, $province)
@@ -49,10 +63,6 @@ class SupplySideAnalysis extends Model
 
     // ─── Helpers ──────────────────────────────────────────
 
-    /**
-     * Get default analysis text
-     * THIS METHOD WAS MISSING - THIS IS THE FIX!
-     */
     public static function getDefaultText(): string
     {
         return "Supply is robust but misaligned. While total enrollment in Davao Region is increasing, the Education and Business Administration disciplines account for over 45% of the total student population, potentially saturating those labor markets.\n\nConversely, Engineering & Tech enrollments are steady but may not meet the projected infrastructure boom demands.\n\nLicensure performance varies significantly, with Nursing leading at 75%, while CPA performance remains a concern at 25%.";

@@ -71,7 +71,6 @@ class JobTitleController extends Controller
 
     /**
      * Show pending submissions for statistician
-     * FIX: exclude null-year records to prevent groupBy keying on empty string
      */
     public function pendingSubmissions()
     {
@@ -88,7 +87,6 @@ class JobTitleController extends Controller
 
     /**
      * Approve job titles
-     * FIX: removed `int` type hint, added null-safe year handling
      */
     public function approve(Request $request, $year)
     {
@@ -139,14 +137,10 @@ class JobTitleController extends Controller
 
     /**
      * Reject job titles
-     * FIX: added null-safe year handling to prevent SQL "= null" error
+     * Reason field removed — rejection no longer requires a comment
      */
     public function reject(Request $request, $year)
     {
-        $validated = $request->validate([
-            'reason' => 'required|string|max:500',
-        ]);
-
         try {
             $query = JobTitle::where('status', 'pending');
 
@@ -157,10 +151,9 @@ class JobTitleController extends Controller
             }
 
             $query->update([
-                'status'           => 'rejected',
-                'reviewed_by'      => auth()->id(),
-                'reviewed_at'      => now(),
-                'rejection_reason' => $validated['reason'],
+                'status'      => 'rejected',
+                'reviewed_by' => auth()->id(),
+                'reviewed_at' => now(),
             ]);
 
             return response()->json([

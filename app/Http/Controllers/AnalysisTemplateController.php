@@ -18,6 +18,11 @@ class AnalysisTemplateController extends Controller
         return view('statistician.template_editor');
     }
 
+    public function adminEditor()
+    {
+        return view('admin.template_editor');
+    }
+
     // ─── INDEX (load templates for a given year + month) ─────────────────────
 
     public function index(Request $request)
@@ -92,9 +97,9 @@ class AnalysisTemplateController extends Controller
                 'data'            => $templates,
                 'years'           => $availableYears,
                 'selected_year'   => $year,
-                'months'          => $availableMonths,   // e.g. [1, 4, 7, 10]
+                'months'          => $availableMonths,
                 'selected_month'  => $month,
-                'quarter_labels'  => self::QUARTERS,     // {1:"January", 4:"April", ...}
+                'quarter_labels'  => self::QUARTERS,
             ]);
 
         } catch (\Exception $e) {
@@ -103,83 +108,43 @@ class AnalysisTemplateController extends Controller
         }
     }
 
-    // ─── NEW: PREVIEW DATA (fetch actual stats for preview) ──────────────────
+    // ─── PREVIEW DATA ─────────────────────────────────────────────────────────
 
     public function previewData(Request $request)
     {
         try {
-            $year = (int)$request->query('year');
+            $year  = (int)$request->query('year');
             $month = (int)$request->query('month');
 
-            // Get previous period
             $previous = $this->getPreviousPeriod($month, $year);
 
-            // Fetch current period stats
             $current = DB::table('regional_labor_market_statistics')
                 ->where('year', $year)
                 ->where('month', $month)
                 ->first();
 
-            // Fetch previous period stats
             $prev = DB::table('regional_labor_market_statistics')
                 ->where('year', $previous['year'])
                 ->where('month', $previous['month'])
                 ->first();
 
             if (!$current) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No data found for the selected period'
-                ], 404);
+                return response()->json(['success' => false, 'error' => 'No data found for the selected period'], 404);
             }
 
-            // Format period labels
-            $currentPeriod = self::QUARTERS[$month] . ' ' . $year;
+            $currentPeriod  = self::QUARTERS[$month] . ' ' . $year;
             $previousPeriod = self::QUARTERS[$previous['month']] . ' ' . $previous['year'];
 
-            // Build preview data for each metric
             $previewData = [];
 
-            // Employment
             if ($current && $prev) {
-                $previewData['employment'] = $this->buildMetricData(
-                    'employment_rate',
-                    $current,
-                    $prev,
-                    $currentPeriod,
-                    $previousPeriod
-                );
-
-                $previewData['underemployment'] = $this->buildMetricData(
-                    'underemployment_rate',
-                    $current,
-                    $prev,
-                    $currentPeriod,
-                    $previousPeriod
-                );
-
-                $previewData['unemployment'] = $this->buildMetricData(
-                    'unemployment_rate',
-                    $current,
-                    $prev,
-                    $currentPeriod,
-                    $previousPeriod
-                );
-
-                $previewData['lfpr'] = $this->buildMetricData(
-                    'labor_force_participation_rate',
-                    $current,
-                    $prev,
-                    $currentPeriod,
-                    $previousPeriod
-                );
+                $previewData['employment']      = $this->buildMetricData('employment_rate', $current, $prev, $currentPeriod, $previousPeriod);
+                $previewData['underemployment'] = $this->buildMetricData('underemployment_rate', $current, $prev, $currentPeriod, $previousPeriod);
+                $previewData['unemployment']    = $this->buildMetricData('unemployment_rate', $current, $prev, $currentPeriod, $previousPeriod);
+                $previewData['lfpr']            = $this->buildMetricData('labor_force_participation_rate', $current, $prev, $currentPeriod, $previousPeriod);
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $previewData,
-                'has_data' => !empty($previewData)
-            ]);
+            return response()->json(['success' => true, 'data' => $previewData, 'has_data' => !empty($previewData)]);
 
         } catch (\Exception $e) {
             Log::error('AnalysisTemplateController@previewData', ['error' => $e->getMessage()]);
@@ -192,31 +157,23 @@ class AnalysisTemplateController extends Controller
     private function buildMetricData($field, $current, $prev, $currentPeriod, $previousPeriod)
     {
         $currentRate = $current->{$field} ?? 0;
-        $prevRate = $prev->{$field} ?? 0;
+        $prevRate    = $prev->{$field} ?? 0;
+        $diff        = $currentRate - $prevRate;
 
-        $diff = $currentRate - $prevRate;
-        
-        // Determine trend
         if (abs($diff) < 0.01) {
-            $trend = 'remained the same';
-            $trendClass = 'text-slate-600';
-            $trendIcon = '→';
+            $trend = 'remained the same'; $trendClass = 'text-slate-600'; $trendIcon = '→';
         } elseif ($diff > 0) {
-            $trend = 'higher';
-            $trendClass = 'text-green-600';
-            $trendIcon = '↑';
+            $trend = 'higher'; $trendClass = 'text-green-600'; $trendIcon = '↑';
         } else {
-            $trend = 'lower';
-            $trendClass = 'text-red-600';
-            $trendIcon = '↓';
+            $trend = 'lower'; $trendClass = 'text-red-600'; $trendIcon = '↓';
         }
 
         return [
-            '{current_period}' => "<strong>{$currentPeriod}</strong>",
+            '{current_period}'  => "<strong>{$currentPeriod}</strong>",
             '{previous_period}' => "<strong>{$previousPeriod}</strong>",
-            '{current_rate}' => "<strong>" . number_format($currentRate, 1) . "%</strong>",
-            '{previous_rate}' => "<strong>" . number_format($prevRate, 1) . "%</strong>",
-            '{trend}' => "<span class=\"{$trendClass} font-semibold\">{$trend} {$trendIcon}</span>"
+            '{current_rate}'    => "<strong>" . number_format($currentRate, 1) . "%</strong>",
+            '{previous_rate}'   => "<strong>" . number_format($prevRate, 1) . "%</strong>",
+            '{trend}'           => "<span class=\"{$trendClass} font-semibold\">{$trend} {$trendIcon}</span>",
         ];
     }
 
@@ -224,24 +181,18 @@ class AnalysisTemplateController extends Controller
 
     private function getPreviousPeriod($month, $year)
     {
-        // For quarterly data: compare to previous quarter
-        // For annual data (January): compare to same month previous year
-        
-        if ($month == 1) {
-            // January compares to January of previous year
-            return ['month' => 1, 'year' => $year - 1];
-        }
-        
+        if ($month == 1) return ['month' => 1, 'year' => $year - 1];
+
         $map = [
-            4  => ['month' => 1,  'year' => $year],  // April → January same year
-            7  => ['month' => 4,  'year' => $year],  // July → April same year
-            10 => ['month' => 7,  'year' => $year]   // October → July same year
+            4  => ['month' => 1, 'year' => $year],
+            7  => ['month' => 4, 'year' => $year],
+            10 => ['month' => 7, 'year' => $year],
         ];
 
         return $map[$month] ?? ['month' => 1, 'year' => $year - 1];
     }
 
-    // ─── UPDATE (save one template) ───────────────────────────────────────────
+    // ─── UPDATE (statistician saves as published) ─────────────────────────────
 
     public function update(Request $request, $key)
     {
@@ -256,16 +207,27 @@ class AnalysisTemplateController extends Controller
         }
 
         try {
+            // Remove any pending draft for this key + year + month
+            AnalysisTemplate::where('template_key', $key)
+                ->where('year', (int)$request->year)
+                ->where('month', (int)$request->month)
+                ->where('status', 'pending')
+                ->delete();
+
             $template = AnalysisTemplate::updateOrCreate(
                 [
                     'template_key' => $key,
                     'year'         => (int)$request->year,
                     'month'        => (int)$request->month,
+                    'status'       => 'published',
                 ],
                 [
                     'template_text' => $request->template_text,
-                    'updated_by'   => auth()->id() ?? null,
-                    'is_active'    => true,
+                    'updated_by'    => auth()->id() ?? null,
+                    'is_active'     => true,
+                    'status'        => 'published',
+                    'submitted_by'  => null,
+                    'submitted_at'  => null,
                 ]
             );
 
@@ -285,6 +247,111 @@ class AnalysisTemplateController extends Controller
             'success'      => true,
             'default_text' => $this->getDefaultTemplate($key),
         ]);
+    }
+
+    // ─── ADMIN: Submit a draft (saved as 'pending') ───────────────────────────
+
+    public function adminSubmit(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'year'                      => 'required|integer',
+            'month'                     => 'required|integer|in:1,4,7,10',
+            'templates'                 => 'required|array',
+            'templates.employment'      => 'sometimes|string|max:5000',
+            'templates.underemployment' => 'sometimes|string|max:5000',
+            'templates.unemployment'    => 'sometimes|string|max:5000',
+            'templates.lfpr'            => 'sometimes|string|max:5000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $year  = (int)$request->year;
+            $month = (int)$request->month;
+            $saved = [];
+
+            foreach ($request->templates as $key => $text) {
+                if (!in_array($key, ['employment', 'underemployment', 'unemployment', 'lfpr'])) continue;
+
+                // updateOrCreate handles the unique constraint on (template_key, year, month)
+                // Overwrites whatever status is there (null for old records, or pending)
+                $saved[] = AnalysisTemplate::updateOrCreate(
+                    [
+                        'template_key' => $key,
+                        'year'         => $year,
+                        'month'        => $month,
+                    ],
+                    [
+                        'template_text' => $text,
+                        'is_active'     => false,
+                        'status'        => 'pending',
+                        'submitted_by'  => auth()->user()?->name ?? auth()->id() ?? 'Admin',
+                        'submitted_at'  => now(),
+                        'updated_by'    => auth()->id() ?? null,
+                    ]
+                );
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Templates submitted for review successfully.',
+                'data'    => $saved,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('AnalysisTemplateController@adminSubmit', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    // ─── STATISTICIAN: Get all pending drafts ────────────────────────────────
+
+    public function allPending()
+    {
+        try {
+            $pending = AnalysisTemplate::where('status', 'pending')
+                ->orderByDesc('submitted_at')
+                ->get();
+
+            $grouped = $pending->groupBy(fn($t) => $t->year . '-' . $t->month);
+
+            $data = $grouped->map(function ($items) {
+                $first = $items->first();
+                return [
+                    'id'            => $first->id,
+                    'year'          => $first->year,
+                    'month'         => $first->month,
+                    'submitted_by'  => $first->submitted_by,
+                    'submitted_at'  => $first->submitted_at?->toDateTimeString(),
+                    'template_keys' => $items->pluck('template_key')->toArray(),
+                    'templates'     => $items->pluck('template_text', 'template_key')->toArray(),
+                ];
+            })->values();
+
+            return response()->json(['success' => true, 'data' => $data]);
+
+        } catch (\Exception $e) {
+            Log::error('AnalysisTemplateController@allPending', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    // ─── STATISTICIAN: Pending count for badge ───────────────────────────────
+
+    public function pendingCount()
+    {
+        $count = AnalysisTemplate::where('status', 'pending')
+            ->selectRaw('COUNT(DISTINCT CONCAT(year, "-", month)) as count')
+            ->value('count') ?? 0;
+
+        return response()->json(['success' => true, 'count' => (int)$count]);
     }
 
     // ─── DEFAULTS ─────────────────────────────────────────────────────────────

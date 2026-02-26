@@ -100,8 +100,8 @@
                                 required
                                 class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
-                                <option value="">Select Province</option>
-                                <option value="All Provinces">All Provinces (Davao Region)</option>
+                                <option value="" disabled hidden>Select Province</option>
+                                <option value="Davao Region">Davao Region</option>
                                 <option value="Davao City">Davao City</option>
                                 <option value="Davao del Sur">Davao del Sur</option>
                                 <option value="Davao del Norte">Davao del Norte</option>
@@ -112,17 +112,16 @@
                         </div>
 
                         <!-- Institution Type Selection -->
-                        <div>
+                        <div id="institutionTypeWrapper">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 Institution Type
                             </label>
-                            <div class="flex gap-6 h-12 items-center">
+                            <div id="institutionTypeRadios" class="flex gap-6 h-12 items-center">
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input 
                                         type="radio" 
                                         name="institution_type" 
                                         value="Private" 
-                                        required
                                         class="w-5 h-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
                                     >
                                     <span class="ml-3 text-base font-medium text-gray-700">Private</span>
@@ -132,11 +131,21 @@
                                         type="radio" 
                                         name="institution_type" 
                                         value="Public" 
-                                        required
                                         class="w-5 h-5 text-blue-600 focus:ring-2 focus:ring-blue-500"
                                     >
                                     <span class="ml-3 text-base font-medium text-gray-700">Public</span>
                                 </label>
+                            </div>
+                            <!-- Hidden "Total" badge shown when Davao Region is selected -->
+                            <div id="institutionTypeTotalBadge" class="hidden h-12 flex items-center">
+                                <span class="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-800 font-semibold rounded-lg text-sm border border-purple-300">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    Total (Private + Public)
+                                </span>
+                                <!-- Hidden input to carry the "Total" value on submit -->
+                                <input type="hidden" name="institution_type_total" value="Total">
                             </div>
                         </div>
                     </div>
@@ -153,6 +162,18 @@
                     </div>
                 </div>
 
+                <!-- Lock Banner -->
+                <div id="lockBanner" class="mb-4 flex items-center gap-3 bg-amber-50 border-2 border-amber-300 rounded-xl px-5 py-3">
+                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    <p id="lockBannerText" class="text-sm font-semibold text-amber-800">Select a <strong>Province</strong> and <strong>Institution Type</strong> above, enter the academic year, then click <strong>Check Year</strong> to unlock the enrollment fields.</p>
+                </div>
+
+                <!-- Form locked until year is checked -->
+                <div id="formContent" class="relative opacity-50 pointer-events-none select-none">
+                <div id="formBlocker" class="absolute inset-0 z-10 cursor-not-allowed rounded-2xl bg-transparent"></div>
+
                    <!-- Form Content -->
 <form id="disciplineForm">
     <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
@@ -166,16 +187,32 @@
             </p>
         </div>
 
-        <div class="space-y-3">
+        <!-- Search Bar -->
+        <div class="relative mb-4">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input 
+                type="text" 
+                id="disciplineSearch" 
+                placeholder="Search discipline..." 
+                oninput="filterDisciplines(this.value)"
+                class="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+        </div>
+
+        <!-- No results message -->
+        <div id="noResultsMsg" class="hidden text-center py-6 text-sm text-gray-500 italic">No disciplines match your search.</div>
+
+        <div class="space-y-3 overflow-y-auto max-h-[420px] pr-1" id="disciplineList">
             <!-- Agriculture, Forestry, Fisheries -->
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Agriculture, Forestry, Fisheries</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="agriculture" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -183,11 +220,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Architecture and Town Planning</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="architecture" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -195,11 +231,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Business Administration and Related</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="business" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -207,11 +242,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Criminal Justice</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="criminal_justice" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -219,11 +253,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Education Science and Teacher Training</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="education" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -231,11 +264,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Engineering and Engineering Trades</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="engineering" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -243,11 +275,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Fine and Applied Arts</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="arts" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -255,11 +286,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">General Programs</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="general" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -267,11 +297,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Home Economics</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="home_economics" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -279,11 +308,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Humanities</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="humanities" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -291,11 +319,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Information Technology</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="it" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -303,11 +330,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Law</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="law" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -315,11 +341,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Maritime Education</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="maritime" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -327,11 +352,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Mass Communication and Documentation</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="mass_comm" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -339,11 +363,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Mathematics and Statistics</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="mathematics" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -351,11 +374,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Medical and Health Related</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="medical" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -363,11 +385,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Natural Science</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="natural_science" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -375,11 +396,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Other Disciplines</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="other_disciplines" 
                     placeholder="0"  
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -387,11 +407,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Religion and Theology</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="religion" 
                     placeholder="0" 
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -399,11 +418,10 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Service Trades</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="service_trades" 
                     placeholder="0" 
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
 
@@ -411,16 +429,15 @@
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <label class="text-sm font-medium text-gray-900">Social and Behavioral Sciences</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     name="social_sciences" 
                     placeholder="0" 
-                    min="0" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        inputmode="numeric" class="discipline-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 >
             </div>
-        </div>
 
-        <!-- Grand Total Display -->
+        </div><!-- end disciplineList -->
+
         <div class="mt-8 pt-6 border-t-2 border-gray-300">
             <div class="flex justify-between items-center bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-xl border-2 border-blue-200">
                 <span class="text-lg font-bold text-gray-900">Grand Total Enrollments:</span>
@@ -449,6 +466,7 @@
         </button>
     </div>
 </form>
+                </div><!-- end formContent -->
             </div>
         </div>
     </div>
@@ -793,39 +811,42 @@
             social_sciences: 'Social and Behavioral Sciences'
         };
 
-        // Handle "All Provinces" selection
+        // Handle province selection — show/hide institution type for Davao Region
         document.addEventListener('DOMContentLoaded', function() {
             const provinceSelect = document.getElementById('province');
             if (provinceSelect) {
                 provinceSelect.addEventListener('change', function() {
-                    const isAllProvinces = this.value === 'All Provinces';
-                    const allInputs = document.querySelectorAll('input[type="number"]');
-                    const submitBtn = document.querySelector('button[type="submit"]');
-                    
-                    if (isAllProvinces) {
-                        allInputs.forEach(input => {
-                            input.disabled = true;
-                            input.classList.add('bg-gray-100', 'cursor-not-allowed');
-                        });
-                        if (submitBtn) {
-                            submitBtn.disabled = true;
-                            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                            submitBtn.title = 'Cannot submit aggregated data. Select a specific province.';
-                        }
-                    } else {
-                        allInputs.forEach(input => {
-                            input.disabled = false;
-                            input.classList.remove('bg-gray-100', 'cursor-not-allowed');
-                        });
-                        if (submitBtn) {
-                            submitBtn.disabled = false;
-                            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                            submitBtn.title = '';
-                        }
-                    }
+                    handleProvinceChange(this.value);
                 });
             }
         });
+
+        function handleProvinceChange(province) {
+            const isDavaoRegion = province === 'Davao Region';
+            const radiosWrapper = document.getElementById('institutionTypeRadios');
+            const totalBadge = document.getElementById('institutionTypeTotalBadge');
+            const lockBannerText = document.getElementById('lockBannerText');
+
+            if (isDavaoRegion) {
+                // Hide Private/Public radios, show "Total" badge
+                radiosWrapper.classList.add('hidden');
+                totalBadge.classList.remove('hidden');
+                // Uncheck any selected radio so it doesn't interfere
+                document.querySelectorAll('input[name="institution_type"]').forEach(r => r.checked = false);
+                // Update lock banner
+                if (lockBannerText) {
+                    lockBannerText.innerHTML = 'Select a <strong>Province</strong> above, enter the academic year, then click <strong>Check Year</strong> to unlock the enrollment fields. <em>(Davao Region records total enrollment across all institution types.)</em>';
+                }
+            } else {
+                // Show Private/Public radios, hide "Total" badge
+                radiosWrapper.classList.remove('hidden');
+                totalBadge.classList.add('hidden');
+                // Restore lock banner
+                if (lockBannerText) {
+                    lockBannerText.innerHTML = 'Select a <strong>Province</strong> and <strong>Institution Type</strong> above, enter the academic year, then click <strong>Check Year</strong> to unlock the enrollment fields.';
+                }
+            }
+        }
 
         async function checkAndLoadYear() {
             const yearInput = document.getElementById('academicYear');
@@ -843,15 +864,26 @@
             }
 
             const province = document.getElementById('province').value;
-            const institutionType = document.querySelector('input[name="institution_type"]:checked');
+            const isDavaoRegion = province === 'Davao Region';
+            const institutionTypeChecked = document.querySelector('input[name="institution_type"]:checked');
+            const institutionType = isDavaoRegion ? { value: 'Total' } : institutionTypeChecked;
 
-            if (!province) {
-                showToast('Please select a province', 'error');
-                return;
-            }
-
-            if (!institutionType) {
-                showToast('Please select an institution type (Private or Public)', 'error');
+            if (!province || !institutionType) {
+                showToast('Please select a Province and Institution Type before checking the year.', 'error');
+                // Visually highlight the missing fields
+                const provinceEl = document.getElementById('province');
+                if (!province) {
+                    provinceEl.classList.add('border-red-500', 'ring-2', 'ring-red-300');
+                    provinceEl.addEventListener('change', () => provinceEl.classList.remove('border-red-500', 'ring-2', 'ring-red-300'), { once: true });
+                }
+                if (!institutionType && !isDavaoRegion) {
+                    document.querySelectorAll('input[name="institution_type"]').forEach(r => {
+                        r.closest('label').classList.add('text-red-600');
+                        r.addEventListener('change', () => {
+                            document.querySelectorAll('input[name="institution_type"]').forEach(x => x.closest('label').classList.remove('text-red-600'));
+                        }, { once: true });
+                    });
+                }
                 return;
             }
 
@@ -906,6 +938,7 @@
             toggleYearDisplay(true);
             document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
             isChangingYear = false;
+            unlockForm();
         }
 
         function showExistingDataModal(year, province, institutionType) {
@@ -939,18 +972,44 @@
             
             closeExistingDataModal();
             isChangingYear = false;
+            unlockForm();
         }
 
-        function toggleYearDisplay(showDisplay) {
+        // ─── Form Lock / Unlock ─────────────────────────────────────────────────
+        function unlockForm() {
+            const formContent = document.getElementById('formContent');
+            const lockBanner = document.getElementById('lockBanner');
+            const formBlocker = document.getElementById('formBlocker');
+            if (formContent) {
+                formContent.classList.remove('opacity-50', 'pointer-events-none', 'select-none');
+            }
+            if (lockBanner) lockBanner.style.display = 'none';
+            if (formBlocker) formBlocker.style.display = 'none';
+        }
+
+        function lockForm() {
+            const formContent = document.getElementById('formContent');
+            const lockBanner = document.getElementById('lockBanner');
+            const formBlocker = document.getElementById('formBlocker');
+            if (formContent) {
+                formContent.classList.add('opacity-50', 'pointer-events-none', 'select-none');
+            }
+            if (lockBanner) lockBanner.style.display = 'flex';
+            if (formBlocker) formBlocker.style.display = 'block';
+        }
+
+                function toggleYearDisplay(showDisplay) {
             const inputGroup = document.getElementById('yearInputGroup');
             const yearDisplay = document.getElementById('yearDisplay');
             
             if (showDisplay) {
                 inputGroup.classList.add('hidden');
                 yearDisplay.classList.remove('hidden');
+                yearDisplay.classList.add('flex');
             } else {
                 inputGroup.classList.remove('hidden');
                 yearDisplay.classList.add('hidden');
+                yearDisplay.classList.remove('flex');
             }
         }
 
@@ -973,6 +1032,7 @@
             hideStatusNotification();
             existingData = null;
             toggleYearDisplay(false);
+            lockForm();
             
             setTimeout(() => {
                 document.getElementById('academicYear').focus();
@@ -1017,6 +1077,7 @@
             }
             
             document.getElementById('cancelYearChangeBtn').classList.add('hidden');
+            lockForm();
             
             setTimeout(() => {
                 document.getElementById('academicYear').focus();
@@ -1053,41 +1114,80 @@
         function hideStatusNotification() {
             document.getElementById('statusNotification').classList.add('hidden');
         }
+        function getRawValue(input) {
+            return parseInt(input.value.replace(/,/g, '')) || 0;
+        }
+
+        function formatWithCommas(n) {
+            if (!n && n !== 0) return '';
+            return parseInt(n).toLocaleString();
+        }
+
         function updateGrandTotal() {
-            const inputs = document.querySelectorAll('input[type="number"][name]');
+            const inputs = document.querySelectorAll('input.discipline-input');
             let total = 0;
             inputs.forEach(input => {
-                total += parseInt(input.value) || 0;
+                total += getRawValue(input);
             });
             document.getElementById('grandTotal').textContent = total.toLocaleString();
         }
-        // Add event listeners for auto-update
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputs = document.querySelectorAll('input[type="number"][name]');
+
+        function initDisciplineInputs() {
+            const inputs = document.querySelectorAll('input.discipline-input');
             inputs.forEach(input => {
-                input.addEventListener('input', updateGrandTotal);
+                // On input: allow only digits, reformat
+                input.addEventListener('input', function () {
+                    const raw = this.value.replace(/[^0-9]/g, '');
+                    const num = parseInt(raw);
+                    this.value = raw === '' ? '' : num.toLocaleString();
+                    updateGrandTotal();
+                });
+
+                // On focus: strip commas so user can type cleanly
+                input.addEventListener('focus', function () {
+                    const raw = this.value.replace(/,/g, '');
+                    this.value = raw === '0' ? '' : raw;
+                });
+
+                // On blur: reformat with commas
+                input.addEventListener('blur', function () {
+                    const raw = parseInt(this.value.replace(/[^0-9]/g, ''));
+                    this.value = isNaN(raw) ? '' : raw.toLocaleString();
+                    updateGrandTotal();
+                });
             });
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', initDisciplineInputs);
 
         function populateForm(disciplines) {
             for (const [key, value] of Object.entries(disciplines)) {
                 const input = document.querySelector(`input[name="${key}"]`);
                 if (input) {
-                    // Only populate if value > 0, otherwise leave empty
-                    input.value = (value && value > 0) ? value : '';
+                    input.value = (value && value > 0) ? parseInt(value).toLocaleString() : '';
                 }
             }
             updateGrandTotal();
         }
 
         function clearForm() {
-            const inputs = document.querySelectorAll('input[type="number"]');
+            const inputs = document.querySelectorAll('input.discipline-input');
             inputs.forEach(input => {
                 input.value = '';
             });
+            updateGrandTotal();
         }
 
         function confirmReset() {
+            const title = document.getElementById('resetModalTitle');
+            const msg = document.getElementById('resetModalMessage');
+            if (existingData && existingData.disciplines) {
+                title.textContent = 'Restore Original Values?';
+                msg.textContent = 'This will undo your changes and restore the fields back to the originally loaded values.';
+            } else {
+                title.textContent = 'Reset Form?';
+                msg.textContent = 'Are you sure you want to reset all fields? All entered data will be lost and cannot be recovered.';
+            }
             document.getElementById('resetModal').classList.remove('hidden');
         }
 
@@ -1097,14 +1197,18 @@
 
         function doReset() {
             document.getElementById('resetModal').classList.add('hidden');
-            // Reset discipline input fields
-            clearForm();
-            // Reset grand total display
-            document.getElementById('grandTotal').textContent = '0';
-            // Reset province dropdown
-            document.getElementById('province').value = '';
-            // Reset institution type radios
-            document.querySelectorAll('input[name="institution_type"]').forEach(r => r.checked = false);
+
+            if (existingData && existingData.disciplines) {
+                // Restore original loaded values (undo changes)
+                populateForm(existingData.disciplines);
+                showToast('Fields restored to the original loaded values.', 'info');
+            } else {
+                // No existing data — clear everything
+                clearForm();
+                document.getElementById('grandTotal').textContent = '0';
+                document.getElementById('province').value = '';
+                document.querySelectorAll('input[name="institution_type"]').forEach(r => r.checked = false);
+            }
         }
 
         function showConfirmModal(data) {
@@ -1160,18 +1264,37 @@
 
         function closeSuccessModal() {
             document.getElementById('successModal').classList.add('hidden');
-            
+
             // Clear the form silently after successful submission
             clearForm();
-            
+
             // Reset the year field and status message
             document.getElementById('academicYear').value = '';
-            document.getElementById('yearStatusMessage').textContent = '';
-            document.getElementById('yearStatusMessage').className = 'text-sm mt-1';
-            
+            const yearStatusMessage = document.getElementById('yearStatusMessage');
+            if (yearStatusMessage) {
+                yearStatusMessage.textContent = '';
+                yearStatusMessage.className = 'text-sm mt-1';
+            }
+
+            // Reset year display back to input mode
+            document.getElementById('displayYear').textContent = '----';
+            toggleYearDisplay(false);
+            document.getElementById('cancelYearChangeBtn').classList.add('hidden');
+            hideStatusNotification();
+
+            // Reset Province dropdown
+            document.getElementById('province').value = '';
+
+            // Reset Institution Type radios
+            document.querySelectorAll('input[name="institution_type"]').forEach(r => r.checked = false);
+
+            // Reset Grand Total
+            document.getElementById('grandTotal').textContent = '0';
+
             // Clear existing data flag
             existingData = null;
             oldYear = null;
+            lockForm();
         }
 
         async function confirmSubmit() {
@@ -1230,15 +1353,27 @@
             }
 
             const province = document.getElementById('province').value;
-            const institutionType = document.querySelector('input[name="institution_type"]:checked');
+            const isDavaoRegion = province === 'Davao Region';
+            const institutionType = isDavaoRegion
+                ? { value: 'Total' }
+                : document.querySelector('input[name="institution_type"]:checked');
 
-            if (!province) {
-                showToast('Please select a province', 'error');
-                return;
-            }
-
-            if (!institutionType) {
-                showToast('Please select an institution type (Private or Public)', 'error');
+            if (!province || !institutionType) {
+                showToast('Please select a Province and Institution Type before checking the year.', 'error');
+                // Visually highlight the missing fields
+                if (!province) {
+                    const provinceEl = document.getElementById('province');
+                    provinceEl.classList.add('border-red-500', 'ring-2', 'ring-red-300');
+                    provinceEl.addEventListener('change', () => provinceEl.classList.remove('border-red-500', 'ring-2', 'ring-red-300'), { once: true });
+                }
+                if (!institutionType && !isDavaoRegion) {
+                    document.querySelectorAll('input[name="institution_type"]').forEach(r => {
+                        r.closest('label').classList.add('text-red-600');
+                        r.addEventListener('change', () => {
+                            document.querySelectorAll('input[name="institution_type"]').forEach(x => x.closest('label').classList.remove('text-red-600'));
+                        }, { once: true });
+                    });
+                }
                 return;
             }
 
@@ -1269,7 +1404,8 @@
 
             const cleanedDisciplines = {};
             for (const [key, value] of Object.entries(disciplines)) {
-                cleanedDisciplines[key] = value ? parseInt(value) : 0;
+                const raw = String(value).replace(/,/g, '');
+                cleanedDisciplines[key] = raw ? parseInt(raw) : 0;
             }
 
             const dataToSave = {
@@ -1284,6 +1420,20 @@
 
             showConfirmModal(dataToSave);
         });
+
+        function filterDisciplines(query) {
+            const q = query.toLowerCase().trim();
+            const rows = document.querySelectorAll('#disciplineList > div[class*="grid"]');
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const label = row.querySelector('label');
+                if (!label) return;
+                const match = label.textContent.toLowerCase().includes(q);
+                row.style.display = match ? '' : 'none';
+                if (match) visibleCount++;
+            });
+            document.getElementById('noResultsMsg').classList.toggle('hidden', visibleCount > 0);
+        }
     </script>
 
     <!-- Reset Confirmation Modal -->
@@ -1296,8 +1446,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                     </svg>
                 </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-3">Reset Form?</h3>
-                <p class="text-sm text-gray-600 mb-6">Are you sure you want to reset all fields? All entered data will be lost and cannot be recovered.</p>
+                <h3 class="text-xl font-bold text-gray-900 mb-3" id="resetModalTitle">Reset Form?</h3>
+                <p class="text-sm text-gray-600 mb-6" id="resetModalMessage">Are you sure you want to reset all fields? All entered data will be lost and cannot be recovered.</p>
                 <div class="flex gap-3">
                     <button onclick="closeResetModal()" class="flex-1 px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium border border-gray-300 rounded-lg transition">
                         Cancel

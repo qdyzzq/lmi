@@ -158,8 +158,8 @@
                 
                 @if($selected_year && isset($selected_year))
                     <p class="text-xs text-gray-500 mt-1" id="chartSubtitle" style="{{ collect($comparison_data ?? [])->some(fn($d) => $d['previous_count'] > 0) ? '' : 'display:none' }}">
-                        <span id="prevYearLabel" class="text-green-600 font-medium">{{ $selected_year - 1 }}</span> vs 
-                        <span id="currentYearLabel" class="text-blue-600 font-medium">{{ $selected_year }}</span>
+                        <span id="prevYearLabel" class="text-emerald-600 font-medium">{{ $selected_year - 1 }}</span> vs 
+                        <span id="currentYearLabel" class="text-indigo-600 font-medium">{{ $selected_year }}</span>
                     </p>
                 @endif
             </div>
@@ -323,7 +323,7 @@
                                                     <div class="flex flex-wrap gap-1 mt-1">
                                                         @foreach($techSkills as $skill)
                                                             @if(!empty($skill))
-                                                                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">{{ $skill }}</span>
+                                                                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">{{ strtoupper($skill) }}</span>
                                                             @endif
                                                         @endforeach
                                                     </div>
@@ -347,7 +347,7 @@
                                                     <div class="flex flex-wrap gap-1 mt-1">
                                                         @foreach($softSkills as $skill)
                                                             @if(!empty($skill))
-                                                                <span class="px-2 py-0.5 bg-pink-100 text-pink-700 rounded text-xs">{{ $skill }}</span>
+                                                                <span class="px-2 py-0.5 bg-pink-100 text-pink-700 rounded text-xs">{{ strtoupper($skill) }}</span>
                                                             @endif
                                                         @endforeach
                                                     </div>
@@ -448,20 +448,42 @@
     <h3 class="font-bold text-lg mb-4">Critical Skill Gaps Per Sector</h3>
     
     <!-- Sector Filter Tabs -->
-    <div class="flex gap-2 mb-8 pb-5 border-b border-gray-200 overflow-x-auto">
-        <span class=" px-4 py-1 text-sm rounded-full border bg-blue-500  text-white hover:bg-gray-50 transition whitespace-nowrap">FILTER</span>
-        <button onclick="filterSkills('All')" 
-                class="sector-tab active px-4 py-1 text-sm rounded-full bg-purple-600 text-white transition whitespace-nowrap" 
-                data-sector="All">
-            All
-        </button>
-        @foreach($sectors as $sector)
-            <button onclick="filterSkills('{{ addslashes($sector) }}')" 
-                    class="sector-tab px-4 py-1 text-sm rounded-full border text-gray-500 hover:bg-gray-50 transition whitespace-nowrap" 
-                    data-sector="{{ $sector }}">
-                {{ $sector }}
+    <div class="mb-8 pb-5 border-b border-gray-100">
+        <div class="flex items-center gap-2">
+            <!-- Left Arrow -->
+            <button id="filter-left"
+                    class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+                </svg>
             </button>
-        @endforeach
+
+            <!-- Scrollable Filters -->
+            <div id="sector-filter-scroll" class="flex gap-2 overflow-x-auto flex-1" style="scrollbar-width:none; -webkit-overflow-scrolling:touch;">
+                <style>#sector-filter-scroll::-webkit-scrollbar { display: none; }</style>
+
+                <button onclick="filterSkills('All')"
+                        class="sector-tab flex-shrink-0 px-5 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap bg-gray-900 text-white shadow-sm"
+                        data-sector="All">
+                    All Sectors
+                </button>
+                @foreach($sectors as $sector)
+                    <button onclick="filterSkills('{{ addslashes($sector) }}')"
+                            class="sector-tab flex-shrink-0 px-5 py-2 text-xs font-semibold rounded-xl border border-gray-200 text-gray-500 bg-white hover:border-gray-900 hover:text-gray-900 transition-all whitespace-nowrap"
+                            data-sector="{{ $sector }}">
+                        {{ $sector }}
+                    </button>
+                @endforeach
+            </div>
+
+            <!-- Right Arrow -->
+            <button id="filter-right"
+                    class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
@@ -475,13 +497,15 @@
              id="tech-skills-container"
              style="overflow-y: scroll;">  <!-- Force scrollbar to always show for testing -->
             @foreach($tech_skills as $skill)
-                    <div class="skill-tag tech-skill bg-blue-100 text-gray-800 font-semibold px-3 py-2 rounded-lg text-sm h-fit" 
+                    <div class="skill-tag tech-skill bg-blue-100 text-gray-800 font-semibold px-3 py-2 rounded-lg text-sm h-fit flex flex-col gap-0.5" 
                          data-sector="{{ $skill['sector'] }}">
-                        {{ $skill['name'] }} 
-                        <span class="text-[12px] opacity-70">({{ $skill['sector'] }})</span>
-                        @if(isset($skill['count']) && $skill['count'] > 1)
-                            <span class="ml-1 px-1.5 py-0.5 bg-blue-200 rounded-full text-[9px] font-bold">{{ $skill['count'] }}×</span>
-                        @endif
+                        <div class="flex items-center gap-1">
+                            {{ $skill['name'] }}
+                            @if(isset($skill['count']) && $skill['count'] > 1)
+                                <span class="px-1.5 py-0.5 bg-blue-200 rounded-full text-[9px] font-bold">{{ $skill['count'] }}×</span>
+                            @endif
+                        </div>
+                        <span class="text-[11px] opacity-60 font-normal">({{ $skill['sector'] }})</span>
                     </div>
                 @endforeach
             </div>
@@ -495,13 +519,15 @@
              id="soft-skills-container"
              style="overflow-y: scroll;">  <!-- Force scrollbar to always show for testing -->
             @foreach($soft_skills as $skill)
-                    <div class="skill-tag soft-skill bg-red-100 text-gray-800 font-semibold px-3 py-2 rounded-lg text-sm h-fit" 
+                    <div class="skill-tag soft-skill bg-red-100 text-gray-800 font-semibold px-3 py-2 rounded-lg text-sm h-fit flex flex-col gap-0.5" 
                          data-sector="{{ $skill['sector'] }}">
-                        {{ $skill['name'] }} 
-                        <span class="text-[12px] opacity-70">({{ $skill['sector'] }})</span>
-                        @if(isset($skill['count']) && $skill['count'] > 1)
-                            <span class="ml-1 px-1.5 py-0.5 bg-red-200 rounded-full text-[9px] font-bold">{{ $skill['count'] }}×</span>
-                        @endif
+                        <div class="flex items-center gap-1">
+                            {{ $skill['name'] }}
+                            @if(isset($skill['count']) && $skill['count'] > 1)
+                                <span class="px-1.5 py-0.5 bg-red-200 rounded-full text-[9px] font-bold">{{ $skill['count'] }}×</span>
+                            @endif
+                        </div>
+                        <span class="text-[11px] opacity-60 font-normal">({{ $skill['sector'] }})</span>
                     </div>
                 @endforeach
             </div>
@@ -549,7 +575,9 @@
 }">
     <div class="p-6 border-b flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
     <h3 class="font-bold text-gray-900 flex items-center gap-3 text-lg">
-        <span class="text-2xl">📊</span> 
+        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M10 4v16M3 4h18a1 1 0 011 1v14a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1z"/>
+        </svg>
         <span>Critical Skills Requirements</span>
     </h3>
     <button id="exportLMIMatrixBtn" class="text-emerald-600 border border-emerald-200 bg-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-50 transition-all shadow-sm hover:shadow">
@@ -577,8 +605,8 @@
             <div class="col-span-2 flex items-center justify-center">
                 <span class="text-s font-small font-bold text-white uppercase tracking-wider">Salary Range</span>
             </div>
-            <div class="col-span-2 flex items-center justify-end">
-                <span class="text-s font-small font-bold text-white uppercase tracking-wider">Job Gap Impact to Industry</span>
+            <div class="col-span-2 flex items-center justify-center">
+                <span class="text-s font-small font-bold text-white uppercase tracking-wider text-center leading-tight">Job Gap Impact<br>to Industry</span>
             </div>
         </div>
     </div>
@@ -605,62 +633,50 @@
         <p class="text-xs font-bold text-gray-700 uppercase tracking-wide leading-relaxed" x-text="result.sector"></p>
     </div>
 
-  <!-- CENTER-ALIGNED: Skills Preview (3 cols) - FIXED ALIGNMENT AND MESSAGING -->
+  <!-- CENTER-ALIGNED: Skills Preview (3 cols) -->
 <div class="col-span-3 flex items-center justify-center">
-    <div class="flex flex-col gap-1 items-start w-full px-4"> <!-- Changed to items-start and added padding -->
-        <!-- Check if Technical checkbox was selected -->
-        <template x-if="result.has_technical_checkbox">
-            <div class="flex items-center gap-2 w-full"> <!-- Added w-full -->
-                <span class="text-gray-900 font-medium">•</span>
-                <span class="text-sm text-gray-700 flex-1"> <!-- Added flex-1 -->
-                    <template x-if="result.hard_skills && result.hard_skills.length > 0">
-                        <span>
-                            <span class="font-bold" x-text="result.hard_skills.length"></span> <span class="font-bold">Technical Skill</span><span x-show="result.hard_skills.length > 1">s</span>
-                        </span>
-                    </template>
-                    <template x-if="!result.hard_skills || result.hard_skills.length === 0">
-                        <span class="text-gray-600 font-semibold">
-                            Technical Skills 
-                            
-                        </span>
-                    </template>
-                </span>
-            </div>
-        </template>
-        
-        <!-- Check if Soft checkbox was selected -->
-        <template x-if="result.has_soft_checkbox">
-            <div class="flex items-center gap-2 w-full"> <!-- Added w-full -->
-                <span class="text-gray-900 font-medium">•</span>
-                <span class="text-sm text-gray-700 flex-1"> <!-- Added flex-1 -->
-                    <template x-if="result.soft_skills && result.soft_skills.length > 0">
-                        <span>
-                            <span class="font-bold" x-text="result.soft_skills.length"></span> <span class="font-bold">Soft Skill</span><span x-show="result.soft_skills.length > 1">s</span>
-                        </span>
-                    </template>
-                    <template x-if="!result.soft_skills || result.soft_skills.length === 0">
-                        <span class="text-gray-600 font-semibold">
-                            Soft Skills 
-                            
-                        </span>
-                    </template>
-                </span>
-            </div>
-        </template>
-        
-        <!-- No skills specified at all -->
+    <div class="flex flex-col gap-1" style="min-width: 140px;">
+
+        <!-- Technical row — always rendered, hidden if not applicable -->
+        <div class="flex items-center gap-2" x-show="result.has_technical_checkbox">
+            <span class="text-gray-400 font-medium text-xs">•</span>
+            <span class="text-sm text-gray-700">
+                <template x-if="result.hard_skills && result.hard_skills.length > 0">
+                    <span><span class="font-bold" x-text="result.hard_skills.length"></span> <span class="font-bold">Technical Skill</span><span x-show="result.hard_skills.length > 1">s</span></span>
+                </template>
+                <template x-if="!result.hard_skills || result.hard_skills.length === 0">
+                    <span class="font-semibold">Technical Skills</span>
+                </template>
+            </span>
+        </div>
+
+        <!-- Soft row — always rendered, hidden if not applicable -->
+        <div class="flex items-center gap-2" x-show="result.has_soft_checkbox">
+            <span class="text-gray-400 font-medium text-xs">•</span>
+            <span class="text-sm text-gray-700">
+                <template x-if="result.soft_skills && result.soft_skills.length > 0">
+                    <span><span class="font-bold" x-text="result.soft_skills.length"></span> <span class="font-bold">Soft Skill</span><span x-show="result.soft_skills.length > 1">s</span></span>
+                </template>
+                <template x-if="!result.soft_skills || result.soft_skills.length === 0">
+                    <span class="font-semibold">Soft Skills</span>
+                </template>
+            </span>
+        </div>
+
+        <!-- No skills -->
         <template x-if="!result.has_technical_checkbox && !result.has_soft_checkbox">
-            <span class="text-xs text-gray-400 italic text-center w-full">No skills specified</span>
+            <span class="text-xs text-gray-400 italic">No skills specified</span>
         </template>
-        
-        <!-- View details prompt -->
-        <span class="text-xs text-gray-400 italic mt-1 text-left w-full" x-show="openItem !== index && ((result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0))">
+
+        <!-- Click to view -->
+        <span class="text-xs text-gray-400 italic mt-0.5"
+              x-show="openItem !== index && ((result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0))">
             Click to view details
         </span>
     </div>
 </div>
-    <!-- LEFT-ALIGNED: Salary Range (2 cols) -->
-    <div class="col-span-2 flex items-center justify-start">
+    <!-- CENTER-ALIGNED: Salary Range (2 cols) -->
+    <div class="col-span-2 flex items-center justify-center">
         <div class="flex flex-col">
             <template x-if="result.salary_range && result.salary_range !== 'Not specified'">
                 <span class="text-sm font-semibold text-gray-900" x-text="result.salary_range"></span>
@@ -671,10 +687,11 @@
         </div>
     </div>
 
-    <!-- RIGHT-ALIGNED: Impact Badge (2 cols) - Keep as is -->
-    <div class="col-span-2 flex items-center justify-end gap-3">
+    <!-- CENTER-ALIGNED: Impact Badge + Chevron (2 cols) -->
+    <div class="col-span-2 flex items-center justify-center relative">
+        <!-- Badge centered -->
         <span 
-            class="px-4 py-2 rounded-lg text-sm font-bold min-w-[90px] text-center shadow-sm"
+            class="px-4 py-2 rounded-lg text-sm font-bold min-w-[80px] text-center shadow-sm"
             :class="{
                 'bg-red-50 text-red-700 border border-red-200': result.impact === 'High',
                 'bg-green-50 text-green-700 border border-green-200': result.impact === 'Low',
@@ -682,10 +699,9 @@
             }"
             x-text="result.impact || 'Medium'">
         </span>
-
-        <!-- Expand Icon -->
+        <!-- Chevron positioned absolutely to the right so it doesn't shift the badge -->
         <svg 
-            class="w-5 h-5 transition-all duration-300 flex-shrink-0"
+            class="w-5 h-5 transition-all duration-300 flex-shrink-0 absolute right-2"
             :class="[
                 openItem === index ? 'rotate-180 text-gray-600' : 'text-gray-400',
                 ((result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0)) ? 'opacity-100' : 'opacity-0'
@@ -714,9 +730,6 @@
                                 <!-- Technical Skills -->
                                 <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                                     <div class="flex items-center gap-2 mb-4">
-                                        <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                                            <span class="text-lg">🔧</span>
-                                        </div>
                                         <span class="text-sm font-bold text-gray-900 uppercase tracking-wide">Missing Technical Skills</span>
                                     </div>
                                     <template x-if="result.hard_skills && result.hard_skills.length > 0">
@@ -740,9 +753,6 @@
                                 <!-- Soft Skills -->
                                 <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                                     <div class="flex items-center gap-2 mb-4">
-                                        <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                                            <span class="text-lg">💬</span>
-                                        </div>
                                         <div>
                                             <span class="text-sm font-bold text-gray-900 uppercase tracking-wide block">Missing Soft Skills</span>
                                             <span class="text-xs text-gray-600 font-medium">(Critical Gaps)</span>
@@ -937,40 +947,100 @@
                     <div class="h-px bg-gray-100 mb-5"></div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
-                        <div>
-                            <label class="block text-gray-800 text-sm font-semibold mb-2">Company Name:<span class="text-red-500">*</span></label>
-                            <input type="text" name="company"  required
-                                class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
-                        </div>
-                        <div>
-                            <label class="block text-gray-800 text-sm font-semibold mb-2">Name of Respondent:<span class="text-red-500">*</span></label>
-                            <input type="text" name="respondent" placeholder="e.g., John Quincy Adams" required
-                                class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
-                        </div>
-                        <div>
-                            <label class="block text-gray-800 text-sm font-semibold mb-2">Designation / Position:<span class="text-red-500">*</span></label>
-                            <input type="text" name="position" required
-                                class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
-                        </div>
-                        <div>
-                            <label class="block text-gray-800 text-sm font-semibold mb-2">Contact Number:<span class="text-red-500">*</span></label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm border-r pr-2 border-gray-300">🇵🇭 +63</span>
-                                </div>
-                                <input type="tel" name="contact_number" maxlength="10" placeholder="912 345 6789" required
-                                    class="w-full pl-16 pr-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
+
+                        <!-- LEFT COLUMN: Company Name + Designation + Email -->
+                        <div class="flex flex-col gap-5">
+                            <div>
+                                <label class="block text-gray-800 text-sm font-semibold mb-2">Company Name:<span class="text-red-500">*</span></label>
+                                <input type="text" name="company" required
+                                    class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
+                            </div>
+                            <div>
+                                <label class="block text-gray-800 text-sm font-semibold mb-2">Designation / Position:<span class="text-red-500">*</span></label>
+                                <input type="text" name="position" required
+                                    class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
+                            </div>
+                            <div>
+                                <label class="block text-gray-800 text-sm font-semibold mb-2">Email Address:<span class="text-red-500">*</span></label>
+                                <input type="email" name="email" id="emailInput" required
+                                    class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
+                                <p id="emailError" class="hidden text-red-500 text-xs mt-1.5 font-medium">Please enter a valid email address (e.g. <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="204e414d45604558414d504c450e434f4d">[email&#160;protected]</a>)</p>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
-                        <div>
-                            <label class="block text-gray-800 text-sm font-semibold mb-2">Email Address:<span class="text-red-500">*</span></label>
-                            <input type="email" name="email" id="emailInput" required
-                                class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
-                            <p id="emailError" class="hidden text-red-500 text-xs mt-1.5 font-medium">Please enter a valid email address (e.g. <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="cea0afa3ab8eabb6afa3bea2abe0ada1a3">[email&#160;protected]</a>)</p>
+                        <!-- RIGHT COLUMN: Name of Respondent + Contact Number -->
+                        <div class="flex flex-col gap-5">
+                            <div>
+                                <label class="block text-gray-800 text-sm font-semibold mb-2">Name of Respondent:<span class="text-red-500">*</span></label>
+                                <input type="text" name="respondent" placeholder="e.g., John Quincy Adams" required
+                                    class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
+                            </div>
+                            <div>
+                                <label class="block text-gray-800 text-sm font-semibold mb-2">
+                                    Contact Number:<span class="text-red-500">*</span>
+                                </label>
+
+                                <!-- Segmented Control Toggle -->
+                                <div class="inline-flex bg-gray-100 rounded-lg p-1 mb-3">
+                                    <button type="button" id="toggle-mobile"
+                                        onclick="switchContactType('mobile')"
+                                        class="contact-type-btn flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold bg-white text-teal-700 shadow-sm border border-gray-200 transition-all duration-200">
+                                        <span class="text-base">📱</span> Mobile
+                                    </button>
+                                    <button type="button" id="toggle-telephone"
+                                        onclick="switchContactType('telephone')"
+                                        class="contact-type-btn flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold text-gray-500 transition-all duration-200">
+                                        <span class="text-base">☎️</span> Telephone
+                                    </button>
+                                </div>
+
+                                <!-- Mobile Input -->
+                                <div id="mobile-input-wrapper" class="relative">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pr-3 border-r border-gray-300 pointer-events-none">
+                                        <span class="text-lg">🇵🇭</span>
+                                        <span class="ml-1.5 text-sm font-semibold text-gray-600">+63</span>
+                                    </div>
+                                    <input type="tel" name="contact_number" id="mobile-input"
+                                        maxlength="10" placeholder="912 345 6789" required
+                                        inputmode="numeric"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                        class="w-full pl-20 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent focus:bg-white transition-all"/>
+                                </div>
+
+                                <!-- Telephone Input -->
+                                <div id="telephone-input-wrapper" class="relative hidden">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pr-3 border-r border-gray-300 pointer-events-none">
+                                        <span class="text-lg">☎️</span>
+                                        <span class="ml-1.5 text-sm font-semibold text-gray-600">PH</span>
+                                    </div>
+                                    <input type="tel" name="contact_number" id="telephone-input"
+                                        maxlength="12" placeholder="e.g. 082-123-4567"
+                                        inputmode="numeric"
+                                        autocomplete="off"
+                                        class="w-full pl-20 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent focus:bg-white transition-all"
+                                        disabled/>
+                                    <!-- Area code suggestions dropdown -->
+                                    <div id="area-code-suggestions"
+                                        class="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-50 hidden overflow-hidden">
+                                        <div class="px-3 py-2 bg-gray-50 border-b border-gray-100">
+                                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Matching Area Codes</p>
+                                        </div>
+                                        <div id="area-code-list" class="max-h-52 overflow-y-auto"></div>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" name="contact_type" id="contact_type_input" value="mobile">
+
+                                <!-- Hint -->
+                                <p class="text-xs text-gray-400 mt-1.5 flex items-center gap-1" id="contact-hint">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    10-digit mobile number
+                                </p>
+                            </div>
                         </div>
+
                     </div>
 
                     <!-- Industry Sector Dropdown -->
@@ -1501,7 +1571,7 @@
 </div>
 </div>
 </div>
- <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+ <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // Toggle role details function
 function toggleRoleDetails(submissionId, index) {
     const details = document.getElementById(`role-details-${submissionId}-${index}`);
@@ -1531,7 +1601,7 @@ function renderMainChart() {
     mainChart = new Chart(ctx, buildChartConfig(comparisonData));
 }
 
-function buildChartConfig(data, axisSize = 11) {
+function buildChartConfig(data, axisSize = 12) {
     const labels      = data.map(d => d.title);
     const currentData = data.map(d => d.current_count);
     const prevData    = data.map(d => d.previous_count);
@@ -1541,16 +1611,16 @@ function buildChartConfig(data, axisSize = 11) {
         ...(hasPrev ? [{
             label: String(currentSelectedYear - 1),
             data: prevData,
-            backgroundColor: 'rgba(34, 197, 94, 0.7)',
-            borderColor: 'rgba(34, 197, 94, 1)',
-            borderWidth: 0, borderRadius: 4, barThickness: 18,
+            backgroundColor: 'rgba(16, 185, 129, 0.85)',
+            borderColor: 'rgba(16, 185, 129, 1)',
+            borderWidth: 0, borderRadius: 4, barThickness: 14,
         }] : []),
         {
             label: String(currentSelectedYear),
             data: currentData,
-            backgroundColor: 'rgba(59, 130, 246, 0.9)',
-            borderColor: 'rgba(59, 130, 246, 1)',
-            borderWidth: 0, borderRadius: 4, barThickness: 18,
+            backgroundColor: 'rgba(99, 102, 241, 0.9)',
+            borderColor: 'rgba(99, 102, 241, 1)',
+            borderWidth: 0, borderRadius: 4, barThickness: 14,
         }
     ];
 
@@ -2830,32 +2900,43 @@ addJobTitleBtn.addEventListener('click', () => {
     
 <script>
 function filterSkills(sector) {
-    // Update active tab
+    // Update active tab styling
     document.querySelectorAll('.sector-tab').forEach(tab => {
         if (tab.getAttribute('data-sector') === sector) {
-            tab.classList.add('bg-purple-600', 'text-white');
-            tab.classList.remove('border', 'text-gray-500', 'hover:bg-gray-50');
+            tab.classList.add('bg-gray-900', 'text-white', 'shadow-sm');
+            tab.classList.remove('border', 'border-gray-200', 'text-gray-500', 'bg-white', 'hover:border-gray-900', 'hover:text-gray-900');
         } else {
-            tab.classList.remove('bg-purple-600', 'text-white');
-            tab.classList.add('border', 'text-gray-500', 'hover:bg-gray-50');
+            tab.classList.remove('bg-gray-900', 'text-white', 'shadow-sm');
+            tab.classList.add('border', 'border-gray-200', 'text-gray-500', 'bg-white', 'hover:border-gray-900', 'hover:text-gray-900');
         }
     });
-    
+
     // Filter skill tags
     document.querySelectorAll('.skill-tag').forEach(tag => {
         const tagSector = tag.getAttribute('data-sector');
-        if (sector === 'All' || tagSector === sector) {
-            tag.style.display = 'flex';
-        } else {
-            tag.style.display = 'none';
-        }
+        tag.style.display = (sector === 'All' || tagSector === sector) ? 'flex' : 'none';
     });
-    let autocompleteData = {
-    jobTitles: [],
-    technicalSkills: [],
-    softSkills: []
-};
 }
+
+// Arrow buttons + mouse wheel scroll for filter bar
+document.addEventListener('DOMContentLoaded', function () {
+    const scroll = document.getElementById('sector-filter-scroll');
+    const left   = document.getElementById('filter-left');
+    const right  = document.getElementById('filter-right');
+
+    if (scroll && left && right) {
+        left.addEventListener('click',  () => scroll.scrollBy({ left: -200, behavior: 'smooth' }));
+        right.addEventListener('click', () => scroll.scrollBy({ left:  200, behavior: 'smooth' }));
+
+        // Mouse wheel scrolls horizontally
+        scroll.addEventListener('wheel', function (e) {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                scroll.scrollBy({ left: e.deltaY * 2, behavior: 'smooth' });
+            }
+        }, { passive: false });
+    }
+});
 </script>
 <script>
     // Comprehensive Autocomplete System for Job Titles and Skills
@@ -3422,8 +3503,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // scroll modal back to top
-    const scrollable = document.querySelector('.overflow-y-auto');
-    if (scrollable) scrollable.scrollTop = 0;
+    const scrollable = document.querySelector('#lmi-form-content .overflow-y-auto');
+    if (scrollable) scrollable.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
     // ─── INDICATOR ──────────────────────────────────────────
@@ -3474,6 +3555,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 input.classList.remove('border-red-500');
             }
         });
+
+        // -- Contact number length check (step 0 only) --
+        if (idx === 0) {
+            const contactType   = document.getElementById('contact_type_input');
+            const mobileInp     = document.getElementById('mobile-input');
+            const telephoneInp  = document.getElementById('telephone-input');
+            const contactHint   = document.getElementById('contact-hint');
+
+            if (contactType && contactType.value === 'mobile' && mobileInp && !mobileInp.disabled) {
+                const digits = mobileInp.value.replace(/\D/g, '');
+                if (digits.length !== 10) {
+                    mobileInp.classList.add('border-red-500');
+                    if (contactHint) {
+                        contactHint.innerHTML = '<svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span class="text-red-500">Mobile number must be exactly 10 digits</span>';
+                    }
+                    valid = false;
+                } else {
+                    mobileInp.classList.remove('border-red-500');
+                    if (contactHint) {
+                        contactHint.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> 10-digit mobile number';
+                    }
+                }
+            } else if (contactType && contactType.value === 'telephone' && telephoneInp && !telephoneInp.disabled) {
+                const digits = telephoneInp.value.replace(/\D/g, '');
+                if (digits.length !== 10) {
+                    telephoneInp.classList.add('border-red-500');
+                    if (contactHint) {
+                        contactHint.innerHTML = '<svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span class="text-red-500">Telephone number must be exactly 10 digits</span>';
+                    }
+                    valid = false;
+                } else {
+                    telephoneInp.classList.remove('border-red-500');
+                    if (contactHint) {
+                        contactHint.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> 10-digit telephone number';
+                    }
+                }
+            }
+        }
 
         // -- Email format check (step 0 only) --
         if (idx === 0) {
@@ -3621,6 +3740,274 @@ document.addEventListener('DOMContentLoaded', function() {
   
     // ─── INIT ───────────────────────────────────────────────
     showStep(0);
+});
+</script>
+    <script>
+// ─── Contact Number Toggle ────────────────────────────────────────────────────
+function switchContactType(type) {
+    const mobileWrapper    = document.getElementById("mobile-input-wrapper");
+    const telephoneWrapper = document.getElementById("telephone-input-wrapper");
+    const mobileInput      = document.getElementById("mobile-input");
+    const telephoneInput   = document.getElementById("telephone-input");
+    const hint             = document.getElementById("contact-hint");
+    const contactTypeInput = document.getElementById("contact_type_input");
+    const toggleMobile     = document.getElementById("toggle-mobile");
+    const toggleTelephone  = document.getElementById("toggle-telephone");
+
+    [toggleMobile, toggleTelephone].forEach(btn => {
+        btn.classList.remove("bg-white", "text-teal-700", "shadow-sm", "border", "border-gray-200");
+        btn.classList.add("text-gray-500");
+    });
+
+    if (type === "mobile") {
+        mobileWrapper.classList.remove("hidden");
+        telephoneWrapper.classList.add("hidden");
+        mobileInput.disabled = false;
+        mobileInput.required = true;
+        telephoneInput.disabled = true;
+        telephoneInput.required = false;
+        telephoneInput.value = "";
+        hint.innerHTML = "<svg class=\"w-3 h-3\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\"/></svg> 10-digit mobile number";
+        contactTypeInput.value = "mobile";
+        toggleMobile.classList.add("bg-white", "text-teal-700", "shadow-sm", "border", "border-gray-200");
+        toggleMobile.classList.remove("text-gray-500");
+    } else {
+        telephoneWrapper.classList.remove("hidden");
+        mobileWrapper.classList.add("hidden");
+        telephoneInput.disabled = false;
+        telephoneInput.required = true;
+        mobileInput.disabled = true;
+        mobileInput.required = false;
+        mobileInput.value = "";
+        hint.innerHTML = "<svg class=\"w-3 h-3\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\"/></svg> Auto-formats to 082-123-4567";
+        contactTypeInput.value = "telephone";
+        toggleTelephone.classList.add("bg-white", "text-teal-700", "shadow-sm", "border", "border-gray-200");
+        toggleTelephone.classList.remove("text-gray-500");
+        telephoneInput.focus();
+    }
+}
+
+// ─── Telephone Auto-Formatter + Area Code Suggestions ────────────────────────
+document.addEventListener("DOMContentLoaded", function () {
+    const telInput   = document.getElementById("telephone-input");
+    const suggestBox = document.getElementById("area-code-suggestions");
+    const suggestList= document.getElementById("area-code-list");
+    if (!telInput) return;
+
+    // ── Complete PH Area Code Directory ──────────────────────────────────────
+    // Format: { code: "0XX", label: "Province / City" }
+    // Source: Wikipedia "Telephone numbers in the Philippines" + NTC 2025
+    const PH_AREA_CODES = [
+        // Metro Manila & surroundings (area code 2 — 8-digit local)
+        { code: "02", label: "Metro Manila, Rizal, Bacoor, San Pedro" },
+
+        // Luzon
+        { code: "032", label: "Cebu" },
+        { code: "033", label: "Guimaras, Iloilo (part)" },
+        { code: "034", label: "Iloilo, Negros Occidental" },
+        { code: "035", label: "Negros Oriental, Siquijor" },
+        { code: "036", label: "Aklan, Antique, Capiz" },
+        { code: "038", label: "Bohol" },
+        { code: "042", label: "Aurora, Marinduque, Quezon" },
+        { code: "043", label: "Batangas, Occidental Mindoro, Oriental Mindoro" },
+        { code: "044", label: "Bulacan, Nueva Ecija" },
+        { code: "045", label: "Pampanga, Tarlac" },
+        { code: "046", label: "Cavite (except Bacoor)" },
+        { code: "047", label: "Bataan, Zambales" },
+        { code: "048", label: "Palawan" },
+        { code: "049", label: "Laguna (except San Pedro)" },
+        { code: "052", label: "Albay, Catanduanes" },
+        { code: "053", label: "Biliran, Leyte, Southern Leyte" },
+        { code: "054", label: "Camarines Norte, Camarines Sur, Romblon" },
+        { code: "055", label: "Eastern Samar, Northern Samar, Samar" },
+        { code: "056", label: "Masbate, Sorsogon" },
+        { code: "062", label: "Basilan, Zamboanga del Sur, Zamboanga Sibugay" },
+        { code: "063", label: "Lanao del Norte" },
+        { code: "064", label: "Lanao del Sur, Maguindanao, North Cotabato, Sultan Kudarat" },
+        { code: "065", label: "Zamboanga del Norte" },
+        { code: "068", label: "Tawi-Tawi" },
+        { code: "072", label: "La Union" },
+        { code: "074", label: "Abra, Benguet, Ifugao, Kalinga, Mountain Province" },
+        { code: "075", label: "Pangasinan" },
+        { code: "077", label: "Ilocos Norte, Ilocos Sur" },
+        { code: "078", label: "Apayao, Batanes, Cagayan, Isabela, Nueva Vizcaya, Quirino" },
+
+        // Mindanao
+        { code: "082", label: "Davao del Sur, Davao Occidental" },
+        { code: "083", label: "Sarangani, South Cotabato" },
+        { code: "084", label: "Compostela Valley, Davao del Norte" },
+        { code: "085", label: "Agusan del Norte, Agusan del Sur, Sulu" },
+        { code: "086", label: "Dinagat Islands, Surigao del Norte, Surigao del Sur" },
+        { code: "087", label: "Davao de Oro, Davao Oriental" },
+        { code: "088", label: "Bukidnon, Camiguin, Misamis Occidental, Misamis Oriental" },
+    ];
+
+    // ── Format telephone digits → readable string ─────────────────────────────
+    // Area code "2"  (Metro Manila): 02-XXXX-XXXX  (1+8 digits)
+    // All others:                    0XX-XXX-XXXX   (2+7 digits)
+    function formatTelephone(digits) {
+        if (!digits) return "";
+        if (!digits.startsWith("0")) digits = "0" + digits;
+
+        const withoutTrunk = digits.slice(1);
+
+        if (withoutTrunk.startsWith("2")) {
+            const local = withoutTrunk.slice(1);
+            if (local.length === 0) return "02";
+            if (local.length <= 4)  return "02-" + local;
+            return "02-" + local.slice(0, 4) + "-" + local.slice(4);
+        }
+
+        const area  = withoutTrunk.slice(0, 2);
+        const local = withoutTrunk.slice(2);
+        if (local.length === 0) return "0" + area;
+        if (local.length <= 3)  return "0" + area + "-" + local;
+        return "0" + area + "-" + local.slice(0, 3) + "-" + local.slice(3);
+    }
+
+    // ── Show/hide suggestion dropdown ─────────────────────────────────────────
+    let activeIndex = -1; // for keyboard navigation
+
+    function showSuggestions(typedDigits) {
+        if (!typedDigits || typedDigits.length < 2) {
+            hideSuggestions();
+            return;
+        }
+
+        // Only show suggestions while user is still typing the area code
+        // (i.e. total digits typed is 3 or less — "0", "08", "082")
+        // Once they go past the area code into local number, hide suggestions
+        if (typedDigits.length > 3) {
+            hideSuggestions();
+            return;
+        }
+
+        const matches = PH_AREA_CODES.filter(ac =>
+            ac.code.startsWith(typedDigits)
+        );
+
+        if (matches.length === 0) {
+            hideSuggestions();
+            return;
+        }
+
+        suggestList.innerHTML = "";
+        activeIndex = -1;
+
+        matches.forEach((ac, i) => {
+            const item = document.createElement("div");
+            item.className = "suggestion-item flex items-center gap-3 px-4 py-2.5 hover:bg-teal-50 cursor-pointer border-b border-gray-50 last:border-b-0 transition-colors";
+            item.dataset.index = i;
+
+            // Highlight the matching part of the area code
+            const typed      = typedDigits;
+            const codeHtml   = `<span class="font-bold text-teal-600">${ac.code.slice(0, typed.length)}</span><span class="font-bold text-gray-800">${ac.code.slice(typed.length)}</span>`;
+
+            item.innerHTML = `
+                <span class="shrink-0 text-xs font-mono bg-teal-50 text-teal-700 border border-teal-200 rounded px-2 py-0.5">${codeHtml}</span>
+                <span class="text-sm text-gray-600 truncate">${ac.label}</span>
+            `;
+
+            item.addEventListener("mousedown", function (e) {
+                e.preventDefault(); // prevent input blur before click fires
+                selectAreaCode(ac);
+            });
+
+            suggestList.appendChild(item);
+        });
+
+        suggestBox.classList.remove("hidden");
+    }
+
+    function hideSuggestions() {
+        suggestBox.classList.add("hidden");
+        activeIndex = -1;
+    }
+
+    function selectAreaCode(ac) {
+        // Fill the input with the area code + dash, ready for local number
+        // e.g. selecting "082" → input becomes "082-"
+        telInput.value = ac.code + "-";
+        hideSuggestions();
+        telInput.focus();
+    }
+
+    // ── Keyboard navigation through suggestions ───────────────────────────────
+    function navigateSuggestions(direction) {
+        const items = suggestList.querySelectorAll(".suggestion-item");
+        if (items.length === 0) return;
+
+        // Remove highlight from current
+        items.forEach(i => i.classList.remove("bg-teal-50"));
+
+        activeIndex += direction;
+        if (activeIndex < 0)             activeIndex = items.length - 1;
+        if (activeIndex >= items.length) activeIndex = 0;
+
+        items[activeIndex].classList.add("bg-teal-50");
+        items[activeIndex].scrollIntoView({ block: "nearest" });
+    }
+
+    // ── Event Listeners ───────────────────────────────────────────────────────
+    telInput.addEventListener("input", function (e) {
+        let digits = e.target.value.replace(/\D/g, "");
+        if (digits.length > 10) digits = digits.slice(0, 10);
+
+        // Show suggestions only when typing area code portion
+        showSuggestions(digits.length <= 3 ? digits : null);
+
+        // Format the number
+        e.target.value = formatTelephone(digits);
+    });
+
+    telInput.addEventListener("keydown", function (e) {
+        // Navigation keys for suggestion dropdown
+        if (!suggestBox.classList.contains("hidden")) {
+            if (e.key === "ArrowDown") { e.preventDefault(); navigateSuggestions(1);  return; }
+            if (e.key === "ArrowUp")   { e.preventDefault(); navigateSuggestions(-1); return; }
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const items = suggestList.querySelectorAll(".suggestion-item");
+                if (activeIndex >= 0 && items[activeIndex]) {
+                    const code  = items[activeIndex].querySelector("span").textContent.trim();
+                    const match = PH_AREA_CODES.find(ac => ac.code === items[activeIndex].querySelector("span").textContent.replace(/\s/g,'').replace(/[^0-9]/g,'') );
+                    // Simpler: just click the active item
+                    items[activeIndex].dispatchEvent(new MouseEvent("mousedown"));
+                }
+                return;
+            }
+            if (e.key === "Escape") { hideSuggestions(); return; }
+        }
+
+        // Block non-numeric keys
+        const allowedKeys = ["Backspace","Delete","ArrowLeft","ArrowRight",
+                             "ArrowUp","ArrowDown","Tab","Home","End"];
+        const isDigit = e.key >= "0" && e.key <= "9";
+        const isCtrl  = e.ctrlKey || e.metaKey;
+        if (!isDigit && !allowedKeys.includes(e.key) && !isCtrl) {
+            e.preventDefault();
+        }
+    });
+
+    telInput.addEventListener("paste", function (e) {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData).getData("text");
+        let digits   = pasted.replace(/\D/g, "").slice(0, 10);
+        e.target.value = formatTelephone(digits);
+        hideSuggestions();
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener("click", function (e) {
+        if (!telInput.contains(e.target) && !suggestBox.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+
+    telInput.addEventListener("blur", function () {
+        // Small delay so mousedown on suggestion fires first
+        setTimeout(hideSuggestions, 150);
+    });
 });
 </script>
 </body>

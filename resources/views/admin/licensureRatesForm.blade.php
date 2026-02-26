@@ -30,10 +30,12 @@
             </div>
         </header>
         <!-- Main Form Area -->
-        <div class="flex-1 overflow-auto p-8">
-            <div class="max-w-7xl mx-auto">
+        <div class="flex-1 overflow-hidden flex flex-col p-8 gap-0">
+            <div class="max-w-7xl w-full mx-auto flex flex-col flex-1 overflow-hidden">
+                <!-- Sticky top section: year picker + status -->
+                <div class="shrink-0">
                 <!-- Year Selection Card -->
-                <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-4">
                     <div class="flex items-center justify-between">
                         <div>
                             <h3 class="text-xl font-bold text-gray-900 mb-2">Select Reporting Year</h3>
@@ -95,7 +97,7 @@
                 </div>
 
                 <!-- Status Notification -->
-                <div id="statusNotification" class="hidden mb-8 p-6 rounded-2xl shadow-lg">
+                <div id="statusNotification" class="hidden mb-4 p-6 rounded-2xl shadow-lg">
                     <div class="flex items-start gap-4">
                         <div id="statusIcon" class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full"></div>
                         <div class="flex-1">
@@ -104,15 +106,16 @@
                         </div>
                     </div>
                 </div>
+                </div><!-- end sticky top section -->
 
-                <!-- Sectors Form -->
-                <form id="licensureForm">
-                    <div class="space-y-4" id="sectorsContainer">
+                <!-- Sectors Form — scrollable -->
+                <form id="licensureForm" class="flex flex-col flex-1 overflow-hidden">
+                    <div class="flex-1 overflow-y-auto space-y-4 pr-1" id="sectorsContainer">
                         <!-- Sectors will be dynamically generated here -->
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div class="flex justify-end gap-4 mt-8">
+                    <!-- Action Buttons — pinned at bottom -->
+                    <div class="shrink-0 flex justify-end gap-4 mt-4 pt-4 border-t border-gray-200 bg-slate-100">
                         <button 
                             type="button" 
                             onclick="resetForm()" 
@@ -156,6 +159,20 @@
                             <p class="text-xs text-orange-700 mb-2">The following professions have no exam data for this year:</p>
                             <div id="incompleteList" class="max-h-32 overflow-y-auto text-xs text-orange-700 space-y-1"></div>
                             <p class="text-xs text-orange-600 mt-2 italic">This is normal if exams weren't conducted for these professions.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Changes Summary (edit mode only) -->
+                <div id="changesWarning" class="hidden mb-4 p-4 bg-green-50 border-l-4 border-green-500 rounded text-left">
+                    <div class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="font-semibold text-green-800 text-sm mb-1">Modified Fields</p>
+                            <p class="text-xs text-green-700 mb-2">The following fields were changed from their original values:</p>
+                            <div id="changesList" class="max-h-40 overflow-y-auto text-xs text-green-700 space-y-1"></div>
                         </div>
                     </div>
                 </div>
@@ -259,6 +276,7 @@
     <script>
         let isChangingYear = false; // Flag to track if we're changing year (don't clear form)
         let oldYear = null; // Store the old year when changing
+        let pendingYearData = null; // Holds fetched data while waiting for modal confirmation
         
         // ─── Toast Notification System ──────────────────────────────────────────
         function showToast(message, type = 'error') {
@@ -404,7 +422,8 @@
                 icon: "📚",
                 professions: [
                     "Professional Teachers (Elementary)",
-                    "Professional Teachers (Secondary)"
+                    "Professional Teachers (Secondary)",
+                    "Professional Teachers (General)"
                 ]
             },
             {
@@ -444,10 +463,38 @@
         ];
 
         let pendingData = null;
+        let originalData = {}; // Snapshot of values when existing data is loaded
 
         // Initialize form on page load
+        // ─── Comma formatting helpers ───────────────────────────────────────────
+        function initNumInputs() {
+            document.querySelectorAll('input.num-input').forEach(input => {
+                input.addEventListener('input', function () {
+                    const raw = this.value.replace(/[^0-9]/g, '');
+                    const cursor = this.selectionStart;
+                    this.value = raw === '' ? '' : parseInt(raw).toLocaleString();
+                    // trigger rate calc
+                    const s = this.dataset.sector;
+                    const p = this.dataset.prof;
+                    if (s !== undefined && p !== undefined) calculateRate(parseInt(s), parseInt(p));
+                });
+                input.addEventListener('focus', function () {
+                    const raw = this.value.replace(/,/g, '');
+                    this.value = raw === '0' ? '' : raw;
+                });
+                input.addEventListener('blur', function () {
+                    const raw = parseInt(this.value.replace(/[^0-9]/g, ''));
+                    this.value = isNaN(raw) ? '' : raw.toLocaleString();
+                    const s = this.dataset.sector;
+                    const p = this.dataset.prof;
+                    if (s !== undefined && p !== undefined) calculateRate(parseInt(s), parseInt(p));
+                });
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             generateSectors();
+            initNumInputs();
             updateProgress();
 
             // Year input listener - only update display
@@ -479,28 +526,26 @@
                             <div class="font-medium text-gray-700 text-sm">${profession}</div>
                             <div class="relative">
                                 <input 
-                                    type="number" 
+                                    type="text" 
+                                    inputmode="numeric"
                                     name="takers_${sectorIndex}_${profIndex}"
-                                    class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                    class="num-input w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-right"
                                     placeholder="0"
-                                    min="0"
                                     data-sector="${sectorIndex}"
                                     data-prof="${profIndex}"
                                     data-type="takers"
-                                    onchange="calculateRate(${sectorIndex}, ${profIndex})"
                                 >
                             </div>
                             <div class="relative">
                                 <input 
-                                    type="number" 
+                                    type="text" 
+                                    inputmode="numeric"
                                     name="passers_${sectorIndex}_${profIndex}"
-                                    class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                    class="num-input w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-right"
                                     placeholder="0"
-                                    min="0"
                                     data-sector="${sectorIndex}"
                                     data-prof="${profIndex}"
                                     data-type="passers"
-                                    onchange="calculateRate(${sectorIndex}, ${profIndex})"
                                 >
                             </div>
                             <div class="relative">
@@ -575,10 +620,7 @@
                 return;
             }
             
-            document.getElementById('displayYear').textContent = year;
             checkExistingData(year);
-            toggleYearDisplay(true); // Show year display, hide input
-            document.getElementById('cancelYearChangeBtn').classList.remove('hidden'); // Hide cancel button
         }
 
         function toggleYearDisplay(showDisplay) {
@@ -683,15 +725,21 @@
                 }
                 
                 if (result.exists) {
-                    // Load existing data into the form
-                    loadExistingData(result.data);
-                    
-                    // Show indicator
-                    showExistingDataIndicator(result.data.length);
+                    // Show confirmation modal — let admin decide whether to edit or pick a different year
+                    // First commit the year display so the modal shows the right year
+                    document.getElementById('displayYear').textContent = year;
+                    toggleYearDisplay(true);
+                    document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
+                    pendingYearData = { year: year, data: result.data };
+                    showExistingDataModal(year, result.data.length);
                 } else {
-                    // Year doesn't exist - show info message
+                    // Year doesn't exist — commit display and show new-year message
+                    document.getElementById('displayYear').textContent = year;
+                    toggleYearDisplay(true);
+                    document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
                     clearExistingDataIndicator();
                     showNewYearMessage(year);
+                    isChangingYear = false;
                 }
             } catch (error) {
                 console.error('Error checking existing data:', error);
@@ -702,6 +750,32 @@
 
         function showNewYearMessage(year) {
             showStatusNotification(year, false);
+        }
+
+        function showExistingDataModal(year, totalRecords) {
+            document.getElementById('existingDataYear').textContent = year;
+            document.getElementById('existingDataRecordCount').textContent = totalRecords;
+            document.getElementById('existingDataModal').classList.remove('hidden');
+        }
+
+        function closeExistingDataModal() {
+            document.getElementById('existingDataModal').classList.add('hidden');
+            pendingYearData = null;
+            isChangingYear = false;
+            // Return user to year input so they can pick a different year
+            document.getElementById('year').value = '';
+            document.getElementById('displayYear').textContent = '----';
+            toggleYearDisplay(false);
+            document.getElementById('cancelYearChangeBtn').classList.add('hidden');
+            setTimeout(() => document.getElementById('year').focus(), 100);
+        }
+
+        function confirmLoadExistingData() {
+            if (!pendingYearData) return;
+            const { year, data } = pendingYearData;
+            document.getElementById('existingDataModal').classList.add('hidden');
+            loadExistingData(data);
+            pendingYearData = null;
         }
 
         function loadExistingData(data) {
@@ -726,9 +800,15 @@
                 const rateInput = document.querySelector(`[name="rate_${sectorIndex}_${profIndex}"]`);
                 
                 if (item.takers && item.passers) {
-                    takersInput.value = item.takers;
-                    passersInput.value = item.passers;
+                    takersInput.value = parseInt(item.takers).toLocaleString();
+                    passersInput.value = parseInt(item.passers).toLocaleString();
                     rateInput.value = item.passing_rate + '%';
+                    // Store original values for change detection
+                    originalData[`${sectorIndex}_${profIndex}`] = {
+                        takers: item.takers,
+                        passers: item.passers,
+                        rate: item.passing_rate
+                    };
                 }
             });
             
@@ -813,8 +893,8 @@
             const passersInput = document.querySelector(`[name="passers_${sectorIndex}_${profIndex}"]`);
             const rateInput = document.querySelector(`[name="rate_${sectorIndex}_${profIndex}"]`);
             
-            const takers = parseFloat(takersInput.value) || 0;
-            const passers = parseFloat(passersInput.value) || 0;
+            const takers = parseFloat(takersInput.value.replace(/,/g, '')) || 0;
+            const passers = parseFloat(passersInput.value.replace(/,/g, '')) || 0;
             
             if (takers > 0 && passers > 0) {
                 const rate = (passers / takers) * 100;
@@ -891,16 +971,29 @@
             document.getElementById('licensureForm').reset();
             document.getElementById('year').value = '';
             document.getElementById('displayYear').textContent = '----';
-            
-            // Collapse all sectors
-            document.querySelectorAll('.sector-card').forEach(card => {
-                card.classList.remove('expanded');
+
+            // Collapse all sectors - also reset maxHeight and chevron rotation
+            document.querySelectorAll('.sector-card').forEach((card, index) => {
+                card.classList.remove('expanded', 'border-blue-500');
+                const content = document.getElementById(`content-${index}`);
+                const chevron = document.getElementById(`chevron-${index}`);
+                if (content) content.style.maxHeight = '0px';
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
             });
-            
+
+            // Clear all orange highlights on takers/passers fields
+            document.querySelectorAll('[name^="takers_"], [name^="passers_"], [name^="rate_"]').forEach(input => {
+                input.classList.remove('border-orange-400', 'bg-orange-50');
+            });
+
+            // Hide status notification ("Editing Existing Data" banner)
+            hideStatusNotification();
+
             updateProgress();
-            oldYear = null; // Clear old year tracking
-            document.getElementById('cancelYearChangeBtn').classList.add('hidden'); // Hide cancel on reset
-            toggleYearDisplay(false); // Show input, hide display - ready for next entry
+            oldYear = null;
+            originalData = {};
+            document.getElementById('cancelYearChangeBtn').classList.add('hidden');
+            toggleYearDisplay(false);
         }
 
         function showConfirmModal(data) {
@@ -933,6 +1026,41 @@
                 incompleteWarning.classList.add('hidden');
             }
             
+            // Show changes summary if in edit mode
+            const changesWarning = document.getElementById('changesWarning');
+            const changesList = document.getElementById('changesList');
+            if (Object.keys(originalData).length > 0) {
+                const changes = [];
+                data.sectors.forEach((sector, sectorIndex) => {
+                    sector.data.forEach((p, profIndex) => {
+                        const key = `${sectorIndex}_${profIndex}`;
+                        const orig = originalData[key];
+                        const newTakers = p.takers;
+                        const newPassers = p.passers;
+                        const cleanNewTakers = parseInt(String(newTakers).replace(/,/g,'')) || 0;
+                        const cleanNewPassers = parseInt(String(newPassers).replace(/,/g,'')) || 0;
+                        if (orig && (orig.takers != cleanNewTakers || orig.passers != cleanNewPassers)) {
+                            changes.push(`<div class="py-1">
+                                <div class="font-semibold mb-0.5">${sector.sector}: ${p.profession}</div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-red-500">Takers: ${orig.takers} · Passers: ${orig.passers} · ${parseFloat(orig.rate).toFixed(2)}%</span>
+                                    <span class="text-gray-500 font-bold">→</span>
+                                    <span class="text-green-600">Takers: ${newTakers} · Passers: ${newPassers} · ${p.passing_rate !== null ? p.passing_rate.toFixed(2) : '0.00'}%</span>
+                                </div>
+                            </div>`);
+                        }
+                    });
+                });
+                if (changes.length > 0) {
+                    changesWarning.classList.remove('hidden');
+                    changesList.innerHTML = changes.join('');
+                } else {
+                    changesWarning.classList.add('hidden');
+                }
+            } else {
+                changesWarning.classList.add('hidden');
+            }
+
             document.getElementById('confirmModal').classList.remove('hidden');
         }
 
@@ -1013,9 +1141,11 @@
                 const professionData = [];
                 
                 sector.professions.forEach((profession, profIndex) => {
-                    const takers = document.querySelector(`[name="takers_${sectorIndex}_${profIndex}"]`).value;
-                    const passers = document.querySelector(`[name="passers_${sectorIndex}_${profIndex}"]`).value;
+                    const takersRaw = document.querySelector(`[name="takers_${sectorIndex}_${profIndex}"]`).value.replace(/,/g, '');
+                    const passersRaw = document.querySelector(`[name="passers_${sectorIndex}_${profIndex}"]`).value.replace(/,/g, '');
                     const rateRaw = document.querySelector(`[name="rate_${sectorIndex}_${profIndex}"]`).value;
+                    const takers = takersRaw;
+                    const passers = passersRaw;
                     
                     // Check if this profession has data
                     if (takers && passers && rateRaw) {
@@ -1060,6 +1190,64 @@
             showConfirmModal(dataToSave);
         });
     </script>
+
+    <!-- MODAL: Existing Data Found -->
+    <div id="existingDataModal" class="hidden fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full transform transition-all">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-gray-900">Existing Data Found</h3>
+                        <p class="text-sm text-gray-600 mt-1">This year already has licensure rate data</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="font-semibold text-blue-900">Year: <span id="existingDataYear" class="text-blue-700"></span></p>
+                            <p class="text-sm text-blue-800 mt-1">Records found: <span id="existingDataRecordCount" class="font-semibold"></span> profession(s)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-gray-700 mb-6">
+                    Data already exists for this year. Would you like to <strong>edit the existing data</strong> or <strong>enter a different year</strong>?
+                </p>
+
+                <div class="flex flex-col gap-3">
+                    <button
+                        onclick="confirmLoadExistingData()"
+                        class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Yes, Edit Existing Data
+                    </button>
+                    <button
+                        onclick="closeExistingDataModal()"
+                        class="w-full px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        No, Enter Different Year
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Year Collision Warning Modal -->
     <div id="yearCollisionModal" class="hidden fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
