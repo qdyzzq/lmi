@@ -62,7 +62,7 @@
                     <span>Regional Statistics</span>
                 </a>
 
-                <a href="{{ route('Job.Market.Demands') }}"
+                {{-- <a href="{{ route('Job.Market.Demands') }}"
                     class="flex items-center whitespace-nowrap rounded-lg font-medium transition-all duration-300
                           {{ request()->routeIs('Job.Market.Demands')
                               ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
@@ -74,22 +74,21 @@
                             d="M16 16l4 4m-2-9a6 6 0 11-12 0 6 6 0 0112 0z" />
                     </svg>
                     <span>Labor Demand</span>
-                </a>
+                </a> --}}
 
-                <a href="{{ route('Supply.Side') }}"
+                <a href="{{ route('program.admin') }}"
                     class="flex items-center whitespace-nowrap rounded-lg font-medium transition-all duration-300
-                          {{ request()->routeIs('Supply.Side')
+                          {{ request()->routeIs('program.admin')
                               ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
                               : 'text-white hover:bg-white/20' }}"
                     :class="isScrolled ? 'gap-1.5 px-3 py-1.5 text-xs' : 'gap-3 px-5 py-3 text-sm'">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"
                         class="shrink-0 transition-all duration-300" :class="isScrolled ? 'w-3.5 h-3.5' : 'w-5 h-5'">
                         <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m4-4a4 4 0 110-8 4 4 0 010 8zm6 2a3 3 0 100-6" />
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    <span>Labor Supply Data</span>
+                    <span>Programs & Stories Admin</span>
                 </a>
-
                 <a href="{{ route('programs.stories') }}"
                     class="flex items-center whitespace-nowrap rounded-lg font-medium transition-all duration-300
                           {{ request()->routeIs('programs.stories')
@@ -104,6 +103,34 @@
                     <span>Programs & Stories</span>
                 </a>
 
+                <a href="{{ route('programs.stories.static') }}"
+                    class="flex items-center whitespace-nowrap rounded-lg font-medium transition-all duration-300
+                          {{ request()->routeIs('programs.stories.static')
+                              ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
+                              : 'text-white hover:bg-white/20' }}"
+                    :class="isScrolled ? 'gap-1.5 px-3 py-1.5 text-xs' : 'gap-3 px-5 py-3 text-sm'">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"
+                        class="shrink-0 transition-all duration-300" :class="isScrolled ? 'w-3.5 h-3.5' : 'w-5 h-5'">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>Programs & Stories Static</span>
+                </a>
+
+                {{-- <a href="{{ route('Supply.Side') }}"
+                    class="flex items-center whitespace-nowrap rounded-lg font-medium transition-all duration-300
+                          {{ request()->routeIs('Supply.Side')
+                              ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
+                              : 'text-white hover:bg-white/20' }}"
+                    :class="isScrolled ? 'gap-1.5 px-3 py-1.5 text-xs' : 'gap-3 px-5 py-3 text-sm'">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"
+                        class="shrink-0 transition-all duration-300" :class="isScrolled ? 'w-3.5 h-3.5' : 'w-5 h-5'">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m4-4a4 4 0 110-8 4 4 0 010 8zm6 2a3 3 0 100-6" />
+                    </svg>
+                    <span>Labor Supply Data</span>
+                </a>
+
                 <a href="#"
                     class="flex items-center whitespace-nowrap text-white hover:bg-white/20 rounded-lg font-medium transition-all duration-300"
                     :class="isScrolled ? 'gap-1.5 px-3 py-1.5 text-xs' : 'gap-3 px-5 py-3 text-sm'">
@@ -112,7 +139,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m8-6H4m16-6H4" />
                     </svg>
                     <span>Employment Programs</span>
-                </a>
+                </a> --}}
             </div>
 
             <!-- Mobile Menu Button -->

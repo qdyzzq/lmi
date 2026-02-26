@@ -64,7 +64,24 @@
                 <div class="space-y-6 m-5">
                     <div x-data="kpiPeriodFilter()" class="pt-10 relative z-20" id="kpi-section">
                         <div class="max-w-7xl mx-auto px-6 space-y-6">
-
+                            <!-- Period Header KPI Cards -->
+                            <div
+                                class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-xl px-6 py-4 flex items-center justify-between shadow-lg">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-white font-bold text-lg">Labor Force Survey</h3>
+                                        <p class="text-slate-300 text-sm" x-text="selectedPeriodLabel">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
                                 <div
@@ -141,7 +158,8 @@
                                 <div
                                     class="group bg-white/95 backdrop-blur-sm border-l-4 border-[#D30000] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300">
                                     <div class="flex justify-between items-center mb-3">
-                                        <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">Unemployment
+                                        <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">
+                                            Unemployment
                                         </p>
                                         <div
                                             class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center group-hover:bg-[#D30000] transition-colors">
@@ -165,7 +183,8 @@
 
                             <!--  ANALYSIS BOX -->
                             <div class="bg-white border border-slate-200 rounded-xl shadow-lg overflow-visible">
-                                <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-6 py-4">
+                                <div
+                                    class="bg-gradient-to-r from-slate-900 via-slate-800 rounded-t-xl to-slate-900 px-6 py-4">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-3">
                                             <div
@@ -179,7 +198,7 @@
                                             </div>
                                             <div>
                                                 <h3 class="text-white font-bold text-lg">
-                                                    Labor Market Analysis
+                                                    Labor Force Analysis
                                                 </h3>
                                                 <p class="text-slate-300 text-sm" x-text="selectedPeriodLabel">
                                                     Loading...</p>

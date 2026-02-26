@@ -6,14 +6,23 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\LaborMarketController;
 use App\Http\Controllers\LmiSubmissionController;
 use App\Http\Controllers\JobTitleController;
+use App\Http\Controllers\ProgramsController;
+use App\Http\Controllers\ProgramAdminController;
+
 
 
 
 // ==================== PUBLIC ROUTES (No login required) ====================
+Route::get('/programs-stories', [ProgramsController::class, 'index'])
+    ->name('programs.stories');
+
+
+Route::get('/program-admin', [ProgramsController::class, 'admin'])->name('program.admin');
 
 Route::get('/programs-and-stories', function () {
-    return view('programs-stories');
-})->name('programs.stories');
+    return view('programs-stories-static');
+})->name('programs.stories.static');
+    
 Route::post('/lmi/submit', [LmiSubmissionController::class, 'store'])->name('lmi.submit');
 Route::get('/login', function () {
     return view('auth.Login');
@@ -144,7 +153,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/lmi-submissions/{id}/update-engagement', [LmiSubmissionController::class, 'updateEngagement'])
     ->name('lmi-submissions.update-engagement');
     
-    // THIS WAS THE PROBLEM: It was /admin/lmi-submissions but we're already in prefix('admin')
     Route::put('/lmi-submissions/{id}/update-roles', [LmiSubmissionController::class, 'updateRoles'])
         ->name('lmi-submissions.update-roles');
     
@@ -153,4 +161,31 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     Route::post('/lmi-submissions/{id}/reject', [LmiSubmissionController::class, 'reject'])
         ->name('lmi-submissions.reject');
+
+       
 });
+
+ // Program Admin CRUD
+Route::post('/programs', [ProgramAdminController::class, 'storeProgram'])->name('programs.store');
+Route::put('/programs/{program}', [ProgramAdminController::class, 'updateProgram'])->name('programs.update');
+Route::delete('/programs/{program}', [ProgramAdminController::class, 'destroyProgram'])->name('programs.destroy');
+Route::put('/programs/{program}/description', [ProgramAdminController::class, 'updateDescription'])->name('programs.description');
+
+Route::post('/qualifications', [ProgramAdminController::class, 'storeQualification'])->name('qualifications.store');
+Route::put('/qualifications/{qualification}', [ProgramAdminController::class, 'updateQualification'])->name('qualifications.update');
+Route::delete('/qualifications/{qualification}', [ProgramAdminController::class, 'destroyQualification'])->name('qualifications.destroy');
+
+Route::post('/steps', [ProgramAdminController::class, 'storeStep'])->name('steps.store');
+Route::put('/steps/{step}', [ProgramAdminController::class, 'updateStep'])->name('steps.update');
+Route::delete('/steps/{step}', [ProgramAdminController::class, 'destroyStep'])->name('steps.destroy');
+
+Route::post('/stories', [ProgramAdminController::class, 'storeStory'])->name('stories.store');
+Route::put('/stories/{story}', [ProgramAdminController::class, 'updateStory'])->name('stories.update');
+Route::delete('/stories/{story}', [ProgramAdminController::class, 'destroyStory'])->name('stories.destroy');
+
+Route::post('/testimonials', [ProgramAdminController::class, 'storeTestimonial'])->name('testimonials.store');
+Route::put('/testimonials/{testimonial}', [ProgramAdminController::class, 'updateTestimonial'])->name('testimonials.update');
+
+Route::post('/carousel', [ProgramAdminController::class, 'storeSlide'])->name('carousel.store');
+Route::put('/carousel/{slide}', [ProgramAdminController::class, 'updateSlide'])->name('carousel.update');
+Route::delete('/carousel/{slide}', [ProgramAdminController::class, 'destroySlide'])->name('carousel.destroy');
