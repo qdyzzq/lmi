@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @vite('resources/css/app.css')
+    <script defer src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <title>Programs and Stories - LMI</title>
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .chevron-icon.open {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen">
+    <div x-data="{ activeProgram: null }">
+        @include('partials.navbar')
+
+        <!-- ===== CAROUSEL ===== -->
+        <div class="relative w-full h-screen overflow-hidden" x-data="{
+            currentSlide: 0,
+            slides: {{ $carouselSlides->map(fn($s) => ['image' => asset($s->image_path), 'title' => $s->title, 'excerpt' => $s->excerpt, 'link' => $s->link, 'program' => $s->program_label, 'color' => $s->color])->toJson() }},
+            autoplayInterval: null,
+            nextSlide() { this.currentSlide = (this.currentSlide + 1) % this.slides.length; },
+            prevSlide() { this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length; },
+            goToSlide(index) { this.currentSlide = index; },
+            startAutoplay() { this.autoplayInterval = setInterval(() => { this.nextSlide(); }, 5000); },
+            stopAutoplay() { if (this.autoplayInterval) { clearInterval(this.autoplayInterval); } }
+        }" x-init="startAutoplay()"
+            @mouseenter="stopAutoplay()" @mouseleave="startAutoplay()">
+
+            <template x-for="(slide, index) in slides" :key="index">
+                <div x-show="currentSlide === index" x-transition:enter="transition ease-out duration-700"
+                    x-transition:enter-start="opacity-0 transform translate-x-full"
+                    x-transition:enter-end="opacity-100 transform translate-x-0"
+                    x-transition:leave="transition ease-in duration-700"
+                    x-transition:leave-start="opacity-100 transform translate-x-0"
+                    x-transition:leave-end="opacity-0 transform -translate-x-full" class="absolute inset-0">
+                    <div class="absolute inset-0">
+                        <img :src="slide.image" :alt="slide.title"
+                            class="w-full h-full object-cover object-center">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/70 to-slate-900/50">
+                        </div>
+                    </div>
+                    <div class="relative z-10 h-full flex items-center justify-center px-4">
+                        <div class="text-center text-white max-w-5xl">
+                            <div class="inline-block mb-6">
+                                <span class="px-6 py-3 rounded-full text-base font-bold backdrop-blur-md shadow-2xl"
+                                    :class="{
+                                        'bg-green-500/40 border-2 border-green-300/60': slide.color === 'green',
+                                        'bg-red-500/40 border-2 border-red-300/60': slide.color === 'red',
+                                        'bg-blue-500/40 border-2 border-blue-300/60': slide.color === 'blue',
+                                        'bg-yellow-500/40 border-2 border-yellow-300/60': slide.color === 'yellow',
+                                        'bg-cyan-500/40 border-2 border-cyan-300/60': slide.color === 'cyan'
+                                    }"
+                                    x-text="slide.program + ' Success Story'"></span>
+                            </div>
+                            <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-8 drop-shadow-2xl leading-tight"
+                                x-text="slide.title"></h1>
+                            <p class="text-xl md:text-2xl lg:text-3xl text-slate-50 drop-shadow-lg mb-12 max-w-4xl mx-auto leading-relaxed font-light"
+                                x-text="slide.excerpt"></p>
+                            <a :href="slide.link" target="_blank"
+                                class="inline-flex items-center gap-3 px-10 py-5 bg-white text-slate-900 font-bold text-lg rounded-xl hover:bg-slate-100 transition-all duration-300 shadow-2xl transform hover:-translate-y-2 hover:scale-105">
+                                <span>READ FULL STORY</span>
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    <a href="#programs-section"
+                        class="absolute bottom-1 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-20"
+                        @click.prevent="document.getElementById('programs-section').scrollIntoView({ behavior: 'smooth' })">
+                        <div class="flex flex-col items-center">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                            </svg>
+                            <p class="text-white text-sm mt-2 font-medium">Scroll to explore programs</p>
+                        </div>
+                    </a>
+                </div>
+            </template>
+
+            <button @click="prevSlide()"
+                class="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-white/25 hover:bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center transition-all duration-300 group border border-white/30">
+                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button @click="nextSlide()"
+                class="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-14 h-14 bg-white/25 hover:bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center transition-all duration-300 group border border-white/30">
+                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
+            <div class="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
+                <template x-for="(slide, index) in slides" :key="index">
+                    <button @click="goToSlide(index)" class="transition-all duration-300"
+                        :class="currentSlide === index ? 'w-16 h-4' : 'w-4 h-4'">
+                        <div class="w-full h-full rounded-full backdrop-blur-md border-2"
+                            :class="currentSlide === index ? 'bg-white border-white' : 'bg-white/40 border-white/60'">
+                        </div>
+                    </button>
+                </template>
+            </div>
+        </div>
+        <!-- ===== END CAROUSEL ===== -->
+
+        <!-- ===== PROGRAMS SECTION ===== -->
+        <div id="programs-section" class="max-w-7xl mx-auto px-4 sm:px-6 py-16">
+
+            <div
+                class="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 rounded-2xl px-8 py-7 shadow-2xl mb-2">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-white font-bold text-2xl md:text-3xl">DOLE Employment Programs</h2>
+                        <p class="text-slate-300 text-sm md:text-base">Click on any program below to view details and
+                            eligibility</p>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="bg-white rounded-2xl shadow-2xl border border-slate-200 divide-y divide-slate-200 overflow-hidden">
+
+                @foreach ($programs as $program)
+                    @php
+                        $colorMap = [
+                            'red' => [
+                                '50' => '#fef2f2',
+                                '100' => '#fee2e2',
+                                '200' => '#fecaca',
+                                '400' => '#f87171',
+                                '500' => '#ef4444',
+                                '600' => '#dc2626',
+                            ],
+                            'orange' => [
+                                '50' => '#fff7ed',
+                                '100' => '#ffedd5',
+                                '200' => '#fed7aa',
+                                '400' => '#fb923c',
+                                '500' => '#f97316',
+                                '600' => '#ea580c',
+                            ],
+                            'yellow' => [
+                                '50' => '#fefce8',
+                                '100' => '#fef9c3',
+                                '200' => '#fef08a',
+                                '400' => '#facc15',
+                                '500' => '#eab308',
+                                '600' => '#ca8a04',
+                            ],
+                            'green' => [
+                                '50' => '#f0fdf4',
+                                '100' => '#dcfce7',
+                                '200' => '#bbf7d0',
+                                '400' => '#4ade80',
+                                '500' => '#22c55e',
+                                '600' => '#16a34a',
+                            ],
+                            'cyan' => [
+                                '50' => '#ecfeff',
+                                '100' => '#cffafe',
+                                '200' => '#a5f3fc',
+                                '400' => '#22d3ee',
+                                '500' => '#06b6d4',
+                                '600' => '#0891b2',
+                            ],
+                            'blue' => [
+                                '50' => '#eff6ff',
+                                '100' => '#dbeafe',
+                                '200' => '#bfdbfe',
+                                '400' => '#60a5fa',
+                                '500' => '#3b82f6',
+                                '600' => '#2563eb',
+                            ],
+                            'indigo' => [
+                                '50' => '#eef2ff',
+                                '100' => '#e0e7ff',
+                                '200' => '#c7d2fe',
+                                '400' => '#818cf8',
+                                '500' => '#6366f1',
+                                '600' => '#4f46e5',
+                            ],
+                            'violet' => [
+                                '50' => '#f5f3ff',
+                                '100' => '#ede9fe',
+                                '200' => '#ddd6fe',
+                                '400' => '#a78bfa',
+                                '500' => '#8b5cf6',
+                                '600' => '#7c3aed',
+                            ],
+                            'purple' => [
+                                '50' => '#faf5ff',
+                                '100' => '#f3e8ff',
+                                '200' => '#e9d5ff',
+                                '400' => '#c084fc',
+                                '500' => '#a855f7',
+                                '600' => '#9333ea',
+                            ],
+                            'pink' => [
+                                '50' => '#fdf2f8',
+                                '100' => '#fce7f3',
+                                '200' => '#fbcfe8',
+                                '400' => '#f472b6',
+                                '500' => '#ec4899',
+                                '600' => '#db2777',
+                            ],
+                            'rose' => [
+                                '50' => '#fff1f2',
+                                '100' => '#ffe4e6',
+                                '200' => '#fecdd3',
+                                '400' => '#fb7185',
+                                '500' => '#f43f5e',
+                                '600' => '#e11d48',
+                            ],
+                            'teal' => [
+                                '50' => '#f0fdfa',
+                                '100' => '#ccfbf1',
+                                '200' => '#99f6e4',
+                                '400' => '#2dd4bf',
+                                '500' => '#14b8a6',
+                                '600' => '#0d9488',
+                            ],
+                            'sky' => [
+                                '50' => '#f0f9ff',
+                                '100' => '#e0f2fe',
+                                '200' => '#bae6fd',
+                                '400' => '#38bdf8',
+                                '500' => '#0ea5e9',
+                                '600' => '#0284c7',
+                            ],
+                            'lime' => [
+                                '50' => '#f7fee7',
+                                '100' => '#ecfccb',
+                                '200' => '#d9f99d',
+                                '400' => '#a3e635',
+                                '500' => '#84cc16',
+                                '600' => '#65a30d',
+                            ],
+                        ];
+                        $c = $colorMap[$program->color] ?? $colorMap['blue'];
+                    @endphp
+
+                    <div x-data="{ open: false }">
+
+                        {{-- ACCORDION HEADER --}}
+                        <button @click="open = !open"
+                            class="w-full px-6 md:px-10 py-6 flex items-center justify-between transition-colors duration-200 group text-left"
+                            onmouseover="this.style.backgroundColor='{{ $c['50'] }}'"
+                            onmouseout="this.style.backgroundColor=''">
+                            <div class="flex items-center gap-5">
+                                <div class="w-16 h-16 md:w-20 md:h-20 rounded-2xl flex-shrink-0 flex items-center justify-center shadow-md transition-all duration-300 border-2"
+                                    :style="open
+                                        ?
+                                        'background:white; border-color:{{ $c['400'] }}' :
+                                        'background:{{ $c['50'] }}; border-color:transparent'">
+                                    <img src="{{ asset($program->logo_path) }}" alt="{{ $program->name }} Logo"
+                                        class="w-10 h-10 md:w-14 md:h-14 object-contain">
+                                </div>
+                                <div>
+                                    <h3 class="text-xl md:text-2xl font-bold text-slate-900 transition-colors"
+                                        :style="open ? 'color:{{ $c['600'] }}' : ''">
+                                        {{ $program->name }}
+                                    </h3>
+                                    <p class="text-sm md:text-base text-slate-500 mt-1">{{ $program->subtitle }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 flex-shrink-0 ml-4">
+                                <span class="text-xs md:text-sm font-semibold hidden sm:block"
+                                    :style="open ? 'color:{{ $c['600'] }}' : 'color:#94a3b8'">
+                                    <span x-show="!open">Click to expand</span>
+                                    <span x-show="open" x-cloak>Click to collapse</span>
+                                </span>
+                                <div class="w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-200"
+                                    :style="open ? 'background:{{ $c['600'] }}' : 'background:#f1f5f9'">
+                                    <svg class="w-5 h-5 transition-transform duration-300 chevron-icon"
+                                        :class="open ? 'open text-white' : 'text-slate-500'" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </button>
+
+                        {{-- ACCORDION BODY --}}
+                        <div x-show="open" x-collapse x-cloak>
+                            <div class="border-t border-slate-200 p-6 md:p-10"
+                                style="background: linear-gradient(to bottom right, #f8fafc, {{ $c['50'] }}33)">
+                                <div class="grid lg:grid-cols-3 gap-8">
+
+                                    {{-- LEFT COLUMN --}}
+                                    <div class="lg:col-span-2 space-y-6">
+
+                                        {{-- Program Description --}}
+                                        <div class="rounded-xl p-6 border"
+                                            style="background:{{ $c['50'] }}; border-color:{{ $c['200'] }}">
+                                            <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-lg">
+                                                <svg class="w-5 h-5 flex-shrink-0" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24"
+                                                    style="color:{{ $c['600'] }}">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Program Details
+                                            </h4>
+                                            <p class="text-slate-700 leading-relaxed">{{ $program->description }}</p>
+                                        </div>
+
+                                        @php $groupedQuals = $program->qualifications->groupBy('type'); @endphp
+
+                                        <div class="grid md:grid-cols-2 gap-6">
+                                            @foreach ($groupedQuals as $type => $items)
+                                                <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                                                    <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                                        <svg class="w-5 h-5 flex-shrink-0" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24"
+                                                            style="color:{{ $c['600'] }}">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        {{ ucfirst($type) }}s
+                                                    </h4>
+                                                    <ul class="space-y-3 text-slate-700 text-sm">
+                                                        @foreach ($items as $q)
+                                                            <li class="flex items-start gap-2">
+                                                                <span class="font-bold mt-0.5"
+                                                                    style="color:{{ $c['500'] }}">•</span>
+                                                                <span>{{ $q->content }}</span>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            @endforeach
+                                        </div>
+
+                                        {{-- How to Apply --}}
+                                        <div class="text-white rounded-xl p-6"
+                                            style="background:{{ $c['600'] }}">
+                                            <h4 class="font-bold mb-4 flex items-center gap-2 text-lg">
+                                                <svg class="w-5 h-5 flex-shrink-0" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                How to Apply
+                                            </h4>
+                                            <ol class="space-y-3 text-sm">
+                                                @foreach ($program->howToApply as $step)
+                                                    <li class="flex items-start gap-3">
+                                                        <span class="font-bold flex-shrink-0"
+                                                            style="color:{{ $c['200'] }}">{{ $loop->iteration }}.</span>
+                                                        <span>{!! preg_replace_callback(
+                                                            '/(https?:\/\/[^\s]+|[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?(?<![.,]))/',
+                                                            function ($m) {
+                                                                $url = $m[0];
+                                                                $href = str_starts_with($url, 'http') ? $url : 'https://' . $url;
+                                                                return '<a href="' .
+                                                                    $href .
+                                                                    '" target="_blank" class="underline font-semibold hover:opacity-80 transition" style="color:white;">' .
+                                                                    $url .
+                                                                    '</a>';
+                                                            },
+                                                            e($step->content),
+                                                        ) !!}</span>
+                                                    </li>
+                                                @endforeach
+                                            </ol>
+                                        </div>
+
+                                        {{-- Success Story Cards --}}
+                                        <div>
+                                            <div class="flex items-center gap-3 mb-4">
+                                                <div class="w-1 h-6 rounded-full"
+                                                    style="background:{{ $c['600'] }}"></div>
+                                                <h4 class="font-bold text-slate-800">{{ $program->name }} Success
+                                                    Stories</h4>
+                                            </div>
+                                            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                                                @foreach ($program->stories as $story)
+                                                    <a href="{{ $story->link }}" target="_blank"
+                                                        class="group block bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                                                        <div class="relative overflow-hidden h-28">
+                                                            <img src="{{ asset($story->image_path) }}"
+                                                                alt="{{ $story->title }}"
+                                                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                                            <div
+                                                                class="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent">
+                                                            </div>
+                                                            <span
+                                                                class="absolute bottom-1.5 right-1.5 text-white text-xs font-bold px-1.5 py-0.5 rounded-full"
+                                                                style="background:{{ $c['600'] }}">{{ $program->name }}</span>
+                                                        </div>
+                                                        <div class="p-2.5">
+                                                            <p
+                                                                class="text-xs font-semibold text-slate-700 line-clamp-2 leading-snug">
+                                                                {{ $story->title }}
+                                                            </p>
+                                                            <span class="text-xs font-medium mt-1 block"
+                                                                style="color:{{ $c['600'] }}">Read →</span>
+                                                        </div>
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    {{-- END LEFT COLUMN --}}
+
+                                    {{-- RIGHT COLUMN: Testimonial --}}
+                                    @if ($program->testimonial)
+                                        <div class="lg:col-span-1">
+                                            <div class="bg-white rounded-xl p-6 shadow-lg sticky top-6 border-2"
+                                                style="border-color:{{ $c['200'] }}">
+                                                <div class="flex items-center gap-3 mb-6">
+                                                    <div class="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0"
+                                                        style="background:{{ $c['600'] }}">
+                                                        <svg class="w-6 h-6 text-white" fill="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path
+                                                                d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                                                        </svg>
+                                                    </div>
+                                                    <h4 class="font-bold text-slate-900 text-lg">Success Story</h4>
+                                                </div>
+                                                <blockquote class="mb-6">
+                                                    <p class="text-slate-600 leading-relaxed italic text-sm">
+                                                        "{{ $program->testimonial->quote }}"</p>
+                                                </blockquote>
+                                                <div class="flex items-center gap-3 pt-4 border-t"
+                                                    style="border-color:{{ $c['100'] }}">
+                                                    <div>
+                                                        <p class="font-bold text-slate-900 text-sm">
+                                                            {{ $program->testimonial->author_name }}</p>
+                                                        <p class="text-xs text-slate-500">
+                                                            {{ $program->testimonial->author_role }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    {{-- END RIGHT COLUMN --}}
+
+                                </div>
+                            </div>
+                        </div>
+                        {{-- END ACCORDION BODY --}}
+
+                    </div>
+                @endforeach
+
+            </div>
+        </div>
+        <!-- ===== END PROGRAMS SECTION ===== -->
+
+        <!-- Call to Action -->
+        <div class="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 py-20 mt-16">
+            <div class="max-w-7xl mx-auto px-6 text-center">
+                <h3 class="text-4xl font-bold text-white mb-6">Ready to Start Your Journey?</h3>
+                <p class="text-slate-300 text-xl mb-10 max-w-3xl mx-auto">Join thousands of youth who have transformed
+                    their careers through DOLE's employment programs.</p>
+                <div class="flex flex-wrap justify-center gap-6">
+                    <a href="http://gip.dole11portal.org" target="_blank"
+                        class="px-10 py-5 bg-white text-slate-900 font-bold text-lg rounded-xl hover:bg-slate-100 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1">Apply
+                        for GIP</a>
+                    <a href="#"
+                        class="px-10 py-5 bg-transparent border-2 border-white text-white font-bold text-lg rounded-xl hover:bg-white hover:text-slate-900 transition-all duration-300 shadow-xl">Visit
+                        Your Local PESO</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>
