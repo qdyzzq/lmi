@@ -15,7 +15,8 @@ class GraduationRate extends Model
         'graduation_rate',
         'base_enrollees',
         'projected_graduates',
-        'notes'
+        'notes',
+        'description'
     ];
 
     protected $casts = [

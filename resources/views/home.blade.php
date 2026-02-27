@@ -1142,6 +1142,90 @@
                     const prevYear = currentYear - 1;
                     const monthName = this.selectedPeriodLabel.split(' ')[0];
 
+                    // ── Step 1: Try to load saved/published templates first ──
+                    try {
+                        const tplResponse = await fetch(`/api/analysis-templates?year=${this.selectedYear}&month=${this.selectedMonth}`);
+                        if (tplResponse.ok) {
+                            const tplResult = await tplResponse.json();
+                            if (tplResult.success && tplResult.data) {
+                                const d = tplResult.data;
+                                // Extract template_text from each key (matches template editor structure)
+                                const lfprText       = d.lfpr?.template_text           || '';
+                                const employmentText = d.employment?.template_text     || '';
+                                const underempText   = d.underemployment?.template_text || '';
+                                const unempText      = d.unemployment?.template_text   || '';
+
+                                // Only use saved templates if at least one has content
+                                if (lfprText || employmentText || underempText || unempText) {
+                                    const cur = this.kpiData;
+                                    const b   = (val) => `<span class="font-bold text-slate-900">${val}</span>`;
+
+                                    // Fetch previous year data to resolve {previous_rate} and {trend}
+                                    let prev = null;
+                                    try {
+                                        const prevRes = await fetch(`/api/kpi-cards?year=${prevYear}&month=${this.selectedMonth}`);
+                                        const prevResult = await prevRes.json();
+                                        if (prevResult.success) prev = prevResult.data;
+                                    } catch (_) {}
+
+                                    const replacePlaceholders = (text, currentRate, previousRate, trendWord) => {
+                                        return text
+                                            .replace(/\{current_period\}/g,  `<strong>${monthName} ${currentYear}</strong>`)
+                                            .replace(/\{previous_period\}/g, `<strong>${monthName} ${prevYear}</strong>`)
+                                            .replace(/\{current_rate\}/g,    `<strong>${currentRate}</strong>`)
+                                            .replace(/\{previous_rate\}/g,   `<strong>${previousRate}</strong>`)
+                                            .replace(/\{trend\}/g,           `<strong>${trendWord}</strong>`);
+                                    };
+
+                                    if (employmentText) {
+                                        const empHigher = prev ? parseFloat(cur.employment_rate.raw_value) >= parseFloat(prev.employment_rate.raw_value) : true;
+                                        this.analysis.employment = replacePlaceholders(
+                                            employmentText,
+                                            cur.employment_rate.rate,
+                                            prev ? prev.employment_rate.rate : '—',
+                                            empHigher ? 'higher' : 'lower'
+                                        );
+                                    }
+
+                                    if (underempText) {
+                                        const underHigher = prev ? parseFloat(cur.underemployment_rate.raw_value) >= parseFloat(prev.underemployment_rate.raw_value) : true;
+                                        this.analysis.underemployment = replacePlaceholders(
+                                            underempText,
+                                            cur.underemployment_rate.rate,
+                                            prev ? prev.underemployment_rate.rate : '—',
+                                            underHigher ? 'went up' : 'went down'
+                                        );
+                                    }
+
+                                    if (unempText) {
+                                        const unempHigher = prev ? parseFloat(cur.unemployment_rate.raw_value) >= parseFloat(prev.unemployment_rate.raw_value) : true;
+                                        this.analysis.unemployment = replacePlaceholders(
+                                            unempText,
+                                            cur.unemployment_rate.rate,
+                                            prev ? prev.unemployment_rate.rate : '—',
+                                            unempHigher ? 'rose' : 'dropped'
+                                        );
+                                    }
+
+                                    if (lfprText) {
+                                        const lfprHigher = prev ? parseFloat(cur.participation_rate.raw_value) >= parseFloat(prev.participation_rate.raw_value) : true;
+                                        this.analysis.lfpr = replacePlaceholders(
+                                            lfprText,
+                                            cur.participation_rate.rate,
+                                            prev ? prev.participation_rate.rate : '—',
+                                            lfprHigher ? 'higher' : 'lower'
+                                        );
+                                    }
+
+                                    return; // ✅ Done — saved templates used, skip auto-generation
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('No saved template found, falling back to auto-generation.', e);
+                    }
+
+                    // ── Step 2: Fallback — auto-generate from raw KPI numbers ──
                     try {
                         const response = await fetch(`/api/kpi-cards?year=${prevYear}&month=${this.selectedMonth}`);
                         const result = await response.json();
@@ -1179,7 +1263,7 @@
                                 .participation_rate.raw_value);
                             let lfprWord = lfprHigher ? 'higher' : 'lower';
                             this.analysis.lfpr =
-                                `The country’s labor force participation rate (LFPR) in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.participation_rate.rate)}, ${trendBold(lfprWord)} than the estimated LFPR in ${b(monthName + ' ' + prevYear)} at ${b(prev.participation_rate.rate)}.`;
+                                `The country's labor force participation rate (LFPR) in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.participation_rate.rate)}, ${trendBold(lfprWord)} than the estimated LFPR in ${b(monthName + ' ' + prevYear)} at ${b(prev.participation_rate.rate)}.`;
 
                         } else {
                             this.analysis.employment = `Historical comparison data not found for ${prevYear}.`;

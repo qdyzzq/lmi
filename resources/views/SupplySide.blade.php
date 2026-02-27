@@ -35,7 +35,7 @@
         <!-- Hero Image Section -->
         <div class="relative w-full h-[500px] md:h-[700px] lg:h-[900px] overflow-hidden">
             <div class="absolute inset-0">
-                <img src="{{ asset('images/navbar-bg.png') }}" alt="Education Pipeline Background"
+                <img src="{{ asset('images/navbar-bg-1.jpg') }}" alt="Education Pipeline Background"
                     class="w-full h-full object-cover object-top">
                 <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-100"></div>
             </div>
@@ -156,7 +156,14 @@
                                 <div class="flex items-start justify-between mb-5">
                                     <div>
                                         <p class="text-xs font-bold text-violet-500 uppercase tracking-widest mb-1">Projected Graduates</p>
-                                        <p class="text-xs text-slate-400">Based on graduation rate</p>
+                                        <!-- Year + rate badge (replaces "Based on graduation rate") -->
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="text-xs font-semibold text-slate-500"
+                                                  x-text="graduationRateData.graduate_year ?? '—'"></span>
+                                            <span class="text-xs font-bold text-violet-600 bg-violet-100 px-2.5 py-1 rounded-full"
+                                                  x-show="graduationRateData.graduation_rate"
+                                                  x-text="`${parseFloat(graduationRateData.graduation_rate).toFixed(2)}% rate`"></span>
+                                        </div>
                                     </div>
                                     <div class="bg-violet-100 p-3.5 rounded-2xl">
                                         <svg class="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,29 +172,22 @@
                                     </div>
                                 </div>
                                 <p class="text-6xl font-black text-slate-800 mb-3 tracking-tight" x-text="formatNumber(graduationRateData.projected_graduates || 0)">0</p>
-                                <div class="flex items-center gap-3">
-                                    <div class="w-2 h-2 rounded-full bg-violet-400"></div>
-                                    <p class="text-sm text-slate-500 font-medium" x-text="graduationRateData.graduate_year ?? 'No data'">No data</p>
-                                    <span class="text-xs font-bold text-violet-600 bg-violet-100 px-2.5 py-1 rounded-full"
-                                          x-show="graduationRateData.graduation_rate"
-                                          x-text="`${graduationRateData.graduation_rate}% rate`"></span>
-                                </div>
-                                <div class="flex items-center gap-2 mt-2" x-show="graduationRateData.enrollment_year">
-                                    <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    <p class="text-xs text-slate-400">
-                                        Based on <span class="font-semibold text-slate-500" x-text="graduationRateData.enrollment_year"></span> enrollment data <span class="italic">(4 years ago)</span>
-                                    </p>
-                                </div>
+
+                                <!-- Description from graduation rate record -->
+                                <template x-if="graduationRateData.description">
+                                    <div class="mt-4 pt-4 border-t border-slate-100">
+                                        <div class="text-xs text-justify text-slate-500 leading-relaxed prose prose-xs max-w-none
+                                                    [&_strong]:text-slate-700 [&_em]:text-slate-600 [&_mark]:bg-yellow-100 [&_mark]:px-0.5 [&_mark]:rounded"
+                                             x-html="graduationRateData.description"></div>
+                                    </div>
+                                </template>
                             </div>
                             <div class="absolute top-5 right-5" x-data="{ showTooltip: false }">
                                 <button @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" class="text-slate-300 hover:text-slate-500 transition">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
                                 </button>
                                 <div x-show="showTooltip" x-transition class="absolute right-0 top-6 w-64 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl z-50">
-                                    <span x-show="graduationRateData.is_default">Using default 60% graduation rate. Admin can set custom rate in the Graduate Form.</span>
-                                    <span x-show="!graduationRateData.is_default">Calculated using admin-set graduation rate: <span x-text="graduationRateData.graduation_rate"></span>%</span>
+                                    Based on <span class="font-semibold" x-text="graduationRateData.enrollment_year ?? '—'"></span> enrollment data <span class="italic">(4 years ago)</span>
                                 </div>
                             </div>
                         </div>
@@ -948,7 +948,7 @@
                                         <p class="text-2xl font-bold text-emerald-900" x-text="getFilteredData().length"></p>
                                     </div>
                                     <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200">
-                                        <p class="text-xs font-semibold text-amber-700 mb-1">Highest Rate</p>
+                                        <p class="text-xs font-semibold text-amber-700 mb-1">Highest Passing Rate</p>
                                         <p class="text-2xl font-bold text-amber-900" x-text="getHighestRate() + '%'"></p>
                                     </div>
                                 </div>

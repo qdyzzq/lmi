@@ -72,9 +72,10 @@ class GraduationRateController extends Controller
     public function saveGraduationRate(Request $request)
     {
         $validated = $request->validate([
-            'graduate_year' => 'required|string',
+            'graduate_year'  => 'required|string',
             'graduation_rate' => 'required|numeric|min:0|max:100',
-            'notes' => 'nullable|string'
+            'notes'          => 'nullable|string',
+            'description'    => 'nullable|string',
         ]);
 
         try {
@@ -90,18 +91,19 @@ class GraduationRateController extends Controller
             $graduationRate = GraduationRate::updateOrCreate(
                 ['graduate_year' => $validated['graduate_year']],
                 [
-                    'enrollment_year' => $enrollmentYear,
-                    'graduation_rate' => $validated['graduation_rate'],
-                    'base_enrollees' => $totalEnrollees,
+                    'enrollment_year'     => $enrollmentYear,
+                    'graduation_rate'     => $validated['graduation_rate'],
+                    'base_enrollees'      => $totalEnrollees,
                     'projected_graduates' => $projectedGraduates,
-                    'notes' => $validated['notes'] ?? null
+                    'notes'               => $validated['notes'] ?? null,
+                    'description'         => $validated['description'] ?? null,
                 ]
             );
 
             return response()->json([
                 'success' => true,
                 'message' => 'Graduation rate saved successfully',
-                'data' => $graduationRate
+                'data'    => $graduationRate
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -144,6 +146,7 @@ class GraduationRateController extends Controller
                     'graduation_rate'     => 60.00,
                     'base_enrollees'      => $liveEnrollees,
                     'projected_graduates' => round($liveEnrollees * 0.6),
+                    'description'         => null,
                     'is_default'          => true
                 ]
             ]);
@@ -194,32 +197,34 @@ class GraduationRateController extends Controller
             ], 500);
         }
     }
+
     public function checkYear(string $graduateYear): \Illuminate\Http\JsonResponse
-{
-    // Look for a real saved record (not a computed default)
-    $record = \App\Models\GraduationRate::where('graduate_year', $graduateYear)->first();
+    {
+        // Look for a real saved record (not a computed default)
+        $record = \App\Models\GraduationRate::where('graduate_year', $graduateYear)->first();
 
-    if (!$record) {
-        // No saved record — return 404 so the blade falls through to loadNewYear()
+        if (!$record) {
+            // No saved record — return 404 so the blade falls through to loadNewYear()
+            return response()->json([
+                'exists' => false,
+                'data'   => null,
+            ], 404);
+        }
+
+        // Real record exists — return it so the blade can show the modal
         return response()->json([
-            'exists' => false,
-            'data'   => null,
-        ], 404);
+            'exists' => true,
+            'data'   => [
+                'id'              => $record->id,
+                'graduate_year'   => $record->graduate_year,
+                'enrollment_year' => $record->enrollment_year,
+                'base_enrollees'  => $record->base_enrollees,
+                'graduation_rate' => $record->graduation_rate,
+                'description'     => $record->description,
+                'is_default'      => false,
+            ],
+        ], 200);
     }
-
-    // Real record exists — return it so the blade can show the modal
-    return response()->json([
-        'exists' => true,
-        'data'   => [
-            'id'              => $record->id,
-            'graduate_year'   => $record->graduate_year,
-            'enrollment_year' => $record->enrollment_year,   // adjust if your column name differs
-            'base_enrollees'  => $record->base_enrollees,    // adjust if your column name differs
-            'graduation_rate' => $record->graduation_rate,
-            'is_default'      => false,
-        ],
-    ], 200);
-}
 
     /**
      * Get total enrollees for a given academic year.

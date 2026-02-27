@@ -12,6 +12,25 @@ use Illuminate\Http\Request;
 
 class ProgramAdminController extends Controller
 {
+    // ===== INDEX (Admin Editor Page) =====
+    public function index()
+    {
+        $programs = Program::where('is_active', true)
+                        ->with(['qualifications', 'howToApply', 'stories', 'testimonial'])
+                        ->orderBy('sort_order')
+                        ->get();
+
+        $carouselSlides = CarouselSlide::where('is_active', true)
+                            ->orderBy('sort_order')
+                            ->get();
+
+        $qualificationTypes = ProgramQualification::distinct()
+                                ->orderBy('type')
+                                ->pluck('type');
+
+        return view('admin.programStories_editor', compact('programs', 'carouselSlides', 'qualificationTypes'));
+    }
+
     // ===== PROGRAMS =====
     public function storeProgram(Request $request)
     {

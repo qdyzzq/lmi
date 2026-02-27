@@ -8,15 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('program_how_to_apply', function (Blueprint $table) {
-            $table->string('link')->nullable()->after('content');
+        Schema::table('graduation_rates', function (Blueprint $table) {
+            $table->text('description')->nullable()->after('notes');
         });
     }
 
     public function down(): void
     {
-        Schema::table('program_how_to_apply', function (Blueprint $table) {
-            $table->dropColumn('link');
+        Schema::table('graduation_rates', function (Blueprint $table) {
+            $table->dropColumn('description');
         });
     }
 };

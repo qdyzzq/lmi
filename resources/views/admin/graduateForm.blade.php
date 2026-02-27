@@ -5,6 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
+
+    <!-- Quill.js Rich Text Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+    <!-- Quill Description Editor Styling -->
+    <style>
+        #descriptionEditorWrapper .ql-toolbar.ql-snow {
+            padding: 8px;
+            border-radius: 8px 8px 0 0;
+            border-color: #d1d5db;
+            background: #f9fafb;
+        }
+        #descriptionEditorWrapper .ql-toolbar.ql-snow .ql-formats { margin-right: 12px; }
+        #descriptionEditorWrapper .ql-container.ql-snow {
+            border-radius: 0 0 8px 8px;
+            border-color: #d1d5db;
+        }
+        #descriptionEditorWrapper .ql-editor {
+            min-height: 100px;
+            max-height: 220px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        #descriptionEditorWrapper .ql-editor.ql-blank::before {
+            color: #9ca3af;
+            font-style: normal;
+        }
+        /* Red border state for validation */
+        #descriptionEditorWrapper.border-error .ql-toolbar.ql-snow,
+        #descriptionEditorWrapper.border-error .ql-container.ql-snow {
+            border-color: #f87171;
+        }
+        /* Focus ring */
+        #descriptionEditorWrapper .ql-container.ql-snow:focus-within {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 2px rgba(34,197,94,0.2);
+        }
+    </style>
+
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <title>LMI - Discipline Graduate Form</title>
 </head>
@@ -267,6 +308,17 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Description — full width Quill rich text editor -->
+                    <div class="mt-6 bg-white rounded-xl p-5 shadow-sm border border-green-200">
+                        <h4 class="text-sm font-bold text-gray-700 mb-1 uppercase tracking-wide">
+                            Description <span class="text-red-500">*</span>
+                        </h4>
+                        <div id="descriptionEditorWrapper">
+                            <div id="descriptionQuillEditor"></div>
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
@@ -421,13 +473,13 @@
 
     <!-- MODAL: Confirm Save Rate -->
     <div id="confirmSaveModal" class="hidden fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full transform transition-all">
-            <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full transform transition-all max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-gray-200 shrink-0">
                 <h3 class="text-2xl font-bold text-gray-900">Confirm Save</h3>
                 <p class="text-sm text-gray-600 mt-1">Please review before saving the graduation rate</p>
             </div>
 
-            <div class="p-6">
+            <div class="p-6 overflow-y-auto flex-1">
                 <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-600 p-4 mb-6">
                     <div class="flex items-center gap-2 mb-2">
                         <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -442,12 +494,18 @@
 
                 <div id="confirmSaveDeletionWarning" class="hidden mb-6">
                     <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
-                        <p class="text-xs font-semibold text-green-800 mb-2">📝 Modified Field</p>
-                        <div class="flex items-center gap-2 text-sm flex-wrap">
+                        <p class="text-xs font-semibold text-green-800 mb-2">📝 Modified Fields</p>
+                        <!-- Rate change row -->
+                        <div id="confirmRateChangeRow" class="hidden flex items-center gap-2 text-sm flex-wrap mb-2">
                             <span class="font-medium text-gray-700">Graduation Rate:</span>
                             <span id="confirmOldRate" class="text-red-500 font-semibold"></span>
                             <span class="text-gray-500 font-bold">→</span>
                             <span id="confirmNewRate" class="text-green-600 font-semibold"></span>
+                        </div>
+                        <!-- Description change row -->
+                        <div id="confirmDescriptionChangeRow" class="hidden text-sm">
+                            <span class="font-medium text-gray-700">Description: </span>
+                            <span class="text-amber-600 font-semibold">Modified</span>
                         </div>
                     </div>
                 </div>
@@ -465,8 +523,17 @@
                         <span class="text-sm font-medium text-gray-700">Based on Enrollees</span>
                         <span id="confirmSaveEnrollees" class="text-lg font-bold text-blue-600"></span>
                     </div>
+                    <!-- Description preview -->
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        <p class="text-sm font-medium text-gray-700 mb-2">Description</p>
+                        <div id="confirmSaveDescription" class="text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none border-l-2 border-green-300 pl-3"></div>
+                    </div>
                 </div>
 
+                <div class="flex gap-3 pt-2"><!-- spacer --></div>
+            </div>
+            <!-- Sticky footer buttons -->
+            <div class="px-6 pb-6 shrink-0 border-t border-gray-100 pt-4">
                 <div class="flex gap-3">
                     <button
                         onclick="closeConfirmSaveModal()"
@@ -514,6 +581,45 @@
         let graduationRateData = null;
         let isChangingYear = false;
         let pendingYearData = null;
+        let descriptionQuill = null; // Quill instance for the description editor
+
+        // ─── Init Quill Description Editor ─────────────────────────────────────
+        function initDescriptionQuill() {
+            if (descriptionQuill) return; // already initialised
+            descriptionQuill = new Quill('#descriptionQuillEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        ['clean']
+                    ]
+                },
+                placeholder: 'e.g. Rate adjusted based on regional trends and post-pandemic recovery data...',
+            });
+
+            descriptionQuill.on('text-change', () => {
+                // Clear red border as soon as the user types
+                document.getElementById('descriptionEditorWrapper').classList.remove('border-error');
+                // Mark unsaved
+                document.getElementById('rateStatusUnsaved').style.display = 'block';
+                document.getElementById('rateStatusSaved').style.display = 'none';
+            });
+        }
+
+        // Helper: get HTML content from Quill (returns empty string if only whitespace/empty)
+        function getDescriptionHtml() {
+            if (!descriptionQuill) return '';
+            const text = descriptionQuill.getText().trim();
+            return text.length === 0 ? '' : descriptionQuill.root.innerHTML;
+        }
+
+        // Helper: set HTML content into Quill
+        function setDescriptionHtml(html) {
+            if (!descriptionQuill) return;
+            descriptionQuill.root.innerHTML = html || '';
+        }
 
         // ─── Toast Notification System ──────────────────────────────────────────
         function showToast(message, type = 'error') {
@@ -695,6 +801,7 @@
             graduationRateData = data;
             displayGraduationRateData(data);
             document.getElementById('graduationRateCard').style.display = 'block';
+            initDescriptionQuill();
             showStatusNotification(year, true);
             toggleYearDisplay(true);
             document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
@@ -824,6 +931,7 @@
                     graduationRateData = result.data;
                     displayGraduationRateData(result.data);
                     document.getElementById('graduationRateCard').style.display = 'block';
+                    initDescriptionQuill();
                 }
             } catch (error) {
                 console.error('Error loading graduation rate:', error);
@@ -951,12 +1059,15 @@
                         clearMissingEnrollmentWarning();
                         document.getElementById('graduationRateInput').value = '60.00';
                         document.getElementById('graduationRateSlider').value = 60;
+                        setDescriptionHtml('');
+                        document.getElementById('descriptionEditorWrapper').classList.remove('border-error');
                         document.getElementById('rateStatusSaved').style.display = 'none';
                         document.getElementById('rateStatusUnsaved').style.display = 'none';
                         calculateProjection();
                     }
 
                     document.getElementById('graduationRateCard').style.display = 'block';
+                    initDescriptionQuill();
                 }
             } catch (error) {
                 console.error('Error loading enrollment context:', error);
@@ -969,6 +1080,8 @@
             document.getElementById('projBaseEnrollees').textContent = (data.base_enrollees || 0).toLocaleString();
             document.getElementById('graduationRateInput').value = parseFloat(data.graduation_rate || 60).toFixed(2);
             document.getElementById('graduationRateSlider').value = Math.round(data.graduation_rate || 60);
+            setDescriptionHtml(data.description || '');
+            document.getElementById('descriptionEditorWrapper').classList.remove('border-error');
 
             // Check 1: Future year?
             if (data.graduate_year && isGraduateYearInFuture(data.graduate_year)) {
@@ -1029,19 +1142,21 @@
                 return;
             }
 
-            // Guard: block saving for future years — data integrity
-            if (isGraduateYearInFuture(currentYear)) {
-                const endYear = currentYear.split('-')[1];
-                showToast(`Saving is locked — ${currentYear} is a future academic year. Come back in July ${endYear} to record the actual graduation rate.`, 'warning');
-                return;
-            }
-
             const graduationRate = parseFloat(document.getElementById('graduationRateInput').value);
 
             if (isNaN(graduationRate) || graduationRate < 0 || graduationRate > 100) {
                 showToast('Graduation rate must be between 0 and 100', 'error');
                 return;
             }
+
+            const description = getDescriptionHtml();
+            if (!description) {
+                showToast('Description is required — please provide context for this year\'s graduation rate.', 'error');
+                document.getElementById('descriptionEditorWrapper').classList.add('border-error');
+                document.getElementById('descriptionEditorWrapper').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            document.getElementById('descriptionEditorWrapper').classList.remove('border-error');
 
             const isUpdate = graduationRateData && !graduationRateData.is_default;
             const projected = document.getElementById('projectedGraduates').textContent;
@@ -1054,11 +1169,38 @@
             document.getElementById('confirmSaveProjected').textContent = projected;
             document.getElementById('confirmSaveEnrollees').textContent = enrollees;
 
+            // Description preview (render HTML from Quill)
+            document.getElementById('confirmSaveDescription').innerHTML = description;
+
             if (isUpdate) {
-                const oldRate = parseFloat(graduationRateData.graduation_rate || 0).toFixed(2) + '%';
-                document.getElementById('confirmOldRate').textContent = oldRate;
-                document.getElementById('confirmNewRate').textContent = graduationRate.toFixed(2) + '%';
-                document.getElementById('confirmSaveDeletionWarning').classList.remove('hidden');
+                const oldRate   = parseFloat(graduationRateData.graduation_rate || 0).toFixed(2) + '%';
+                const newRate   = graduationRate.toFixed(2) + '%';
+                const rateChanged = oldRate !== newRate;
+
+                // Detect description change: strip tags and compare plain text
+                const stripHtml  = html => (new DOMParser().parseFromString(html, 'text/html')).body.textContent.trim();
+                const oldDescTxt = stripHtml(graduationRateData.description || '');
+                const newDescTxt = stripHtml(description);
+                const descChanged = oldDescTxt !== newDescTxt;
+
+                // Show the "Modified Fields" block only if something actually changed
+                if (rateChanged || descChanged) {
+                    document.getElementById('confirmSaveDeletionWarning').classList.remove('hidden');
+
+                    const rateRow = document.getElementById('confirmRateChangeRow');
+                    if (rateChanged) {
+                        document.getElementById('confirmOldRate').textContent = oldRate;
+                        document.getElementById('confirmNewRate').textContent = newRate;
+                        rateRow.classList.remove('hidden');
+                    } else {
+                        rateRow.classList.add('hidden');
+                    }
+
+                    const descRow = document.getElementById('confirmDescriptionChangeRow');
+                    descChanged ? descRow.classList.remove('hidden') : descRow.classList.add('hidden');
+                } else {
+                    document.getElementById('confirmSaveDeletionWarning').classList.add('hidden');
+                }
             } else {
                 document.getElementById('confirmSaveDeletionWarning').classList.add('hidden');
             }
@@ -1084,7 +1226,8 @@
                     },
                     body: JSON.stringify({
                         graduate_year: currentYear,
-                        graduation_rate: graduationRate
+                        graduation_rate: graduationRate,
+                        description: getDescriptionHtml()
                     })
                 });
 

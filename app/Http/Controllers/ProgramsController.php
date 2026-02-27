@@ -1,13 +1,15 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Program;
 use App\Models\CarouselSlide;
+use App\Models\ProgramQualification;
 use Illuminate\View\View;
 
 class ProgramsController extends Controller
 {
-     public function index()
+    public function index()
     {
         $programs = Program::with([
             'qualifications',
@@ -23,30 +25,29 @@ class ProgramsController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        return view('programs-stories', compact('programs', 'carouselSlides'));
+        return view('programStories', compact('programs', 'carouselSlides'));
     }
-    
-public function admin(): View
-{
-    $programs = Program::with([
-        'qualifications',
-        'howToApply',
-        'stories',
-        'testimonial'
-    ])
-    ->where('is_active', true)
-    ->orderBy('sort_order')
-    ->get();
 
-    $carouselSlides = CarouselSlide::where('is_active', true)
+    public function admin(): View
+    {
+        $programs = Program::with([
+            'qualifications',
+            'howToApply',
+            'stories',
+            'testimonial'
+        ])
+        ->where('is_active', true)
         ->orderBy('sort_order')
         ->get();
 
-     $qualificationTypes = \App\Models\ProgramQualification::distinct()
-        ->pluck('type')
-        ->sort()
-        ->values();
+        $carouselSlides = CarouselSlide::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
 
-    return view('program-admin', compact('programs', 'carouselSlides', 'qualificationTypes'));
-}
+        $qualificationTypes = ProgramQualification::distinct()
+            ->orderBy('type')
+            ->pluck('type');
+
+        return view('programStories_editor', compact('programs', 'carouselSlides', 'qualificationTypes'));
+    }
 }

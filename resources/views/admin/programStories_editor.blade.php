@@ -67,6 +67,15 @@
 
 <body class="bg-slate-100 min-h-screen" x-data="adminPage()">
 
+    {{-- ===== OUTER LAYOUT WRAPPER ===== --}}
+    <div class="flex h-screen overflow-hidden">
+
+    {{-- ===== SIDEBAR ===== --}}
+    @include('partials.sidebar')
+
+    {{-- ===== MAIN CONTENT AREA ===== --}}
+    <div class="flex-1 flex flex-col overflow-y-auto">
+
     {{-- ===== ADMIN TOP BAR ===== --}}
     <div class="admin-ribbon sticky top-0 z-50 px-6 py-2 flex items-center justify-between shadow-md">
         <div class="flex items-center gap-3">
@@ -92,7 +101,7 @@
     </div>
 
     {{-- ===== CAROUSEL SECTION ===== --}}
-    <div class="relative w-full h-screen overflow-hidden" x-data="{
+    <div class="relative w-full shrink-0 overflow-hidden" style="height: calc(100vh - 42px);" x-data="{
         currentSlide: 0,
         slides: {{ $carouselSlides->map(fn($s) => ['image' => asset($s->image_path), 'title' => $s->title, 'excerpt' => $s->excerpt, 'link' => $s->link, 'program' => $s->program_label, 'color' => $s->color, 'id' => $s->id])->toJson() }},
         autoplayInterval: null,
@@ -481,7 +490,7 @@
                                                                     </svg>
                                                                 </button>
                                                                 <button
-                                                                    @click="$dispatch('open-modal', { type: 'delete-item', id: {{ $q->id }}, endpoint: '/qualifications/{{ $q->id }}' })"
+                                                                    @click="$dispatch('open-modal', { type: 'delete-item', id: {{ $q->id }}, endpoint: '/admin/qualifications/{{ $q->id }}' })"
                                                                     class="w-5 h-5 bg-red-100 hover:bg-red-500 text-red-500 hover:text-white rounded flex items-center justify-center transition">
                                                                     <svg class="w-3 h-3" fill="none"
                                                                         stroke="currentColor" viewBox="0 0 24 24">
@@ -582,7 +591,7 @@
                                                             </svg>
                                                         </button>
                                                         <button
-                                                            @click="$dispatch('open-modal', { type: 'delete-item', id: {{ $step->id }}, endpoint: '/steps/{{ $step->id }}' })"
+                                                            @click="$dispatch('open-modal', { type: 'delete-item', id: {{ $step->id }}, endpoint: '/admin/steps/{{ $step->id }}' })"
                                                             class="w-5 h-5 bg-white/20 hover:bg-red-500 text-white rounded flex items-center justify-center transition">
                                                             <svg class="w-3 h-3" fill="none" stroke="currentColor"
                                                                 viewBox="0 0 24 24">
@@ -639,7 +648,7 @@
                                                             </svg>
                                                         </button>
                                                         <button
-                                                            @click.stop="$dispatch('open-modal', { type: 'delete-item', id: {{ $story->id }}, endpoint: '/stories/{{ $story->id }}' })"
+                                                            @click.stop="$dispatch('open-modal', { type: 'delete-item', id: {{ $story->id }}, endpoint: '/admin/stories/{{ $story->id }}' })"
                                                             class="w-6 h-6 bg-red-600 text-white rounded flex items-center justify-center shadow">
                                                             <svg class="w-3 h-3" fill="none" stroke="currentColor"
                                                                 viewBox="0 0 24 24">
@@ -1229,8 +1238,8 @@
                         link: this.form.link
                     };
                     if (this.form.image) data.image = this.form.image;
-                    const res = await formRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/carousel/${this.modal.id}` :
-                        '/carousel', data);
+                    const res = await formRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/admin/carousel/${this.modal.id}` :
+                        '/admin/carousel', data);
                     res.success ? this.done() : this.fail(res.message);
                 },
 
@@ -1245,15 +1254,15 @@
                         color: this.form.color
                     };
                     if (this.form.logo) data.logo = this.form.logo;
-                    const res = await formRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/programs/${this.modal.id}` :
-                        '/programs', data);
+                    const res = await formRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/admin/programs/${this.modal.id}` :
+                        '/admin/programs', data);
                     res.success ? this.done() : this.fail(res.message);
                 },
 
                 async submitDescription() {
                     this.modal.loading = true;
                     this.modal.error = null;
-                    const res = await jsonRequest('PUT', `/programs/${this.modal.id}/description`, {
+                    const res = await jsonRequest('PUT', `/admin/programs/${this.modal.id}/description`, {
                         description: this.form.description
                     });
                     res.success ? this.done() : this.fail(res.message);
@@ -1268,8 +1277,8 @@
                         content: this.form.content
                     };
                     if (!isEdit) body.program_id = this.modal.programId;
-                    const res = await jsonRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/qualifications/${this.modal.id}` :
-                        '/qualifications', body);
+                    const res = await jsonRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/admin/qualifications/${this.modal.id}` :
+                        '/admin/qualifications', body);
                     res.success ? this.done() : this.fail(res.message);
                 },
 
@@ -1282,8 +1291,8 @@
                         link: this.form.link || null,
                     };
                     if (!isEdit) body.program_id = this.modal.programId;
-                    const res = await jsonRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/steps/${this.modal.id}` :
-                        '/steps', body);
+                    const res = await jsonRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/admin/steps/${this.modal.id}` :
+                        '/admin/steps', body);
                     res.success ? this.done() : this.fail(res.message);
                 },
 
@@ -1297,8 +1306,8 @@
                     };
                     if (!isEdit) data.program_id = this.modal.programId;
                     if (this.form.image) data.image = this.form.image;
-                    const res = await formRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/stories/${this.modal.id}` :
-                        '/stories', data);
+                    const res = await formRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/admin/stories/${this.modal.id}` :
+                        '/admin/stories', data);
                     res.success ? this.done() : this.fail(res.message);
                 },
 
@@ -1312,8 +1321,8 @@
                         author_role: this.form.author_role
                     };
                     if (!isEdit) body.program_id = this.modal.programId;
-                    const res = await jsonRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/testimonials/${this.modal.id}` :
-                        '/testimonials', body);
+                    const res = await jsonRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/admin/testimonials/${this.modal.id}` :
+                        '/admin/testimonials', body);
                     res.success ? this.done() : this.fail(res.message);
                 },
 
@@ -1321,8 +1330,8 @@
                     this.modal.loading = true;
                     this.modal.error = null;
                     let url;
-                    if (this.modal.type === 'delete-slide') url = `/carousel/${this.modal.id}`;
-                    else if (this.modal.type === 'delete-program') url = `/programs/${this.modal.id}`;
+                    if (this.modal.type === 'delete-slide') url = `/admin/carousel/${this.modal.id}`;
+                    else if (this.modal.type === 'delete-program') url = `/admin/programs/${this.modal.id}`;
                     else url = this.modal.endpoint;
                     const res = await jsonRequest('DELETE', url);
                     res.success ? this.done() : this.fail(res.message);
@@ -1330,6 +1339,9 @@
             }
         }
     </script>
+
+    </div>{{-- end main content area --}}
+    </div>{{-- end outer layout wrapper --}}
 
 </body>
 

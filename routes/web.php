@@ -11,12 +11,28 @@ use App\Http\Controllers\LicensureRateController;
 use App\Http\Controllers\DisciplineEnrollmentController;
 use App\Http\Controllers\DisciplineGraduateController;
 use App\Http\Controllers\SupplySideAnalysisController;
+use App\Http\Controllers\ProgramsController;
+use App\Http\Controllers\ProgramAdminController;
+
+
+
 
 // ==================== PUBLIC ROUTES (No login required) ====================
+Route::get('/programs-stories', [ProgramsController::class, 'index'])
+    ->name('programStories');
+
+
+
+Route::get('/programs-and-stories', function () {
+    return view('programs-stories-static');
+})->name('programs.stories.static');
+
 Route::get('/ProgramStories', function () {
     return view('ProgramStories');
 })->name('program.stories');
+
 Route::post('/lmi/submit', [LmiSubmissionController::class, 'store'])->name('lmi.submit');
+
 Route::get('/login', function () {
     return view('auth.Login');
 })->name('login');
@@ -26,7 +42,6 @@ Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::get('/forgot-password', function () {
     return view('auth.forgot-password');
 })->name('password.request');
-
 
 // PUBLIC DASHBOARD - Anyone can view
 Route::get('/', [DashboardController::class, 'index'])->name('home');
@@ -65,6 +80,7 @@ Route::get('/Report', function(){
 Route::get('/Settings', function(){
     return view('Setting');
 })->name('Setting');
+
 
 //==================== PROTECTED ROUTES (Login required for updates) ====================
 Route::middleware(['auth', 'role:statistician'])->prefix('statistician')->name('statistician.')->group(function () {
@@ -140,14 +156,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // LMI Submissions Routes
     Route::get('/lmi-submissions', [LmiSubmissionController::class, 'adminIndex'])
         ->name('lmi-submissions.index');
-    
+
     // JOB TITLE FORM Routes
     Route::get('/job-titles/form', [JobTitleController::class, 'showForm'])
         ->name('job-titles.form');
     
     Route::post('/job-titles/store', [JobTitleController::class, 'store'])
         ->name('job-titles.store');
-    
+
     // LICENSURE RATES Routes
     Route::get('/licensure-rates/form', [LicensureRateController::class, 'showForm'])
         ->name('licensure-rates.form');
@@ -155,63 +171,47 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/licensure-rates/check-year/{year}', [LicensureRateController::class, 'checkYear'])
         ->name('licensure-rates.check-year');
     
-    // Store licensure rate data (POST from form)
     Route::post('/licensure-rates', [LicensureRateController::class, 'store'])
         ->name('licensure-rates.store');
     
-    // Update a single entry
     Route::put('/licensure-rates/{id}', [LicensureRateController::class, 'update'])
         ->name('licensure-rates.update');
     
-    // Delete a single entry
     Route::delete('/licensure-rates/{id}', [LicensureRateController::class, 'destroy'])
         ->name('licensure-rates.destroy');
     
-    // Delete all data for a specific year
     Route::delete('/licensure-rates/delete-year/{year}', [LicensureRateController::class, 'deleteYear'])
         ->name('licensure-rates.delete-year');
 
     // ==================== DISCIPLINE ENROLLMENT Routes ====================
-    
-    // Show the enrollment form
     Route::get('/discipline-enrollment/form', [DisciplineEnrollmentController::class, 'showForm'])
         ->name('discipline-enrollment.form');
     
-    // Store enrollment data (POST from form)
     Route::post('/discipline-enrollment', [DisciplineEnrollmentController::class, 'store'])
         ->name('discipline-enrollment.store');
     
-    // Update a single record
     Route::put('/discipline-enrollment/{id}', [DisciplineEnrollmentController::class, 'update'])
         ->name('discipline-enrollment.update');
     
-    // Delete a single record
     Route::delete('/discipline-enrollment/{id}', [DisciplineEnrollmentController::class, 'destroy'])
         ->name('discipline-enrollment.destroy');
     
-    // Delete all data for a specific year
     Route::delete('/discipline-enrollment/delete/{year}', [DisciplineEnrollmentController::class, 'deleteYear'])
         ->name('discipline-enrollment.delete');
 
     // ==================== DISCIPLINE GRADUATE Routes ====================
-    
-    // Show the graduate form/dashboard
     Route::get('/discipline-graduate/form', [DisciplineGraduateController::class, 'showForm'])
         ->name('discipline-graduate.form');
     
-    // Store graduate data (POST from form)
     Route::post('/discipline-graduate', [DisciplineGraduateController::class, 'store'])
         ->name('discipline-graduate.store');
     
-    // Update a single record
     Route::put('/discipline-graduate/{id}', [DisciplineGraduateController::class, 'update'])
         ->name('discipline-graduate.update');
     
-    // Delete a single record
     Route::delete('/discipline-graduate/{id}', [DisciplineGraduateController::class, 'destroy'])
         ->name('discipline-graduate.destroy');
     
-    // Delete all data for a specific year
     Route::delete('/discipline-graduate/delete/{year}', [DisciplineGraduateController::class, 'deleteYear'])
         ->name('discipline-graduate.delete');
 
@@ -246,12 +246,39 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         ->name('lmi-submissions.restore-pending');
 
     // ==================== SUPPLY SIDE ANALYSIS Routes ====================
-    // NEW: Admin drafts and submits for statistician to review & publish
     Route::get('/supply-side-editor', [SupplySideAnalysisController::class, 'adminEditor'])
         ->name('supply-side-editor');
 
     // ==================== ANALYSIS TEMPLATE Routes ====================
-    // Admin drafts templates and submits for statistician to review & publish
     Route::get('/template-editor', [AnalysisTemplateController::class, 'adminEditor'])
         ->name('template-editor');
+
+    // ==================== PROGRAMS & STORIES ADMIN ====================
+    Route::get('/programs-stories', [ProgramAdminController::class, 'index'])
+        ->name('program-stories-editor'); // full name: admin.program-stories
+
+    // ==================== PROGRAM ADMIN CRUD ====================
+    Route::post('/programs', [ProgramAdminController::class, 'storeProgram'])->name('programs.store');
+    Route::put('/programs/{program}', [ProgramAdminController::class, 'updateProgram'])->name('programs.update');
+    Route::delete('/programs/{program}', [ProgramAdminController::class, 'destroyProgram'])->name('programs.destroy');
+    Route::put('/programs/{program}/description', [ProgramAdminController::class, 'updateDescription'])->name('programs.description');
+
+    Route::post('/qualifications', [ProgramAdminController::class, 'storeQualification'])->name('qualifications.store');
+    Route::put('/qualifications/{qualification}', [ProgramAdminController::class, 'updateQualification'])->name('qualifications.update');
+    Route::delete('/qualifications/{qualification}', [ProgramAdminController::class, 'destroyQualification'])->name('qualifications.destroy');
+
+    Route::post('/steps', [ProgramAdminController::class, 'storeStep'])->name('steps.store');
+    Route::put('/steps/{step}', [ProgramAdminController::class, 'updateStep'])->name('steps.update');
+    Route::delete('/steps/{step}', [ProgramAdminController::class, 'destroyStep'])->name('steps.destroy');
+
+    Route::post('/stories', [ProgramAdminController::class, 'storeStory'])->name('stories.store');
+    Route::put('/stories/{story}', [ProgramAdminController::class, 'updateStory'])->name('stories.update');
+    Route::delete('/stories/{story}', [ProgramAdminController::class, 'destroyStory'])->name('stories.destroy');
+
+    Route::post('/testimonials', [ProgramAdminController::class, 'storeTestimonial'])->name('testimonials.store');
+    Route::put('/testimonials/{testimonial}', [ProgramAdminController::class, 'updateTestimonial'])->name('testimonials.update');
+
+    Route::post('/carousel', [ProgramAdminController::class, 'storeSlide'])->name('carousel.store');
+    Route::put('/carousel/{slide}', [ProgramAdminController::class, 'updateSlide'])->name('carousel.update');
+    Route::delete('/carousel/{slide}', [ProgramAdminController::class, 'destroySlide'])->name('carousel.destroy');
 });
