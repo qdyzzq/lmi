@@ -9,6 +9,8 @@ use App\Models\ProgramStory;
 use App\Models\ProgramTestimonial;
 use App\Models\CarouselSlide;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+
 
 class ProgramAdminController extends Controller
 {
@@ -17,7 +19,8 @@ class ProgramAdminController extends Controller
     {
         $data = $request->validate([
             'name'        => 'required|string',
-            'subtitle'    => 'required|string',
+            'acronym'     => 'nullable|string|max:50',
+            'subtitle'    => 'nullable|string',
             'description' => 'required|string',
             'color'       => 'required|string',
             'logo'        => 'nullable|image',
@@ -39,8 +42,9 @@ class ProgramAdminController extends Controller
     {
         $data = $request->validate([
             'name'        => 'required|string',
-            'subtitle'    => 'required|string',
-            'description' => 'required|string',
+            'acronym'     => 'nullable|string|max:50',
+            'subtitle'    => 'nullable|string',
+            'description' => 'nullable|string',
             'color'       => 'required|string',
             'logo'        => 'nullable|image',
         ]);
@@ -64,6 +68,12 @@ class ProgramAdminController extends Controller
     {
         $request->validate(['description' => 'required|string']);
         $program->update(['description' => $request->description]);
+        return response()->json(['success' => true]);
+    }
+
+    public function destroyDescription(Program $program)
+    {
+        $program->update(['description' => null]);
         return response()->json(['success' => true]);
     }
 
@@ -208,6 +218,12 @@ class ProgramAdminController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function destroy(ProgramTestimonial $testimonial)
+    {
+        $testimonial->update(['is_active' => false]);
+        return response()->json(['success' => true]);
+    }
+
     // ===== CAROUSEL =====
     public function storeSlide(Request $request)
     {
@@ -253,5 +269,17 @@ class ProgramAdminController extends Controller
     {
         $slide->update(['is_active' => false]);
         return response()->json(['success' => true]);
+    }
+
+    public function togglePublish(Program $program): JsonResponse
+    {
+        $program->update([
+            'is_published' => ! $program->is_published
+        ]);
+
+        return response()->json([
+            'success'      => true,
+            'is_published' => $program->is_published,
+        ]);
     }
 }

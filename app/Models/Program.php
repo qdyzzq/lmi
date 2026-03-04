@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Program extends Model
 {
      protected $fillable = [
-        'name', 'subtitle', 'description',
-        'color', 'logo_path', 'sort_order', 'is_active'
+        'name', 'acronym', 'subtitle', 'description',
+        'color', 'logo_path', 'sort_order', 'is_active', 'is_published'
     ];
 
     public function qualifications()

@@ -169,7 +169,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::post('/programs', [ProgramAdminController::class, 'storeProgram'])->name('programs.store');
 Route::put('/programs/{program}', [ProgramAdminController::class, 'updateProgram'])->name('programs.update');
 Route::delete('/programs/{program}', [ProgramAdminController::class, 'destroyProgram'])->name('programs.destroy');
+
 Route::put('/programs/{program}/description', [ProgramAdminController::class, 'updateDescription'])->name('programs.description');
+Route::delete('/programs/{program}/description', [ProgramAdminController::class, 'destroyDescription']);
 
 Route::post('/qualifications', [ProgramAdminController::class, 'storeQualification'])->name('qualifications.store');
 Route::put('/qualifications/{qualification}', [ProgramAdminController::class, 'updateQualification'])->name('qualifications.update');
@@ -185,7 +187,13 @@ Route::delete('/stories/{story}', [ProgramAdminController::class, 'destroyStory'
 
 Route::post('/testimonials', [ProgramAdminController::class, 'storeTestimonial'])->name('testimonials.store');
 Route::put('/testimonials/{testimonial}', [ProgramAdminController::class, 'updateTestimonial'])->name('testimonials.update');
-
+Route::delete('/testimonials/{testimonial}', [ProgramAdminController::class, 'destroy']);
 Route::post('/carousel', [ProgramAdminController::class, 'storeSlide'])->name('carousel.store');
 Route::put('/carousel/{slide}', [ProgramAdminController::class, 'updateSlide'])->name('carousel.update');
 Route::delete('/carousel/{slide}', [ProgramAdminController::class, 'destroySlide'])->name('carousel.destroy');
+
+Route::patch('/admin/programs/{program}/toggle-publish',
+    [ProgramAdminController::class, 'togglePublish']
+);
+
+Route::patch('/programs/{program}/toggle-publish', [ProgramAdminController::class, 'togglePublish']);

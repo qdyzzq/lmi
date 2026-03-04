@@ -25,6 +25,20 @@
         .chevron-icon.open {
             transform: rotate(180deg);
         }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
     </style>
 </head>
 
@@ -60,30 +74,27 @@
                         </div>
                     </div>
                     <div class="relative z-10 h-full flex items-center justify-center px-4">
-                        <div class="text-center text-white max-w-5xl">
-                            <div class="inline-block mb-6">
-                                <span class="px-6 py-3 rounded-full text-base font-bold backdrop-blur-md shadow-2xl"
-                                    :class="{
-                                        'bg-green-500/40 border-2 border-green-300/60': slide.color === 'green',
-                                        'bg-red-500/40 border-2 border-red-300/60': slide.color === 'red',
-                                        'bg-blue-500/40 border-2 border-blue-300/60': slide.color === 'blue',
-                                        'bg-yellow-500/40 border-2 border-yellow-300/60': slide.color === 'yellow',
-                                        'bg-cyan-500/40 border-2 border-cyan-300/60': slide.color === 'cyan'
-                                    }"
-                                    x-text="slide.program + ' Success Story'"></span>
+                        <div
+                            class="flex flex-col items-center justify-center text-center text-white max-w-5xl h-full py-20">
+
+                            <div class="flex-grow flex flex-col justify-center mb-8">
+                                <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 drop-shadow-2xl leading-tight line-clamp-2"
+                                    x-text="slide.title"></h1>
+
+                                <p class="text-xl md:text-2xl lg:text-3xl text-slate-50 drop-shadow-lg max-w-4xl mx-auto leading-relaxed font-light line-clamp-3"
+                                    x-html="slide.excerpt"></p>
                             </div>
-                            <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-8 drop-shadow-2xl leading-tight"
-                                x-text="slide.title"></h1>
-                            <p class="text-xl md:text-2xl lg:text-3xl text-slate-50 drop-shadow-lg mb-12 max-w-4xl mx-auto leading-relaxed font-light"
-                                x-text="slide.excerpt"></p>
-                            <a :href="slide.link" target="_blank"
-                                class="inline-flex items-center gap-3 px-10 py-5 bg-white text-slate-900 font-bold text-lg rounded-xl hover:bg-slate-100 transition-all duration-300 shadow-2xl transform hover:-translate-y-2 hover:scale-105">
-                                <span>READ FULL STORY</span>
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                        d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                </svg>
-                            </a>
+
+                            <div class="flex-shrink-0 pb-12">
+                                <a :href="slide.link" target="_blank"
+                                    class="inline-flex items-center gap-3 px-10 py-5 bg-white text-slate-900 font-bold text-lg rounded-xl hover:bg-slate-100 transition-all duration-300 shadow-2xl transform hover:-translate-y-2 hover:scale-105">
+                                    <span>READ FULL STORY</span>
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <a href="#programs-section"
@@ -277,9 +288,7 @@
                             onmouseout="this.style.backgroundColor=''">
                             <div class="flex items-center gap-5">
                                 <div class="w-16 h-16 md:w-20 md:h-20 rounded-2xl flex-shrink-0 flex items-center justify-center shadow-md transition-all duration-300 border-2"
-                                    :style="open
-                                        ?
-                                        'background:white; border-color:{{ $c['400'] }}' :
+                                    :style="open ? 'background:white; border-color:{{ $c['400'] }}' :
                                         'background:{{ $c['50'] }}; border-color:transparent'">
                                     <img src="{{ asset($program->logo_path) }}" alt="{{ $program->name }} Logo"
                                         class="w-10 h-10 md:w-14 md:h-14 object-contain">
@@ -332,7 +341,8 @@
                                                 </svg>
                                                 Program Details
                                             </h4>
-                                            <p class="text-slate-700 leading-relaxed">{{ $program->description }}</p>
+                                            <div class="text-slate-700 leading-relaxed prose prose-sm max-w-none">
+                                                {!! $program->description !!}</div>
                                         </div>
 
                                         @php $groupedQuals = $program->qualifications->groupBy('type'); @endphp
@@ -417,15 +427,15 @@
                                                             <div
                                                                 class="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent">
                                                             </div>
+                                                            {{-- ✅ CHANGE B (public): use acronym if available --}}
                                                             <span
                                                                 class="absolute bottom-1.5 right-1.5 text-white text-xs font-bold px-1.5 py-0.5 rounded-full"
-                                                                style="background:{{ $c['600'] }}">{{ $program->name }}</span>
+                                                                style="background:{{ $c['600'] }}">{{ $program->acronym ?? $program->name }}</span>
                                                         </div>
                                                         <div class="p-2.5">
                                                             <p
                                                                 class="text-xs font-semibold text-slate-700 line-clamp-2 leading-snug">
-                                                                {{ $story->title }}
-                                                            </p>
+                                                                {{ $story->title }}</p>
                                                             <span class="text-xs font-medium mt-1 block"
                                                                 style="color:{{ $c['600'] }}">Read →</span>
                                                         </div>
