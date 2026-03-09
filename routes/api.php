@@ -49,7 +49,12 @@ Route::prefix('analysis-templates')->group(function () {
     // ── NEW: Pending workflow ──
     Route::get('/pending-all', [AnalysisTemplateController::class, 'allPending']);
     Route::get('/pending-count', [AnalysisTemplateController::class, 'pendingCount']);
+    Route::get('/pending-show', [AnalysisTemplateController::class, 'pendingShow']);
     Route::post('/submit', [AnalysisTemplateController::class, 'adminSubmit']);
+
+    // ── NEW: Approved workflow ──
+    Route::get('/approved-all', [AnalysisTemplateController::class, 'allApproved']);
+    Route::get('/approved-count', [AnalysisTemplateController::class, 'approvedCount']);
 
     // ⚠️ Wildcard routes MUST stay last
     Route::get('/{key}', [AnalysisTemplateController::class, 'show']);
@@ -150,4 +155,8 @@ Route::prefix('supply-side-analysis')->group(function () {
     Route::get('/pending-all', [SupplySideAnalysisController::class, 'allPending']);
     // ── NEW: Badge count for statistician sidebar polling ──
     Route::get('/pending-count', [SupplySideAnalysisController::class, 'pendingCount']);
+
+    // ── NEW: Approved workflow ──
+    Route::get('/approved-all', [SupplySideAnalysisController::class, 'allApproved']);
+    Route::get('/approved-count', [SupplySideAnalysisController::class, 'approvedCount']);
 });

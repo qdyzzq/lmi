@@ -86,16 +86,140 @@
 
     <!-- MAIN CONTENT -->
     <div class="flex-1 flex flex-col overflow-hidden">
-        <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 shadow-sm flex-shrink-0">
-            <h2 class="text-xl font-bold text-slate-800">Supply Side Analysis Editor • Statistician</h2>
-            <div class="flex items-center gap-4">
-                <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">📅 Region XI • {{ date('Y') }}</div>
-                <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
+        <header class="bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
+            <!-- Top row -->
+            <div class="h-14 flex items-center justify-between px-8">
+                <h2 class="text-lg font-bold text-slate-800">Supply Side Analysis Editor <span class="text-slate-400 font-normal">• Statistician</span></h2>
+                <div class="flex items-center gap-4">
+                    <div class="bg-slate-100 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 border border-slate-200"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • {{ date('Y') }}</div>
+                    <div class="w-9 h-9 bg-blue-100 rounded-full border-2 border-blue-500"></div>
+                </div>
+            </div>
+            <!-- Main mode tabs -->
+            <div class="flex px-8 gap-1 border-t border-slate-100">
+                <button @click="mainTab = 'editor'"
+                    class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold border-b-2 transition -mb-px"
+                    :class="mainTab === 'editor'
+                        ? 'border-blue-600 text-blue-700 bg-blue-50/60'
+                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    Editor
+                    <span x-show="allPendingSubmissions.length > 0"
+                        class="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
+                        :class="mainTab === 'editor' ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700'"
+                        x-text="allPendingSubmissions.length"></span>
+                </button>
+                <button @click="mainTab = 'approved'"
+                    class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold border-b-2 transition -mb-px"
+                    :class="mainTab === 'approved'
+                        ? 'border-emerald-600 text-emerald-700 bg-emerald-50/60'
+                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Approved
+                    <span x-show="allApprovedRecords.length > 0"
+                        class="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
+                        :class="mainTab === 'approved' ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-700'"
+                        x-text="allApprovedRecords.length"></span>
+                </button>
             </div>
         </header>
 
         <!-- Side Drawer Layout — bg canvas with cards inside -->
         <div class="flex-1 overflow-y-auto bg-slate-100 p-6">
+
+            <!-- ══ APPROVED PANEL ══ -->
+            <div x-show="mainTab === 'approved'" x-cloak>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <!-- Panel header -->
+                    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 bg-emerald-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">Approved & Published Analyses</p>
+                                <p class="text-xs text-slate-500">Read-only history of all published supply side analyses</p>
+                            </div>
+                        </div>
+                        <span class="text-xs bg-emerald-100 text-emerald-700 font-bold px-3 py-1 rounded-full" x-text="allApprovedRecords.length + ' record(s)'"></span>
+                    </div>
+
+                    <!-- Loading -->
+                    <div x-show="loadingAllApproved" class="flex items-center justify-center py-20">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+                        <span class="ml-3 text-slate-500 text-sm">Loading approved records...</span>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div x-show="!loadingAllApproved && allApprovedRecords.length === 0" class="flex flex-col items-center justify-center py-24 text-slate-400">
+                        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                            <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <p class="text-sm font-semibold mb-1">No approved analyses yet</p>
+                        <p class="text-xs text-slate-300">Published records will appear here</p>
+                    </div>
+
+                    <!-- Records grid -->
+                    <div x-show="!loadingAllApproved && allApprovedRecords.length > 0" class="p-6">
+                        <!-- Province/Year selector pills -->
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <template x-for="(item, idx) in allApprovedRecords" :key="idx">
+                                <button @click="approvedSelected = item"
+                                    class="flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition"
+                                    :class="approvedSelected && approvedSelected.id === item.id
+                                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                                        : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-300 hover:text-emerald-700'">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    <span x-text="item.province + ' • ' + item.academic_year"></span>
+                                </button>
+                            </template>
+                        </div>
+
+                        <!-- Detail pane -->
+                        <template x-if="approvedSelected">
+                            <div class="border border-slate-200 rounded-xl overflow-hidden">
+                                <!-- Meta bar -->
+                                <div class="px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center gap-4 text-xs text-slate-600">
+                                    <span class="flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                        <strong x-text="approvedSelected.province"></strong>
+                                    </span>
+                                    <span class="flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        <strong x-text="approvedSelected.academic_year"></strong>
+                                    </span>
+                                    <span x-show="approvedSelected.submitted_by" class="flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                        Submitted by <strong class="ml-1" x-text="approvedSelected.submitted_by"></strong>
+                                    </span>
+                                    <span class="flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Published <strong class="ml-1" x-text="formatDate(approvedSelected.approved_at)"></strong>
+                                    </span>
+                                    <span class="ml-auto flex items-center gap-1 bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold text-[11px]">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/></svg>
+                                        Published
+                                    </span>
+                                </div>
+
+                                <!-- Analysis text content -->
+                                <div class="p-6 bg-white">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Analysis Text</span>
+                                        <span class="h-px flex-1 bg-slate-100"></span>
+                                        <span class="text-[10px] text-slate-400 font-medium">Rich text content</span>
+                                    </div>
+                                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-5 prose prose-sm max-w-none text-slate-700 leading-relaxed overflow-y-auto max-h-[60vh] custom-scrollbar"
+                                         x-html="approvedSelected.analysis_text || '<em>No content</em>'"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ EDITOR PANEL ══ -->
+            <div x-show="mainTab === 'editor'">
 
             <!-- ── EDITOR MODE: two-column layout ── -->
             <div x-show="!showPreviewModal" class="flex gap-6 items-stretch">
@@ -108,12 +232,12 @@
                 <!-- Panel Header -->
                 <div class="px-5 py-4 border-b border-slate-200 bg-white flex items-center justify-between">
                     <p class="text-sm font-bold text-slate-700 uppercase tracking-wide">Filters</p>
-                    <span x-show="!isUnlocked" class="text-xs text-slate-400 flex items-center gap-1">🔒 Locked</span>
+                    <span x-show="!isUnlocked" class="text-xs text-slate-400 flex items-center gap-1"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Locked</span>
                     <button
                         x-show="isUnlocked"
                         @click="isUnlocked = false"
                         class="text-xs text-slate-500 hover:text-red-500 flex items-center gap-1 transition">
-                        🔓 Lock Filters
+                        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg> Lock Filters
                     </button>
                 </div>
 
@@ -123,7 +247,7 @@
                     <!-- Province -->
                     <div>
                         <label class="text-xs font-semibold block mb-1.5"
-                               :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'">📍 Province</label>
+                               :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> Province</label>
                         <select
                             x-model="selectedProvince"
                             @change="if (isUnlocked) { await loadYears(); await loadSidebarOnly(); }"
@@ -141,7 +265,7 @@
                     <!-- Academic Year -->
                     <div>
                         <label class="text-xs font-semibold block mb-1.5"
-                               :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'">📖 Academic Year</label>
+                               :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> Academic Year</label>
                         <select
                             x-model="selectedAcademicYear"
                             @change="isUnlocked && loadSidebarOnly()"
@@ -158,20 +282,20 @@
 
                     <!-- Lock notice -->
                     <div x-show="!isUnlocked" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-400 text-center">
-                        🔒 Load a draft below to unlock filters &amp; editor
+                        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Load a draft below to unlock filters &amp; editor
                     </div>
 
                     <!-- Currently Published Card -->
                     <div x-show="lastUpdated && isUnlocked"
                          class="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <p class="text-sm font-bold text-green-800 mb-1">✅ Currently Published</p>
+                        <p class="text-sm font-bold text-green-800 mb-1"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Currently Published</p>
                         <p class="text-xs text-green-600">Last updated: <span x-text="lastUpdated"></span></p>
                     </div>
 
                     <!-- ── All Pending Submissions ── -->
                     <div class="border-t border-slate-200 pt-4">
                         <div class="flex items-center justify-between mb-1">
-                            <p class="text-sm font-bold text-slate-600">📬 Pending Submissions</p>
+                            <p class="text-sm font-bold text-slate-600"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg> Pending Submissions</p>
                             <span x-show="allPendingSubmissions.length > 0"
                                   class="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"
                                   x-text="allPendingSubmissions.length"></span>
@@ -195,7 +319,7 @@
                                     <button
                                         @click="loadPendingItemIntoEditor(item)"
                                         class="w-full text-xs bg-amber-600 hover:bg-amber-700 text-white py-1.5 rounded-lg font-medium transition">
-                                        📥 Load Draft
+                                        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Load Draft
                                     </button>
                                 </div>
                             </template>
@@ -208,7 +332,7 @@
 
                     <!-- Archived Analysis — always visible, no pending gate -->
                     <div class="border-t border-slate-200 pt-4">
-                        <p class="text-sm font-bold text-slate-600 mb-1">🗄️ Archived Analysis</p>
+                        <p class="text-sm font-bold text-slate-600 mb-1"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg> Archived Analysis</p>
                         <p class="text-xs text-slate-400 mb-3">Click an archive to copy its text into the editor.</p>
 
                         <div x-show="loadingArchives" class="flex  justify-center py-4">
@@ -256,7 +380,7 @@
                                         <button
                                             @click="copyFromArchive(archive)"
                                             class="mt-2 w-full text-xs bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 rounded-lg font-medium transition">
-                                            📋 Copy to Editor
+                                            <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg> Copy to Editor
                                         </button>
                                     </div>
 
@@ -283,7 +407,7 @@
                     <!-- Lock overlay -->
                     <div x-show="!isUnlocked"
                          class="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-xl">
-                        <div class="text-4xl mb-3">🔒</div>
+                        <div class="mb-3 w-14 h-14 mx-auto bg-slate-100 rounded-full flex items-center justify-center"><svg class="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></div>
                         <p class="text-sm font-bold text-slate-600 mb-1">Editor Locked</p>
                         <p class="text-xs text-slate-400">Load a pending draft to start editing</p>
                     </div>
@@ -296,13 +420,13 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                 </svg>
                             </div>
-                            <p class="text-sm font-bold text-slate-700">✏️ EXECUTIVE ANALYSIS: SUPPLY SIDE</p>
+                            <p class="text-sm font-bold text-slate-700"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg> EXECUTIVE ANALYSIS: SUPPLY SIDE</p>
                         </div>
                         <div class="flex gap-2">
                             <button
                                 @click="showPreviewModal = true"
                                 class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 px-3 py-1.5 rounded-lg transition font-medium">
-                                👁️ Preview
+                                <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> Preview
                             </button>
                             <button
                                 @click="resetToDefault()"
@@ -317,7 +441,7 @@
                                 :class="hasChanges
                                     ? 'bg-blue-600 hover:bg-blue-700 text-white'
                                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'">
-                                💾 Save &amp; Publish
+                                <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Save &amp; Publish
                             </button>
                         </div>
                     </div>
@@ -336,13 +460,14 @@
                     <!-- Status Bar -->
                     <div class="border-t border-slate-100 px-5 py-2 bg-slate-50 flex items-center justify-between">
                         <span class="text-xs text-slate-400"><span x-text="getWordCount()"></span> words</span>
-                        <span x-show="hasChanges" class="text-xs text-orange-500 font-medium">⚠️ Unsaved changes</span>
+                        <span x-show="hasChanges" class="text-xs text-orange-500 font-medium"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Unsaved changes</span>
                     </div>
 
                 </div><!-- end editor mode -->
 
             </div><!-- end right card -->
             </div><!-- end editor flex row -->
+            </div><!-- end editor panel -->
 
             <!-- ── PREVIEW MODE — fixed full viewport, independent of parent ── -->
             <div x-show="showPreviewModal"
@@ -355,7 +480,7 @@
                 <div class="bg-slate-900 px-6 py-2 flex items-center justify-end sticky top-0 z-10">
                     <button @click="showPreviewModal = false"
                             class="flex items-center gap-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition">
-                        ✏️ Back to Editor
+                        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg> Back to Editor
                     </button>
                 </div>
 
@@ -388,12 +513,12 @@
                         <div class="flex items-center justify-end px-6 py-3 bg-white border-b border-slate-200">
                             <div class="flex items-center gap-3">
                                 <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
-                                    <span class="text-slate-400">📍</span>
+                                    <span class="text-slate-400"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></span>
                                     <span class="text-sm text-slate-500 font-medium">Province:</span>
                                     <span class="text-sm font-bold text-slate-800" x-text="selectedProvince"></span>
                                 </div>
                                 <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
-                                    <span class="text-slate-400">📅</span>
+                                    <span class="text-slate-400"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></span>
                                     <span class="text-sm text-slate-500 font-medium">Year:</span>
                                     <span class="text-sm font-bold text-slate-800" x-text="selectedAcademicYear"></span>
                                 </div>
@@ -527,7 +652,7 @@
                 <!-- Warning: filter dropdowns point somewhere different from the publish target -->
                 <template x-if="publishTargetProvince && (publishTargetProvince !== selectedProvince || publishTargetYear !== selectedAcademicYear)">
                     <div class="bg-amber-50 border-l-4 border-amber-500 p-3 mb-4 rounded-lg flex items-start gap-2">
-                        <span class="text-amber-500 text-base flex-shrink-0">⚠️</span>
+                        <span class="text-amber-500 flex-shrink-0"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></span>
                         <p class="text-sm text-amber-800">
                             Your filters are currently showing
                             <strong x-text="selectedProvince"></strong> • <strong x-text="selectedAcademicYear"></strong>
@@ -539,7 +664,7 @@
 
                 <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3 mb-5 rounded-lg">
                     <p class="text-sm font-semibold text-yellow-800">
-                        ⚠️ This will immediately make the analysis visible on the public Supply Side page.
+                        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> This will immediately make the analysis visible on the public Supply Side page.
                     </p>
                 </div>
 
@@ -598,7 +723,7 @@
                             </div>
                         </div>
                         <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
-                            <span class="text-orange-500">✏️</span>
+                            <span class="text-orange-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></span>
                             <p class="text-xs font-semibold text-orange-700">You've edited the admin draft — this will overwrite the currently live version.</p>
                         </div>
                     </div>
@@ -639,8 +764,8 @@
                             </div>
                         </div>
                         <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
-                            <span class="text-green-500">✅</span>
-                            <p class="text-xs font-semibold text-green-700">Publishing admin's submission as-is — this will overwrite the currently live version.</p>
+                            <span class="text-green-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+                            <p class="text-xs font-semibold text-green-700">Publishing admin's submission as-is, this will overwrite the currently live version.</p>
                         </div>
                     </div>
                 </template>
@@ -681,13 +806,13 @@
                         </div>
                         <template x-if="originalSubmittedText !== analysisText">
                             <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
-                                <span class="text-orange-500">✏️</span>
+                                <span class="text-orange-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></span>
                                 <p class="text-xs font-semibold text-orange-700">You have made changes from the admin's original submission.</p>
                             </div>
                         </template>
                         <template x-if="originalSubmittedText === analysisText">
                             <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
-                                <span class="text-green-500">✅</span>
+                                <span class="text-green-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
                                 <p class="text-xs font-semibold text-green-700">No changes made — publishing admin's submission as-is.</p>
                             </div>
                         </template>
@@ -729,7 +854,7 @@
                             </div>
                         </div>
                         <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
-                            <span class="text-orange-500">✏️</span>
+                            <span class="text-orange-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></span>
                             <p class="text-xs font-semibold text-orange-700">You are overwriting the currently published version with your edits.</p>
                         </div>
                     </div>
@@ -755,7 +880,7 @@
                 </button>
                 <button @click="confirmSave()"
                         class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition">
-                    💾 Save &amp; Publish
+                    <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Save &amp; Publish
                 </button>
             </div>
         </div>
@@ -844,9 +969,9 @@
                     <h3 class="text-lg font-bold text-slate-800 mb-2">Reset to Original Draft</h3>
                     <p class="text-sm text-slate-600 mb-1">This will restore the editor back to the original loaded draft:</p>
                     <p class="text-sm font-semibold text-slate-700 mb-3">
-                        📍 <span x-text="draftProvince || '—'"></span> &nbsp;•&nbsp; 📖 <span x-text="draftYear || '—'"></span>
+                        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> <span x-text="draftProvince || '—'"></span> &nbsp;•&nbsp; <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> <span x-text="draftYear || '—'"></span>
                     </p>
-                    <p class="text-xs text-orange-600 font-semibold">⚠️ Any changes you made will be lost!</p>
+                    <p class="text-xs text-orange-600 font-semibold"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Any changes you made will be lost!</p>
                 </div>
             </div>
             <div class="flex gap-3 justify-end">
@@ -865,13 +990,13 @@
     <!-- Error Toast -->
     <div x-show="showError" x-transition @click="showError = false"
          class="fixed bottom-6 right-6 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg cursor-pointer z-50">
-        ❌ <span x-text="errorMessage"></span>
+        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span x-text="errorMessage"></span>
     </div>
 
     <!-- Success Toast -->
     <div x-show="showSuccessToast" x-transition @click="showSuccessToast = false"
          class="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg cursor-pointer z-50">
-        ✅ <span x-text="successToastMessage"></span>
+        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span x-text="successToastMessage"></span>
     </div>
 
     <script>
@@ -894,6 +1019,14 @@
                 loadingPending:        false,
                 allPendingSubmissions: [],
                 loadingAllPending:     false,
+
+                // Approved records
+                allApprovedRecords:  [],
+                loadingAllApproved:  false,
+                approvedSelected:    null,
+
+                // Main top tab
+                mainTab: 'editor',
 
                 // Lock state — locked until a draft is loaded
                 isUnlocked: false,
@@ -955,7 +1088,7 @@
 
                 async init() {
                     await this.loadOptions();
-                    await Promise.all([this.loadAll(), this.loadAllPending(), this.loadArchivedAnalysis()]);
+                    await Promise.all([this.loadAll(), this.loadAllPending(), this.loadArchivedAnalysis(), this.loadAllApproved()]);
                     this.$nextTick(() => { this.initQuillEditor(); });
                     this.$watch('showPreviewModal', val => {
                         if (val) this.$nextTick(() => this.initPreviewDonut());
@@ -1086,6 +1219,25 @@
                     }
                 },
 
+                async loadAllApproved() {
+                    this.loadingAllApproved = true;
+                    try {
+                        const res  = await fetch('/api/supply-side-analysis/approved-all');
+                        const data = await res.json();
+                        if (data.success) {
+                            this.allApprovedRecords = data.data;
+                            // Auto-select first record for immediate display
+                            if (this.allApprovedRecords.length > 0 && !this.approvedSelected) {
+                                this.approvedSelected = this.allApprovedRecords[0];
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error loading approved records:', e);
+                    } finally {
+                        this.loadingAllApproved = false;
+                    }
+                },
+
                 async loadArchivedAnalysis() {
                     this.loadingArchives = true;
                     try {
@@ -1162,6 +1314,7 @@
                     } catch (e) {
                         this.currentlyPublishedText = null;
                     }
+                    this.mainTab = 'editor'; // stay in editor while working
                     this.showSuccessToastMessage(`Draft loaded: ${prov} • ${year}`);
                 },
 
@@ -1205,7 +1358,9 @@
                             await Promise.all([
                                 this.loadArchivedAnalysis(),  // refresh so newly published appears
                                 this.loadAllPending(),
+                                this.loadAllApproved(),
                             ]);
+                            this.mainTab = 'approved'; // switch to approved view
                         } else {
                             throw new Error(data.error || 'Failed to save');
                         }

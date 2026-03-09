@@ -59,7 +59,7 @@
             <h2 class="text-xl font-bold text-slate-800">Graduate Form • Admin</h2>
             <div class="flex items-center gap-4">
                 <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">
-                    📅 Region XI • 2024
+                    <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • 2024
                 </div>
                 <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
             </div>
@@ -141,7 +141,7 @@
                     <div class="flex items-start justify-between mb-6">
                         <div>
                             <h3 class="text-2xl font-bold text-green-800 mb-2 flex items-center gap-2">
-                                <span>📊</span>
+                                <span><svg class="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></span>
                                 Graduation Rate & Projections
                             </h3>
                             <p class="text-sm text-green-700">Set graduation rate to project graduates based on enrollment from 4 years ago</p>
@@ -167,7 +167,7 @@
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <h4 class="text-sm font-bold text-blue-800 mb-1">📅 Data Not Yet Available — Future Academic Year</h4>
+                                <h4 class="text-sm font-bold text-blue-800 mb-1"><svg class="w-4 h-4 inline-block mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Data Not Yet Available — Future Academic Year</h4>
                                 <p class="text-sm text-blue-700 mb-2">
                                     <strong id="futureGraduateYear" class="text-blue-900"></strong> is still an upcoming academic year.
                                     The enrollment base is shown below as a <strong>preview only</strong> — no graduation data can be recorded until this year is reached.
@@ -494,7 +494,7 @@
 
                 <div id="confirmSaveDeletionWarning" class="hidden mb-6">
                     <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
-                        <p class="text-xs font-semibold text-green-800 mb-2">📝 Modified Fields</p>
+                        <p class="text-xs font-semibold text-green-800 mb-2"><svg class="w-3.5 h-3.5 inline-block mr-1 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg> Modified Fields</p>
                         <!-- Rate change row -->
                         <div id="confirmRateChangeRow" class="hidden flex items-center gap-2 text-sm flex-wrap mb-2">
                             <span class="font-medium text-gray-700">Graduation Rate:</span>
@@ -874,7 +874,7 @@
             if (exists) {
                 notification.className = 'mb-8 p-6 rounded-2xl shadow-lg bg-purple-50 border-2 border-purple-200';
                 icon.className = 'flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-purple-500 text-white text-2xl';
-                icon.innerHTML = '📝';
+                icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>';
                 title.textContent = 'Editing Existing Data';
                 title.className = 'text-lg font-bold mb-1 text-purple-900';
                 message.textContent = `Loading graduation rate data for ${year}. You can now edit the existing rate.`;
@@ -882,7 +882,7 @@
             } else {
                 notification.className = 'mb-8 p-6 rounded-2xl shadow-lg bg-green-50 border-2 border-green-200';
                 icon.className = 'flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-green-500 text-white text-2xl';
-                icon.innerHTML = '✨';
+                icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
                 title.textContent = 'Creating New Data';
                 title.className = 'text-lg font-bold mb-1 text-green-900';
                 message.textContent = `No existing graduation rate found for ${year}. You can now set a new rate.`;

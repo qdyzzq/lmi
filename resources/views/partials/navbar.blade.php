@@ -3,6 +3,7 @@
     lastScrollTop: 0,
     isAtTop: true,
     isScrolled: false,
+    mobileMenuOpen: false,
     init() {
         window.addEventListener('scroll', () => {
             let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -25,7 +26,8 @@
         'bg-gradient-to-b from-slate-900/95 via-slate-900/90 to-transparent backdrop-blur-md': isAtTop,
         'bg-slate-900/98 backdrop-blur-xl shadow-lg': !isAtTop
     }"
-    class="fixed top-0 left-0 right-0 z-50 border-b border-white/10 transition-all duration-300 ease-in-out rounded-b-xl">
+    class="fixed top-0 left-0 right-0 z-50 border-b border-white/10 transition-all duration-300 ease-in-out rounded-b-xl"
+>
 
     <div class="max-w-7xl mx-auto px-6 transition-all duration-300" :class="isScrolled ? 'py-2' : 'py-4'">
         <div class="flex items-center justify-between gap-4">
@@ -128,39 +130,52 @@
             <!-- Mobile Menu Button -->
             <button
                 class="xl:hidden p-2.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-white transition-all duration-200"
-                @click="$root.mobileMenuOpen = !$root.mobileMenuOpen">
+                @click.stop="mobileMenuOpen = !mobileMenuOpen"
+                :aria-expanded="mobileMenuOpen"
+                aria-label="Toggle menu">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    <!-- Top line -->
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16"
+                        :class="mobileMenuOpen ? 'origin-center rotate-45 translate-y-[6px]' : ''"
+                        class="transition-all duration-300 origin-center" />
+                    <!-- Middle line -->
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16"
+                        :class="mobileMenuOpen ? 'opacity-0 scale-x-0' : ''"
+                        class="transition-all duration-300 origin-center" />
+                    <!-- Bottom line -->
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 18h16"
+                        :class="mobileMenuOpen ? 'origin-center -rotate-45 -translate-y-[6px]' : ''"
+                        class="transition-all duration-300 origin-center" />
                 </svg>
             </button>
         </div>
     </div>
 
     <!-- Mobile Menu -->
-    <div x-show="$root.mobileMenuOpen" x-transition
+    <div x-show="mobileMenuOpen" x-transition
         class="xl:hidden border-t border-white/10 bg-slate-900/98 backdrop-blur-md" style="display: none;">
         <div class="px-6 py-4 space-y-2">
             <a href="{{ route('home') }}"
+                @click="mobileMenuOpen = false"
                 class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('home') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 Regional Statistics
             </a>
             <a href="{{ route('Job.Market.Demands') }}"
+                @click="mobileMenuOpen = false"
                 class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Job.Market.Demands') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 Labor Demand
             </a>
             <a href="{{ route('Supply.Side') }}"
+                @click="mobileMenuOpen = false"
                 class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Supply.Side') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 Labor Supply Data
             </a>
             <a href="{{ route('programStories') }}"
+                @click="mobileMenuOpen = false"
                 class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('programs.stories') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 Programs & Stories
             </a>
-            <div class="border-t border-white/10 my-2 pt-2">
-                <a href="{{ route('Setting') }}"
-                    class="block px-4 py-3 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/10">
-                    Settings
-                </a>
+            
             </div>
         </div>
     </div>

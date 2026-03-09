@@ -26,7 +26,7 @@ class LoginController extends Controller
             }
             
             if ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard');
+                return redirect()->route('admin.job.Market.Demands.Form');
             }
             
             // Default fallback

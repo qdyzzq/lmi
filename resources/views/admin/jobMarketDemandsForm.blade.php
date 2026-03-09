@@ -136,7 +136,7 @@
             <h2 class="text-xl font-bold text-slate-800">Job Market Overview • Admin</h2>
             <div class="flex items-center gap-4">
                 <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">
-                    📅 Region XI • 2024
+                    <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • 2024
                 </div>
                 <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
             </div>
@@ -165,11 +165,11 @@
                     <div>
                         <p class="lm-label">Year <span class="text-red-500">*</span></p>
                         <input
-                            type="number"
+                            type="text"
                             id="year"
-                            min="2000"
-                            max="2100"
+                            maxlength="4"
                             value="2024"
+                            placeholder="e.g. 2026"
                             required
                         >
                     </div>
@@ -194,7 +194,7 @@
                     <div class="space-y-6">
                         <!-- Household Population -->
                         <div>
-                            <p class="lm-label">Household Population <span style="font-size:11px;font-weight:600;color:#334155">(15 yrs old and over)</span></p>
+                            <p class="lm-label">Household Population <span style="font-size:11px;font-weight:600;color:#334155">(15 yrs old and over)</span> <span class="text-red-500">*</span></p>
                             <input
                                 type="number"
                                 id="householdPopulation"
@@ -205,7 +205,7 @@
 
                         <!-- Labor Force Participation Rate -->
                         <div>
-                            <p class="lm-label">Labor Force Participation Rate <span style="font-size:11px;font-weight:600;color:#334155">(%)</span></p>
+                            <p class="lm-label">Labor Force Participation Rate <span style="font-size:11px;font-weight:600;color:#334155">(%)</span> <span class="text-red-500">*</span></p>
                             <input
                                 type="number"
                                 id="lfpr"
@@ -218,7 +218,7 @@
 
                         <!-- Employment Rate -->
                         <div>
-                            <p class="lm-label">Employment Rate <span style="font-size:11px;font-weight:600;color:#334155">(%)</span></p>
+                            <p class="lm-label">Employment Rate <span style="font-size:11px;font-weight:600;color:#334155">(%)</span> <span class="text-red-500">*</span></p>
                             <input
                                 type="number"
                                 id="employmentrate"
@@ -231,7 +231,7 @@
 
                         <!-- Underemployment Rate -->
                         <div>
-                            <p class="lm-label">Underemployment Rate <span style="font-size:11px;font-weight:600;color:#334155">(%)</span></p>
+                            <p class="lm-label">Underemployment Rate <span style="font-size:11px;font-weight:600;color:#334155">(%)</span> <span class="text-red-500">*</span></p>
                             <input
                                 type="number"
                                 id="underemploymentrate"
@@ -244,7 +244,7 @@
 
                         <!-- Unemployment Rate -->
                         <div>
-                            <p class="lm-label">Unemployment Rate <span style="font-size:11px;font-weight:600;color:#334155">(%)</span></p>
+                            <p class="lm-label">Unemployment Rate <span style="font-size:11px;font-weight:600;color:#334155">(%)</span> <span class="text-red-500">*</span></p>
                             <input
                                 type="number"
                                 id="unemploymentrate"
@@ -608,14 +608,78 @@
         underemploymentRateInput.addEventListener('input', calculateUnderemployed);
         unemploymentRateInput.addEventListener('input', calculateUnemployed);
 
+        // Block special characters on year input (digits only, max 4)
+        yearInput.addEventListener('keydown', function(e) {
+            const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+            if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) {
+                e.preventDefault();
+            }
+            // Block if already 4 digits and not a control key
+            if (this.value.length >= 4 && !allowed.includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+        yearInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^\d]/g, '').slice(0, 4);
+        });
+
         resetBtn.addEventListener('click', function() {
             document.getElementById('resetModal').classList.remove('hidden');
         });
 
         saveBtn.addEventListener('click', function() {
-            if (!yearInput.value || !monthInput.value) {
-                showToast('Please select Year and Month', 'warning');
+
+            // 1. Year required check
+            if (!yearInput.value) {
+                showToast('Year is required. Please enter a valid 4-digit year (e.g. 2026).', 'warning');
+                yearInput.focus();
                 return;
+            }
+
+            // 2. Year format & range validation
+            const yearVal = yearInput.value.toString().trim();
+            const yearNum = parseInt(yearVal);
+
+            if (!/^\d{4}$/.test(yearVal)) {
+                showToast('Invalid year format. Please enter a complete 4-digit year (e.g. 2026).', 'warning');
+                yearInput.focus();
+                return;
+            }
+
+            if (yearNum < 2000) {
+                showToast('Year must not be earlier than 2000. Please enter a valid year.', 'warning');
+                yearInput.focus();
+                return;
+            }
+
+            if (yearNum > 2100) {
+                showToast('Year must not exceed 2100. Please enter a valid year.', 'warning');
+                yearInput.focus();
+                return;
+            }
+
+            // 3. Month required check
+            if (!monthInput.value) {
+                showToast('Please select a Month before submitting.', 'warning');
+                monthInput.focus();
+                return;
+            }
+
+            // 4. Required: all manual input fields must be filled
+            const requiredFields = [
+                { input: householdInput,           label: 'Household Population' },
+                { input: lfprInput,                label: 'Labor Force Participation Rate' },
+                { input: employmentRateInput,      label: 'Employment Rate' },
+                { input: underemploymentRateInput, label: 'Underemployment Rate' },
+                { input: unemploymentRateInput,    label: 'Unemployment Rate' },
+            ];
+
+            for (const field of requiredFields) {
+                if (field.input.value === '' || field.input.value === null) {
+                    showToast(`"${field.label}" is required. Please fill in all fields before submitting.`, 'warning');
+                    field.input.focus();
+                    return;
+                }
             }
 
             saveBtn.disabled = true;
@@ -723,7 +787,7 @@
 
         document.getElementById('closeModalBtn').addEventListener('click', function() {
             document.getElementById('successModal').classList.add('hidden');
-            resetBtn.click();
+            doReset();
         });
 
         document.getElementById('closeErrorBtn').addEventListener('click', function() {

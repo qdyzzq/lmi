@@ -6,9 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Program extends Model
 {
-     protected $fillable = [
-        'name', 'subtitle', 'description',
-        'color', 'logo_path', 'sort_order', 'is_active'
+    protected $fillable = [
+        'name', 'acronym', 'subtitle', 'description',
+        'color', 'logo_path', 'sort_order', 'is_active', 'is_published',
+        'published_snapshot', 'has_draft_changes',
+    ];
+
+    protected $casts = [
+        'published_snapshot' => 'array',
+        'has_draft_changes'  => 'boolean',
     ];
 
     public function qualifications()
@@ -28,9 +34,11 @@ class Program extends Model
                     ->orderBy('sort_order');
     }
 
-    public function testimonial()
+    public function testimonials()
     {
-        return $this->hasOne(ProgramTestimonial::class)
-                    ->where('is_active', true);
+        return $this->hasMany(ProgramTestimonial::class)
+                    ->where('is_active', true)
+                    ->orderBy('sort_order');
     }
+
 }

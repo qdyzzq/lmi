@@ -205,7 +205,7 @@
                 <div class="bg-yellow-100 px-4 py-2 rounded-lg text-sm font-medium text-yellow-700 border border-yellow-300">
                     <span id="pending-badge-count" class="font-bold">{{ $submissions->count() }}</span> Pending
                 </div>
-                <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">📅 Region XI • 2024</div>
+                <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200"><svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • 2024</div>
                 <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
             </div>
         </header>
@@ -213,9 +213,8 @@
         <div class="flex-1 overflow-auto">
             <div class="bg-gray-100 py-10 px-4">
                 <div class="max-w-6xl mx-auto">
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Pending Job Title Submissions</h1>
-                    <p class="text-base text-gray-500 mb-8">Review submissions from admins. Use the edit button to correct values before approving.</p>
-
+                    <h1 class="text-3xl font-bold text-gray-900 mb-5">Pending Job Title Submissions</h1>
+                    
                     @if($submissions->isEmpty())
                         <div class="bg-white rounded-lg shadow p-12 text-center">
                             <p class="text-gray-500 text-lg">No pending submissions</p>
@@ -693,7 +692,7 @@
 
         function closeApproveSuccessModal() {
     document.getElementById('approveSuccessModal').classList.add('hidden');
-    selectedYear = null; // ✅ Reset here instead
+    selectedYear = null; // Reset here instead
     location.reload();
 }
 
@@ -784,7 +783,7 @@
         }
 
         function showOrUpdateNotifToast() {
-            const msgText   = `🔔 ${accumulatedNew} new job title submission${accumulatedNew > 1 ? 's' : ''} — click to refresh`;
+            const msgText   = `[!] ${accumulatedNew} new job title submission${accumulatedNew > 1 ? 's' : ''} — click to refresh`;
             const container = document.getElementById('toastContainer');
 
             if (notifToast && container.contains(notifToast)) {

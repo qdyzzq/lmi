@@ -24,7 +24,7 @@
             <h2 class="text-xl font-bold text-slate-800">Licensure Passing Rates • Admin</h2>
             <div class="flex items-center gap-4">
                 <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">
-                    📅 Region XI • 2024
+                    <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • 2024
                 </div>
                 <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
             </div>
@@ -110,6 +110,25 @@
 
                 <!-- Sectors Form — scrollable -->
                 <form id="licensureForm" class="flex flex-col flex-1 overflow-hidden">
+                    <!-- Search Bar -->
+                    <div class="relative mb-4 shrink-0">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input
+                            type="text"
+                            id="professionSearch"
+                            placeholder="Search profession or sector..."
+                            oninput="filterProfessions(this.value)"
+                            class="w-full pl-10 pr-10 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none  focus:border-b-blue-500 focus:border-transparent bg-white shadow-sm"
+                        >
+                        <button type="button" id="searchClearBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <!-- No Results Message -->
+                    <div id="noSearchResults" class="hidden text-center py-8 text-sm text-gray-500 italic bg-white rounded-2xl shadow-lg mb-4 shrink-0">No professions match your search.</div>
+
                     <div class="flex-1 overflow-y-auto space-y-4 pr-1" id="sectorsContainer">
                         <!-- Sectors will be dynamically generated here -->
                     </div>
@@ -121,7 +140,7 @@
                             onclick="resetForm()" 
                             class="py-3 px-8 bg-white hover:bg-gray-50 text-gray-700 font-semibold border-2 border-gray-300 rounded-xl transition-all shadow-md hover:shadow-lg"
                         >
-                            🔄 Reset All Data
+                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Reset All Data
                         </button>
                         <button 
                             type="submit" 
@@ -184,7 +203,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
                         <div class="flex-1">
-                            <p class="font-semibold text-red-800 text-sm mb-1">⚠️ Year Change - Data Will Be Deleted</p>
+                            <p class="font-semibold text-red-800 text-sm mb-1"><svg class="w-4 h-4 inline-block mr-1 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Year Change - Data Will Be Deleted</p>
                             <p class="text-xs text-red-700 mb-2">
                                 Because you changed the year, the old year data will be permanently deleted:
                             </p>
@@ -365,7 +384,7 @@
         const sectorsData = [
             {
                 name: "Engineering, Architecture & Technical",
-                icon: "⚙️",
+                icon: "<svg class=\"w-6 h-6 text-slate-600\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z\"/><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 12a3 3 0 11-6 0 3 3 0 016 0z\"/></svg>",
                 professions: [
                     "Aeronautical Engineers",
                     "Agri-Bio Engineering",
@@ -386,7 +405,7 @@
             },
             {
                 name: "Healthcare & Nursing",
-                icon: "🏥",
+                icon: "<svg class=\"w-6 h-6 text-red-500\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4\"/></svg>",
                 professions: [
                     "Physician",
                     "Nurse",
@@ -406,7 +425,7 @@
             },
             {
                 name: "Natural Sciences",
-                icon: "🌿",
+                icon: "<svg class=\"w-6 h-6 text-green-600\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z\"/></svg>",
                 professions: [
                     "Environmental Planner",
                     "Agriculturist",
@@ -419,7 +438,7 @@
             },
             {
                 name: "Education",
-                icon: "📚",
+                icon: "<svg class=\"w-6 h-6 text-blue-600\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253z\"/></svg>",
                 professions: [
                     "Professional Teachers (Elementary)",
                     "Professional Teachers (Secondary)",
@@ -428,7 +447,7 @@
             },
             {
                 name: "Social Work & Behavioral Sciences",
-                icon: "🤝",
+                icon: "<svg class=\"w-6 h-6 text-purple-600\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z\"/></svg>",
                 professions: [
                     "Social Worker",
                     "Guidance Counselor",
@@ -439,7 +458,7 @@
             },
             {
                 name: "Real Estate Industry",
-                icon: "🏢",
+                icon: "<svg class=\"w-6 h-6 text-amber-600\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16M3 21h18M9 21V9m6 12V9m-3-6v3\"/></svg>",
                 professions: [
                     "Real Estate Appraiser",
                     "Real Estate Broker"
@@ -447,14 +466,14 @@
             },
             {
                 name: "Defense Industry",
-                icon: "🛡️",
+                icon: "<svg class=\"w-6 h-6 text-slate-700\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z\"/></svg>",
                 professions: [
                     "Criminologist"
                 ]
             },
             {
                 name: "Business, Finance & Logistics",
-                icon: "💼",
+                icon: "<svg class=\"w-6 h-6 text-indigo-600\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z\"/></svg>",
                 professions: [
                     "Certified Public Accountant (CPA)",
                     "Custom Broker"
@@ -518,12 +537,13 @@
                 const sectorCard = document.createElement('div');
                 sectorCard.className = 'bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-transparent transition-all duration-300 hover:shadow-xl hover:-translate-y-1';
                 sectorCard.id = `sector-${sectorIndex}`;
+                sectorCard.dataset.sectorName = sector.name.toLowerCase();
                 
                 let professionsHTML = '';
                 sector.professions.forEach((profession, profIndex) => {
                     professionsHTML += `
-                        <div class="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center border-b border-gray-100 hover:bg-blue-50 transition-colors">
-                            <div class="font-medium text-gray-700 text-sm">${profession}</div>
+                        <div class="prof-row grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center border-b border-gray-100 hover:bg-blue-50 transition-colors" data-profession="${profession.toLowerCase()}">
+                            <div class="font-medium text-gray-700 text-sm prof-label">${profession}</div>
                             <div class="relative">
                                 <input 
                                     type="text" 
@@ -567,7 +587,7 @@
                 sectorCard.innerHTML = `
                     <div id="header-${sectorIndex}" class="p-6 cursor-pointer flex justify-between items-center bg-gradient-to-r from-gray-50 to-white hover:from-gray-100 hover:to-gray-50 transition-all" onclick="toggleSector(${sectorIndex})">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-white shadow-md">${sector.icon}</div>
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-white shadow-md">${sector.icon}</div>
                             <div>
                                 <h3 class="text-lg font-bold text-gray-900">${sector.name}</h3>
                                 <p class="text-sm text-gray-500 mt-1">${sector.professions.length} professions</p>
@@ -610,6 +630,88 @@
                 content.style.maxHeight = '3000px';
                 chevron.style.transform = 'rotate(180deg)';
             }
+        }
+
+        function filterProfessions(query) {
+            const q = query.toLowerCase().trim();
+            const clearBtn = document.getElementById('searchClearBtn');
+            const noResults = document.getElementById('noSearchResults');
+
+            clearBtn.classList.toggle('hidden', q === '');
+
+            if (q === '') {
+                // Reset: restore all rows, collapse all sectors, remove highlights
+                document.querySelectorAll('.prof-row').forEach(row => {
+                    row.style.display = '';
+                    const label = row.querySelector('.prof-label');
+                    if (label) label.innerHTML = label.textContent; // strip highlights
+                });
+                document.querySelectorAll('[id^="sector-"]').forEach((card, i) => {
+                    const content = document.getElementById(`content-${i}`);
+                    const chevron = document.getElementById(`chevron-${i}`);
+                    if (content && chevron) {
+                        card.style.display = '';
+                        card.classList.remove('expanded', 'border-blue-500');
+                        content.style.maxHeight = '0px';
+                        chevron.style.transform = 'rotate(0deg)';
+                    }
+                });
+                noResults.classList.add('hidden');
+                return;
+            }
+
+            let anyVisible = false;
+
+            sectorsData.forEach((sector, sectorIndex) => {
+                const card = document.getElementById(`sector-${sectorIndex}`);
+                const content = document.getElementById(`content-${sectorIndex}`);
+                const chevron = document.getElementById(`chevron-${sectorIndex}`);
+                const rows = card.querySelectorAll('.prof-row');
+
+                const sectorMatches = sector.name.toLowerCase().includes(q);
+                let sectorHasMatch = sectorMatches;
+
+                rows.forEach(row => {
+                    const profName = row.dataset.profession;
+                    const match = sectorMatches || profName.includes(q);
+                    row.style.display = match ? '' : 'none';
+
+                    // Highlight matched text in label
+                    const label = row.querySelector('.prof-label');
+                    if (label) {
+                        const original = label.textContent;
+                        if (match && !sectorMatches) {
+                            const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                            label.innerHTML = original.replace(regex, '<mark class="bg-yellow-200 rounded px-0.5">$1</mark>');
+                        } else {
+                            label.innerHTML = original;
+                        }
+                    }
+
+                    if (match) sectorHasMatch = true;
+                });
+
+                if (sectorHasMatch) {
+                    anyVisible = true;
+                    card.style.display = '';
+                    // Auto-expand sectors that have matching professions
+                    card.classList.add('expanded', 'border-blue-500');
+                    content.style.maxHeight = '3000px';
+                    chevron.style.transform = 'rotate(180deg)';
+                } else {
+                    card.style.display = 'none';
+                    card.classList.remove('expanded', 'border-blue-500');
+                    content.style.maxHeight = '0px';
+                    chevron.style.transform = 'rotate(0deg)';
+                }
+            });
+
+            noResults.classList.toggle('hidden', anyVisible);
+        }
+
+        function clearSearch() {
+            document.getElementById('professionSearch').value = '';
+            filterProfessions('');
         }
 
         function checkAndLoadYear() {
@@ -850,11 +952,11 @@
             if (exists) {
                 notification.className = 'mb-8 p-6 rounded-2xl shadow-lg bg-blue-50 border-2 border-blue-200';
                 icon.className = 'flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-2xl';
-                icon.innerHTML = '📝';
+                icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>';
                 title.textContent = `Editing Existing Data (${totalRecords} professions)`;
                 title.className = 'text-lg font-bold mb-1 text-blue-900';
                 if (incompleteCount > 0) {
-                    message.innerHTML = `⚠️ ${incompleteCount} profession(s) have no exam data <span class="text-orange-600 font-medium">(highlighted in orange)</span>`;
+                    message.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block mr-1 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> ${incompleteCount} profession(s) have no exam data <span class="text-orange-600 font-medium">(highlighted in orange)</span>`;
                 } else {
                     message.innerHTML = '✓ All professions have complete data';
                 }
@@ -862,7 +964,7 @@
             } else {
                 notification.className = 'mb-8 p-6 rounded-2xl shadow-lg bg-green-50 border-2 border-green-200';
                 icon.className = 'flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-green-500 text-white text-2xl';
-                icon.innerHTML = '✨';
+                icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
                 title.textContent = 'Creating New Data';
                 title.className = 'text-lg font-bold mb-1 text-green-900';
                 message.textContent = `No existing data found for ${year}. You can now enter new licensure passing rate data.`;
@@ -1264,7 +1366,7 @@
             <div class="p-6">
                 <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                     <p class="text-sm text-red-800 font-medium mb-2">
-                        ⚠️ The year <span id="collisionTargetYear" class="font-bold"></span> already contains data.
+                        <svg class="w-4 h-4 inline-block mr-1 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> The year <span id="collisionTargetYear" class="font-bold"></span> already contains data.
                     </p>
                     <p class="text-sm text-red-700">
                         You cannot change to a year that already exists.

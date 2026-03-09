@@ -23,14 +23,6 @@ Route::get('/programs-stories', [ProgramsController::class, 'index'])
 
 
 
-Route::get('/programs-and-stories', function () {
-    return view('programs-stories-static');
-})->name('programs.stories.static');
-
-Route::get('/ProgramStories', function () {
-    return view('ProgramStories');
-})->name('program.stories');
-
 Route::post('/lmi/submit', [LmiSubmissionController::class, 'store'])->name('lmi.submit');
 
 Route::get('/login', function () {
@@ -142,9 +134,9 @@ Route::middleware(['auth', 'role:admin,statistician'])->group(function () {
 // Admin routes (protected by auth middleware)
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+    Route::get('/JobMarketDemandsForm', function () {
+        return view('admin.jobMarketDemandsForm');
+    })->name('job.Market.Demands.Form');
     
     // Labor Market Routes
     Route::post('/labor-market/check-before-post', [LaborMarketController::class, 'checkBeforePost'])
@@ -255,17 +247,25 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // ==================== PROGRAMS & STORIES ADMIN ====================
     Route::get('/programs-stories', [ProgramAdminController::class, 'index'])
-        ->name('program-stories-editor'); // full name: admin.program-stories
+        ->name('program-stories-editor');
+
+    Route::get('/programs-stories/preview', [ProgramAdminController::class, 'preview'])
+        ->name('program-stories-preview');
 
     // ==================== PROGRAM ADMIN CRUD ====================
     Route::post('/programs', [ProgramAdminController::class, 'storeProgram'])->name('programs.store');
     Route::put('/programs/{program}', [ProgramAdminController::class, 'updateProgram'])->name('programs.update');
     Route::delete('/programs/{program}', [ProgramAdminController::class, 'destroyProgram'])->name('programs.destroy');
     Route::put('/programs/{program}/description', [ProgramAdminController::class, 'updateDescription'])->name('programs.description');
-
+    Route::delete('/programs/{program}/description', [ProgramAdminController::class, 'destroyDescription'])->name('programs.description.destroy');
+    Route::patch('/programs/{program}/toggle-publish', [ProgramAdminController::class, 'togglePublish'])->name('programs.toggle-publish');
+    Route::get('/programs/{program}/fragment', [ProgramController::class, 'fragment']);
+    Route::patch('/programs/{program}/republish', [ProgramAdminController::class, 'republish']);
     Route::post('/qualifications', [ProgramAdminController::class, 'storeQualification'])->name('qualifications.store');
     Route::put('/qualifications/{qualification}', [ProgramAdminController::class, 'updateQualification'])->name('qualifications.update');
     Route::delete('/qualifications/{qualification}', [ProgramAdminController::class, 'destroyQualification'])->name('qualifications.destroy');
+    Route::delete('/qualifications/type/{type}/program/{program}', [ProgramAdminController::class, 'destroyQualificationsByType'])
+    ->name('qualifications.destroy-by-type');
 
     Route::post('/steps', [ProgramAdminController::class, 'storeStep'])->name('steps.store');
     Route::put('/steps/{step}', [ProgramAdminController::class, 'updateStep'])->name('steps.update');
@@ -277,8 +277,26 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::post('/testimonials', [ProgramAdminController::class, 'storeTestimonial'])->name('testimonials.store');
     Route::put('/testimonials/{testimonial}', [ProgramAdminController::class, 'updateTestimonial'])->name('testimonials.update');
+    Route::delete('/testimonials/{testimonial}', [ProgramAdminController::class, 'destroyTestimonial'])->name('testimonials.destroy');
 
     Route::post('/carousel', [ProgramAdminController::class, 'storeSlide'])->name('carousel.store');
     Route::put('/carousel/{slide}', [ProgramAdminController::class, 'updateSlide'])->name('carousel.update');
     Route::delete('/carousel/{slide}', [ProgramAdminController::class, 'destroySlide'])->name('carousel.destroy');
+    
+
+    // ==================== FIELD OFFICES (PESO/JPO Directory) ====================
+    Route::post('/field-offices',            [ProgramAdminController::class, 'storeFieldOffice'])  ->name('field-offices.store');
+    Route::put('/field-offices/{office}',    [ProgramAdminController::class, 'updateFieldOffice']) ->name('field-offices.update');
+    Route::delete('/field-offices/{office}', [ProgramAdminController::class, 'destroyFieldOffice'])->name('field-offices.destroy');
+    Route::post('/field-offices/touch', [ProgramAdminController::class, 'touchDirectory']);
+    Route::post('/field-offices/publish', [ProgramAdminController::class, 'publishDirectory']);
+    Route::get('/office-types', [ProgramAdminController::class, 'getOfficeTypes']);
+    Route::post('/office-types', [ProgramAdminController::class, 'storeOfficeType']);
+    Route::put('/office-types/{name}', [ProgramAdminController::class, 'updateOfficeType']);
+    Route::delete('/office-types/{name}', [ProgramAdminController::class, 'destroyOfficeType']);
+
+    //=========================CTA SECTION=====================
+    Route::get('/cta-section',  [ProgramAdminController::class, 'getCtaSection'])   ->name('cta-section.show');
+    Route::put('/cta-section', [ProgramAdminController::class, 'updateCtaSection']);
+    Route::post('/cta-section/publish',[ProgramAdminController::class, 'publishCtaSection'])  ->name('cta-section.publish');
 });

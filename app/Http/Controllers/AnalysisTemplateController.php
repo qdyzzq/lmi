@@ -274,11 +274,23 @@ class AnalysisTemplateController extends Controller
             $month = (int)$request->month;
             $saved = [];
 
+            // Block submission if any template for this year + month is already published
+            $alreadyPublished = AnalysisTemplate::where('year', $year)
+                ->where('month', $month)
+                ->where('status', 'published')
+                ->exists();
+
+            if ($alreadyPublished) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'Templates for this period have already been published. Only one submission is allowed per year and month.',
+                ], 403);
+            }
+
             foreach ($request->templates as $key => $text) {
                 if (!in_array($key, ['employment', 'underemployment', 'unemployment', 'lfpr'])) continue;
 
-                // updateOrCreate handles the unique constraint on (template_key, year, month)
-                // Overwrites whatever status is there (null for old records, or pending)
                 $saved[] = AnalysisTemplate::updateOrCreate(
                     [
                         'template_key' => $key,
@@ -343,11 +355,88 @@ class AnalysisTemplateController extends Controller
         }
     }
 
+    // ─── ADMIN: Check pending/published status for a given year + month ──────
+
+    public function pendingShow(Request $request)
+    {
+        try {
+            $year  = (int)$request->query('year');
+            $month = (int)$request->query('month');
+
+            $pending = AnalysisTemplate::where('year', $year)
+                ->where('month', $month)
+                ->where('status', 'pending')
+                ->orderByDesc('submitted_at')
+                ->first();
+
+            $publishedExists = AnalysisTemplate::where('year', $year)
+                ->where('month', $month)
+                ->where('status', 'published')
+                ->exists();
+
+            return response()->json([
+                'success'         => true,
+                'pending'         => $pending ? [
+                    'submitted_by' => $pending->submitted_by,
+                    'submitted_at' => $pending->submitted_at?->toDateTimeString(),
+                ] : null,
+                'published_exists' => $publishedExists,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('AnalysisTemplateController@pendingShow', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
     // ─── STATISTICIAN: Pending count for badge ───────────────────────────────
 
     public function pendingCount()
     {
         $count = AnalysisTemplate::where('status', 'pending')
+            ->selectRaw('COUNT(DISTINCT CONCAT(year, "-", month)) as count')
+            ->value('count') ?? 0;
+
+        return response()->json(['success' => true, 'count' => (int)$count]);
+    }
+
+    // ─── STATISTICIAN: Get all approved (published) templates ────────────────
+
+    public function allApproved()
+    {
+        try {
+            $approved = AnalysisTemplate::where('status', 'published')
+                ->orderByDesc('updated_at')
+                ->get();
+
+            $grouped = $approved->groupBy(fn($t) => $t->year . '-' . $t->month);
+
+            $data = $grouped->map(function ($items) {
+                $first = $items->first();
+                return [
+                    'year'          => $first->year,
+                    'month'         => $first->month,
+                    'approved_by'   => $first->updated_by ?? 'Statistician',
+                    'approved_at'   => $first->updated_at?->toDateTimeString(),
+                    'submitted_by'  => $first->submitted_by,
+                    'template_keys' => $items->pluck('template_key')->toArray(),
+                    'templates'     => $items->pluck('template_text', 'template_key')->toArray(),
+                ];
+            })->values();
+
+            return response()->json(['success' => true, 'data' => $data]);
+
+        } catch (\Exception $e) {
+            Log::error('AnalysisTemplateController@allApproved', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    // ─── STATISTICIAN: Approved count for badge ──────────────────────────────
+
+    public function approvedCount()
+    {
+        $count = AnalysisTemplate::where('status', 'published')
             ->selectRaw('COUNT(DISTINCT CONCAT(year, "-", month)) as count')
             ->value('count') ?? 0;
 

@@ -21,7 +21,7 @@
                     <span id="pending-badge-count" class="font-bold">{{ $pendingRecords->total() }}</span> Total Pending
                 </div>
                 <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500 flex items-center justify-center">
-                    📊
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 </div>
             </div>
         </header>
@@ -158,7 +158,7 @@
                             <!-- Post Button -->
                             <div class="flex justify-end mb-4">
                                 <button type="button" onclick="postVerifiedData(this)" class="px-8 py-3 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 transition transform hover:scale-105">
-                                    ✅ Approve
+                                    <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Approve
                                 </button>
                             </div>
 
@@ -239,7 +239,7 @@
                     </div>
                 @else
                     <div class="bg-white p-12 text-center rounded-xl shadow">
-                        <div class="text-6xl mb-4">🎉</div>
+                        <div class="mb-4"><svg class="w-16 h-16 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
                         <p class="text-slate-500 text-lg font-medium">No pending data to review at this time.</p>
                         <p class="text-slate-400 text-sm mt-2">All submissions have been processed!</p>
                     </div>
@@ -249,7 +249,7 @@
     </div>
 
 <!-- Confirmation Modal -->
-<div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+<div id="confirmModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
     <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4 transform transition-all">
         <div class="text-center">
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
@@ -274,7 +274,7 @@
 </div>
 
 <!-- Success Modal -->
-<div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+<div id="successModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
     <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4 transform transition-all">
         <div class="text-center">
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
@@ -294,7 +294,7 @@
 </div>
 
 <!-- Error Modal -->
-<div id="errorModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+<div id="errorModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
     <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4 transform transition-all">
         <div class="text-center">
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
@@ -505,7 +505,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.getElementById('confirmModal').classList.add('hidden');
         buttonElement.disabled = true;
-        buttonElement.textContent = '🔄 Posting...';
+        buttonElement.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Posting...';
 
         const verifiedData = {
             pending_id: pendingId,
@@ -545,7 +545,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('errorMessage').textContent = error.message;
             document.getElementById('errorModal').classList.remove('hidden');
             buttonElement.disabled = false;
-            buttonElement.textContent = '✅ Post to Database';
+            buttonElement.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Post to Database';
         })
         .finally(() => {
             window.currentPostButton = null;
@@ -561,7 +561,7 @@ window.postVerifiedData = function(buttonElement) {
 
     window.currentPostButton = buttonElement;
     buttonElement.disabled = true;
-    buttonElement.textContent = '🔄 Checking...';
+    buttonElement.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Checking...';
 
     // Use the FINAL database check route, not the pending check
     fetch('{{ route("statistician.labor-market.check.post") }}', {
@@ -588,12 +588,12 @@ window.postVerifiedData = function(buttonElement) {
             document.getElementById('errorMessage').textContent = result.message || 'Data for this period already exists in the database.';
             document.getElementById('errorModal').classList.remove('hidden');
             buttonElement.disabled = false;
-            buttonElement.textContent = '✅ Post to Database';
+            buttonElement.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Post to Database';
             window.currentPostButton = null;
         } else if (result.exists === false) {
             // NO DUPLICATE: Show confirmation modal
             buttonElement.disabled = false;
-            buttonElement.textContent = '✅ Post to Database';
+            buttonElement.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Post to Database';
             document.getElementById('confirmModal').classList.remove('hidden');
         } else {
             // Unexpected response format
@@ -605,7 +605,7 @@ window.postVerifiedData = function(buttonElement) {
         document.getElementById('errorMessage').textContent = `Error: ${error.message}. Please check console for details.`;
         document.getElementById('errorModal').classList.remove('hidden');
         buttonElement.disabled = false;
-        buttonElement.textContent = '✅ Post to Database';
+        buttonElement.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Post to Database';
         window.currentPostButton = null;
     });
 };
@@ -646,7 +646,7 @@ window.postVerifiedData = function(buttonElement) {
     }
 
     function showOrUpdateNotifToast() {
-        const msgText   = `🔔 ${accumulatedNew} new pending record${accumulatedNew > 1 ? 's' : ''} submitted — click to refresh`;
+        const msgText   = `[!] ${accumulatedNew} new pending record${accumulatedNew > 1 ? 's' : ''} submitted — click to refresh`;
         const container = document.getElementById('toastContainer');
 
         if (notifToast && container.contains(notifToast)) {

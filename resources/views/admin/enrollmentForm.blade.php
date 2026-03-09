@@ -18,7 +18,7 @@
             <h2 class="text-xl font-bold text-slate-800">Enrollment Form • Admin</h2>
             <div class="flex items-center gap-4">
                 <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">
-                    📅 Region XI • 2024
+                    <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • 2024
                 </div>
                 <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
             </div>
@@ -100,7 +100,7 @@
                                 required
                                 class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-base font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
-                                <option value="" disabled hidden>Select Province</option>
+                                <option value="" disabled hidden selected>Select Province</option>
                                 <option value="Davao Region">Davao Region</option>
                                 <option value="Davao City">Davao City</option>
                                 <option value="Davao del Sur">Davao del Sur</option>
@@ -643,7 +643,7 @@
 
                 <div id="deletionWarning" class="hidden bg-red-50 border-l-4 border-red-500 p-4 mb-6">
                     <p class="text-sm font-semibold text-red-800">
-                        ⚠️ This will replace the existing data for this academic year!
+                        <svg class="w-4 h-4 inline-block mr-1 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> This will replace the existing data for this academic year!
                     </p>
                 </div>
                 
@@ -1093,7 +1093,7 @@
             if (exists) {
                 notification.className = 'mb-8 p-6 rounded-2xl shadow-lg bg-blue-50 border-2 border-blue-200';
                 icon.className = 'flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-2xl';
-                icon.innerHTML = '📝';
+                icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>';
                 title.textContent = 'Editing Existing Data';
                 title.className = 'text-lg font-bold mb-1 text-blue-900';
                 message.textContent = `Loading data for ${year} - ${province} - ${institutionType}. You can now edit the existing enrollment data.`;
@@ -1101,7 +1101,7 @@
             } else {
                 notification.className = 'mb-8 p-6 rounded-2xl shadow-lg bg-green-50 border-2 border-green-200';
                 icon.className = 'flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-green-500 text-white text-2xl';
-                icon.innerHTML = '✨';
+                icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 000-2H5a1 1 0 000 2zm0 0v2m0-2h.01M5 20h2a1 1 0 000-2H5a1 1 0 000 2zm0 0v2m0-2h.01"/></svg>';
                 title.textContent = 'Creating New Data';
                 title.className = 'text-lg font-bold mb-1 text-green-900';
                 message.textContent = `No existing data found for ${year} - ${province} - ${institutionType}. You can now enter new enrollment data.`;
@@ -1239,14 +1239,52 @@
             for (const [key, value] of Object.entries(data.disciplines)) {
                 const numValue = parseInt(value) || 0;
                 grandTotal += numValue;
+
+                const originalValue = existingData && existingData.disciplines
+                    ? (parseInt(existingData.disciplines[key]) || 0)
+                    : null;
+                const isEdited = originalValue !== null && originalValue !== numValue;
+
+                let diffBadge = '';
+                if (isEdited) {
+                    const delta = numValue - originalValue;
+                    const sign = delta > 0 ? '+' : '';
+                    const color = delta > 0 ? 'text-green-600 bg-green-50 border-green-200' : 'text-red-600 bg-red-50 border-red-200';
+                    diffBadge = `
+                        <span class="text-xs text-slate-400 line-through mr-1">${originalValue.toLocaleString()}</span>
+                        <span class="text-sm font-bold text-blue-600 mr-1">${numValue.toLocaleString()}</span>
+                        <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded border ${color}">${sign}${delta.toLocaleString()}</span>
+                    `;
+                } else {
+                    diffBadge = `<span class="text-sm font-bold ${numValue > 0 ? 'text-blue-600' : 'text-gray-400'}">${numValue.toLocaleString()}</span>`;
+                }
                 
                 const row = document.createElement('div');
-                row.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition';
+                row.className = `flex justify-between items-center p-3 rounded-lg transition ${isEdited ? 'bg-amber-50 border border-amber-200' : 'bg-gray-50 hover:bg-gray-100'}`;
                 row.innerHTML = `
-                    <span class="text-sm font-medium text-gray-700">${disciplineLabels[key]}</span>
-                    <span class="text-sm font-bold ${numValue > 0 ? 'text-blue-600' : 'text-gray-400'}">${numValue.toLocaleString()}</span>
+                    <span class="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                        ${isEdited ? '<span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>' : ''}
+                        ${disciplineLabels[key]}
+                    </span>
+                    <span class="flex items-center gap-1">${diffBadge}</span>
                 `;
                 dataSummary.appendChild(row);
+            }
+
+            // Show edit summary banner if in update mode
+            const existingSummaryBanner = document.getElementById('editSummaryBanner');
+            if (existingSummaryBanner) existingSummaryBanner.remove();
+            if (existingData && existingData.disciplines) {
+                const changedCount = Object.keys(data.disciplines).filter(k => {
+                    return (parseInt(data.disciplines[k]) || 0) !== (parseInt(existingData.disciplines[k]) || 0);
+                }).length;
+                if (changedCount > 0) {
+                    const banner = document.createElement('div');
+                    banner.id = 'editSummaryBanner';
+                    banner.className = 'mb-4 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 text-sm text-amber-800 font-medium';
+                    banner.innerHTML = `<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4 text-amber-500\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z\"/></svg> ${changedCount} discipline${changedCount > 1 ? 's' : ''} edited — highlighted below`;
+                    dataSummary.parentNode.insertBefore(banner, dataSummary);
+                }
             }
             
             document.getElementById('confirmGrandTotal').textContent = grandTotal.toLocaleString();
@@ -1415,8 +1453,8 @@
                 disciplines: cleanedDisciplines
             };
 
-            console.log('📤 Data being sent to server:', dataToSave);
-            console.log('📝 Existing data flag:', existingData ? 'UPDATE MODE' : 'CREATE MODE');
+            console.log('Data being sent to server:', dataToSave);
+            console.log('Existing data flag:', existingData ? 'UPDATE MODE' : 'CREATE MODE');
 
             showConfirmModal(dataToSave);
         });

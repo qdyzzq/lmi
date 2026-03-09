@@ -13,8 +13,61 @@
     <title>LMI</title>
 
     <style>
-        3 html {
+        html {
             scroll-behavior: smooth;
+        }
+
+        /* ── Responsive chart containers ── */
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        /* Mobile: taller aspect so charts breathe */
+        @media (max-width: 640px) {
+            .chart-wrapper { aspect-ratio: 4 / 3; min-height: 220px; }
+        }
+
+        /* Tablet */
+        @media (min-width: 641px) and (max-width: 1023px) {
+            .chart-wrapper { aspect-ratio: 16 / 9; }
+        }
+
+        /* Desktop */
+        @media (min-width: 1024px) {
+            .chart-wrapper { height: 384px; } /* same as old h-96 */
+        }
+
+        /* Responsive filter dropdowns — prevent overflow on mobile */
+        .filter-dropdown {
+            position: absolute;
+            right: 0;
+            margin-top: 0.5rem;
+            width: min(384px, calc(100vw - 2rem));
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            border: 1px solid #e2e8f0;
+            z-index: 30;
+            padding: 1.25rem;
+        }
+        @media (max-width: 640px) {
+            .filter-dropdown {
+                right: auto;
+                left: 50%;
+                transform: translateX(-50%);
+                width: calc(100vw - 2rem);
+            }
+        }
+
+        /* Scroll hint for table on mobile */
+        .table-scroll-hint {
+            display: none;
+        }
+        @media (max-width: 767px) {
+            .table-scroll-hint {
+                display: flex;
+            }
         }
     </style>
 </head>
@@ -29,7 +82,7 @@
     }" class="w-full h-full">
         @include('partials.navbar')
 
-        <div class="relative w-full h-[900px] overflow-hidden">
+        <div class="relative w-full h-[55vh] sm:h-[65vh] md:h-[75vh] lg:h-[900px] overflow-hidden">
             <div class="absolute inset-0">
                 <img src="{{ asset('images/navbar-bg.jpg') }}" alt="Background"
                     class="w-full h-full object-cover object-top">
@@ -38,10 +91,10 @@
 
             <div class="relative z-10 h-full flex items-center justify-center px-4">
                 <div class="text-center text-white">
-                    <h1 class="text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-lg px-2">
                         Davao Regional Labor Market Situation
                     </h1>
-                    <p class="text-xl md:text-2xl text-slate-100 drop-shadow-md">
+                    <p class="text-lg sm:text-xl md:text-2xl text-slate-100 drop-shadow-md">
                         Regional Labor Market Intelligence & Trends
                     </p>
                 </div>
@@ -66,7 +119,7 @@
                         <div class="max-w-7xl mx-auto px-6 space-y-6">
                             <!-- Period Header KPI Cards -->
                             <div
-                                class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-xl px-6 py-4 flex items-center justify-between shadow-lg">
+                                class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
                                 <div class="flex items-center gap-3">
                                     <div
                                         class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
@@ -85,8 +138,11 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
                                 <div
-                                    class="group bg-white/95 backdrop-blur-sm border-l-4 border-[#023E8A] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300">
-                                    <div class="flex justify-between items-center mb-3">
+                                    class="group relative bg-white/95 backdrop-blur-sm border-l-4 border-[#023E8A] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
+                                    <!-- Bubble decorations -->
+                                    <div class="absolute -top-6 -right-6 w-28 h-28 bg-blue-100/60 rounded-full pointer-events-none"></div>
+                                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-blue-200/40 rounded-full pointer-events-none"></div>
+                                    <div class="flex justify-between items-center mb-3 relative z-10">
                                         <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">
                                             Participation Rate</p>
                                         <div
@@ -98,18 +154,21 @@
                                             </svg>
                                         </div>
                                     </div>
-                                    <h2 class="text-4xl font-black text-slate-900 mb-2"
+                                    <h2 class="text-4xl font-black text-slate-900 mb-2 relative z-10"
                                         x-text="kpiData.participation_rate?.rate || '0%'">67.0%</h2>
-                                    <div class="h-1 w-16 bg-gradient-to-r from-[#023E8A] to-blue-300 rounded-full mb-3">
+                                    <div class="h-1 w-16 bg-gradient-to-r from-[#023E8A] to-blue-300 rounded-full mb-3 relative z-10">
                                     </div>
-                                    <p class="text-xs text-slate-600 font-medium"
+                                    <p class="text-xs text-slate-600 font-medium relative z-10"
                                         x-text="(kpiData.participation_rate?.active_workforce || '0') + ' Estimate number of people'">
                                     </p>
                                 </div>
 
                                 <div
-                                    class="group bg-white/95 backdrop-blur-sm border-l-4 border-[#006400] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300">
-                                    <div class="flex justify-between items-center mb-3">
+                                    class="group relative bg-white/95 backdrop-blur-sm border-l-4 border-[#006400] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
+                                    <!-- Bubble decorations -->
+                                    <div class="absolute -top-6 -right-6 w-28 h-28 bg-green-100/60 rounded-full pointer-events-none"></div>
+                                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-green-200/40 rounded-full pointer-events-none"></div>
+                                    <div class="flex justify-between items-center mb-3 relative z-10">
                                         <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">Employment
                                             Rate</p>
                                         <div
@@ -121,19 +180,22 @@
                                             </svg>
                                         </div>
                                     </div>
-                                    <h2 class="text-4xl font-black text-slate-900 mb-2"
+                                    <h2 class="text-4xl font-black text-slate-900 mb-2 relative z-10"
                                         x-text="kpiData.employment_rate?.rate || '0%'">90.0%</h2>
                                     <div
-                                        class="h-1 w-16 bg-gradient-to-r from-[#006400] to-green-300 rounded-full mb-3">
+                                        class="h-1 w-16 bg-gradient-to-r from-[#006400] to-green-300 rounded-full mb-3 relative z-10">
                                     </div>
-                                    <p class="text-xs text-slate-600 font-medium"
+                                    <p class="text-xs text-slate-600 font-medium relative z-10"
                                         x-text="(kpiData.employment_rate?.count || '0') + ' Estimate number of people'">
                                     </p>
                                 </div>
 
                                 <div
-                                    class="group bg-white/95 backdrop-blur-sm border-l-4 border-[#FF8C00] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300">
-                                    <div class="flex justify-between items-center mb-3">
+                                    class="group relative bg-white/95 backdrop-blur-sm border-l-4 border-[#FF8C00] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
+                                    <!-- Bubble decorations -->
+                                    <div class="absolute -top-6 -right-6 w-28 h-28 bg-orange-100/60 rounded-full pointer-events-none"></div>
+                                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-orange-200/40 rounded-full pointer-events-none"></div>
+                                    <div class="flex justify-between items-center mb-3 relative z-10">
                                         <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">
                                             Underemployment</p>
                                         <div
@@ -145,19 +207,22 @@
                                             </svg>
                                         </div>
                                     </div>
-                                    <h2 class="text-4xl font-black text-slate-900 mb-2"
+                                    <h2 class="text-4xl font-black text-slate-900 mb-2 relative z-10"
                                         x-text="kpiData.underemployment_rate?.rate || '0%'">67.0%</h2>
                                     <div
-                                        class="h-1 w-16 bg-gradient-to-r from-[#FF8C00] to-orange-300 rounded-full mb-3">
+                                        class="h-1 w-16 bg-gradient-to-r from-[#FF8C00] to-orange-300 rounded-full mb-3 relative z-10">
                                     </div>
-                                    <p class="text-xs text-slate-600 font-medium"
+                                    <p class="text-xs text-slate-600 font-medium relative z-10"
                                         x-text="(kpiData.underemployment_rate?.count_formatted || '0') + ' seeking more hours'">
                                     </p>
                                 </div>
 
                                 <div
-                                    class="group bg-white/95 backdrop-blur-sm border-l-4 border-[#D30000] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300">
-                                    <div class="flex justify-between items-center mb-3">
+                                    class="group relative bg-white/95 backdrop-blur-sm border-l-4 border-[#D30000] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
+                                    <!-- Bubble decorations -->
+                                    <div class="absolute -top-6 -right-6 w-28 h-28 bg-red-100/60 rounded-full pointer-events-none"></div>
+                                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-red-200/40 rounded-full pointer-events-none"></div>
+                                    <div class="flex justify-between items-center mb-3 relative z-10">
                                         <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">
                                             Unemployment
                                         </p>
@@ -170,11 +235,11 @@
                                             </svg>
                                         </div>
                                     </div>
-                                    <h2 class="text-4xl font-black text-slate-900 mb-2"
+                                    <h2 class="text-4xl font-black text-slate-900 mb-2 relative z-10"
                                         x-text="kpiData.unemployment_rate?.rate || '0%'">7.0%</h2>
-                                    <div class="h-1 w-16 bg-gradient-to-r from-[#D30000] to-red-300 rounded-full mb-3">
+                                    <div class="h-1 w-16 bg-gradient-to-r from-[#D30000] to-red-300 rounded-full mb-3 relative z-10">
                                     </div>
-                                    <p class="text-xs text-slate-600 font-medium"
+                                    <p class="text-xs text-slate-600 font-medium relative z-10"
                                         x-text="(kpiData.unemployment_rate?.count_formatted || '0') + ' Estimate number of people'">
                                     </p>
                                 </div>
@@ -218,7 +283,7 @@
                                             </button>
 
                                             <div x-show="open" @click.away="open = false" x-transition
-                                                class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border z-30 p-5">
+                                                class="filter-dropdown">
                                                 <label class="block text-xs font-semibold text-slate-700 mb-3">Select
                                                     Period</label>
 
@@ -358,7 +423,7 @@
                         Chart.register(ChartDataLabels);
                     </script>
                     <!-- Charts Section -->
-                    <div x-data="{ ...chartFilters(), activeChart: 'labor', chartsExpanded: true }" class="max-w-7xl mx-auto px-6 space-y-4 mt-6">
+                    <div x-data="{ ...chartFilters(), activeChart: 'labor', chartsExpanded: false }" class="max-w-7xl mx-auto px-6 space-y-4 mt-6">
                         <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
 
                             <!-- Dark Header with Icon -->
@@ -393,7 +458,7 @@
 
                                     <!-- Centered Tab Navigation -->
                                     <div
-                                        class="flex items-center justify-center bg-white p-1 rounded-lg border border-slate-200">
+                                        class="flex flex-wrap items-center justify-center bg-white p-1 rounded-lg border border-slate-200 gap-1">
                                         <button
                                             @click="activeChart = 'side'; $nextTick(() => { window.laborChart?.resize(); window.unempChart?.resize(); })"
                                             :class="activeChart === 'side' ? 'bg-slate-100 text-slate-900 shadow-sm' :
@@ -412,8 +477,8 @@
                                             @click="activeChart = 'compiled'; $nextTick(() => { window.unempChart?.resize(); window.unempChart?.update(); })"
                                             :class="activeChart === 'compiled' ? 'bg-slate-100 text-blue-600 shadow-sm' :
                                                 'text-slate-500 hover:text-slate-700'"
-                                            class="px-6 py-2 text-sm font-medium rounded-md transition-all cursor-pointer">
-                                            Compiled Indicators
+                                            class="px-4 py-2 text-xs font-medium rounded-md transition-all cursor-pointer text-center leading-tight">
+                                            DAVAO REGION<br>LABOR MARKET PERFORMANCE
                                         </button>
                                     </div>
 
@@ -423,9 +488,9 @@
                                             'grid grid-cols-1 gap-6'">
 
                                         <!-- Labor Force Chart -->
-                                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm"
+                                        <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm"
                                             x-show="activeChart === 'labor' || activeChart === 'side'" x-transition>
-                                            <div class="flex items-center justify-between mb-4">
+                                            <div class="flex flex-wrap items-start justify-between gap-2 mb-4">
                                                 <div>
                                                     <h3 class="font-semibold text-slate-800 text-base">Labor Force vs
                                                         Employment Rate</h3>
@@ -456,7 +521,7 @@
                                                         </button>
                                                         <div x-show="laborOpen" @click.away="laborOpen = false"
                                                             x-transition
-                                                            class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border z-30 p-5">
+                                                            class="filter-dropdown">
                                                             <div class="mb-4">
                                                                 <label
                                                                     class="block text-xs font-semibold text-slate-700 mb-3">Select
@@ -528,18 +593,19 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="relative h-96 w-full">
+                                            <div class="chart-wrapper">
                                                 <canvas id="laborEmploymentChart"></canvas>
                                             </div>
+                                            <!-- Mobile tip -->
+                                            <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">Tap "Expand" above for a full-screen view</p>
                                         </div>
 
                                         <!-- Compiled Indicators Chart -->
-                                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm"
+                                        <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm"
                                             x-show="activeChart === 'compiled' || activeChart === 'side'" x-transition>
-                                            <div class="flex items-center justify-between mb-4">
+                                            <div class="flex flex-wrap items-start justify-between gap-2 mb-4">
                                                 <div>
-                                                    <h3 class="font-semibold text-slate-800 text-base">Visualization of
-                                                        Compiled Data</h3>
+                                                    <h3 class="font-semibold text-slate-800 text-base">DAVAO REGION LABOR MARKET PERFORMANCE</h3>
                                                     <p class="text-xs text-slate-500">Key Employment Indicators</p>
                                                 </div>
                                                 <div class="flex items-center gap-2">
@@ -566,7 +632,7 @@
                                                         </button>
                                                         <div x-show="unempOpen" @click.away="unempOpen = false"
                                                             x-transition
-                                                            class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border z-30 p-5">
+                                                            class="filter-dropdown">
                                                             <div class="mb-4">
                                                                 <label
                                                                     class="block text-xs font-semibold text-slate-700 mb-3">Select
@@ -638,9 +704,11 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="relative h-96 w-full">
+                                            <div class="chart-wrapper">
                                                 <canvas id="unemploymentChart"></canvas>
                                             </div>
+                                            <!-- Mobile tip -->
+                                            <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">Tap "Expand" above for a full-screen view</p>
                                         </div>
 
                                         <!-- Modal -->
@@ -651,13 +719,13 @@
                                             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                                             @keydown.escape.window="closeChartModal()"
                                             class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
-                                            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+                                            <div class="fixed inset-0 bg-black/60 bg-opacity-25 transition-opacity"
                                                 @click="closeChartModal()"></div>
                                             <div class="flex min-h-screen items-center justify-center p-4">
-                                                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden"
+                                                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-10xl max-h-[95vh] overflow-hidden"
                                                     @click.stop>
                                                     <div
-                                                        class="flex items-center justify-between p-6 border-b border-gray-200">
+                                                        class="flex items-center  justify-between p-6 border-b border-gray-200">
                                                         <div>
                                                             <h3 class="text-xl font-semibold text-slate-800"
                                                                 x-text="expandedChart === 'labor' ? 'Labor Force vs Employment Rate' : 'DAVAO REGION LABOR MARKET PERFORMANCE'">
@@ -676,7 +744,7 @@
                                                         </button>
                                                     </div>
                                                     <div class="p-6">
-                                                        <div class="relative w-full" style="height: 600px;">
+                                                        <div class="relative w-full" style="height: clamp(280px, 60vh, 600px);">
                                                             <canvas id="expandedChart"></canvas>
                                                         </div>
                                                     </div>
@@ -684,10 +752,7 @@
                                                         class="p-6 border-t border-gray-200 bg-slate-50 flex justify-between items-center">
                                                         <p class="text-xs text-slate-500">Press ESC or click outside to
                                                             close</p>
-                                                        <button @click="closeChartModal()"
-                                                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
-                                                            Close
-                                                        </button>
+                                                        
                                                     </div>
                                                 </div>
                                             </div>
@@ -733,8 +798,8 @@
                                 <div x-show="tableExpanded" x-collapse>
                                     <!-- Controls -->
                                     <div
-                                        class="p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-end gap-3">
-                                        <div class="flex items-center gap-2">
+                                        class="p-5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-end gap-3">
+                                        <div class="flex flex-wrap items-center gap-2">
                                             <div class="relative" x-data="{ open: false }">
                                                 <button @click="open = !open"
                                                     class="text-xs bg-white hover:bg-slate-50 border border-slate-300 px-4 py-2 rounded-lg flex items-center gap-2 transition shadow-sm">
@@ -747,7 +812,7 @@
                                                     </svg>
                                                 </button>
                                                 <div x-show="open" @click.away="open = false" x-transition
-                                                    class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50 p-5">
+                                                    class="filter-dropdown">
                                                     <label
                                                         class="block text-xs font-semibold text-slate-700 mb-3">Select
                                                         Year Range</label>
@@ -798,9 +863,16 @@
                                             </button>
                                         </div>
                                     </div>
+                                    <!-- Table scroll hint for mobile -->
+                                    <div class="table-scroll-hint items-center gap-2 px-5 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-600 font-medium">
+                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                        </svg>
+                                        Scroll horizontally to see all columns
+                                    </div>
                                     <!-- Table -->
                                     <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
-                                        <table class="w-full text-sm border-collapse">
+                                        <table class="w-full min-w-[640px] text-sm border-collapse">
                                             <thead class="sticky top-0">
                                                 <tr class="bg-slate-50 border-b border-slate-200">
                                                     <th
@@ -883,7 +955,7 @@
     <script>
         function statsFilter() {
             return {
-                tableExpanded: true,
+                tableExpanded: false,
                 allData: @json($regionalStats ?? []),
                 filteredData: [],
                 startYear: '',
@@ -1334,6 +1406,9 @@
                 // Modal 
                 openChartModal(chartType) {
                     this.expandedChart = chartType;
+                    document.body.classList.add('overflow-hidden');
+                    const navbar = document.querySelector('nav');
+                    if (navbar) { navbar.style.zIndex = '-1'; navbar.style.visibility = 'hidden'; }
                     this.$nextTick(() => {
                         if (chartType === 'labor') {
                             this.drawExpandedLaborChart();
@@ -1345,6 +1420,9 @@
 
                 closeChartModal() {
                     this.expandedChart = null;
+                    document.body.classList.remove('overflow-hidden');
+                    const navbar = document.querySelector('nav');
+                    if (navbar) { navbar.style.zIndex = ''; navbar.style.visibility = ''; }
                     if (window.expandedChartInstance) {
                         window.expandedChartInstance.destroy();
                         window.expandedChartInstance = null;
@@ -1362,6 +1440,8 @@
                     const originalChart = window.laborChart;
                     if (!originalChart) return;
 
+                    const isMobile = window.innerWidth < 640;
+
                     window.expandedChartInstance = new Chart(ctx.getContext('2d'), {
                         data: {
                             labels: originalChart.data.labels,
@@ -1372,9 +1452,9 @@
                                     borderColor: '#3B82F6',
                                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
                                     tension: 0.4,
-                                    borderWidth: 4,
-                                    pointRadius: 7,
-                                    pointHoverRadius: 9,
+                                    borderWidth: isMobile ? 2 : 4,
+                                    pointRadius: isMobile ? 4 : 7,
+                                    pointHoverRadius: isMobile ? 6 : 9,
                                     pointBackgroundColor: '#3B82F6',
                                     pointBorderColor: '#fff',
                                     pointBorderWidth: 3,
@@ -1384,17 +1464,21 @@
                                         display: true,
                                         anchor: 'end',
                                         align: 'top',
-                                        offset: 10,
+                                        offset: isMobile ? 4 : 8,
                                         color: '#1e293b',
                                         backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                        borderRadius: 6,
-                                        padding: 6,
+                                        borderRadius: 4,
+                                        padding: isMobile ? 2 : 5,
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
                                             weight: '700',
-                                            size: 16
+                                            size: isMobile ? 9 : 13
                                         },
-                                        formatter: (value) => value.toFixed(1) + '%'
+                                        formatter: (value, context) => {
+                                            const total = context.chart.data.labels.length;
+                                            const step = total > 12 ? 3 : total > 6 ? 2 : 1;
+                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                        }
                                     }
                                 },
                                 {
@@ -1403,15 +1487,9 @@
                                     data: originalChart.data.datasets[1].data,
                                     backgroundColor: function(context) {
                                         const chart = context.chart;
-                                        const {
-                                            ctx,
-                                            chartArea
-                                        } = chart;
+                                        const { ctx, chartArea } = chart;
                                         if (!chartArea) return '#182337';
-
-                                        // ✅ GRADIENT FOR EXPANDED VIEW
-                                        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0,
-                                            chartArea.top);
+                                        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
                                         gradient.addColorStop(0, '#3B5175');
                                         gradient.addColorStop(0.5, '#2A3F5F');
                                         gradient.addColorStop(1, '#182337');
@@ -1422,16 +1500,20 @@
                                     borderRadius: 4,
                                     yAxisID: 'y',
                                     datalabels: {
-                                        display: true,
+                                        display: !isMobile,
                                         anchor: 'center',
                                         align: 'center',
                                         color: '#FFFFFF',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
                                             weight: 'bold',
-                                            size: 22
+                                            size: isMobile ? 10 : 14
                                         },
-                                        formatter: (value) => new Intl.NumberFormat('en-US').format(value)
+                                        formatter: (value, context) => {
+                                            const total = context.chart.data.labels.length;
+                                            const step = total > 12 ? 3 : total > 6 ? 2 : 1;
+                                            return context.dataIndex % step === 0 ? new Intl.NumberFormat('en-US').format(value) : null;
+                                        }
                                     }
                                 }
                             ]
@@ -1439,10 +1521,10 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            interaction: {
-                                mode: 'index',
-                                intersect: false
+                            layout: {
+                                padding: { top: isMobile ? 25 : 40, bottom: 10, left: 5, right: 10 }
                             },
+                            interaction: { mode: 'index', intersect: false },
                             plugins: {
                                 legend: {
                                     position: 'top',
@@ -1451,11 +1533,11 @@
                                         boxWidth: 10,
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 16,
+                                            size: isMobile ? 10 : 14,
                                             weight: '600'
                                         },
                                         color: '#1e293b',
-                                        padding: 20
+                                        padding: isMobile ? 10 : 20
                                     }
                                 },
                                 tooltip: {
@@ -1466,8 +1548,7 @@
                                             let label = context.dataset.label || '';
                                             if (label) label += ': ';
                                             if (context.dataset.yAxisID === 'y') {
-                                                const actualValue = Math.round(context.parsed.y * 1000);
-                                                label += new Intl.NumberFormat('en-US').format(actualValue);
+                                                label += new Intl.NumberFormat('en-US').format(Math.round(context.parsed.y * 1000));
                                             } else {
                                                 label += context.parsed.y.toFixed(1) + '%';
                                             }
@@ -1479,62 +1560,52 @@
                             scales: {
                                 x: {
                                     ticks: {
-                                        autoSkip: false,
-                                        maxRotation: 45,
-                                        minRotation: 45,
+                                        autoSkip: true,
+                                        maxTicksLimit: isMobile ? 3 : 12,
+                                        maxRotation: 90,
+                                        minRotation: 0,
                                         color: '#475569',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 20,
+                                            size: isMobile ? 9 : 13,
                                             weight: '600'
                                         },
-                                        padding: 10
+                                        padding: 8
                                     },
-                                    grid: {
-                                        display: false
-                                    },
-                                    border: {
-                                        color: '#e2e8f0',
-                                        width: 2
-                                    }
+                                    grid: { display: false },
+                                    border: { color: '#e2e8f0', width: 2 }
                                 },
                                 y: {
                                     beginAtZero: true,
                                     title: {
-                                        display: true,
+                                        display: !isMobile,
                                         text: 'Labor Force (thousands)',
                                         color: '#1e293b',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 16,
+                                            size: 13,
                                             weight: '600'
                                         },
-                                        padding: 15
+                                        padding: 10
                                     },
                                     ticks: {
                                         color: '#64748b',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 20,
+                                            size: isMobile ? 9 : 13,
                                             weight: '500'
                                         },
-                                        padding: 10,
-                                        callback: (value) => new Intl.NumberFormat('en-US').format(value * 1000)
+                                        padding: 8,
+                                        maxTicksLimit: isMobile ? 4 : 6,
+                                        callback: (value) => {
+                                            const num = value * 1000;
+                                            return isMobile ? (num/1000).toFixed(0)+'k' : new Intl.NumberFormat('en-US').format(num);
+                                        }
                                     },
-                                    grid: {
-                                        color: '#f1f5f9',
-                                        lineWidth: 1
-                                    },
-                                    border: {
-                                        display: false
-                                    }
+                                    grid: { color: '#f1f5f9', lineWidth: 1 },
+                                    border: { display: false }
                                 },
-                                y1: {
-                                    display: false,
-                                    position: 'right',
-                                    min: 80,
-                                    max: 100
-                                }
+                                y1: { display: false, position: 'right', min: 80, max: 100 }
                             }
                         }
                     });
@@ -1551,37 +1622,36 @@
                     const originalChart = window.unempChart;
                     if (!originalChart) return;
 
+                    const isMobile = window.innerWidth < 640;
+
+                    // Alternate top/bottom to prevent label collisions between lines
                     const datasetConfigs = [{
                             label: 'LABOR FORCE PARTICIPATION RATE',
                             color: '#023E8A',
                             dataIndex: 0,
                             align: 'top',
-                            anchor: 'end',
-                            offset: 10
+                            offset: isMobile ? 4 : 8
                         },
                         {
                             label: 'EMPLOYMENT RATE',
                             color: '#006400',
                             dataIndex: 1,
-                            align: 'top',
-                            anchor: 'end',
-                            offset: 10
+                            align: 'bottom',
+                            offset: isMobile ? 4 : 8
                         },
                         {
                             label: 'UNDEREMPLOYMENT RATE',
                             color: '#FF8C00',
                             dataIndex: 2,
                             align: 'top',
-                            anchor: 'end',
-                            offset: 10
+                            offset: isMobile ? 4 : 8
                         },
                         {
                             label: 'UNEMPLOYMENT RATE',
                             color: '#D30000',
                             dataIndex: 3,
                             align: 'bottom',
-                            anchor: 'start',
-                            offset: 10
+                            offset: isMobile ? 4 : 8
                         },
                     ];
 
@@ -1590,8 +1660,8 @@
                         data: originalChart.data.datasets[cfg.dataIndex].data,
                         borderColor: cfg.color,
                         backgroundColor: cfg.color,
-                        borderWidth: 4,
-                        pointRadius: 6,
+                        borderWidth: isMobile ? 2 : 3,
+                        pointRadius: isMobile ? 3 : 5,
                         pointBackgroundColor: cfg.color,
                         pointBorderColor: '#fff',
                         pointBorderWidth: 2,
@@ -1604,19 +1674,18 @@
                             offset: cfg.offset,
                             color: '#1e293b',
                             backgroundColor: 'rgba(255,255,255,0.92)',
-                            borderRadius: 5,
-                            padding: {
-                                top: 3,
-                                bottom: 3,
-                                left: 5,
-                                right: 5
-                            },
+                            borderRadius: 4,
+                            padding: isMobile ? { top: 2, bottom: 2, left: 3, right: 3 } : { top: 3, bottom: 3, left: 5, right: 5 },
                             font: {
                                 family: 'Inter, system-ui, -apple-system, sans-serif',
-                                size: 14,
+                                size: isMobile ? 8 : 12,
                                 weight: 'bold'
                             },
-                            formatter: (value) => value.toFixed(1) + '%'
+                            formatter: (value, context) => {
+                                const total = context.chart.data.labels.length;
+                                const step = total > 12 ? 3 : total > 6 ? 2 : 1;
+                                return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                            }
                         }
                     }));
 
@@ -1630,12 +1699,7 @@
                             responsive: true,
                             maintainAspectRatio: false,
                             layout: {
-                                padding: {
-                                    top: 50,
-                                    bottom: 60,
-                                    left: 20,
-                                    right: 40
-                                }
+                                padding: { top: isMobile ? 20 : 40, bottom: isMobile ? 10 : 30, left: 5, right: 10 }
                             },
                             plugins: {
                                 legend: {
@@ -1643,73 +1707,59 @@
                                     position: 'bottom',
                                     align: 'center',
                                     labels: {
-                                        padding: 24,
-                                        boxWidth: 14,
-                                        boxHeight: 14,
+                                        padding: isMobile ? 10 : 20,
+                                        boxWidth: isMobile ? 10 : 14,
+                                        boxHeight: isMobile ? 10 : 14,
                                         color: '#1e293b',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 13,
+                                            size: isMobile ? 9 : 12,
                                             weight: '600'
                                         },
                                         usePointStyle: true,
                                         pointStyle: 'circle'
                                     }
                                 },
-                                datalabels: {
-
-                                    display: false
-                                }
+                                datalabels: { display: true }
                             },
                             scales: {
                                 x: {
                                     ticks: {
-                                        autoSkip: false,
-                                        maxRotation: 45,
-                                        minRotation: 45,
-                                        padding: 30,
+                                        autoSkip: true,
+                                        maxTicksLimit: isMobile ? 3 : 12,
+                                        maxRotation: 90,
+                                        minRotation: 0,
+                                        padding: isMobile ? 6 : 12,
                                         color: '#475569',
                                         font: {
-                                            size: 16,
+                                            size: isMobile ? 9 : 13,
                                             weight: '600'
                                         }
                                     },
-                                    grid: {
-                                        display: false
-                                    },
-                                    border: {
-                                        color: '#e2e8f0',
-                                        width: 2
-                                    }
+                                    grid: { display: false },
+                                    border: { color: '#e2e8f0', width: 2 }
                                 },
                                 y: {
                                     beginAtZero: true,
                                     ticks: {
-                                        padding: 25,
+                                        padding: isMobile ? 6 : 12,
+                                        maxTicksLimit: isMobile ? 4 : 6,
                                         stepSize: 20,
                                         color: '#64748b',
                                         font: {
-                                            size: 14,
+                                            size: isMobile ? 9 : 13,
                                             weight: '500'
                                         }
                                     },
                                     title: {
-                                        display: true,
+                                        display: !isMobile,
                                         text: 'Rate (%)',
                                         color: '#1e293b',
-                                        font: {
-                                            size: 14,
-                                            weight: '600'
-                                        },
-                                        padding: 12
+                                        font: { size: 13, weight: '600' },
+                                        padding: 10
                                     },
-                                    grid: {
-                                        color: '#f1f5f9',
-                                        lineWidth: 1
-                                    },
-                                    border: {
-                                        display: false
-                                    }
+                                    grid: { color: '#f1f5f9', lineWidth: 1 },
+                                    border: { display: false }
                                 }
                             }
                         }
@@ -1858,7 +1908,7 @@
                         const data = await response.json();
 
                         data.forEach(item => {
-                            labels.push(`${year} ${this.quarterToMonth(item.quarter)}`);
+                            labels.push(window.innerWidth < 640 ? `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` : `${year} ${this.quarterToMonth(item.quarter)}`);
                             laborData.push(parseFloat(item.labor_force_thousands) || 0);
                             empRateData.push(parseFloat(item.employment_rate) || 0);
                         });
@@ -1875,8 +1925,8 @@
                                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
                                     tension: 0.4,
                                     borderWidth: 3,
-                                    pointRadius: 6,
-                                    pointHoverRadius: 8,
+                                    pointRadius: window.innerWidth < 640 ? 3 : 6,
+                                    pointHoverRadius: window.innerWidth < 640 ? 5 : 8,
                                     pointBackgroundColor: '#3B82F6',
                                     pointBorderColor: '#fff',
                                     pointBorderWidth: 2,
@@ -1884,20 +1934,24 @@
                                     yAxisID: 'y1',
 
                                     datalabels: {
-                                        display: true,
+                                        display: window.innerWidth >= 480,
                                         anchor: 'end',
                                         align: 'top',
-                                        offset: 8,
+                                        offset: 6,
                                         color: '#1e293b',
                                         backgroundColor: 'rgba(255, 255, 255, 0.9)',
                                         borderRadius: 4,
-                                        padding: 4,
+                                        padding: 3,
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
                                             weight: '700',
-                                            size: 13
+                                            size: window.innerWidth < 768 ? 9 : 12
                                         },
-                                        formatter: (value) => value.toFixed(1) + '%'
+                                        formatter: (value, context) => {
+                                            const total = context.chart.data.labels.length;
+                                            const step = total > 20 ? 4 : total > 10 ? 3 : 1;
+                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                        }
                                     }
                                 },
                                 {
@@ -1924,15 +1978,19 @@
                                     borderRadius: 2,
                                     yAxisID: 'y',
                                     datalabels: {
-                                        display: true,
+                                        display: window.innerWidth >= 480,
                                         anchor: 'center',
                                         align: 'center',
                                         color: "#FFFFFF",
                                         font: {
                                             weight: 'bold',
-                                            size: 18
+                                            size: window.innerWidth < 640 ? 9 : window.innerWidth < 1024 ? 13 : 18
                                         },
-                                        formatter: (value) => new Intl.NumberFormat('en-US').format(value)
+                                        formatter: (value, context) => {
+                                            const total = context.chart.data.labels.length;
+                                            const step = total > 20 ? 4 : total > 10 ? 3 : 1;
+                                            return context.dataIndex % step === 0 ? new Intl.NumberFormat('en-US').format(value) : null;
+                                        }
                                     }
                                 }
 
@@ -1950,7 +2008,11 @@
                                     position: 'top',
                                     labels: {
                                         usePointStyle: true,
-                                        boxWidth: 10
+                                        boxWidth: 8,
+                                        padding: window.innerWidth < 640 ? 6 : 12,
+                                        font: {
+                                            size: window.innerWidth < 640 ? 9 : 12
+                                        }
                                     }
                                 },
                                 tooltip: {
@@ -1961,13 +2023,10 @@
                                             let label = context.dataset.label || '';
                                             if (label) label += ': ';
                                             if (context.dataset.yAxisID === 'y') {
-                                                const actualValue = Math.round(context
-                                                    .parsed.y * 1000);
-                                                label += new Intl.NumberFormat('en-US')
-                                                    .format(actualValue);
+                                                const actualValue = Math.round(context.parsed.y * 1000);
+                                                label += new Intl.NumberFormat('en-US').format(actualValue);
                                             } else {
-                                                label += context.parsed.y.toFixed(1) +
-                                                    '%';
+                                                label += context.parsed.y.toFixed(1) + '%';
                                             }
                                             return label;
                                         }
@@ -1978,59 +2037,52 @@
                                 x: {
                                     ticks: {
                                         autoSkip: true,
-                                        maxTicksLimit: 12,
-                                        maxRotation: 45,
-                                        minRotation: 45,
+                                        maxTicksLimit: window.innerWidth < 640 ? 3 : window.innerWidth < 1024 ? 6 : 12,
+                                        maxRotation: 90,
+                                        minRotation: 0,
                                         color: '#475569',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 12,
+                                            size: window.innerWidth < 640 ? 8 : 11,
                                             weight: '600',
-
                                         },
-                                        padding: 8
+                                        padding: 4
                                     },
-                                    grid: {
-                                        display: false
-                                    },
-                                    border: {
-                                        color: '#e2e8f0',
-                                        width: 2
-                                    }
+                                    grid: { display: false },
+                                    border: { color: '#e2e8f0', width: 2 }
                                 },
-
                                 y: {
                                     beginAtZero: true,
                                     title: {
-                                        display: true,
+                                        display: window.innerWidth >= 640,
                                         text: 'Labor Force (thousands)',
                                         color: '#1e293b',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 13,
+                                            size: 11,
                                             weight: '600',
                                         },
-                                        padding: 12
+                                        padding: 8
                                     },
                                     ticks: {
-                                        color: '#000000',
                                         color: '#64748b',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 12,
+                                            size: window.innerWidth < 640 ? 8 : 11,
                                             weight: '500'
                                         },
-                                        padding: 8,
-                                        callback: (value) => new Intl.NumberFormat('en-US')
-                                            .format(value * 1000)
+                                        padding: 4,
+                                        maxTicksLimit: window.innerWidth < 640 ? 4 : 6,
+                                        callback: (value) => {
+                                            const num = value * 1000;
+                                            if (window.innerWidth < 640) {
+                                                return num >= 1000 ? (num/1000).toFixed(0)+'k' : num;
+                                            }
+                                            return new Intl.NumberFormat('en-US').format(num);
+                                        }
                                     },
-                                    grid: {
-                                        color: '#f1f5f9',
-                                        lineWidth: 1
-                                    },
-                                    border: {
-                                        display: false
-                                    }
+                                    grid: { color: '#f1f5f9', lineWidth: 1 },
+                                    border: { display: false }
                                 },
                                 y1: {
                                     display: false,
@@ -2064,8 +2116,7 @@
                             const itemQ = quarterToNum(item.quarter);
 
                             if (year > startYear && year < endYear) {
-                                labels.push(
-                                    `${year} ${this.quarterToMonth(item.quarter)}`);
+                                labels.push(window.innerWidth < 640 ? `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` : `${year} ${this.quarterToMonth(item.quarter)}`);
                                 laborData.push(parseFloat(item.labor_force_thousands) ||
                                     0);
                                 empRateData.push(parseFloat(item.employment_rate) || 0);
@@ -2075,7 +2126,7 @@
                             if (year === startYear && itemQ < startQ) return;
                             if (year === endYear && itemQ > endQ) return;
 
-                            labels.push(`${year} ${this.quarterToMonth(item.quarter)}`);
+                            labels.push(window.innerWidth < 640 ? `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` : `${year} ${this.quarterToMonth(item.quarter)}`);
                             laborData.push(parseFloat(item.labor_force_thousands) || 0);
                             empRateData.push(parseFloat(item.employment_rate) || 0);
                         });
@@ -2106,8 +2157,7 @@
                         const data = await response.json();
 
                         data.forEach(item => {
-                            labels.push(
-                                `${year} ${this.quarterToMonth(item.quarter)}`);
+                            labels.push(window.innerWidth < 640 ? `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` : `${year} ${this.quarterToMonth(item.quarter)}`);
                             empRateData.push(parseFloat(item.employment_rate) || 0);
                             lfprData.push(parseFloat(item.lfpr) || 0);
                             underempData.push(parseFloat(item
@@ -2126,36 +2176,45 @@
                                     data: lfprData,
                                     borderColor: '#023E8A',
                                     backgroundColor: '#023E8A',
-                                    borderWidth: 3,
-                                    pointRadius: 5,
+                                    borderWidth: window.innerWidth < 640 ? 2 : 3,
+                                    pointRadius: window.innerWidth < 640 ? 2 : 5,
                                     pointBackgroundColor: '#023E8A',
                                     pointBorderColor: '#fff',
                                     pointBorderWidth: 2,
                                     fill: false,
                                     tension: 0.3,
                                     datalabels: {
-                                        display: true,
+                                        display: window.innerWidth >= 480,
                                         align: 'top',
-                                        offset: 8
+                                        offset: 6,
+                                        formatter: (value, context) => {
+                                            const total = context.chart.data.labels.length;
+                                            const step = total > 20 ? 4 : total > 10 ? 3 : 1;
+                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                        }
                                     }
-
                                 },
                                 {
                                     label: 'EMPLOYMENT RATE',
                                     data: empRateData,
                                     borderColor: '#006400',
                                     backgroundColor: '#006400',
-                                    borderWidth: 3,
-                                    pointRadius: 5,
+                                    borderWidth: window.innerWidth < 640 ? 2 : 3,
+                                    pointRadius: window.innerWidth < 640 ? 2 : 5,
                                     pointBackgroundColor: '#006400',
                                     pointBorderColor: '#fff',
                                     pointBorderWidth: 2,
                                     fill: false,
                                     tension: 0.3,
                                     datalabels: {
-                                        display: true,
+                                        display: window.innerWidth >= 480,
                                         align: 'top',
-                                        offset: 8
+                                        offset: 6,
+                                        formatter: (value, context) => {
+                                            const total = context.chart.data.labels.length;
+                                            const step = total > 20 ? 4 : total > 10 ? 3 : 1;
+                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                        }
                                     }
                                 },
                                 {
@@ -2163,17 +2222,22 @@
                                     data: underempData,
                                     borderColor: '#FF8C00',
                                     backgroundColor: '#FF8C00',
-                                    borderWidth: 3,
-                                    pointRadius: 5,
+                                    borderWidth: window.innerWidth < 640 ? 2 : 3,
+                                    pointRadius: window.innerWidth < 640 ? 2 : 5,
                                     pointBackgroundColor: '#FF8C00',
                                     pointBorderColor: '#fff',
                                     pointBorderWidth: 2,
                                     fill: false,
                                     tension: 0.3,
                                     datalabels: {
-                                        display: true,
+                                        display: window.innerWidth >= 480,
                                         align: 'top',
-                                        offset: 8
+                                        offset: 6,
+                                        formatter: (value, context) => {
+                                            const total = context.chart.data.labels.length;
+                                            const step = total > 20 ? 4 : total > 10 ? 3 : 1;
+                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                        }
                                     }
                                 },
                                 {
@@ -2181,17 +2245,22 @@
                                     data: unempRateData,
                                     borderColor: '#D30000',
                                     backgroundColor: '#D30000',
-                                    borderWidth: 3,
-                                    pointRadius: 5,
+                                    borderWidth: window.innerWidth < 640 ? 2 : 3,
+                                    pointRadius: window.innerWidth < 640 ? 2 : 5,
                                     pointBackgroundColor: '#D30000',
                                     pointBorderColor: '#fff',
                                     pointBorderWidth: 2,
                                     fill: false,
                                     tension: 0.3,
                                     datalabels: {
-                                        display: true,
+                                        display: window.innerWidth >= 480,
                                         align: 'bottom',
-                                        offset: 8
+                                        offset: 6,
+                                        formatter: (value, context) => {
+                                            const total = context.chart.data.labels.length;
+                                            const step = total > 20 ? 4 : total > 10 ? 3 : 1;
+                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                        }
                                     }
                                 }
                             ]
@@ -2207,16 +2276,16 @@
                                         color: '#1e293b',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 11,
+                                            size: window.innerWidth < 640 ? 9 : 11,
                                             weight: '600'
                                         },
-                                        padding: 15,
+                                        padding: window.innerWidth < 640 ? 8 : 15,
                                         usePointStyle: true,
                                         pointStyle: 'circle'
                                     }
                                 },
                                 datalabels: {
-                                    display: true,
+                                    display: window.innerWidth >= 480,
                                     color: '#1e293b',
                                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
                                     borderRadius: 4,
@@ -2228,7 +2297,7 @@
                                     },
                                     font: {
                                         family: 'Inter, system-ui, -apple-system, sans-serif',
-                                        size: 11,
+                                        size: window.innerWidth < 640 ? 9 : 11,
                                         weight: '700'
                                     },
                                     formatter: (value) => value.toFixed(1)
@@ -2237,54 +2306,47 @@
                             scales: {
                                 x: {
                                     ticks: {
-                                        padding: 12,
+                                        autoSkip: true,
+                                        maxTicksLimit: window.innerWidth < 640 ? 3 : window.innerWidth < 1024 ? 6 : 12,
+                                        maxRotation: 90,
+                                        minRotation: 0,
+                                        padding: window.innerWidth < 640 ? 4 : 12,
                                         color: '#475569',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 12,
+                                            size: window.innerWidth < 640 ? 8 : 12,
                                             weight: '600'
                                         }
                                     },
-                                    grid: {
-                                        display: false
-                                    },
-                                    border: {
-                                        color: '#e2e8f0',
-                                        width: 2
-                                    }
+                                    grid: { display: false },
+                                    border: { color: '#e2e8f0', width: 2 }
                                 },
                                 y: {
                                     beginAtZero: true,
                                     ticks: {
-                                        padding: 12,
+                                        padding: window.innerWidth < 640 ? 4 : 12,
+                                        maxTicksLimit: window.innerWidth < 640 ? 4 : 6,
                                         stepSize: 20,
                                         color: '#64748b',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 12,
+                                            size: window.innerWidth < 640 ? 8 : 12,
                                             weight: '500'
                                         }
                                     },
                                     title: {
-                                        display: true,
+                                        display: window.innerWidth >= 640,
                                         text: 'Rate (%)',
                                         color: '#1e293b',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
-                                            size: 13,
+                                            size: 11,
                                             weight: '600'
                                         },
-                                        padding: 12
+                                        padding: 8
                                     },
-                                    grid: {
-                                        color: '#f1f5f9',
-                                        lineWidth: 1
-                                    },
-                                    border: {
-                                        display: false
-                                    }
-
-
+                                    grid: { color: '#f1f5f9', lineWidth: 1 },
+                                    border: { display: false }
                                 }
                             }
                         }
@@ -2313,9 +2375,7 @@
                             if (year === startYear && itemQ < startQ) return;
                             if (year === endYear && itemQ > endQ) return;
 
-                            labels.push(
-                                `${year} ${this.quarterToMonth(item.quarter)}`
-                            );
+                            labels.push(window.innerWidth < 640 ? `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` : `${year} ${this.quarterToMonth(item.quarter)}`);
                             emp.push(parseFloat(item.employment_rate) || 0);
                             lfpr.push(parseFloat(item.lfpr) || 0);
                             under.push(parseFloat(item.underemployment_rate) ||

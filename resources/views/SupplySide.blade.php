@@ -12,20 +12,139 @@
         <style>
             /* Custom scrollbar for better UX */
             .custom-scrollbar::-webkit-scrollbar {
-                width: 8px;
-                height: 8px;
+                width: 6px;
+                height: 6px;
             }
             .custom-scrollbar::-webkit-scrollbar-track {
-                background: #f1f5f9;
-                border-radius: 4px;
+                background: transparent;
+                border-radius: 999px;
             }
             .custom-scrollbar::-webkit-scrollbar-thumb {
                 background: #cbd5e1;
-                border-radius: 4px;
+                border-radius: 999px;
             }
             .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                 background: #94a3b8;
             }
+            /* Quill rendered output styles (for x-html display on public page) */
+            .ql-align-justify { text-align: justify; }
+            .ql-align-center  { text-align: center; }
+            .ql-align-right   { text-align: right; }
+            .ql-align-left    { text-align: left; }
+            .ql-size-8pt  { font-size: 8pt; }
+            .ql-size-9pt  { font-size: 9pt; }
+            .ql-size-10pt { font-size: 10pt; }
+            .ql-size-11pt { font-size: 11pt; }
+            .ql-size-12pt { font-size: 12pt; }
+            .ql-size-14pt { font-size: 14pt; }
+            .ql-size-16pt { font-size: 16pt; }
+            .ql-size-18pt { font-size: 18pt; }
+            .ql-size-20pt { font-size: 20pt; }
+            .ql-size-22pt { font-size: 22pt; }
+            .ql-size-24pt { font-size: 24pt; }
+            .ql-size-28pt { font-size: 28pt; }
+            .ql-size-36pt { font-size: 36pt; }
+            .ql-size-48pt { font-size: 48pt; }
+            .ql-size-72pt { font-size: 72pt; }
+
+            /* ── Hero: smaller title on small phones ── */
+            @media (max-width: 480px) {
+                .hero-title-supply { font-size: 1.6rem !important; line-height: 1.2 !important; }
+            }
+
+            /* ── KPI cards: scale down huge number on small phones ── */
+            @media (max-width: 400px) {
+                .kpi-number { font-size: 2.5rem !important; }
+            }
+
+            /* ── KPI cards: reduce padding on mobile ── */
+            @media (max-width: 640px) {
+                .kpi-card { padding: 1.25rem !important; }
+            }
+
+            /* ── Filter bars: wrap on mobile ── */
+            .filter-bar-wrap {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                align-items: center;
+            }
+
+            /* ── Pie chart inline layout: stack vertically on mobile ── */
+            .pie-inline-layout {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 1rem;
+                flex-wrap: wrap;
+            }
+            @media (max-width: 767px) {
+                .pie-inline-layout {
+                    flex-direction: column;
+                    align-items: center;
+                }
+                /* Hide side legends on mobile — too cramped */
+                .pie-legend-col {
+                    display: none !important;
+                }
+                .pie-canvas-wrap canvas {
+                    width: min(240px, 75vw) !important;
+                    height: min(240px, 75vw) !important;
+                }
+            }
+
+            /* ── Pie modal: responsive layout ── */
+            .pie-modal-body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 1.5rem;
+                padding: 1.5rem;
+                overflow-y: auto;
+                flex: 1;
+                min-height: 0;
+            }
+            @media (max-width: 767px) {
+                .pie-modal-body {
+                    flex-direction: column;
+                    align-items: center;
+                    padding: 0.75rem;
+                    gap: 0;
+                    overflow-y: auto;
+                }
+                .pie-modal-legend-side { display: none !important; }
+                .pie-modal-legend-bottom { display: grid !important; }
+                .pie-modal-canvas {
+                    width: 100% !important;
+                    height: auto !important;
+                    flex-shrink: 0;
+                }
+                .pie-modal-canvas canvas {
+                    width: min(200px, 60vw) !important;
+                    height: min(200px, 60vw) !important;
+                }
+            }
+            @media (min-width: 768px) {
+                .pie-modal-legend-bottom { display: none !important; }
+            }
+
+            /* ── Modal headers: stack on mobile ── */
+            @media (max-width: 640px) {
+                .modal-header-inner {
+                    flex-direction: column !important;
+                    align-items: flex-start !important;
+                    gap: 0.75rem;
+                }
+                .modal-header-inner .modal-close-group { align-self: flex-end; }
+                .modal-title { font-size: 1rem !important; }
+                .modal-panel { padding: 0 !important; border-radius: 0.75rem !important; }
+            }
+
+            /* ── Enrollment trend modal header legend: hide on very small screens ── */
+            @media (max-width: 480px) {
+                .trend-modal-legend { display: none !important; }
+            }
+
         </style>
     </head>
 
@@ -43,7 +162,7 @@
             <!-- Hero Content -->
             <div class="relative z-10 h-full flex items-center justify-center px-4">
                 <div class="text-center text-white">
-                    <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-lg">
+                    <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-lg hero-title-supply">
                         Education to Employement Pipeline
                     </h1>
                     <p class="text-base md:text-xl lg:text-2xl text-slate-100 drop-shadow-md">
@@ -53,7 +172,7 @@
             </div>
             
             <!-- Scroll Indicator -->
-            <div class="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-20 scroll-indicator animate-bounce">
+            <div class="absolute bottom-8 sm:bottom-16 left-1/2 transform -translate-x-1/2 z-20 scroll-indicator animate-bounce">
                 <a href="#kpi-section"
                    class="flex flex-col items-center cursor-pointer group"
                    @click.prevent="() => {
@@ -109,9 +228,9 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4" id="kpi-section">
 
                         <!-- Card 1: Total Enrollees -->
-                        <div class="bg-white rounded-2xl p-8 border-l-4 border-blue-500 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden">
+                        <div class="group bg-white rounded-2xl p-5 sm:p-8 border-l-4 border-blue-500 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden kpi-card">
                             <div x-show="loadingGraduationRate || loadingLatestEnrollment" class="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center z-10">
-                                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+                                <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-500"></div>
                             </div>
                             <!-- Background decoration -->
                             <div class="absolute -right-6 -top-6 w-36 h-36 bg-blue-50 rounded-full opacity-70"></div>
@@ -122,13 +241,13 @@
                                         <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">Total Enrollees</p>
                                         <p class="text-xs text-slate-400">Latest enrollment data</p>
                                     </div>
-                                    <div class="bg-blue-100 p-3.5 rounded-2xl">
-                                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                        </svg>
-                                    </div>
+                                    <div class="bg-blue-100 p-3.5 rounded-full flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                                    <svg class="w-8 h-8 text-blue-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
                                 </div>
-                                <p class="text-6xl font-black text-slate-800 mb-3 tracking-tight" x-text="formatNumber(latestEnrollmentTotal || 0)">0</p>
+                                </div>
+                                <p class="text-4xl sm:text-6xl font-black text-slate-800 mb-3 tracking-tight kpi-number" x-text="formatNumber(latestEnrollmentTotal || 0)">0</p>
                                 <div class="flex items-center gap-3">
                                     <div class="w-2 h-2 rounded-full bg-blue-400"></div>
                                     <p class="text-sm text-slate-500 font-medium" x-text="latestEnrollmentYear ?? 'No data'">No data</p>
@@ -146,9 +265,9 @@
                         </div>
 
                         <!-- Card 2: Projected Graduates -->
-                        <div class="bg-white rounded-2xl p-8 border-l-4 border-violet-500 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden">
+                        <div class="group bg-white rounded-2xl p-5 sm:p-8 border-l-4 border-violet-500 shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden kpi-card">
                             <div x-show="loadingGraduationRate" class="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center z-10">
-                                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600"></div>
+                                <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-500"></div>
                             </div>
                             <div class="absolute -right-6 -top-6 w-36 h-36 bg-violet-50 rounded-full opacity-70"></div>
                             <div class="absolute -right-2 -bottom-8 w-24 h-24 bg-violet-100 rounded-full opacity-40"></div>
@@ -165,13 +284,13 @@
                                                   x-text="`${parseFloat(graduationRateData.graduation_rate).toFixed(2)}% rate`"></span>
                                         </div>
                                     </div>
-                                    <div class="bg-violet-100 p-3.5 rounded-2xl">
-                                        <svg class="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="bg-violet-100 p-3.5 rounded-full flex items-center justify-center group-hover:bg-violet-600 transition-colors">
+                                        <svg class="w-8 h-8 text-violet-600 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
                                         </svg>
                                     </div>
                                 </div>
-                                <p class="text-6xl font-black text-slate-800 mb-3 tracking-tight" x-text="formatNumber(graduationRateData.projected_graduates || 0)">0</p>
+                                <p class="text-4xl sm:text-6xl font-black text-slate-800 mb-3 tracking-tight kpi-number" x-text="formatNumber(graduationRateData.projected_graduates || 0)">0</p>
 
                                 <!-- Description from graduation rate record -->
                                 <template x-if="graduationRateData.description">
@@ -228,19 +347,18 @@
                         <div
                             x-show="enrollmentOverviewExpanded"
                             x-transition:enter="transition ease-out duration-300"
-                            x-transition:enter-start="opacity-0 -translate-y-2"
-                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:enter-start="opacity-0"
+                            x-transition:enter-end="opacity-100"
                             x-transition:leave="transition ease-in duration-200"
-                            x-transition:leave-start="opacity-100 translate-y-0"
-                            x-transition:leave-end="opacity-0 -translate-y-2"
+                            x-transition:leave-start="opacity-100"
+                            x-transition:leave-end="opacity-0"
                             class="bg-slate-50 border border-t-0 border-slate-200 rounded-b-2xl overflow-hidden">
 
                         <!-- Panel Filter Bar -->
-                        <div class="flex items-center justify-end px-6 py-3 bg-white border-b border-slate-200">
-                            <div class="flex items-center gap-3">
-                                <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+                        <div class="flex flex-wrap items-center justify-end px-4 sm:px-6 py-3 bg-white border-b border-slate-200 gap-2 sm:gap-3">
+                                <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
                                     <span class="text-slate-400">📍</span>
-                                    <span class="text-sm text-slate-500 font-medium">Province:</span>
+                                    <span class="text-xs text-slate-500 font-medium hidden sm:inline">Province:</span>
                                     <select 
                                         x-model="selectedEnrollmentProvince" 
                                         @change="loadEnrollmentYearsForProvince(selectedEnrollmentProvince).then(() => loadEnrollmentData())"
@@ -250,9 +368,9 @@
                                         </template>
                                     </select>
                                 </div>
-                                <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+                                <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
                                     <span class="text-slate-400">📅</span>
-                                    <span class="text-sm text-slate-500 font-medium">Year:</span>
+                                    <span class="text-xs text-slate-500 font-medium hidden sm:inline">Year:</span>
                                     <select 
                                         x-model="selectedEnrollmentYear" 
                                         @change="loadEnrollmentData()"
@@ -262,14 +380,14 @@
                                         </template>
                                     </select>
                                 </div>
-                            </div>
                         </div>
 
                         <!-- Cards Row -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+                        <div class="flex flex-col gap-6 p-6">
 
                         <!-- Executive Analysis: Supply Side -->
-                        <div class="col-span-1 bg-white rounded-2xl shadow-xl border border-slate-200 p-6 flex flex-col">
+                        <div class="w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                        <div class="flex flex-col p-6">
                             <div class="flex items-start gap-3 mb-4 flex-shrink-0">
                                 <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 rounded-xl shadow-lg">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -283,19 +401,22 @@
                             
                             <!-- Loading State -->
                             <div x-show="loadingExecutiveAnalysis" class="flex items-center justify-center py-8">
-                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                <div class="animate-spin rounded-full h-6 w-6 border-2 border-slate-200 border-t-slate-500"></div>
                             </div>
 
-                            <!-- Dynamic Analysis Text — scrollable when content is long -->
+                            <!-- Dynamic Analysis Text — card scrolls, text has full width -->
                             <div x-show="!loadingExecutiveAnalysis" 
-                                 class="flex-1 overflow-y-auto custom-scrollbar space-y-4 text-sm text-slate-700 whitespace-pre-line pr-1"
-                                 style="max-height: 380px;"
+                                 class="flex-1 text-sm text-slate-700 prose prose-sm max-w-none"
                                  x-html="executiveAnalysisText">
                             </div>
                         </div>
+                        </div>
 
                         <!-- Discipline Market Share Pie Chart -->
-                        <div class="col-span-2 bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
+                        <div class="w-full bg-white rounded-2xl shadow-xl border border-slate-200 p-6 relative overflow-hidden">
+                            <div x-show="loadingPieChart" class="absolute inset-0 bg-white/75 flex items-center justify-center z-10 rounded-2xl backdrop-blur-sm">
+                                <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-500"></div>
+                            </div>
                             <div class="flex items-start justify-between gap-3 mb-4">
                                 <div class="flex items-start gap-3">
                                     <div class="bg-gradient-to-br from-purple-500 to-pink-600 p-2.5 rounded-xl shadow-lg">
@@ -320,9 +441,9 @@
                             </div>
 
                             <!-- Pie Chart with Side Legends -->
-                            <div class="flex items-start gap-4 mt-6">
+                            <div class="pie-inline-layout mt-6">
                                 <!-- LEFT LEGEND (Top Half - Highest Values) -->
-                                <div class="flex-1 min-w-0 space-y-2.5">
+                                <div class="w-56 pie-legend-col shrink-0 space-y-3">
                                     <template x-for="(item, index) in (() => {
                                         const entries = Object.entries(disciplineShares || {});
                                         if (entries.length === 0) return [];
@@ -330,8 +451,8 @@
                                             .sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]))
                                             .slice(0, Math.ceil(entries.length / 2));
                                     })()" :key="item[0]">
-                                        <div class="flex items-center gap-1.5 min-w-0">
-                                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" 
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <div class="w-3 h-3 rounded-full flex-shrink-0" 
                                                  :style="`background-color: ${(() => {
                                                     const colorPalette = [
                                                         'rgb(37, 99, 235)', 'rgb(220, 38, 38)', 'rgb(22, 163, 74)',
@@ -346,18 +467,18 @@
                                                     const actualIndex = sorted.findIndex(entry => entry[0] === item[0]);
                                                     return colorPalette[actualIndex % colorPalette.length];
                                                  })()}`"></div>
-                                            <div class="text-slate-700 font-medium text-xs" style="white-space: nowrap;" x-text="formatDisciplineName(item[0]) + ' ' + parseFloat(item[1]).toFixed(1) + '%'"></div>
+                                            <div class="text-slate-700 font-medium text-sm truncate" x-text="formatDisciplineName(item[0]) + ' ' + parseFloat(item[1]).toFixed(1) + '%'"></div>
                                         </div>
                                     </template>
                                 </div>
 
                                 <!-- CENTER PIE CHART -->
-                                <div class="flex-shrink-0">
-                                    <canvas id="disciplineMarketShareChart" width="210" height="210"></canvas>
+                                <div class="pie-canvas-wrap flex-shrink-0 flex items-center justify-center">
+                                    <canvas id="disciplineMarketShareChart" width="400" height="350"></canvas>
                                 </div>
 
                                 <!-- RIGHT LEGEND (Bottom Half - Lower Values) -->
-                                <div class="flex-1 min-w-0 space-y-2.5">
+                                <div class="w-56 pie-legend-col shrink-0 space-y-3">
                                     <template x-for="(item, index) in (() => {
                                         const entries = Object.entries(disciplineShares || {});
                                         if (entries.length === 0) return [];
@@ -365,8 +486,8 @@
                                             .sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]))
                                             .slice(Math.ceil(entries.length / 2));
                                     })()" :key="item[0]">
-                                        <div class="flex items-center gap-1.5 min-w-0">
-                                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" 
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <div class="w-3 h-3 rounded-full flex-shrink-0" 
                                                  :style="`background-color: ${(() => {
                                                     const colorPalette = [
                                                         'rgb(37, 99, 235)', 'rgb(220, 38, 38)', 'rgb(22, 163, 74)',
@@ -381,12 +502,14 @@
                                                     const actualIndex = sorted.findIndex(entry => entry[0] === item[0]);
                                                     return colorPalette[actualIndex % colorPalette.length];
                                                  })()}`"></div>
-                                            <div class="text-slate-700 font-medium text-xs" style="white-space: nowrap;" x-text="formatDisciplineName(item[0]) + ' ' + parseFloat(item[1]).toFixed(1) + '%'"></div>
+                                            <div class="text-slate-700 font-medium text-sm truncate" x-text="formatDisciplineName(item[0]) + ' ' + parseFloat(item[1]).toFixed(1) + '%'"></div>
                                         </div>
                                     </template>
                                 </div>
                             </div>
                         </div><!-- end pie chart card -->
+                        <!-- Mobile: tap hint for pie chart -->
+                        <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">Tap chart segments for details · Tap Expand for full legend</p>
 
                         <!-- Pie Chart Modal -->
                         <template x-teleport="body">
@@ -398,76 +521,87 @@
                                 x-transition:leave="transition ease-in duration-150"
                                 x-transition:leave-start="opacity-100"
                                 x-transition:leave-end="opacity-0"
-                                class="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4"
-                                @keydown.escape.window="pieModalOpen = false"
+                                class="fixed inset-0 z-[9999] bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4"
                                 style="display:none;">
-                                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[80vw] flex flex-col overflow-hidden" style="height:90vh;" @click.stop>
+                                <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-[80vw] flex flex-col overflow-hidden" style="height:92vh; max-height:92vh;" @click.stop>
                                     <!-- Header -->
-                                    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 flex-shrink-0">
+                                    <div class="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-slate-200 flex-shrink-0">
                                         <div>
-                                            <h2 class="text-xl font-bold text-slate-800">Distribution of Enrollees — Expanded View</h2>
+                                            <h2 class="text-base sm:text-xl font-bold text-slate-800">Distribution of Enrollees — Expanded View</h2>
                                             <p class="text-sm text-slate-500 mt-0.5"><span x-text="selectedEnrollmentYear"></span> &bull; <span x-text="selectedEnrollmentProvince"></span></p>
                                         </div>
                                         <button @click="pieModalOpen = false"
-                                            class="px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 text-sm">
+                                            class="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 text-sm">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                             Close
                                         </button>
                                     </div>
-                                    <!-- Body: left legend | centered pie | right legend (mirrors normal view) -->
-                                    <div class="flex-1 min-h-0 flex items-center p-8 gap-6 overflow-y-auto custom-scrollbar">
+                                    <!-- Body: mobile = chart top fixed + legend scrollable | desktop = side legends + pie -->
+                                    <div class="flex-1 min-h-0 overflow-hidden flex flex-col sm:flex-row">
 
-                                        <!-- LEFT LEGEND (top half sorted by highest) -->
-                                        <div class="flex-1 min-w-0 space-y-3">
-                                            <template x-for="(item, index) in (() => {
-                                                const entries = Object.entries(disciplineShares || {});
-                                                if (entries.length === 0) return [];
-                                                return entries.sort((a, b) => parseFloat(b[1]) - parseFloat(a[1])).slice(0, Math.ceil(entries.length / 2));
-                                            })()" :key="item[0]">
-                                                <div class="flex items-center gap-2 min-w-0">
-                                                    <div class="w-3 h-3 rounded-full flex-shrink-0"
-                                                        :style="`background-color: ${(() => {
-                                                            const colorPalette = ['rgb(37,99,235)','rgb(220,38,38)','rgb(22,163,74)','rgb(234,179,8)','rgb(249,115,22)','rgb(124,58,237)','rgb(20,184,166)','rgb(236,72,153)','rgb(6,182,212)','rgb(132,204,22)','rgb(96,165,250)','rgb(248,113,113)','rgb(74,222,128)','rgb(250,204,21)','rgb(251,146,60)','rgb(167,139,250)','rgb(45,212,191)','rgb(244,114,182)','rgb(34,211,238)','rgb(163,230,53)'];
-                                                            const sorted = Object.entries(disciplineShares).sort((a,b) => parseFloat(b[1])-parseFloat(a[1]));
-                                                            const idx = sorted.findIndex(e => e[0] === item[0]);
-                                                            return colorPalette[idx % colorPalette.length];
-                                                        })()}`">
-                                                    </div>
-                                                    <div class="min-w-0">
-                                                        <p class="text-sm font-semibold text-slate-800" x-text="formatDisciplineName(item[0])"></p>
-                                                        <p class="text-xs text-slate-500" x-text="parseFloat(item[1]).toFixed(1) + '%'"></p>
-                                                    </div>
+                                        <!-- MOBILE: chart fixed, legend scrollable below — hidden on sm+ -->
+                                        <div class="flex flex-col w-full h-full sm:hidden">
+                                            <div class="flex-shrink-0 flex justify-center items-center py-3 border-b border-slate-100">
+                                                <canvas id="disciplineMarketShareChartModalMobile" width="220" height="220" style="width:220px;height:220px;display:block;"></canvas>
+                                            </div>
+                                            <div class="flex-1 min-h-0 overflow-y-auto px-4 py-3 custom-scrollbar">
+                                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">All Disciplines</p>
+                                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 0.75rem;">
+                                                    <template x-for="(item) in (() => {
+                                                        const e = Object.entries(disciplineShares || {});
+                                                        return e.sort((a,b) => parseFloat(b[1]) - parseFloat(a[1]));
+                                                    })()" :key="'mob-'+item[0]">
+                                                        <div class="flex items-start gap-1.5 min-w-0">
+                                                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-0.5"
+                                                                :style="`background-color:${(()=>{const cp=['rgb(37,99,235)','rgb(220,38,38)','rgb(22,163,74)','rgb(234,179,8)','rgb(249,115,22)','rgb(124,58,237)','rgb(20,184,166)','rgb(236,72,153)','rgb(6,182,212)','rgb(132,204,22)','rgb(96,165,250)','rgb(248,113,113)','rgb(74,222,128)','rgb(250,204,21)','rgb(251,146,60)','rgb(167,139,250)','rgb(45,212,191)','rgb(244,114,182)','rgb(34,211,238)','rgb(163,230,53)'];const s=Object.entries(disciplineShares).sort((a,b)=>parseFloat(b[1])-parseFloat(a[1]));return cp[s.findIndex(e=>e[0]===item[0])%cp.length];})()} `">
+                                                            </div>
+                                                            <div class="min-w-0">
+                                                                <p class="text-xs font-medium text-slate-700 leading-tight" x-text="formatDisciplineName(item[0])"></p>
+                                                                <p class="text-xs text-slate-400" x-text="parseFloat(item[1]).toFixed(1)+'%'"></p>
+                                                            </div>
+                                                        </div>
+                                                    </template>
                                                 </div>
-                                            </template>
+                                            </div>
                                         </div>
 
-                                        <!-- CENTER: Enlarged Doughnut -->
-                                        <div class="flex-shrink-0 flex items-center justify-center" style="width:420px; height:420px;">
-                                            <canvas id="disciplineMarketShareChartModal" width="420" height="420"></canvas>
-                                        </div>
-
-                                        <!-- RIGHT LEGEND (bottom half) -->
-                                        <div class="flex-1 min-w-0 space-y-3">
-                                            <template x-for="(item, index) in (() => {
-                                                const entries = Object.entries(disciplineShares || {});
-                                                if (entries.length === 0) return [];
-                                                return entries.sort((a, b) => parseFloat(b[1]) - parseFloat(a[1])).slice(Math.ceil(entries.length / 2));
-                                            })()" :key="item[0]">
-                                                <div class="flex items-center gap-2 min-w-0">
-                                                    <div class="w-3 h-3 rounded-full flex-shrink-0"
-                                                        :style="`background-color: ${(() => {
-                                                            const colorPalette = ['rgb(37,99,235)','rgb(220,38,38)','rgb(22,163,74)','rgb(234,179,8)','rgb(249,115,22)','rgb(124,58,237)','rgb(20,184,166)','rgb(236,72,153)','rgb(6,182,212)','rgb(132,204,22)','rgb(96,165,250)','rgb(248,113,113)','rgb(74,222,128)','rgb(250,204,21)','rgb(251,146,60)','rgb(167,139,250)','rgb(45,212,191)','rgb(244,114,182)','rgb(34,211,238)','rgb(163,230,53)'];
-                                                            const sorted = Object.entries(disciplineShares).sort((a,b) => parseFloat(b[1])-parseFloat(a[1]));
-                                                            const idx = sorted.findIndex(e => e[0] === item[0]);
-                                                            return colorPalette[idx % colorPalette.length];
-                                                        })()}`">
+                                        <!-- DESKTOP: left legend | pie | right legend — hidden on mobile -->
+                                        <div class="hidden sm:flex flex-1 items-center justify-center gap-6 p-8 overflow-y-auto custom-scrollbar">
+                                            <div class="w-56 shrink-0 space-y-3">
+                                                <template x-for="(item) in (() => {
+                                                    const e = Object.entries(disciplineShares || {});
+                                                    return e.sort((a,b)=>parseFloat(b[1])-parseFloat(a[1])).slice(0, Math.ceil(e.length/2));
+                                                })()" :key="'dl-'+item[0]">
+                                                    <div class="flex items-center gap-2 min-w-0">
+                                                        <div class="w-3 h-3 rounded-full flex-shrink-0"
+                                                            :style="`background-color:${(()=>{const cp=['rgb(37,99,235)','rgb(220,38,38)','rgb(22,163,74)','rgb(234,179,8)','rgb(249,115,22)','rgb(124,58,237)','rgb(20,184,166)','rgb(236,72,153)','rgb(6,182,212)','rgb(132,204,22)','rgb(96,165,250)','rgb(248,113,113)','rgb(74,222,128)','rgb(250,204,21)','rgb(251,146,60)','rgb(167,139,250)','rgb(45,212,191)','rgb(244,114,182)','rgb(34,211,238)','rgb(163,230,53)'];const s=Object.entries(disciplineShares).sort((a,b)=>parseFloat(b[1])-parseFloat(a[1]));return cp[s.findIndex(e=>e[0]===item[0])%cp.length];})()} `">
+                                                        </div>
+                                                        <div class="min-w-0">
+                                                            <p class="text-xs font-semibold text-slate-800 leading-tight" x-text="formatDisciplineName(item[0])"></p>
+                                                            <p class="text-xs text-slate-400" x-text="parseFloat(item[1]).toFixed(1)+'%'"></p>
+                                                        </div>
                                                     </div>
-                                                    <div class="min-w-0">
-                                                        <p class="text-sm font-semibold text-slate-800" x-text="formatDisciplineName(item[0])"></p>
-                                                        <p class="text-xs text-slate-500" x-text="parseFloat(item[1]).toFixed(1) + '%'"></p>
+                                                </template>
+                                            </div>
+                                            <div class="flex-shrink-0 flex items-center justify-center" style="width:420px;height:420px;">
+                                                <canvas id="disciplineMarketShareChartModal" width="420" height="420"></canvas>
+                                            </div>
+                                            <div class="w-56 shrink-0 space-y-3">
+                                                <template x-for="(item) in (() => {
+                                                    const e = Object.entries(disciplineShares || {});
+                                                    return e.sort((a,b)=>parseFloat(b[1])-parseFloat(a[1])).slice(Math.ceil(e.length/2));
+                                                })()" :key="'dr-'+item[0]">
+                                                    <div class="flex items-center gap-2 min-w-0">
+                                                        <div class="w-3 h-3 rounded-full flex-shrink-0"
+                                                            :style="`background-color:${(()=>{const cp=['rgb(37,99,235)','rgb(220,38,38)','rgb(22,163,74)','rgb(234,179,8)','rgb(249,115,22)','rgb(124,58,237)','rgb(20,184,166)','rgb(236,72,153)','rgb(6,182,212)','rgb(132,204,22)','rgb(96,165,250)','rgb(248,113,113)','rgb(74,222,128)','rgb(250,204,21)','rgb(251,146,60)','rgb(167,139,250)','rgb(45,212,191)','rgb(244,114,182)','rgb(34,211,238)','rgb(163,230,53)'];const s=Object.entries(disciplineShares).sort((a,b)=>parseFloat(b[1])-parseFloat(a[1]));return cp[s.findIndex(e=>e[0]===item[0])%cp.length];})()} `">
+                                                        </div>
+                                                        <div class="min-w-0">
+                                                            <p class="text-xs font-semibold text-slate-800 leading-tight" x-text="formatDisciplineName(item[0])"></p>
+                                                            <p class="text-xs text-slate-400" x-text="parseFloat(item[1]).toFixed(1)+'%'"></p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </template>
+                                                </template>
+                                            </div>
                                         </div>
 
                                     </div>
@@ -517,25 +651,25 @@
                         <div 
                             x-show="enrollmentTrendExpanded" 
                             x-transition:enter="transition ease-out duration-300"
-                            x-transition:enter-start="opacity-0 transform -translate-y-4"
-                            x-transition:enter-end="opacity-100 transform translate-y-0"
+                            x-transition:enter-start="opacity-0"
+                            x-transition:enter-end="opacity-100"
                             x-transition:leave="transition ease-in duration-200"
-                            x-transition:leave-start="opacity-100 transform translate-y-0"
-                            x-transition:leave-end="opacity-0 transform -translate-y-4">
+                            x-transition:leave-start="opacity-100"
+                            x-transition:leave-end="opacity-0">
                             
                             <!-- Filters Bar -->
-                            <div class="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200 px-6 py-3 flex items-center justify-between gap-3">
+                            <div class="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                                 <!-- Left: dynamic label -->
-                                <p class="text-xs text-slate-500">
+                                <p class="text-xs text-slate-500 w-full sm:w-auto">
                                     Student enrollment public and private - <span x-text="selectedTrendYear" class="font-semibold text-blue-600"></span>
                                     <span x-show="selectedTrendProvince !== 'Davao Region'" class="text-slate-400"> • </span>
                                     <span x-show="selectedTrendProvince !== 'Davao Region'" x-text="selectedTrendProvince" class="font-semibold text-green-600"></span>
                                 </p>
                                 <!-- Right: filters + expand grouped together -->
-                                <div class="flex items-center gap-3">
-                                    <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
                                         <span class="text-slate-400">📍</span>
-                                        <span class="text-sm text-slate-500 font-medium">Province:</span>
+                                        <span class="text-xs text-slate-500 font-medium hidden sm:inline">Province:</span>
                                         <select 
                                             x-model="selectedTrendProvince"
                                             @change="loadTrendYearsForProvince(selectedTrendProvince).then(() => buildEnrollmentTrendChart())"
@@ -545,9 +679,9 @@
                                             </template>
                                         </select>
                                     </div>
-                                    <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+                                    <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
                                         <span class="text-slate-400">📅</span>
-                                        <span class="text-sm text-slate-500 font-medium">Year:</span>
+                                        <span class="text-xs text-slate-500 font-medium hidden sm:inline">Year:</span>
                                         <select 
                                             x-model="selectedTrendYear"
                                             @change="updateTrendChart()"
@@ -589,6 +723,9 @@
                             <div class="p-6">
                                 <div class="relative w-full border-2 border-slate-200 rounded-lg p-3 bg-white"
                                      :style="`height: ${Math.max(500, trendDataCount * 55)}px`">
+                                    <div x-show="loadingEnrollmentTrend" class="absolute inset-0 bg-white/75 flex items-center justify-center z-10 rounded-lg backdrop-blur-sm">
+                                        <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-500"></div>
+                                    </div>
                                     <canvas id="enrollmentTrendChart" class="w-full h-full"></canvas>
                                 </div>
                             </div>
@@ -607,23 +744,23 @@
                                     style="display:none;">
                                     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] flex flex-col overflow-hidden" style="height:92vh;" @click.stop>
                                         <!-- Modal Header -->
-                                        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 flex-shrink-0">
+                                        <div class="flex flex-wrap items-start justify-between gap-3 px-4 sm:px-6 py-4 border-b border-slate-200 flex-shrink-0">
                                             <div>
-                                                <h2 class="text-xl font-bold text-slate-800">
+                                                <h2 class="text-sm sm:text-xl font-bold text-slate-800">
                                                     Enrollment Trend — <span x-text="selectedTrendProvince"></span> — Expanded View
                                                 </h2>
-                                                <p class="text-sm text-slate-500 mt-0.5">
+                                                <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
                                                     Public vs. Private &bull; <span x-text="selectedTrendProvince"></span> &bull; <span x-text="selectedTrendYear"></span>
                                                 </p>
                                             </div>
-                                            <div class="flex items-center gap-3">
+                                            <div class="flex items-center gap-2 sm:gap-3">
                                                 <!-- Legend inline -->
-                                                <div class="flex items-center gap-4 mr-4">
+                                                <div class="trend-modal-legend flex items-center gap-4 mr-2 sm:mr-4">
                                                     <div class="flex items-center gap-2"><div class="w-5 h-3 bg-blue-600 rounded"></div><span class="text-xs text-slate-600 font-medium">Public</span></div>
                                                     <div class="flex items-center gap-2"><div class="w-5 h-3 bg-sky-400 rounded"></div><span class="text-xs text-slate-600 font-medium">Private</span></div>
                                                 </div>
                                                 <button @click="enrollmentTrendModalOpen = false"
-                                                    class="px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 text-sm">
+                                                    class="px-3 sm:px-5 py-2 sm:py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 text-sm">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                                     Close
                                                 </button>
@@ -690,15 +827,15 @@
                             <div 
                                 x-show="disciplineEnrollmentExpanded" 
                                 x-transition:enter="transition ease-out duration-300"
-                                x-transition:enter-start="opacity-0 transform -translate-y-4"
-                                x-transition:enter-end="opacity-100 transform translate-y-0"
+                                x-transition:enter-start="opacity-0"
+                                x-transition:enter-end="opacity-100"
                                 x-transition:leave="transition ease-in duration-200"
-                                x-transition:leave-start="opacity-100 transform translate-y-0"
-                                x-transition:leave-end="opacity-0 transform -translate-y-4">
+                                x-transition:leave-start="opacity-100"
+                                x-transition:leave-end="opacity-0">
                                 
                                 <!-- Controls Bar -->
                                 <div class="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200 p-4">
-                                    <div class="flex items-center justify-between mb-3">
+                                    <div class="flex flex-wrap items-center justify-between mb-3 gap-2">
                                         <div class="flex items-center gap-3">
                                             <p class="text-xs text-slate-500">
                                                 Student enrollment by discipline - <span x-text="selectedEnrollmentYear" class="font-semibold text-blue-600"></span>
@@ -707,11 +844,11 @@
                                             </p>
                                         </div>
                                         
-                                        <div class="flex items-center gap-3">
+                                        <div class="flex flex-wrap items-center gap-2">
                                             <!-- Province Selector -->
-                                            <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+                                            <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
                                                 <span class="text-slate-400">📍</span>
-                                                <span class="text-sm text-slate-500 font-medium">Province:</span>
+                                                <span class="text-xs text-slate-500 font-medium hidden sm:inline">Province:</span>
                                                 <select
                                                     x-model="selectedEnrollmentProvince"
                                                     @change="loadEnrollmentYearsForProvince(selectedEnrollmentProvince).then(() => loadEnrollmentData())"
@@ -723,9 +860,9 @@
                                                 </select>
                                             </div>
                                             <!-- Year Selector -->
-                                            <div x-show="availableEnrollmentYears.length > 0" class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+                                            <div x-show="availableEnrollmentYears.length > 0" class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
                                                 <span class="text-slate-400">📅</span>
-                                                <span class="text-sm text-slate-500 font-medium">Year:</span>
+                                                <span class="text-xs text-slate-500 font-medium hidden sm:inline">Year:</span>
                                                 <select 
                                                     x-model="selectedEnrollmentYear"
                                                     @change="loadEnrollmentData()"
@@ -776,6 +913,9 @@
                                     <div x-show="enrollmentData.length > 0" 
                                         class="relative w-full border-2 border-slate-200 rounded-lg p-3 bg-white"
                                         :style="`height: ${getEnrollmentChartHeight()}px`">
+                                        <div x-show="loadingDisciplineEnrollment" class="absolute inset-0 bg-white/75 flex items-center justify-center z-10 rounded-lg backdrop-blur-sm">
+                                            <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-500"></div>
+                                        </div>
                                         <div style="height: 100%">
                                             <canvas id="disciplineEnrollmentChart" class="w-full h-full"></canvas>
                                         </div>
@@ -796,21 +936,21 @@
                                         style="display:none;">
                                         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] flex flex-col overflow-hidden" style="height:92vh;" @click.stop>
                                             <!-- Header -->
-                                            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 flex-shrink-0">
+                                            <div class="flex flex-wrap items-start justify-between gap-3 px-4 sm:px-6 py-4 border-b border-slate-200 flex-shrink-0">
                                                 <div>
-                                                    <h2 class="text-xl font-bold text-slate-800">Enrollment by Discipline — Expanded View</h2>
-                                                    <p class="text-sm text-slate-500 mt-0.5">
+                                                    <h2 class="text-sm sm:text-xl font-bold text-slate-800">Enrollment by Discipline — Expanded View</h2>
+                                                    <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
                                                         <span x-text="enrollmentData.length"></span> disciplines &bull; <span x-text="selectedEnrollmentYear"></span>
                                                         <span x-show="selectedEnrollmentProvince !== 'Davao Region'" x-text="' • ' + selectedEnrollmentProvince"></span>
                                                     </p>
                                                 </div>
-                                                <div class="flex items-center gap-3">
-                                                    <div class="flex items-center gap-2 mr-2">
+                                                <div class="flex items-center gap-2 sm:gap-3">
+                                                    <div class="hidden sm:flex items-center gap-2 mr-2">
                                                         <div class="w-20 h-3 rounded" style="background: linear-gradient(to right, #1e3a8a, #bfdbfe);"></div>
                                                         <span class="text-xs text-slate-500">High → Low</span>
                                                     </div>
                                                     <button @click="disciplineEnrollmentModalOpen = false"
-                                                        class="px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 text-sm">
+                                                        class="px-3 sm:px-5 py-2 sm:py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 text-sm">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                                         Close
                                                     </button>
@@ -875,11 +1015,11 @@
                         <div 
                             x-show="licensureExpanded" 
                             x-transition:enter="transition ease-out duration-300"
-                            x-transition:enter-start="opacity-0 transform -translate-y-4"
-                            x-transition:enter-end="opacity-100 transform translate-y-0"
+                            x-transition:enter-start="opacity-0"
+                            x-transition:enter-end="opacity-100"
                             x-transition:leave="transition ease-in duration-200"
-                            x-transition:leave-start="opacity-100 transform translate-y-0"
-                            x-transition:leave-end="opacity-0 transform -translate-y-4">
+                            x-transition:leave-start="opacity-100"
+                            x-transition:leave-end="opacity-0">
                             
                             <!-- Controls Bar -->
                             <div class="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200 p-4">
@@ -895,7 +1035,7 @@
                                     </div>
 
                                     <!-- Filters -->
-                                    <div class="flex items-center gap-3">
+                                    <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                                         <!-- Sector Filter -->
                                         <div class="flex items-center gap-2">
                                             <label class="text-sm font-semibold text-slate-700">Discipline:</label>
@@ -969,6 +1109,9 @@
                                 <div x-show="getFilteredData().length > 0"
                                     class="relative w-full border-2 border-slate-200 rounded-lg p-3 bg-white"
                                     :style="`height: ${getChartHeight()}px`">
+                                    <div x-show="loadingLicensure" class="absolute inset-0 bg-white/75 flex items-center justify-center z-10 rounded-lg backdrop-blur-sm">
+                                        <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-500"></div>
+                                    </div>
                                     <canvas id="licensurePassingChart" class="w-full h-full"></canvas>
                                 </div>
                             </div>
@@ -992,10 +1135,10 @@
                                          @click.stop>
 
                                         <!-- Modal Header -->
-                                        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 flex-shrink-0">
+                                        <div class="flex flex-wrap items-start justify-between gap-3 px-4 sm:px-6 py-4 border-b border-slate-200 flex-shrink-0">
                                             <div>
-                                                <h2 class="text-xl font-bold text-slate-800">Licensure Passing Rates — Expanded View</h2>
-                                                <p class="text-sm text-slate-500 mt-0.5">
+                                                <h2 class="text-sm sm:text-xl font-bold text-slate-800">Licensure Passing Rates — Expanded View</h2>
+                                                <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
                                                     <span x-show="selectedSector !== 'all'" class="mr-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold" x-text="selectedSector"></span>
                                                     <span x-show="selectedSector === 'all'">All Disciplines</span>
                                                     &bull; <span x-text="selectedYear"></span>
@@ -1003,7 +1146,7 @@
                                             </div>
                                             <button
                                                 @click="expanded = false"
-                                                class="ml-4 flex-shrink-0 px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 text-sm">
+                                                class="ml-auto flex-shrink-0 px-3 sm:px-5 py-2 sm:py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 text-sm">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                                 </svg>
@@ -1103,6 +1246,10 @@
             latestEnrollmentTotal: 0,
             latestEnrollmentYear: null,
             loadingLatestEnrollment: false,
+            loadingPieChart: false,
+            loadingEnrollmentTrend: false,
+            loadingDisciplineEnrollment: false,
+            loadingLicensure: false,
             
             
             // === INITIALIZATION FLAGS === (PREVENTS INFINITE RECURSION)
@@ -1128,8 +1275,8 @@
                 await this.loadEnrollmentProvinces(); // Load provinces first so selectedEnrollmentProvince is valid
                 await this.loadEnrollmentYearsForProvince(this.selectedEnrollmentProvince); // Years filtered by default province
                 await this.loadEnrollmentData();
-                await this.loadTrendYears(); // Load trend years from API
                 await this.loadTrendProvinces(); // Load trend provinces from API
+                await this.loadTrendYearsForProvince(this.selectedTrendProvince); // Load trend years filtered by default province (Davao City)
                 
                 // NEW: Load graduation rate data (for top metric cards)
                 await this.loadGraduationRateData();
@@ -1270,32 +1417,43 @@
             async loadLatestEnrollmentTotal() {
                 this.loadingLatestEnrollment = true;
                 try {
-                    // Get the most recent available enrollment year
+                    // Get all available enrollment years
                     const yearsResponse = await fetch('/api/discipline-enrollment/meta/years');
                     const years = await yearsResponse.json();
                     if (!years || years.length === 0) return;
 
-                    const latestYear = years[0];
-                    this.latestEnrollmentYear = latestYear;
+                    // Walk through years newest-first, find the latest year where
+                    // BOTH conditions are true:
+                    //   1. The year exists in the years list (API has data for it)
+                    //   2. Davao Region / Total row actually exists for that year
+                    let resolvedYear = null;
+                    let resolvedTotal = 0;
 
-                    // Use Davao Region / Total row as the authoritative region-wide figure
-                    const result = await fetch(`/api/discipline-enrollment/check/${encodeURIComponent(latestYear)}?province=Davao+Region&institution_type=Total`);
-                    if (result.ok) {
-                        const raw = await result.json();
-                        if (raw.exists && raw.data) {
-                            this.latestEnrollmentTotal = parseInt(raw.data.grand_total) || 0;
-                            return;
+                    for (const year of years) {
+                        const result = await fetch(
+                            `/api/discipline-enrollment/check/${encodeURIComponent(year)}?province=Davao+Region&institution_type=Total`
+                        );
+                        if (result.ok) {
+                            const raw = await result.json();
+                            // API returns disciplines nested under raw.data.disciplines
+                            if (raw.exists && raw.data && raw.data.disciplines) {
+                                const total = Object.values(raw.data.disciplines)
+                                    .reduce((sum, val) => sum + (parseInt(val) || 0), 0);
+                                if (total > 0) {
+                                    resolvedYear  = year;
+                                    resolvedTotal = total;
+                                    break; // Found the most recent valid year — stop
+                                }
+                            }
                         }
                     }
-                    // Fallback: sum grand_total of all specific province rows
-                    const fallback = await fetch(`/api/discipline-enrollment/?academic_year=${encodeURIComponent(latestYear)}`);
-                    if (fallback.ok) {
-                        const rows = await fallback.json();
-                        const total = rows
-                            .filter(r => r.province !== 'Davao Region')
-                            .reduce((sum, r) => sum + (parseInt(r.grand_total) || 0), 0);
-                        this.latestEnrollmentTotal = total;
+
+                    if (resolvedYear) {
+                        this.latestEnrollmentYear  = resolvedYear;
+                        this.latestEnrollmentTotal = resolvedTotal;
                     }
+                    // If nothing found at all, card stays at 0 / 'No data' — that's fine
+
                 } catch (error) {
                     // silently fail — card will show 0
                 } finally {
@@ -1419,6 +1577,7 @@
             },
 
             async loadData() {
+                this.loadingLicensure = true;
                 try {
                     const response = await fetch(`/api/licensure-rates/year/${this.selectedYear}`);
                     if (!response.ok) {
@@ -1433,6 +1592,8 @@
                     this.allData = [];
                     this.sectors = [];
                     alert('Failed to load data from API. Please check:\n1. API endpoint is correct\n2. Server is running\n3. API returns data in correct format');
+                } finally {
+                    this.loadingLicensure = false;
                 }
             },
 
@@ -1591,6 +1752,7 @@
                 }
             },
             async loadEnrollmentData() {
+                this.loadingDisciplineEnrollment = true;
                 try {
                     // Fetch aggregated data based on selected province for both Private and Public
                     const province = this.selectedEnrollmentProvince;
@@ -1721,6 +1883,8 @@
                 } catch (error) {
                     // removed error
                     this.enrollmentData = [];
+                } finally {
+                    this.loadingDisciplineEnrollment = false;
                 }
             },
 
@@ -1930,8 +2094,8 @@
                                             padding: 8
                                         },
                                         // Match Licensure chart spacing
-                                        categoryPercentage: 0.9,  // Thinner bars with more space
-                                        barPercentage: 0.95,        // Bar width within category
+                                        categoryPercentage: 0.6,  // Thinner bars with more space
+                                        barPercentage: 0.7,        // Bar width within category
                                         title: {
                                             display: true,
                                             text: 'DISCIPLINES',
@@ -2100,13 +2264,13 @@
                             y: {
                                 grid: { display: false },
                                 title: {
-                                    display: true,
+                                    display: window.innerWidth >= 640,
                                     text: 'PROFESSIONS',
                                     font: { size: 12, weight: 'bold' },
                                     color: '#475569',
                                     padding: { bottom: 8 }
                                 },
-                                ticks: { font: { size: 13, weight: 'bold' }, color: '#1e293b', autoSkip: false },
+                                ticks: { font: { size: window.innerWidth < 640 ? 10 : 12, weight: 'bold' }, color: '#1e293b', autoSkip: false },
                                 categoryPercentage: 0.6,
                                 barPercentage: 0.7,
                                 maxBarThickness: 32
@@ -2169,9 +2333,9 @@
                             },
                             y: {
                                 stacked: true, grid: { display: false },
-                                title: { display: true, text: 'DISCIPLINE', font: { size: 12, weight: 'bold' }, color: '#475569' },
-                                ticks: { font: { size: 13, weight: 'bold' }, color: '#1e293b', autoSkip: false },
-                                categoryPercentage: 0.7, barPercentage: 0.85
+                                title: { display: window.innerWidth >= 640, text: 'DISCIPLINE', font: { size: 12, weight: 'bold' }, color: '#475569' },
+                                ticks: { font: { size: window.innerWidth < 640 ? 10 : 12, weight: 'bold' }, color: '#1e293b', autoSkip: false },
+                                categoryPercentage: 0.6, barPercentage: 0.7
                             }
                         }
                     }
@@ -2217,8 +2381,8 @@
                             },
                             y: {
                                 grid: { display: false },
-                                title: { display: true, text: 'DISCIPLINE', font: { size: 12, weight: 'bold' }, color: '#475569' },
-                                ticks: { font: { size: 13, weight: 'bold' }, color: '#1e293b', autoSkip: false },
+                                title: { display: window.innerWidth >= 640, text: 'DISCIPLINE', font: { size: 12, weight: 'bold' }, color: '#475569' },
+                                ticks: { font: { size: window.innerWidth < 640 ? 10 : 12, weight: 'bold' }, color: '#1e293b', autoSkip: false },
                                 categoryPercentage: 0.9, barPercentage: 0.95
                             }
                         }
@@ -2228,7 +2392,9 @@
 
             // ── Pie / Doughnut Modal Chart ─────────────────────────────────
             renderPieModal() {
-                const ctx = document.getElementById('disciplineMarketShareChartModal');
+                const isMobile = window.innerWidth < 640;
+                const canvasId = isMobile ? 'disciplineMarketShareChartModalMobile' : 'disciplineMarketShareChartModal';
+                const ctx = document.getElementById(canvasId);
                 if (!ctx) return;
                 const existing = Chart.getChart(ctx);
                 if (existing) existing.destroy();
@@ -2532,25 +2698,17 @@
                                         }
                                     },
                                     y: {
-                                        grid: { 
-                                            display: false 
-                                        },
+                                        grid: { display: false },
                                         ticks: {
-                                            font: { 
-                                                size: 14, 
-                                                weight: 'bold' 
-                                            },
+                                            font: { size: window.innerWidth < 640 ? 10 : 13, weight: 'bold' },
                                             color: '#1e293b',
                                             autoSkip: false,
                                             padding: 8
                                         },
                                         title: {
-                                            display: true,
+                                            display: window.innerWidth >= 640,
                                             text: 'PROFESSIONS',
-                                            font: { 
-                                                size: 15, 
-                                                weight: 'bold' 
-                                            },
+                                            font: { size: 13, weight: 'bold' },
                                             color: '#1e293b',
                                             padding: { bottom: 10 }
                                         }
@@ -2714,6 +2872,7 @@
                     this.enrollmentTrendChart = null;
                 }
 
+                this.loadingEnrollmentTrend = true;
                 try {
                     const response = await fetch(
                         `/api/discipline-enrollment/trend?year=${encodeURIComponent(this.selectedTrendYear)}&province=${encodeURIComponent(this.selectedTrendProvince)}`
@@ -2830,18 +2989,18 @@
                                         stacked: true,
                                         grid: { display: false },
                                         ticks: {
-                                            font: { size: 14, weight: 'bold' },
+                                            font: { size: window.innerWidth < 640 ? 10 : 13, weight: 'bold' },
                                             color: '#1e293b',
                                             autoSkip: false,
                                             padding: 8
                                         },
                                         // ✅ Same thickness as Enrollment by Discipline
                                         categoryPercentage: 0.9,
-                                        barPercentage: 0.95,
+                                        barPercentage: 0.80,
                                         title: {
-                                            display: true,
+                                            display: window.innerWidth >= 640,
                                             text: 'DISCIPLINES',
-                                            font: { size: 15, weight: 'bold' },
+                                            font: { size: 13, weight: 'bold' },
                                             color: '#1e293b',
                                             padding: { bottom: 10 }
                                         }
@@ -2882,6 +3041,8 @@
 
                 } catch (error) {
                     // Fall back silently
+                } finally {
+                    this.loadingEnrollmentTrend = false;
                 }
             },
 
@@ -2898,6 +3059,7 @@
                     return;
                 }
 
+                this.loadingPieChart = true;
                 try {
                     // removed debug log
                     
@@ -2918,6 +3080,8 @@
                     this.disciplineShares = {};
                     // Still update the chart even with zero data
                     this.updateDisciplineMarketShareChart();
+                } finally {
+                    this.loadingPieChart = false;
                 }
             },
 
@@ -3290,8 +3454,8 @@
                                     padding: 8
                                 },
                                 // Make bars wider (similar to Discipline Enrollment)
-                                categoryPercentage: 0.9,  // Use 90% of space = less gap
-                                barPercentage: 0.95        // Bar is 95% of category = wider bars
+                                categoryPercentage: 0.6,  // Use 90% of space = less gap
+                                barPercentage: 0.7        // Bar is 95% of category = wider bars
                             }
                         }
                     },

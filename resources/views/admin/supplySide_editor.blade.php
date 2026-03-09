@@ -65,7 +65,7 @@
         <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 shadow-sm">
             <h2 class="text-xl font-bold text-slate-800">Supply Side Analysis Editor • Admin</h2>
             <div class="flex items-center gap-4">
-                <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">📅 Region XI • {{ date('Y') }}</div>
+                <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • {{ date('Y') }}</div>
                 <div class="w-10 h-10 bg-amber-100 rounded-full border-2 border-amber-500"></div>
             </div>
         </header>
@@ -79,7 +79,7 @@
 
                         <!-- Province Select -->
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">📍 Province</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> Province</label>
                             <select
                                 x-model="selectedProvince"
                                 @change="await loadYears(); await loadData()"
@@ -92,7 +92,7 @@
 
                         <!-- Academic Year Select -->
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">📖 Academic Year</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> Academic Year</label>
                             <select
                                 x-model="selectedAcademicYear"
                                 @change="loadData()"
@@ -117,7 +117,7 @@
                         <!-- Pending review -->
                         <span x-show="pendingSubmission"
                               class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
-                            🕐 Pending review
+                            <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Pending review
                             <span x-show="pendingSubmission?.submitted_at" class="font-normal text-amber-600">
                                 — submitted <span x-text="formatDate(pendingSubmission?.submitted_at)"></span>
                             </span>
@@ -126,7 +126,7 @@
                         <!-- Published -->
                         <span x-show="publishedExists && !pendingSubmission"
                               class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                            ✅ Published
+                            <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Published
                         </span>
                     </div>
                 </div>
@@ -157,17 +157,75 @@
                             <div class="flex gap-2">
                                 <button
                                     @click="loadDefaultText()"
-                                    :disabled="loading"
-                                    class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition disabled:opacity-50">
+                                    :disabled="loading || !!pendingSubmission"
+                                    class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
                                     Reset to Default
                                 </button>
-                                <button
-                                    @click="showConfirmModal = true"
-                                    :disabled="loading || !hasChanges"
-                                    class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition disabled:opacity-50"
-                                    :class="{'bg-green-600 hover:bg-green-700': hasChanges}">
-                                    📤 Submit for Review
-                                </button>
+
+                                <!-- Pending state: locked button -->
+                                <template x-if="pendingSubmission && !publishedExists">
+                                    <button disabled
+                                        class="px-4 py-2 bg-amber-100 text-amber-700 border border-amber-300 rounded-lg font-medium cursor-not-allowed flex items-center gap-2">
+                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                        </svg>
+                                        Awaiting Review
+                                    </button>
+                                </template>
+
+                                <!-- Published state: locked button -->
+                                <template x-if="publishedExists">
+                                    <button disabled
+                                        class="px-4 py-2 bg-green-100 text-green-700 border border-green-300 rounded-lg font-medium cursor-not-allowed flex items-center gap-2">
+                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Already Published
+                                    </button>
+                                </template>
+
+                                <!-- Normal: can submit -->
+                                <template x-if="!pendingSubmission && !publishedExists">
+                                    <button
+                                        @click="showConfirmModal = true"
+                                        :disabled="loading || !hasChanges"
+                                        class="px-4 py-2 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                        :class="hasChanges ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-400'">
+                                        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg> Submit for Review
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Pending Banner -->
+                        <div x-show="pendingSubmission && !publishedExists"
+                             class="mb-5 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
+                            <div class="flex-shrink-0 w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-amber-800 text-sm">Submission Pending Review</p>
+                                <p class="text-xs text-amber-700 mt-0.5">
+                                    This analysis was submitted on <strong x-text="formatDate(pendingSubmission?.submitted_at)"></strong> and is awaiting the statistician's review. Only one submission is allowed per province and academic year.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Published Banner -->
+                        <div x-show="publishedExists"
+                             class="mb-5 flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4">
+                            <div class="flex-shrink-0 w-9 h-9 rounded-full bg-green-100 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-green-800 text-sm">Analysis Already Published</p>
+                                <p class="text-xs text-green-700 mt-0.5">
+                                    This analysis for <strong x-text="selectedProvince"></strong> — <strong x-text="selectedAcademicYear"></strong> has been reviewed and published on <strong x-text="publishedUpdatedAt"></strong>. It is now live on the public page.
+                                </p>
                             </div>
                         </div>
 
@@ -178,17 +236,19 @@
 
                         <!-- Quill Editor -->
                         <div x-show="!loading">
-                            <div id="quillEditor" style="height: 400px; max-height: 500px; overflow-y: auto;"></div>
+                            <div id="quillEditor"
+                                 :class="(pendingSubmission || publishedExists) ? 'opacity-60 pointer-events-none select-none' : ''"
+                                 style="height: 400px; max-height: 500px; overflow-y: auto;"></div>
                             <input type="hidden" x-model="analysisText">
                             <div class="mt-2 flex items-center justify-between text-xs text-slate-500">
                                 <span><span x-text="getWordCount()"></span> words</span>
-                                <span x-show="hasChanges" class="text-orange-600 font-semibold">⚠️ Unsaved changes</span>
+                                <span x-show="hasChanges && !pendingSubmission && !publishedExists" class="text-orange-600 font-semibold"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Unsaved changes</span>
                             </div>
                         </div>
 
                         <!-- Preview Section -->
                         <div x-show="!loading" class="mt-6 pt-6 border-t border-slate-200">
-                            <h4 class="text-sm font-bold text-slate-700 mb-3">📄 Preview (How it will appear on public page)</h4>
+                            <h4 class="text-sm font-bold text-slate-700 mb-3"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Preview (How it will appear on public page)</h4>
                             <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
                                 <div class="flex items-start gap-3 mb-4">
                                     <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 rounded-xl shadow-lg">
@@ -236,7 +296,7 @@
                                         <button
                                             @click="copyFromPublished()"
                                             class="mt-3 w-full px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition">
-                                            📋 Copy to editor
+                                            <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg> Copy to editor
                                         </button>
                                     </div>
                                 </template>
@@ -305,7 +365,7 @@
                     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" @click.stop>
                         <div class="flex items-start gap-4 mb-4">
                             <div class="flex-shrink-0 w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                                <span class="text-2xl">📤</span>
+                                <span><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg></span>
                             </div>
                             <div class="flex-1">
                                 <h3 class="text-lg font-bold text-slate-800 mb-1">Submit for Review?</h3>
@@ -336,7 +396,7 @@
                      class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
                      @click.self="showSuccessModal = false">
                     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6 text-center" @click.stop>
-                        <div class="text-5xl mb-4">🎉</div>
+                        <div class="mb-4"><svg class="w-14 h-14 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
                         <h3 class="text-xl font-bold text-slate-800 mb-2">Submitted Successfully!</h3>
                         <p class="text-sm text-slate-600 mb-6">
                             Your analysis has been sent to the statistician. They will review, edit if needed, and publish it to the public Supply Side page.
@@ -389,13 +449,13 @@
                 <!-- Error Toast -->
                 <div x-show="showError" x-transition @click="showError = false"
                      class="fixed bottom-6 right-6 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg cursor-pointer z-50">
-                    ❌ <span x-text="errorMessage"></span>
+                    <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span x-text="errorMessage"></span>
                 </div>
 
                 <!-- Success Toast -->
                 <div x-show="showSuccessToast" x-transition @click="showSuccessToast = false"
                      class="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg cursor-pointer z-50">
-                    ✅ <span x-text="successToastMessage"></span>
+                    <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span x-text="successToastMessage"></span>
                 </div>
 
             </div><!-- end x-data -->
@@ -613,6 +673,11 @@
                 // ── Actions ──────────────────────────────────────
 
                 async confirmSubmit() {
+                    // Guard: should never reach here, but safety net
+                    if (this.pendingSubmission || this.publishedExists) {
+                        this.showConfirmModal = false;
+                        return;
+                    }
                     this.showConfirmModal = false;
                     this.loading = true;
                     try {

@@ -46,7 +46,13 @@
             </div>
         </div>
 
-      </div>
+        <!-- Collapsed state — just logo centered -->
+        <div x-show="!sidebarExpanded" class="flex justify-center">
+            <div class="w-9 h-9 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl p-1.5 shadow-sm">
+                <img src="{{ asset('images/dole_logo.png') }}" alt="DOLE Logo" class="w-full h-full object-contain">
+            </div>
+        </div>
+    </div>
 
     <!-- Navigation -->
     <nav class="flex-1 px-2 py-4 space-y-0.5 overflow-visible">
@@ -58,12 +64,12 @@
 
             <!-- Regional Statistics -->
             <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.dashboard') }}"
+                <a href="{{ route('admin.job.Market.Demands.Form') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.dashboard')
+                        {{ request()->routeIs('admin.job.Market.Demands.Form')
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.dashboard') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.job.Market.Demands.Form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5h4.5v7.5H3zM9.75 9h4.5v12h-4.5zM16.5 4.5H21V21h-4.5z"/>
                     </svg>

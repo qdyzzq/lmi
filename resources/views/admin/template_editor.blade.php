@@ -32,7 +32,7 @@
                         <div class="border-b border-slate-200 px-8 py-4 flex items-center justify-between">
                             <div class="flex items-center gap-4">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xl">✨</span>
+                                    <span><svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg></span>
                                     <h3 class="text-blue-600 font-bold text-lg">
                                         Analysis for <span x-text="currentPeriodLabel"></span>
                                     </h3>
@@ -80,6 +80,32 @@
                             </div>
                         </div>
 
+                        <!-- Status Badge Row -->
+                        <div class="px-8 py-3 border-b border-slate-100 flex items-center gap-3">
+                            <span class="text-sm text-slate-500 font-medium">Current status:</span>
+
+                            <!-- No submission yet -->
+                            <span x-show="!pendingSubmission && !publishedExists"
+                                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+                                ⬜ No submission yet
+                            </span>
+
+                            <!-- Pending review -->
+                            <span x-show="pendingSubmission && !publishedExists"
+                                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                                <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Pending review
+                                <span x-show="pendingSubmission?.submitted_at" class="font-normal text-amber-600">
+                                    — submitted <span x-text="pendingSubmission?.submitted_at ? new Date(pendingSubmission.submitted_at).toLocaleString() : ''"></span>
+                                </span>
+                            </span>
+
+                            <!-- Published -->
+                            <span x-show="publishedExists"
+                                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Published
+                            </span>
+                        </div>
+
                         <!-- Card Body -->
                         <div class="p-8">
 
@@ -90,7 +116,8 @@
                         </div>
 
                         <!-- EDITOR -->
-                        <div x-show="!loading && viewMode === 'edit'" class="space-y-8">
+                        <div x-show="!loading && viewMode === 'edit'" class="space-y-8"
+                             :class="(pendingSubmission || publishedExists) ? 'opacity-60 pointer-events-none select-none' : ''">
 
                             <!-- Placeholder Toolbar -->
                             <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 flex-wrap">
@@ -135,7 +162,7 @@
                             <!-- No Preview Data Warning -->
                             <div x-show="!hasPreviewData && !loadingPreview" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                                 <div class="flex items-start gap-3">
-                                    <span class="text-yellow-600 text-xl">⚠️</span>
+                                    <span><svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></span>
                                     <div>
                                         <h4 class="font-semibold text-yellow-800 mb-1">No Data Available</h4>
                                         <p class="text-sm text-yellow-700">
@@ -208,20 +235,78 @@
                             </div>
                         </div>
 
+                        <!-- Pending Banner -->
+                        <div x-show="pendingSubmission && !publishedExists"
+                             class="mb-5 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
+                            <div class="flex-shrink-0 w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-amber-800 text-sm">Submission Pending Review</p>
+                                <p class="text-xs text-amber-700 mt-0.5">
+                                    These templates were submitted on <strong x-text="pendingSubmission?.submitted_at ? new Date(pendingSubmission.submitted_at).toLocaleString() : '—'"></strong> and are awaiting the statistician's review. Only one submission is allowed per year and month.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Published Banner -->
+                        <div x-show="publishedExists"
+                             class="mb-5 flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4">
+                            <div class="flex-shrink-0 w-9 h-9 rounded-full bg-green-100 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-green-800 text-sm">Already Published</p>
+                                <p class="text-xs text-green-700 mt-0.5">
+                                    Templates for this period have already been published. Submission is permanently locked for this year and month.
+                                </p>
+                            </div>
+                        </div>
+
                         <!-- Footer — Submit/Reset buttons -->
                         <div class="mt-12 pt-6 border-t border-slate-100 flex justify-between items-center" x-show="!loading">
                             <div class="text-sm">
-                                <span x-show="hasValidationErrors()" class="text-red-500 font-medium">⚠️ Fix errors before submitting</span>
-                                <span x-show="!hasValidationErrors()" class="text-green-600 font-medium">✓ All templates valid</span>
+                                <span x-show="hasValidationErrors()" class="text-red-500 font-medium"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Fix errors before submitting</span>
+                                <span x-show="!hasValidationErrors()" class="text-green-600 font-medium"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> All templates valid</span>
                             </div>
                             <div class="flex gap-3" x-show="viewMode === 'edit'">
-                                <button @click="resetAll()" class="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition font-semibold">Reset Defaults</button>
-                                <button
-                                    @click="saveAll()"
-                                    :disabled="saving || hasValidationErrors()"
-                                    class="px-8 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <span x-text="saving ? 'Submitting...' : '📬 Submit for Review'"></span>
-                                </button>
+                                <button @click="resetAll()" :disabled="!!(pendingSubmission || publishedExists)" class="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed">Reset Defaults</button>
+
+                                <!-- Pending state: locked -->
+                                <template x-if="pendingSubmission && !publishedExists">
+                                    <button disabled
+                                        class="px-8 py-2 bg-amber-100 text-amber-700 border border-amber-300 rounded-lg font-medium cursor-not-allowed flex items-center gap-2">
+                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                        </svg>
+                                        Awaiting Review
+                                    </button>
+                                </template>
+
+                                <!-- Published state: permanently locked -->
+                                <template x-if="publishedExists">
+                                    <button disabled
+                                        class="px-8 py-2 bg-green-100 text-green-700 border border-green-300 rounded-lg font-medium cursor-not-allowed flex items-center gap-2">
+                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Already Published
+                                    </button>
+                                </template>
+
+                                <!-- Normal: can submit -->
+                                <template x-if="!pendingSubmission && !publishedExists">
+                                    <button
+                                        @click="saveAll()"
+                                        :disabled="saving || hasValidationErrors()"
+                                        class="px-8 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <span x-html="saving ? 'Submitting...' : '<svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg> Submit for Review</span>
+                                    </button>
+                                </template>
                             </div>
                         </div>
                         </div><!-- end card body -->
@@ -252,19 +337,74 @@
 
             <!-- Submit Modal -->
             <div x-show="showSaveModal" x-cloak class="fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
-                <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-                    <div class="text-center">
-                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-amber-100 mb-4">
-                            <svg class="h-8 w-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                            </svg>
+                <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full mx-4 max-h-[90vh] flex flex-col">
+
+                    <!-- Modal header -->
+                    <div class="p-6 border-b border-gray-200 flex-shrink-0">
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-full bg-amber-100 flex-shrink-0">
+                                <svg class="h-6 w-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Submit for Review</h3>
+                                <p class="text-sm text-gray-500 mt-0.5" x-text="templateDiffs.length === 0 ? 'No changes detected — submitting as-is.' : templateDiffs.length + ' template' + (templateDiffs.length > 1 ? 's' : '') + ' edited for ' + currentPeriodLabel"></p>
+                            </div>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3">Submit for Review?</h3>
-                        <p class="text-sm text-gray-600 mb-6">Submit all template changes for <span x-text="currentPeriodLabel" class="font-semibold"></span> to the statistician for review and publishing.</p>
-                        <div class="flex gap-3">
-                            <button @click="showSaveModal = false" class="flex-1 px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium border border-gray-300 rounded-lg transition">Cancel</button>
-                            <button @click="confirmSave()" class="flex-1 px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition">Yes, Submit</button>
-                        </div>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="overflow-y-auto flex-1 px-6 py-5 space-y-4">
+
+                        <!-- No changes: plain confirm -->
+                        <template x-if="templateDiffs.length === 0">
+                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+                                <span><svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+                                <div>
+                                    <p class="font-semibold text-blue-900 text-sm">No changes made</p>
+                                    <p class="text-sm text-blue-700 mt-0.5">You haven't edited any templates. The existing content for <strong x-text="currentPeriodLabel"></strong> will be submitted to the statistician as-is.</p>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Has changes: diff cards -->
+                        <template x-if="templateDiffs.length > 0">
+                            <div class="space-y-4">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Changes Summary</p>
+                                <template x-for="diff in templateDiffs" :key="diff.key">
+                                    <div class="rounded-xl border overflow-hidden" :class="diff.isNew ? 'border-green-200' : 'border-amber-200'">
+                                        <!-- Field label bar -->
+                                        <div class="flex items-center gap-2 px-4 py-2" :class="diff.isNew ? 'bg-green-50' : 'bg-amber-50'">
+                                            <span class="text-sm font-bold" :class="diff.isNew ? 'text-green-700' : 'text-amber-700'" x-text="diff.label"></span>
+                                            <span class="ml-auto text-[11px] font-semibold px-2 py-0.5 rounded-full" :class="diff.isNew ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'" x-text="diff.isNew ? '+ New content' : '~ Edited'"></span>
+                                        </div>
+
+                                        <!-- Before (only shown when editing existing) -->
+                                        <template x-if="!diff.isNew">
+                                            <div class="px-4 py-3 border-t border-slate-100 bg-red-50/40">
+                                                <p class="text-[10px] font-bold uppercase tracking-widest text-red-400 mb-1">Before</p>
+                                                <p class="text-xs text-slate-500 leading-relaxed font-mono whitespace-pre-wrap" x-text="diff.before"></p>
+                                            </div>
+                                        </template>
+
+                                        <!-- After -->
+                                        <div class="px-4 py-3 border-t border-slate-100 bg-green-50/40">
+                                            <p class="text-[10px] font-bold uppercase tracking-widest text-green-500 mb-1" x-text="diff.isNew ? 'Content' : 'After'"></p>
+                                            <p class="text-xs text-slate-700 leading-relaxed font-mono whitespace-pre-wrap" x-text="diff.after"></p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3">
+                        <button @click="showSaveModal = false" class="flex-1 px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium border border-gray-300 rounded-lg transition">Cancel</button>
+                        <button @click="confirmSave()" class="flex-1 px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition">
+                            <span x-html="templateDiffs.length === 0 ? '<svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg> Submit As-Is' : '<svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg> Submit Changes'"></span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -322,6 +462,10 @@
 
                 // ── Modals ──
                 showResetModal:   false,
+                // ── Submission state ──
+                pendingSubmission: null,   // { submitted_by, submitted_at } or null
+                publishedExists:   false,  // true if already published for this year+month
+
                 showSaveModal:    false,
                 showSuccessModal: false,
                 showErrorModal:   false,
@@ -338,6 +482,24 @@
                     lfpr:            ''
                 },
 
+                // Snapshot of templates as loaded from server (for diff)
+                originalTemplates: {
+                    employment:      '',
+                    underemployment: '',
+                    unemployment:    '',
+                    lfpr:            ''
+                },
+
+                fieldLabels: {
+                    employment:      'Employment Rate',
+                    underemployment: 'Underemployment Rate',
+                    unemployment:    'Unemployment Rate',
+                    lfpr:            'Participation Rate'
+                },
+
+                // Diff result populated before opening submit modal
+                templateDiffs: [],
+
                 validation: {
                     employment:      { valid: true, missing: [] },
                     underemployment: { valid: true, missing: [] },
@@ -346,11 +508,11 @@
                 },
 
                 allPlaceholders: [
-                    { key: '{current_period}',   icon: '📅' },
-                    { key: '{previous_period}',  icon: '📅' },
-                    { key: '{current_rate}',     icon: '📊' },
-                    { key: '{previous_rate}',    icon: '📊' },
-                    { key: '{trend}',            icon: '📈' }
+                    { key: '{current_period}',   icon: 'cal' },
+                    { key: '{previous_period}',  icon: 'cal' },
+                    { key: '{current_rate}',     icon: 'chart' },
+                    { key: '{previous_rate}',    icon: 'chart' },
+                    { key: '{trend}',            icon: 'trend' }
                 ],
 
                 requiredPlaceholders: [
@@ -400,10 +562,14 @@
                                     this.templates[k] = json.data[k].template_text || '';
                                 }
                             });
+                            // Snapshot originals for diff on submit
+                            Object.keys(this.templates).forEach(k => {
+                                this.originalTemplates[k] = this.templates[k];
+                            });
                             this.validateAll();
 
-                            // Load preview data
-                            await this.loadPreviewData();
+                            // Load preview data and submission status
+                            await Promise.all([this.loadPreviewData(), this.loadSubmissionStatus()]);
                         }
                     } catch (e) {
                         console.error('Load error:', e);
@@ -418,6 +584,22 @@
                 // Year changed → reload everything
                 async onYearChange() {
                     await this.loadTemplates();
+                },
+
+                // ── Load pending/published status for current year+month ──
+                async loadSubmissionStatus() {
+                    try {
+                        const params = new URLSearchParams({ year: this.selectedYear, month: this.selectedMonth });
+                        const res  = await fetch('/api/analysis-templates/pending-show?' + params.toString());
+                        if (!res.ok) return;
+                        const json = await res.json();
+                        if (json.success) {
+                            this.pendingSubmission = json.pending || null;
+                            this.publishedExists   = json.published_exists || false;
+                        }
+                    } catch (e) {
+                        console.error('Error loading submission status:', e);
+                    }
                 },
 
                 // ── Load real preview data from database ──
@@ -555,6 +737,23 @@
                         this.showErrorModal = true;
                         return;
                     }
+
+                    // Build diff
+                    this.templateDiffs = [];
+                    Object.keys(this.templates).forEach(k => {
+                        const before = (this.originalTemplates[k] || '').trim();
+                        const after  = (this.templates[k] || '').trim();
+                        if (before !== after) {
+                            this.templateDiffs.push({
+                                key:   k,
+                                label: this.fieldLabels[k] || k,
+                                before,
+                                after,
+                                isNew: before === ''
+                            });
+                        }
+                    });
+
                     this.showSaveModal = true;
                 },
 
@@ -580,7 +779,13 @@
                         const json = await r.json();
 
                         if (json.success) {
-                            this.successTitle   = '📬 Submitted for Review!';
+                            // Update snapshot so subsequent edits diff correctly
+                            Object.keys(this.templates).forEach(k => {
+                                this.originalTemplates[k] = this.templates[k];
+                            });
+                            this.templateDiffs = [];
+                            this.pendingSubmission = { submitted_by: 'Admin', submitted_at: new Date().toISOString() };
+                            this.successTitle   = 'Submitted for Review!';
                             this.successMessage = `Your templates for ${this.currentPeriodLabel} have been submitted. The statistician will review and publish them.`;
                             this.showSuccessModal = true;
                         } else {

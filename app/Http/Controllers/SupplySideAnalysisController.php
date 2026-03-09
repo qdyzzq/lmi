@@ -294,6 +294,20 @@ class SupplySideAnalysisController extends Controller
         try {
             DB::beginTransaction();
 
+            // Block submission if a published record already exists for this province + year
+            $alreadyPublished = SupplySideAnalysis::where('province', $request->province)
+                ->where('academic_year', $request->academic_year)
+                ->where('status', 'published')
+                ->exists();
+
+            if ($alreadyPublished) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'An analysis for this province and academic year has already been published. Submission is no longer allowed.',
+                ], 403);
+            }
+
             // Remove any existing pending draft for this province + year
             SupplySideAnalysis::where('province', $request->province)
                 ->where('academic_year', $request->academic_year)
@@ -494,5 +508,40 @@ class SupplySideAnalysisController extends Controller
             ]);
 
         return response()->json(['success' => true, 'data' => $pending]);
+    }
+    // ─── Statistician: All approved (published) records ──
+
+    public function allApproved()
+    {
+        try {
+            $approved = SupplySideAnalysis::where('status', 'published')
+                ->where('is_active', true)
+                ->orderByDesc('updated_at')
+                ->get()
+                ->map(fn($a) => [
+                    'id'            => $a->id,
+                    'province'      => $a->province,
+                    'academic_year' => $a->academic_year,
+                    'analysis_text' => $a->analysis_text,
+                    'submitted_by'  => $a->submitted_by,
+                    'approved_at'   => $a->updated_at?->toDateTimeString(),
+                    'is_active'     => $a->is_active,
+                ]);
+
+            return response()->json(['success' => true, 'data' => $approved]);
+
+        } catch (\Exception $e) {
+            Log::error('SupplySideAnalysisController@allApproved', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    // ─── Statistician: Approved count for badge ───────────
+
+    public function approvedCount()
+    {
+        $count = SupplySideAnalysis::where('status', 'published')->count();
+
+        return response()->json(['success' => true, 'count' => $count]);
     }
 }

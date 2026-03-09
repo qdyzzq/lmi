@@ -50,30 +50,177 @@
     <div class="flex-1 flex flex-col overflow-hidden">
 
         <!-- Header -->
-        <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 shadow-sm flex-shrink-0">
-            <h2 class="text-xl font-bold text-slate-800">Analysis Template Editor • Statistician</h2>
-            <div class="flex items-center gap-4">
-                <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">📅 Region XI • {{ date('Y') }}</div>
-                <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
+        <header class="bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
+            <!-- Top row -->
+            <div class="h-14 flex items-center justify-between px-8">
+                <h2 class="text-lg font-bold text-slate-800">Analysis Template Editor <span class="text-slate-400 font-normal">• Statistician</span></h2>
+                <div class="flex items-center gap-4">
+                    <div class="bg-slate-100 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 border border-slate-200"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • {{ date('Y') }}</div>
+                    <div class="w-9 h-9 bg-blue-100 rounded-full border-2 border-blue-500"></div>
+                </div>
+            </div>
+            <!-- Main mode tabs -->
+            <div class="flex px-8 gap-1 border-t border-slate-100">
+                <button @click="mainTab = 'editor'"
+                    class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold border-b-2 transition -mb-px"
+                    :class="mainTab === 'editor'
+                        ? 'border-blue-600 text-blue-700 bg-blue-50/60'
+                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    Editor
+                    <span x-show="allPendingDrafts.length > 0"
+                        class="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
+                        :class="mainTab === 'editor' ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700'"
+                        x-text="allPendingDrafts.length"></span>
+                </button>
+                <button @click="mainTab = 'approved'"
+                    class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold border-b-2 transition -mb-px"
+                    :class="mainTab === 'approved'
+                        ? 'border-emerald-600 text-emerald-700 bg-emerald-50/60'
+                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Approved
+                    <span x-show="allApprovedTemplates.length > 0"
+                        class="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
+                        :class="mainTab === 'approved' ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-700'"
+                        x-text="allApprovedTemplates.length"></span>
+                </button>
             </div>
         </header>
 
         <!-- Canvas -->
         <div class="flex-1 overflow-y-auto bg-slate-100 p-6">
-            <div class="flex gap-6 items-stretch">
+
+            <!-- ══ APPROVED PANEL (shown when mainTab === approved) ══ -->
+            <div x-show="mainTab === 'approved'" x-cloak class="h-full">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <!-- Panel header -->
+                    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 bg-emerald-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">Approved & Published Templates</p>
+                                <p class="text-xs text-slate-500">Read-only history of all published analysis templates</p>
+                            </div>
+                        </div>
+                        <span class="text-xs bg-emerald-100 text-emerald-700 font-bold px-3 py-1 rounded-full" x-text="allApprovedTemplates.length + ' period(s)'"></span>
+                    </div>
+
+                    <!-- Loading -->
+                    <div x-show="loadingAllApproved" class="flex items-center justify-center py-20">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+                        <span class="ml-3 text-slate-500 text-sm">Loading approved templates...</span>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div x-show="!loadingAllApproved && allApprovedTemplates.length === 0" class="flex flex-col items-center justify-center py-24 text-slate-400">
+                        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                            <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <p class="text-sm font-semibold mb-1">No approved templates yet</p>
+                        <p class="text-xs text-slate-300">Published templates will appear here once approved</p>
+                    </div>
+
+                    <!-- Approved records grid -->
+                    <div x-show="!loadingAllApproved && allApprovedTemplates.length > 0" class="p-6">
+                        <!-- Period selector row -->
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <template x-for="(item, idx) in allApprovedTemplates" :key="idx">
+                                <button @click="approvedDetailItem = item; approvedDetailTab = item.template_keys[0]"
+                                    class="flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition"
+                                    :class="approvedDetailItem && approvedDetailItem.year === item.year && approvedDetailItem.month === item.month
+                                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                                        : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-300 hover:text-emerald-700'">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <span x-text="(quarterLabels[item.month] || item.month) + ' ' + item.year"></span>
+                                </button>
+                            </template>
+                        </div>
+
+                        <!-- Detail pane for selected period -->
+                        <template x-if="approvedDetailItem">
+                            <div class="border border-slate-200 rounded-xl overflow-hidden">
+                                <!-- Meta bar -->
+                                <div class="px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center gap-4 text-xs text-slate-600">
+                                    <span class="flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                        Submitted by <strong class="ml-1" x-text="approvedDetailItem.submitted_by || 'Admin'"></strong>
+                                    </span>
+                                    <span class="flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Published <strong class="ml-1" x-text="formatDate(approvedDetailItem.approved_at)"></strong>
+                                    </span>
+                                    <span class="ml-auto flex items-center gap-1 bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/></svg>
+                                        Published
+                                    </span>
+                                </div>
+
+                                <!-- Template key tabs -->
+                                <div class="flex border-b border-slate-200 bg-white px-5 gap-1 pt-2">
+                                    <template x-for="key in (approvedDetailItem.template_keys || [])" :key="key">
+                                        <button @click="approvedDetailTab = key"
+                                            class="px-4 py-2 text-xs font-semibold border-b-2 transition capitalize -mb-px"
+                                            :class="approvedDetailTab === key
+                                                ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
+                                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'">
+                                            <span x-text="key"></span>
+                                        </button>
+                                    </template>
+                                </div>
+
+                                <!-- Template text content -->
+                                <div class="p-6 bg-white">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider capitalize" x-text="approvedDetailTab + ' Rate'"></span>
+                                        <span class="h-px flex-1 bg-slate-100"></span>
+                                        <span class="text-[10px] text-slate-400 font-medium">Template text</span>
+                                    </div>
+                                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-5">
+                                        <p class="text-sm text-slate-700 leading-relaxed font-mono whitespace-pre-wrap"
+                                           x-text="approvedDetailItem.templates[approvedDetailTab] || '—'"></p>
+                                    </div>
+
+                                    <!-- All templates quick-glance -->
+                                    <div class="mt-5 grid grid-cols-2 gap-3">
+                                        <template x-for="key in (approvedDetailItem.template_keys || [])" :key="key">
+                                            <div class="rounded-lg border p-3 cursor-pointer transition"
+                                                 :class="approvedDetailTab === key
+                                                    ? 'border-emerald-300 bg-emerald-50 ring-1 ring-emerald-400'
+                                                    : 'border-slate-100 bg-slate-50 hover:border-emerald-200'"
+                                                 @click="approvedDetailTab = key">
+                                                <p class="text-[10px] font-bold uppercase tracking-wider mb-1 capitalize"
+                                                   :class="approvedDetailTab === key ? 'text-emerald-700' : 'text-slate-400'"
+                                                   x-text="key + ' rate'"></p>
+                                                <p class="text-xs text-slate-500 leading-relaxed line-clamp-2"
+                                                   x-text="approvedDetailItem.templates[key] || '—'"></p>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ EDITOR PANEL (shown when mainTab === editor) ══ -->
+            <div x-show="mainTab === 'editor'" class="flex gap-6 items-stretch">
 
                 <!-- LEFT PANEL -->
                 <div class="w-72 flex-shrink-0 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="px-5 py-4 border-b border-slate-200 bg-white flex items-center justify-between">
                         <p class="text-sm font-bold text-slate-700 uppercase tracking-wide">Filters</p>
-                        <span x-show="!isUnlocked" class="text-xs text-slate-400 flex items-center gap-1">🔒 Locked</span>
+                        <span x-show="!isUnlocked" class="text-xs text-slate-400 flex items-center gap-1"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Locked</span>
                         <button x-show="isUnlocked" @click="lockEditor()" class="text-xs text-slate-500 hover:text-red-500 flex items-center gap-1 transition">
-                            🔓 Lock Filters
+                            <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg> Lock Filters
                         </button>
                     </div>
                     <div class="p-5 space-y-5">
                         <div>
-                            <label class="text-xs font-semibold block mb-1.5" :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'">📅 Year</label>
+                            <label class="text-xs font-semibold block mb-1.5" :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Year</label>
                             <select x-model.number="selectedYear" @change="isUnlocked && loadSidebarOnly()" :disabled="!isUnlocked"
                                 class="w-full border rounded-lg px-3 py-2 text-sm transition"
                                 :class="isUnlocked ? 'border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 text-slate-700' : 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'">
@@ -83,7 +230,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs font-semibold block mb-1.5" :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'">📖 Quarter</label>
+                            <label class="text-xs font-semibold block mb-1.5" :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> Quarter</label>
                             <select x-model.number="selectedMonth" @change="isUnlocked && loadSidebarOnly()" :disabled="!isUnlocked"
                                 class="w-full border rounded-lg px-3 py-2 text-sm transition"
                                 :class="isUnlocked ? 'border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 text-slate-700' : 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'">
@@ -93,55 +240,70 @@
                             </select>
                         </div>
                         <div x-show="!isUnlocked" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-400 text-center">
-                            🔒 Load a draft below to unlock filters &amp; editor
+                            <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Load a draft below to unlock filters &amp; editor
                         </div>
                         <div x-show="isUnlocked && lastSaved" class="bg-green-50 border border-green-200 rounded-lg p-3">
-                            <p class="text-xs font-bold text-green-800 mb-0.5">✅ Last Saved</p>
+                            <p class="text-xs font-bold text-green-800 mb-0.5"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Last Saved</p>
                             <p class="text-xs text-green-600" x-text="lastSaved"></p>
                         </div>
+                        <!-- ── Pending Drafts ── -->
                         <div class="border-t border-slate-200 pt-4">
-                            <div class="flex items-center justify-between mb-1">
-                                <p class="text-sm font-bold text-slate-600">📬 Pending Drafts</p>
-                                <span x-show="allPendingDrafts.length > 0" class="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" x-text="allPendingDrafts.length"></span>
+
+                            <!-- Section Label -->
+                            <div class="flex items-center gap-2 mb-3">
+                                <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">Pending Drafts</span>
+                                <span x-show="allPendingDrafts.length > 0"
+                                    class="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none bg-amber-500 text-white"
+                                    x-text="allPendingDrafts.length"></span>
                             </div>
-                            <p class="text-xs text-slate-400 mb-3">Load a draft to unlock the editor.</p>
-                            <div x-show="loadingAllPending" class="flex justify-center py-4">
-                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-500"></div>
-                            </div>
-                            <div x-show="!loadingAllPending" class="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
-                                <template x-for="draft in allPendingDrafts" :key="draft.id">
-                                    <div class="border border-amber-200 rounded-lg p-3 bg-amber-50 hover:border-amber-400 hover:bg-amber-100 transition">
-                                        <div class="flex items-center justify-between mb-0.5">
-                                            <p class="font-semibold text-xs text-amber-900">
-                                                <span x-text="quarterLabels[draft.month] || draft.month"></span>
-                                                <span x-text="draft.year"></span>
-                                            </p>
+
+                            <!-- ── PENDING DRAFTS ── -->
+                            <div>
+                                <p class="text-xs text-slate-400 mb-3">Load a draft to unlock the editor.</p>
+                                <div x-show="loadingAllPending" class="flex justify-center py-4">
+                                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-500"></div>
+                                </div>
+                                <div x-show="!loadingAllPending" class="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+                                    <template x-for="draft in allPendingDrafts" :key="draft.id">
+                                        <div class="border border-amber-200 rounded-lg p-3 bg-amber-50 hover:border-amber-400 hover:bg-amber-100 transition">
+                                            <div class="flex items-center justify-between mb-0.5">
+                                                <p class="font-semibold text-xs text-amber-900">
+                                                    <span x-text="quarterLabels[draft.month] || draft.month"></span>
+                                                    <span x-text="draft.year"></span>
+                                                </p>
+                                                <span class="text-[10px] bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded font-bold">Pending</span>
+                                            </div>
+                                            <p class="text-xs text-amber-700 mb-0.5">By <strong x-text="draft.submitted_by"></strong></p>
+                                            <p class="text-xs text-amber-500 mb-1.5" x-text="formatDate(draft.submitted_at)"></p>
+                                            <div class="flex flex-wrap gap-1 mb-2">
+                                                <template x-for="key in draft.template_keys" :key="key">
+                                                    <span class="text-xs bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded font-medium capitalize" x-text="key"></span>
+                                                </template>
+                                            </div>
+                                            <button @click="loadDraftIntoEditor(draft)" class="w-full text-xs bg-amber-600 hover:bg-amber-700 text-white py-1.5 rounded-lg font-medium transition">
+                                                <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Load Draft
+                                            </button>
                                         </div>
-                                        <p class="text-xs text-amber-700 mb-0.5">By <strong x-text="draft.submitted_by"></strong></p>
-                                        <p class="text-xs text-amber-500 mb-1.5" x-text="formatDate(draft.submitted_at)"></p>
-                                        <div class="flex flex-wrap gap-1 mb-2">
-                                            <template x-for="key in draft.template_keys" :key="key">
-                                                <span class="text-xs bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded font-medium capitalize" x-text="key"></span>
-                                            </template>
-                                        </div>
-                                        <button @click="loadDraftIntoEditor(draft)" class="w-full text-xs bg-amber-600 hover:bg-amber-700 text-white py-1.5 rounded-lg font-medium transition">
-                                            📥 Load Draft
-                                        </button>
+                                    </template>
+                                    <div x-show="allPendingDrafts.length === 0" class="text-center py-8 text-slate-400">
+                                        <div class="text-slate-300 mb-2"><svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg></div>
+                                        <p class="text-xs font-medium">No pending drafts</p>
+                                        <p class="text-xs text-slate-300 mt-0.5">Check back later</p>
                                     </div>
-                                </template>
-                                <div x-show="allPendingDrafts.length === 0" class="text-center py-6 text-slate-400">
-                                    <p class="text-sm">No pending drafts</p>
                                 </div>
                             </div>
+
                         </div>
+
                         <div x-show="isUnlocked" class="border-t border-slate-200 pt-4">
-                            <p class="text-sm font-bold text-slate-600 mb-2">🔍 Validation</p>
+                            <p class="text-sm font-bold text-slate-600 mb-2"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Validation</p>
                             <div class="space-y-1.5">
                                 <template x-for="key in templateKeys" :key="key">
                                     <div class="flex items-center justify-between">
                                         <span class="text-xs text-slate-600 capitalize" x-text="labelFor(key)"></span>
                                         <span x-show="validation[key] && validation[key].valid" class="text-xs text-green-600 font-medium">✓ Valid</span>
-                                        <span x-show="validation[key] && !validation[key].valid" class="text-xs text-red-500 font-medium">⚠️ Error</span>
+                                        <span x-show="validation[key] && !validation[key].valid" class="text-xs text-red-500 font-medium"><svg class="w-3.5 h-3.5 inline-block flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Error</span>
                                     </div>
                                 </template>
                             </div>
@@ -154,7 +316,7 @@
 
                     <!-- Lock overlay -->
                     <div x-show="!isUnlocked" class="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-xl">
-                        <div class="text-4xl mb-3">🔒</div>
+                        <div class="mb-3 w-14 h-14 mx-auto bg-slate-100 rounded-full flex items-center justify-center"><svg class="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></div>
                         <p class="text-sm font-bold text-slate-600 mb-1">Editor Locked</p>
                         <p class="text-xs text-slate-400">Load a pending draft to start editing</p>
                     </div>
@@ -168,7 +330,7 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm font-bold text-slate-700">✏️ ANALYSIS TEMPLATES</p>
+                                <p class="text-sm font-bold text-slate-700"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg> ANALYSIS TEMPLATES</p>
                                 <p class="text-xs text-slate-400" x-text="currentPeriodLabel ? `Period: ${currentPeriodLabel}` : 'No period selected'"></p>
                             </div>
                         </div>
@@ -177,11 +339,11 @@
                             <div class="flex rounded-lg border border-slate-200 overflow-hidden text-xs">
                                 <button @click="viewMode = 'edit'" class="px-3 py-1.5 font-medium transition"
                                     :class="viewMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'">
-                                    ✏️ Edit
+                                    <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg> Edit
                                 </button>
                                 <button @click="viewMode = 'preview'" class="px-3 py-1.5 font-medium transition"
                                     :class="viewMode === 'preview' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'">
-                                    👁️ Preview
+                                    <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> Preview
                                 </button>
                             </div>
                             <button @click="resetAll()" :disabled="!isUnlocked"
@@ -191,7 +353,7 @@
                             <button @click="confirmBeforeSave()" :disabled="!isUnlocked || saving || hasValidationErrors()"
                                 class="text-xs px-4 py-1.5 rounded-lg font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed"
                                 :class="isUnlocked && !hasValidationErrors() ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'">
-                                <span x-text="saving ? 'Saving...' : '💾 Save & Publish'"></span>
+                                <span x-text="saving ? 'Saving...' : '<svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Save & Publish'"></span>
                             </button>
                         </div>
                     </div>
@@ -265,12 +427,12 @@
                                     <!-- EDIT pane -->
                                     <div class="flex-1 overflow-auto p-5 flex flex-col gap-3" x-show="viewMode === 'edit'">
                                         <div x-show="originalSubmittedTemplates[key]">
-                                            <p class="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1.5">🟡 Admin Submitted</p>
+                                            <p class="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 mr-1"></span> Admin Submitted</p>
                                             <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm font-mono text-amber-900 leading-relaxed whitespace-pre-wrap"
                                                  x-text="originalSubmittedTemplates[key]"></div>
                                         </div>
                                         <div>
-                                            <p class="text-xs font-bold text-blue-700 uppercase tracking-wide mb-1.5" x-show="originalSubmittedTemplates[key]">🔵 Your Edited Version</p>
+                                            <p class="text-xs font-bold text-blue-700 uppercase tracking-wide mb-1.5" x-show="originalSubmittedTemplates[key]"><span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 mr-1"></span> Your Edited Version</p>
                                             <textarea :id="'textarea-' + key" x-model="templates[key]" @input="onInput(key)" @focus="activeField = key" rows="5"
                                                 class="template-textarea w-full p-3 border rounded-lg text-slate-700"
                                                 :class="validation[key] && !validation[key].valid ? 'border-red-300 bg-red-50/20' : 'border-slate-200 bg-white'"
@@ -281,7 +443,7 @@
                                                     <code class="text-xs px-2 py-0.5 bg-red-50 border border-red-200 text-red-600 rounded font-mono" x-text="m"></code>
                                                 </template>
                                             </div>
-                                            <div x-show="isTabChanged(key)" class="mt-2 text-xs text-orange-500 font-medium">⚠️ Unsaved changes</div>
+                                            <div x-show="isTabChanged(key)" class="mt-2 text-xs text-orange-500 font-medium"><svg class="w-3.5 h-3.5 inline-block flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Unsaved changes</div>
                                         </div>
                                     </div>
 
@@ -372,7 +534,7 @@
 
                                         <!-- No data warning -->
                                         <div x-show="!hasPreviewData && !loadingPreview" class="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                                            <p class="text-xs text-yellow-700">⚠️ No real data for <strong x-text="currentPeriodLabel"></strong>. Showing sample values.</p>
+                                            <p class="text-xs text-yellow-700"><svg class="w-3.5 h-3.5 inline-block flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> No real data for <strong x-text="currentPeriodLabel"></strong>. Showing sample values.</p>
                                         </div>
                                     </div>
                                 </div><!-- end edit/preview area -->
@@ -385,14 +547,14 @@
                     <div class="border-t border-slate-100 px-5 py-2 bg-slate-50 flex items-center justify-between flex-shrink-0">
                         <span class="text-xs text-slate-400">
                             <span x-show="!hasValidationErrors() && isUnlocked" class="text-green-600 font-medium">✓ All templates valid</span>
-                            <span x-show="hasValidationErrors() && isUnlocked" class="text-red-500 font-medium">⚠️ Fix errors before saving</span>
+                            <span x-show="hasValidationErrors() && isUnlocked" class="text-red-500 font-medium"><svg class="w-3.5 h-3.5 inline-block flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Fix errors before saving</span>
                             <span x-show="!isUnlocked" class="text-slate-400">Editor locked</span>
                         </span>
-                        <span x-show="hasAnyChanges() && isUnlocked" class="text-xs text-orange-500 font-medium">⚠️ Unsaved changes</span>
+                        <span x-show="hasAnyChanges() && isUnlocked" class="text-xs text-orange-500 font-medium"><svg class="w-3.5 h-3.5 inline-block flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Unsaved changes</span>
                     </div>
 
                 </div><!-- end right panel -->
-            </div>
+            </div><!-- end editor panel -->
         </div>
     </div>
 
@@ -420,7 +582,7 @@
                 <!-- Warning: filters point somewhere different from publish target -->
                 <template x-if="publishTargetYear && (publishTargetYear !== selectedYear || publishTargetMonth !== selectedMonth)">
                     <div class="bg-amber-50 border-l-4 border-amber-500 p-3 mb-4 rounded-lg flex items-start gap-2">
-                        <span class="text-amber-500 flex-shrink-0">⚠️</span>
+                        <span class="text-amber-500 flex-shrink-0"><svg class="w-3.5 h-3.5 inline-block flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></span>
                         <p class="text-sm text-amber-800">
                             Your filters are on <strong x-text="(quarterLabels[selectedMonth] || selectedMonth) + ' ' + selectedYear"></strong>
                             — but this will still save to
@@ -430,7 +592,7 @@
                 </template>
 
                 <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3 mb-5 rounded-lg">
-                    <p class="text-sm font-semibold text-yellow-800">⚠️ This will update the live analysis templates immediately.</p>
+                    <p class="text-sm font-semibold text-yellow-800"><svg class="w-3.5 h-3.5 inline-block flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> This will update the live analysis templates immediately.</p>
                 </div>
 
                 <!-- Per-template smart diff -->
@@ -463,20 +625,20 @@
                                 </div>
                                 <div class="grid grid-cols-3 gap-3">
                                     <div>
-                                        <p class="text-xs font-bold text-green-700 mb-1.5">🟢 Currently Live</p>
+                                        <p class="text-xs font-bold text-green-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 mr-1"></span> Currently Live</p>
                                         <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-xs font-mono text-green-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="currentlyPublishedTemplates[key]"></div>
                                     </div>
                                     <div>
-                                        <p class="text-xs font-bold text-amber-700 mb-1.5">🟡 Admin Submitted</p>
+                                        <p class="text-xs font-bold text-amber-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 mr-1"></span> Admin Submitted</p>
                                         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs font-mono text-amber-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="originalSubmittedTemplates[key]"></div>
                                     </div>
                                     <div>
-                                        <p class="text-xs font-bold text-blue-700 mb-1.5">🔵 Your Edit</p>
+                                        <p class="text-xs font-bold text-blue-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 mr-1"></span> Your Edit</p>
                                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs font-mono text-blue-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="templates[key]"></div>
                                     </div>
                                 </div>
                                 <div class="mt-2 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 flex items-center gap-2">
-                                    <span class="text-orange-500">✏️</span>
+                                    <span class="text-orange-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></span>
                                     <p class="text-xs font-semibold text-orange-700">You've edited the admin draft — this will overwrite the currently live version.</p>
                                 </div>
                             </div>
@@ -487,16 +649,16 @@
                             <div>
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
-                                        <p class="text-xs font-bold text-green-700 mb-1.5">🟢 Currently Live</p>
+                                        <p class="text-xs font-bold text-green-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 mr-1"></span> Currently Live</p>
                                         <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-xs font-mono text-green-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="currentlyPublishedTemplates[key]"></div>
                                     </div>
                                     <div>
-                                        <p class="text-xs font-bold text-amber-700 mb-1.5">🟡 Admin Submitted <span class="text-slate-400 font-normal">(unchanged)</span></p>
+                                        <p class="text-xs font-bold text-amber-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 mr-1"></span> Admin Submitted <span class="text-slate-400 font-normal">(unchanged)</span></p>
                                         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs font-mono text-amber-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="originalSubmittedTemplates[key]"></div>
                                     </div>
                                 </div>
                                 <div class="mt-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-center gap-2">
-                                    <span class="text-green-500">✅</span>
+                                    <span class="text-green-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
                                     <p class="text-xs font-semibold text-green-700">Publishing admin's submission as-is — this will overwrite the currently live version.</p>
                                 </div>
                             </div>
@@ -506,11 +668,11 @@
                         <template x-if="originalSubmittedTemplates[key] && !currentlyPublishedTemplates[key]">
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <p class="text-xs font-bold text-amber-700 mb-1.5">🟡 Admin Submitted</p>
+                                    <p class="text-xs font-bold text-amber-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 mr-1"></span> Admin Submitted</p>
                                     <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs font-mono text-amber-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="originalSubmittedTemplates[key]"></div>
                                 </div>
                                 <div>
-                                    <p class="text-xs font-bold text-blue-700 mb-1.5">🔵 Your Edited Version</p>
+                                    <p class="text-xs font-bold text-blue-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 mr-1"></span> Your Edited Version</p>
                                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs font-mono text-blue-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="templates[key]"></div>
                                 </div>
                             </div>
@@ -528,7 +690,7 @@
             <div class="p-6 border-t border-gray-200 bg-gray-50 flex gap-3 sticky bottom-0">
                 <button @click="showSaveModal = false" class="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition">Cancel</button>
                 <button @click="confirmSave()" :disabled="saving" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg transition disabled:opacity-50">
-                    <span x-text="saving ? 'Saving...' : '💾 Save All Templates'"></span>
+                    <span x-text="saving ? 'Saving...' : '<svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Save All Templates'"></span>
                 </button>
             </div>
         </div>
@@ -545,9 +707,9 @@
                     <h3 class="text-lg font-bold text-gray-900 mb-1">Reset to Original Draft</h3>
                     <p class="text-sm text-gray-600 mb-1">This will restore all templates back to the originally loaded draft:</p>
                     <p class="text-sm font-semibold text-slate-700 mb-3">
-                        📅 <span x-text="(quarterLabels[draftMonth] || draftMonth || '—') + ' ' + (draftYear || '')"></span>
+                        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> <span x-text="(quarterLabels[draftMonth] || draftMonth || '—') + ' ' + (draftYear || '')"></span>
                     </p>
-                    <p class="text-xs text-orange-600 font-semibold">⚠️ Any changes you made to all 4 templates will be lost!</p>
+                    <p class="text-xs text-orange-600 font-semibold"><svg class="w-3.5 h-3.5 inline-block flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Any changes you made to all 4 templates will be lost!</p>
                 </div>
             </div>
             <div class="flex gap-3 mt-6">
@@ -593,7 +755,7 @@
          x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
          x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
          class="fixed bottom-6 right-6 z-50 bg-slate-800 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-medium flex items-center gap-2">
-        ✅ <span x-text="toastMessage"></span>
+        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span x-text="toastMessage"></span>
     </div>
 
     <script>
@@ -629,11 +791,11 @@
                 },
 
                 allPlaceholders: [
-                    { key: '{current_period}',  icon: '📅' },
-                    { key: '{previous_period}', icon: '📅' },
-                    { key: '{current_rate}',    icon: '📊' },
-                    { key: '{previous_rate}',   icon: '📊' },
-                    { key: '{trend}',           icon: '📈' }
+                    { key: '{current_period}',  icon: 'cal' },
+                    { key: '{previous_period}', icon: 'cal' },
+                    { key: '{current_rate}',    icon: 'chart' },
+                    { key: '{previous_rate}',   icon: 'chart' },
+                    { key: '{trend}',           icon: 'trend' }
                 ],
                 requiredPlaceholders: ['{current_period}', '{previous_period}', '{current_rate}', '{previous_rate}', '{trend}'],
 
@@ -642,6 +804,18 @@
                 previewData:     {},
                 hasPreviewData:  false,
                 loadingPreview:  false,
+
+                // ── Approved / Published ───────────────────────────
+                allApprovedTemplates: [],
+                loadingAllApproved:   false,
+                approvedDetailItem:   null,
+                approvedDetailTab:    'employment',
+
+                // ── Sidebar tab ────────────────────────────────────
+                sidebarTab: 'pending',
+
+                // ── Main top tab ───────────────────────────────────
+                mainTab: 'editor',
 
                 // Locked publish target — set when a draft is loaded, never changed by filter dropdowns
                 publishTargetYear:  null,
@@ -665,7 +839,7 @@
                 },
 
                 async init() {
-                    await Promise.all([this.loadTemplates(), this.loadAllPending()]);
+                    await Promise.all([this.loadTemplates(), this.loadAllPending(), this.loadAllApproved()]);
                 },
 
                 labelFor(key) {
@@ -746,6 +920,22 @@
                     finally { this.loadingAllPending = false; }
                 },
 
+                async loadAllApproved() {
+                    this.loadingAllApproved = true;
+                    try {
+                        const res  = await fetch('/api/analysis-templates/approved-all');
+                        const data = await res.json();
+                        if (data.success) { this.allApprovedTemplates = data.data; }
+                    } catch (e) { console.error('Error loading approved templates:', e); }
+                    finally { this.loadingAllApproved = false; }
+                },
+
+                viewApprovedDetail(item) {
+                    this.approvedDetailItem = item;
+                    this.approvedDetailTab  = item.template_keys[0] || 'employment';
+                    this.mainTab = 'approved';
+                },
+
                 async loadPreviewData() {
                     if (!this.selectedYear || !this.selectedMonth) return;
                     this.loadingPreview = true;
@@ -795,6 +985,7 @@
                     this.validateAll();
                     this.isUnlocked = true;
                     this.activeTab  = this.templateKeys[0];
+                    this.sidebarTab = 'pending'; // stay on pending while editing
                     this.loadPreviewData();
                     this.showSuccessToast(`Draft loaded: ${this.quarterLabels[mo] || mo} ${yr}`);
                 },
@@ -967,6 +1158,9 @@
                             this.draftYear  = null;
                             this.draftMonth = null;
                             await this.loadAllPending();
+                            await this.loadAllApproved();
+                            this.sidebarTab = 'approved'; // show the newly published record
+                            this.mainTab = 'approved'; // switch main view to approved
                         } else {
                             this.errorTitle   = 'Save Error';
                             this.errorMessage = `${errors} error(s) occurred. Please check the console.`;

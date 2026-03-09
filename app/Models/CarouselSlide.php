@@ -10,4 +10,6 @@ class CarouselSlide extends Model
         'title', 'excerpt', 'link', 'image_path',
         'program_label', 'color', 'sort_order', 'is_active'
     ];
+
+    
 }

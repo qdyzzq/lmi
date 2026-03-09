@@ -72,10 +72,16 @@ class LmiSubmissionController extends Controller
                 'specific_inputs' => $request->specific_inputs,
             ]);
             
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'message' => 'Engagement information updated successfully!']);
+            }
             return redirect()->back()->with('success', 'Engagement information updated successfully!');
             
         } catch (\Exception $e) {
             Log::error('Update engagement error: ' . $e->getMessage());
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Failed to update engagement: ' . $e->getMessage()], 500);
+            }
             return redirect()->back()->with('error', 'Failed to update engagement: ' . $e->getMessage());
         }
     }
@@ -95,10 +101,16 @@ class LmiSubmissionController extends Controller
                 'coordination_frequency_other' => $request->coordination_frequency_other,
             ]);
             
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'message' => 'Diagnosis information updated successfully!']);
+            }
             return redirect()->back()->with('success', 'Diagnosis information updated successfully!');
             
         } catch (\Exception $e) {
             Log::error('Update diagnosis error: ' . $e->getMessage());
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Failed to update diagnosis: ' . $e->getMessage()], 500);
+            }
             return redirect()->back()->with('error', 'Failed to update diagnosis: ' . $e->getMessage());
         }
     }
@@ -113,18 +125,30 @@ class LmiSubmissionController extends Controller
                 'respondent_name' => 'required|string|max:255',
                 'position'        => 'required|string|max:255',
                 'contact_number'  => 'required|string|min:9|max:20',
-                'contact_type'    => 'required|in:mobile,telephone', // ← ADDED
+                'contact_type'    => 'required|in:mobile,telephone',
                 'email'           => 'required|email|max:255',
                 'industry_sector' => 'required|string',
                 'company_size'    => 'required|string',
             ]);
             
             $submission->update($validated);
-            
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'message' => 'Submission updated successfully!']);
+            }
             return redirect()->back()->with('success', 'Submission updated successfully!');
             
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Validation failed.', 'errors' => $e->errors()], 422);
+            }
+            return redirect()->back()->withErrors($e->errors())->withInput();
+
         } catch (\Exception $e) {
             Log::error('Update submission error: ' . $e->getMessage());
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Failed to update submission: ' . $e->getMessage()], 500);
+            }
             return redirect()->back()->with('error', 'Failed to update submission: ' . $e->getMessage());
         }
     }
@@ -174,10 +198,16 @@ class LmiSubmissionController extends Controller
                 }
             }
             
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'message' => 'Hard-to-Fill Roles updated successfully!']);
+            }
             return redirect()->back()->with('success', 'Hard-to-Fill Roles and Impact Levels updated successfully!');
             
         } catch (\Exception $e) {
             Log::error('Update roles error: ' . $e->getMessage());
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Failed to update roles: ' . $e->getMessage()], 500);
+            }
             return redirect()->back()->with('error', 'Failed to update roles: ' . $e->getMessage());
         }
     }

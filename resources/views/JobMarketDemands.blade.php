@@ -56,6 +56,33 @@
 .scroll-indicator {
     animation: bounce-custom 1s infinite;
 }
+
+/* ── Responsive chart container ── */
+.chart-responsive {
+    position: relative;
+    width: 100%;
+}
+@media (max-width: 640px)  { .chart-responsive { height: 280px; } }
+@media (min-width: 641px) and (max-width: 1023px) { .chart-responsive { height: 320px; } }
+@media (min-width: 1024px) { .chart-responsive { height: 360px; } }
+
+/* ── Mobile scroll hint for LMI matrix table ── */
+.table-scroll-hint { display: none; }
+@media (max-width: 767px) { .table-scroll-hint { display: flex; } }
+
+/* ── LMI Matrix table: horizontal scroll on mobile (keep original grid) ── */
+
+/* ── Pagination: hide page numbers on mobile, show Prev/Next only ── */
+@media (max-width: 480px) {
+    .pagination-page-numbers { display: none; }
+    .pagination-controls { justify-content: space-between; width: 100%; }
+}
+
+/* ── Banner CTA: stack buttons on mobile ── */
+@media (max-width: 480px) {
+    .cta-buttons { flex-direction: column; width: 100%; }
+    .cta-buttons button { width: 100%; text-align: center; }
+}
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen">
@@ -136,7 +163,7 @@
                                     <p class="text-sm text-slate-400 max-w-xl">Official data lags behind real-time market needs. Help us bridge the gap by identifying hard-to-fill roles and critical skill shortages.</p>
                                 </div>
                             </div>
-                            <div class="flex gap-3">
+                            <div class="flex gap-3 cta-buttons">
                             
                                 <button id="show-lmi-matrix-btn" class="bg-emerald-500 border border-emerald-500 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-500/20 transition">
                                     Submit Labor Information
@@ -152,7 +179,7 @@
     <!-- LEFT SIDE: High Volume Jobs Chart (Takes 2 columns) -->
     <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <!-- Header -->
-        <div class="flex justify-between items-center p-6 pb-4 border-b border-gray-100">
+        <div class="flex flex-wrap justify-between items-start gap-3 p-4 sm:p-6 pb-4 border-b border-gray-100">
             <div>
                 <h3 class="font-bold text-gray-800">Top 10 High-Volume Job Titles</h3>
                 
@@ -196,8 +223,8 @@
         </div>
 
         <!-- Chart Container -->
-        <div class="p-6" id="chartContainer">
-            <div style="height: 360px;">
+        <div class="p-4 sm:p-6" id="chartContainer">
+            <div class="chart-responsive">
                 <canvas id="highVolumeHorizontalChart"></canvas>
             </div>
         </div>
@@ -423,23 +450,21 @@
 </div>
 
 <!-- Fullscreen Modal -->
-<div id="chartModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onclick="closeChart()">
-    <div class="bg-white rounded-xl shadow-2xl w-11/12 h-5/6 p-6 relative" onclick="event.stopPropagation()">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-gray-800">High-Volume Job Titles - Expanded View</h3>
-            <button onclick="closeChart()" class="p-2 hover:bg-gray-100 rounded-lg transition">
-                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div id="chartModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 sm:p-4" onclick="closeChart()">
+    <div class="bg-white rounded-xl shadow-2xl w-full h-full sm:w-11/12 sm:h-5/6 p-4 sm:p-6 relative flex flex-col" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-start gap-2 mb-3 sm:mb-4 flex-shrink-0">
+            <h3 class="text-base sm:text-xl font-bold text-gray-800 leading-tight">High-Volume Job Titles - Expanded View</h3>
+            <button onclick="closeChart()" class="flex-shrink-0 p-2 hover:bg-gray-100 rounded-lg transition">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
-        <div style="height: calc(100% - 60px);">
+        <div class="flex-1 min-h-0">
             <canvas id="highVolumeExpandedChart"></canvas>
         </div>
-          <div class="absolute  left-0 right-0 text-center">
-            <p class="text-xs text-gray-500 italic">
-                Source: PhilJobNet
-            </p>
+        <div class="text-center pt-2 flex-shrink-0">
+            <p class="text-xs text-gray-500 italic">Source: PhilJobNet</p>
         </div>
     </div>
 </div>              
@@ -588,11 +613,18 @@
 
 
 @if(count($matrix_results) > 0)
+    <!-- Mobile scroll hint -->
+    <div class="table-scroll-hint items-center gap-2 px-4 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-600 font-medium">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+        </svg>
+        Scroll horizontally to see all columns
+    </div>
     <div class="overflow-x-auto">
     <div class="min-w-[700px]">
     <!-- Sticky Table Header Row - Improved proportions with Salary Range -->
-    <div class="sticky top-0 z-20 bg-gradient-to-r from-gray-900 to-gray-800 border-b border-gray-700 shadow-md">
-        <div class="grid grid-cols-12 gap-4 px-8 py-4 items-center">
+    <div class="sticky top-0 z-20 bg-slate-800 border-b border-gray-700 shadow-md">
+        <div class="grid grid-cols-12 gap-4 px-4 sm:px-8 py-4 items-center lmi-row-grid">
             <div class="col-span-2 flex items-center justify-center">
                 <span class="text-s font-small font-bold text-white uppercase tracking-wider">Job Title / Role</span>
             </div>
@@ -621,7 +653,7 @@
                     <!-- Accordion Header (Collapsed View) -->
 <div 
     @click="(result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0) ? (openItem = openItem === index ? null : index) : null"
-    class="grid grid-cols-12 gap-4 px-8 py-6 items-center" :class="((result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0)) ? 'cursor-pointer' : 'cursor-default'">
+    class="grid grid-cols-12 gap-4 px-4 sm:px-8 py-4 sm:py-6 items-center lmi-row-grid" :class="((result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0)) ? 'cursor-pointer' : 'cursor-default'">
     
     <!-- LEFT-ALIGNED: Job Title (2 cols) -->
     <div class="col-span-2 flex items-center justify-start">
@@ -804,7 +836,7 @@
     </div>
 
     <!-- Pagination Controls -->
-    <div class="px-8 py-5 border-t bg-white flex items-center justify-between shadow-inner">
+    <div class="px-4 sm:px-8 py-4 sm:py-5 border-t bg-white flex flex-wrap items-center justify-between gap-3 shadow-inner pagination-controls">
         <div class="flex items-center gap-2 text-sm text-gray-600">
             <span>Showing</span>
             <span class="font-bold text-gray-900" x-text="(currentPage - 1) * itemsPerPage + 1"></span>
@@ -826,7 +858,7 @@
             </button>
 
             <!-- Page Numbers -->
-            <div class="flex gap-1.5">
+            <div class="flex gap-1.5 pagination-page-numbers">
                 <template x-for="page in totalPages" :key="page">
                     <button 
                         @click="goToPage(page)"
@@ -848,15 +880,15 @@
         </div>
     </div>
 </div>
+    </div><!-- end min-w -->
+    </div><!-- end overflow-x-auto -->
+</div>
 
-    <div class="flex items-center justify-center">
+<div class="mt-5 p-4 bg-slate-50 border-t border-slate-200 text-center">
                         <p class="text-xs text-slate-500">
                             Source: Tab1-Employment-Davao-Region-with-JUL2025.xlsx (Rates) | Module 2 Sources: PhilJobNet, PSA ISLE, Industry Surveys.
                         </p>
                     </div>
-    </div><!-- end min-w -->
-    </div><!-- end overflow-x-auto -->
-
 @else
     <!-- Empty State -->
     <div class="p-12 text-center bg-white">
@@ -866,52 +898,52 @@
     </div>
 @endif
 
-<div id="lmi-matrix-modal" class="fixed inset-0 z-[9999] flex items-center justify-center px-4 hidden">
+<div id="lmi-matrix-modal" class="fixed inset-0 z-[9999] flex items-center justify-center p-0 sm:px-4 hidden">
     <div id="modal-backdrop" class="absolute inset-0 backdrop-blur-md bg-white/30 pointer-events-none"></div>
-    <div id="lmi-form-content" class="bg-white rounded-2xl shadow-2xl w-full w-[96vw] h-[96vh] max-w-[96vw] max-h-[96vh] overflow-hidden relative z-10 pointer-events-auto">
+    <div id="lmi-form-content" class="bg-white sm:rounded-2xl shadow-2xl w-full h-full sm:w-[96vw] sm:h-[96vh] sm:max-w-[96vw] sm:max-h-[96vh] overflow-hidden relative z-10 pointer-events-auto">
         
-        <div class="bg-teal-700 p-5 flex justify-between items-center text-white sticky top-0 z-10">
-            <div class="flex items-center gap-3">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-teal-700 px-4 py-3 sm:p-5 flex justify-between items-center text-white sticky top-0 z-10">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
-                <h3 class="text-lg font-bold">INDUSTRY SKILLS NEED SURVEY</h3>
+                <h3 class="text-sm sm:text-lg font-bold leading-tight">INDUSTRY SKILLS NEED SURVEY</h3>
             </div>
-            <button id="close-modal-btn" class="text-white hover:bg-teal-600 p-1 rounded transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button id="close-modal-btn" class="text-white hover:bg-teal-600 p-1.5 rounded transition flex-shrink-0">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
         </div>
 
         <!-- ► STEP INDICATOR ◄ -->
-        <div class="bg-teal-600 px-5 py-4 sticky top-[68px] z-10">
+        <div class="bg-teal-600 px-3 sm:px-5 py-3 sm:py-4 sticky top-[52px] sm:top-[68px] z-10">
             <div class="flex items-center justify-between max-w-3xl mx-auto">
                 <div class="flex flex-col items-center">
-                    <div class="step-circle w-8 h-8 rounded-full bg-white text-teal-700 flex items-center justify-center text-sm font-bold">1</div>
-                    <span class="text-white text-xs mt-1 hidden sm:block">Company</span>
+                    <div class="step-circle w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-teal-700 flex items-center justify-center text-xs sm:text-sm font-bold">1</div>
+                    <span class="text-white text-[10px] sm:text-xs mt-1 hidden sm:block">Company</span>
                 </div>
-                <div class="step-line flex-1 h-1 bg-teal-500 mx-2"></div>
+                <div class="step-line flex-1 h-1 bg-teal-500 mx-1 sm:mx-2"></div>
                 <div class="flex flex-col items-center">
-                    <div class="step-circle w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center text-sm font-bold">2</div>
-                    <span class="text-white text-xs mt-1 hidden sm:block">Roles</span>
+                    <div class="step-circle w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-teal-500 text-white flex items-center justify-center text-xs sm:text-sm font-bold">2</div>
+                    <span class="text-white text-[10px] sm:text-xs mt-1 hidden sm:block">Roles</span>
                 </div>
-                <div class="step-line flex-1 h-1 bg-teal-500 mx-2"></div>
+                <div class="step-line flex-1 h-1 bg-teal-500 mx-1 sm:mx-2"></div>
                 <div class="flex flex-col items-center">
-                    <div class="step-circle w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center text-sm font-bold">3</div>
-                    <span class="text-white text-xs mt-1 hidden sm:block">Diagnosis</span>
+                    <div class="step-circle w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-teal-500 text-white flex items-center justify-center text-xs sm:text-sm font-bold">3</div>
+                    <span class="text-white text-[10px] sm:text-xs mt-1 hidden sm:block">Diagnosis</span>
                 </div>
-                <div class="step-line flex-1 h-1 bg-teal-500 mx-2"></div>
+                <div class="step-line flex-1 h-1 bg-teal-500 mx-1 sm:mx-2"></div>
                 <div class="flex flex-col items-center">
-                    <div class="step-circle w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center text-sm font-bold">4</div>
-                    <span class="text-white text-xs mt-1 hidden sm:block">Engagement</span>
+                    <div class="step-circle w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-teal-500 text-white flex items-center justify-center text-xs sm:text-sm font-bold">4</div>
+                    <span class="text-white text-[10px] sm:text-xs mt-1 hidden sm:block">Engagement</span>
                 </div>
             </div>
         </div>
         <!-- ► END STEP INDICATOR ◄ -->
 
-        <div class="overflow-y-auto h-[calc(98vh-250px)]">
-    <div class="p-8">
+        <div class="overflow-y-auto h-[calc(100vh-120px)] sm:h-[calc(98vh-140px)]">
+    <div class="p-4 sm:p-8">
         <!-- ► ONLY SHOW IN STEP 1 ◄ -->
         <div id="intro-section">
             <h4 class="text-l font-bold pb-2">INDUSTRY SKILLS NEED SURVEY</h4>
@@ -983,28 +1015,52 @@
                                 <!-- Segmented Control Toggle -->
                                 <div class="inline-flex bg-gray-100 rounded-lg p-1 mb-3">
                                     <button type="button" id="toggle-mobile"
-                                        onclick="switchContactType('mobile')"
-                                        class="contact-type-btn flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold bg-white text-teal-700 shadow-sm border border-gray-200 transition-all duration-200">
-                                        <span class="text-base">📱</span> Mobile
-                                    </button>
+                                    onclick="switchContactType('mobile')"
+                                    class="contact-type-btn flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold bg-white text-teal-700 shadow-sm border border-gray-200 transition-all duration-200">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                    </svg>
+                                    Mobile
+                                </button>
                                     <button type="button" id="toggle-telephone"
-                                        onclick="switchContactType('telephone')"
-                                        class="contact-type-btn flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold text-gray-500 transition-all duration-200">
-                                        <span class="text-base">☎️</span> Telephone
-                                    </button>
+                                    onclick="switchContactType('telephone')"
+                                    class="contact-type-btn flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold text-gray-500 transition-all duration-200">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                    </svg>
+                                    Telephone
+                                </button>
                                 </div>
 
                                 <!-- Mobile Input -->
                                 <div id="mobile-input-wrapper" class="relative">
-                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pr-3 border-r border-gray-300 pointer-events-none">
-                                        <span class="text-lg">🇵🇭</span>
-                                        <span class="ml-1.5 text-sm font-semibold text-gray-600">+63</span>
+                                    <div class="flex gap-2">
+                                        <!-- Country Code Selector -->
+                                        <div class="relative">
+                                            <button type="button" id="country-code-btn"
+                                                class="flex items-center gap-1.5 px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all whitespace-nowrap">
+                                                <span id="country-flag">🇵🇭</span>
+                                                <span id="country-dial-code">+63</span>
+                                                <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                                </svg>
+                                            </button>
+                                            <!-- Country Dropdown -->
+                                            <div id="country-dropdown" class="hidden absolute z-50 left-0 top-full mt-1 w-72 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                                                <div class="p-2 border-b border-gray-100">
+                                                    <input type="text" id="country-search" placeholder="Search country..."
+                                                        class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"/>
+                                                </div>
+                                                <div id="country-list" class="max-h-52 overflow-y-auto"></div>
+                                            </div>
+                                        </div>
+                                        <!-- Number Input -->
+                                        <input type="tel" id="mobile-input"
+                                            placeholder="912 345 6789" required
+                                            inputmode="numeric"
+                                            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                            class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent focus:bg-white transition-all"/>
                                     </div>
-                                    <input type="tel" name="contact_number" id="mobile-input"
-                                        maxlength="10" placeholder="912 345 6789" required
-                                        inputmode="numeric"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                        class="w-full pl-20 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent focus:bg-white transition-all"/>
                                 </div>
 
                                 <!-- Telephone Input -->
@@ -1013,7 +1069,7 @@
                                         <span class="text-lg">☎️</span>
                                         <span class="ml-1.5 text-sm font-semibold text-gray-600">PH</span>
                                     </div>
-                                    <input type="tel" name="contact_number" id="telephone-input"
+                                    <input type="tel" id="telephone-input"
                                         maxlength="12" placeholder="e.g. 082-123-4567"
                                         inputmode="numeric"
                                         autocomplete="off"
@@ -1030,13 +1086,15 @@
                                 </div>
 
                                 <input type="hidden" name="contact_type" id="contact_type_input" value="mobile">
+                                <!-- Single hidden field that carries the actual contact number on submit -->
+                                <input type="hidden" name="contact_number" id="contact_number_carrier">
 
                                 <!-- Hint -->
                                 <p class="text-xs text-gray-400 mt-1.5 flex items-center gap-1" id="contact-hint">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
-                                    10-digit mobile number
+                                    Enter your mobile number with country code
                                 </p>
                             </div>
                         </div>
@@ -1094,8 +1152,8 @@
                 </div>
 
                 <!-- NAV -->
-                <div class="flex justify-end mt-6">
-                    <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-8 py-2.5 rounded-lg transition shadow-md">Next </button>
+                <div class="flex justify-end mt-6 gap-2">
+                    <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 sm:px-8 py-2.5 rounded-lg transition shadow-md w-full sm:w-auto">Next </button>
                 </div>
             </div>
             <!-- ─── END STEP 1 ──────────────────────────────────── -->
@@ -1305,9 +1363,9 @@
 
 
                 <!-- NAV -->
-                <div class="flex justify-between mt-6">
-                    <button type="button" class="btn-prev bg-white hover:bg-gray-50 text-gray-700 font-semibold px-8 py-2.5 rounded-lg transition border border-gray-300 shadow-sm"> Previous</button>
-                    <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-8 py-2.5 rounded-lg transition shadow-md">Next </button>
+                <div class="flex flex-col-reverse sm:flex-row justify-between mt-6 gap-3">
+                    <button type="button" class="btn-prev bg-white hover:bg-gray-50 text-gray-700 font-semibold px-5 sm:px-8 py-2.5 rounded-lg transition border border-gray-300 shadow-sm w-full sm:w-auto"> Previous</button>
+                    <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 sm:px-8 py-2.5 rounded-lg transition shadow-md w-full sm:w-auto">Next </button>
                 </div>
             </div>
             <!-- ─── END STEP 2 ──────────────────────────────────── -->
@@ -1424,9 +1482,9 @@
                 </div>
 
                 <!-- NAV -->
-                <div class="flex justify-between mt-6">
-                    <button type="button" class="btn-prev bg-white hover:bg-gray-50 text-gray-700 font-semibold px-8 py-2.5 rounded-lg transition border border-gray-300 shadow-sm"> Previous</button>
-                    <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-8 py-2.5 rounded-lg transition shadow-md">Next </button>
+                <div class="flex flex-col-reverse sm:flex-row justify-between mt-6 gap-3">
+                    <button type="button" class="btn-prev bg-white hover:bg-gray-50 text-gray-700 font-semibold px-5 sm:px-8 py-2.5 rounded-lg transition border border-gray-300 shadow-sm w-full sm:w-auto"> Previous</button>
+                    <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 sm:px-8 py-2.5 rounded-lg transition shadow-md w-full sm:w-auto">Next </button>
                 </div>
             </div>
             <!-- ─── END STEP 3 ──────────────────────────────────── -->
@@ -1500,9 +1558,9 @@
                 </div>
 
                 <!-- NAV -->
-                <div class="flex justify-between mt-6">
-                    <button type="button" class="btn-prev bg-white hover:bg-gray-50 text-gray-700 font-semibold px-8 py-2.5 rounded-lg transition border border-gray-300 shadow-sm"> Previous</button>
-                    <button type="submit" class="btn-submit-lmi bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-8 rounded-lg transition shadow-lg">
+                <div class="flex flex-col-reverse sm:flex-row justify-between mt-6 gap-3">
+                    <button type="button" class="btn-prev bg-white hover:bg-gray-50 text-gray-700 font-semibold px-5 sm:px-8 py-2.5 rounded-lg transition border border-gray-300 shadow-sm w-full sm:w-auto"> Previous</button>
+                    <button type="submit" class="btn-submit-lmi bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-5 sm:px-8 rounded-lg transition shadow-lg w-full sm:w-auto">
                         Submit LMI Matrix
                     </button>
                 </div>
@@ -1601,7 +1659,11 @@ function renderMainChart() {
     mainChart = new Chart(ctx, buildChartConfig(comparisonData));
 }
 
-function buildChartConfig(data, axisSize = 12) {
+function buildChartConfig(data, axisSize = null) {
+    const isMobile = window.innerWidth < 640;
+    const isTablet = window.innerWidth < 1024;
+    axisSize = axisSize ?? (isMobile ? 9 : isTablet ? 11 : 12);
+
     const labels      = data.map(d => d.title);
     const currentData = data.map(d => d.current_count);
     const prevData    = data.map(d => d.previous_count);
@@ -1613,14 +1675,14 @@ function buildChartConfig(data, axisSize = 12) {
             data: prevData,
             backgroundColor: 'rgba(16, 185, 129, 0.85)',
             borderColor: 'rgba(16, 185, 129, 1)',
-            borderWidth: 0, borderRadius: 4, barThickness: 14,
+            borderWidth: 0, borderRadius: 4, barThickness: isMobile ? 8 : 14,
         }] : []),
         {
             label: String(currentSelectedYear),
             data: currentData,
             backgroundColor: 'rgba(99, 102, 241, 0.9)',
             borderColor: 'rgba(99, 102, 241, 1)',
-            borderWidth: 0, borderRadius: 4, barThickness: 14,
+            borderWidth: 0, borderRadius: 4, barThickness: isMobile ? 8 : 14,
         }
     ];
 
@@ -1631,10 +1693,13 @@ function buildChartConfig(data, axisSize = 12) {
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+                padding: { right: isMobile ? 8 : 16 }
+            },
             plugins: {
                 legend: {
                     display: true, position: 'top', align: 'end',
-                    labels: { boxWidth: 12, boxHeight: 12, font: { size: axisSize, weight: '500' }, padding: 15, usePointStyle: true, pointStyle: 'circle' }
+                    labels: { boxWidth: 10, boxHeight: 10, font: { size: axisSize, weight: '500' }, padding: isMobile ? 8 : 15, usePointStyle: true, pointStyle: 'circle' }
                 },
                 tooltip: {
                     backgroundColor: 'rgba(0,0,0,0.8)', padding: 12,
@@ -1658,11 +1723,25 @@ function buildChartConfig(data, axisSize = 12) {
                 x: {
                     beginAtZero: true,
                     grid: { display: true, color: 'rgba(0,0,0,0.03)' },
-                    ticks: { font: { size: axisSize }, callback: v => v >= 1000 ? (v/1000)+'k' : v }
+                    ticks: {
+                        font: { size: axisSize },
+                        maxTicksLimit: isMobile ? 4 : 6,
+                        callback: v => v >= 1000 ? (v/1000)+'k' : v
+                    }
                 },
                 y: {
                     grid: { display: false },
-                    ticks: { font: { size: axisSize, weight: '500' }, color: '#374151' }
+                    ticks: {
+                        font: { size: axisSize, weight: '500' },
+                        color: '#374151',
+                        callback: function(value) {
+                            const label = this.getLabelForValue(value);
+                            if (isMobile && label && label.length > 22) {
+                                return label.substring(0, 20) + '…';
+                            }
+                            return label;
+                        }
+                    }
                 }
             },
             interaction: { mode: 'y', intersect: false }
@@ -1702,14 +1781,23 @@ document.addEventListener('DOMContentLoaded', function () {
 function expandChart() {
     const modal = document.getElementById('chartModal');
     modal.classList.remove('hidden');
-    
+    document.body.classList.add('overflow-hidden');
+
+    // Hide navbar so it doesn't overlap the modal
+    const navbar = document.querySelector('nav');
+    if (navbar) {
+        navbar.style.zIndex = '-1';
+        navbar.style.visibility = 'hidden';
+    }
+
     if (expandedChart) {
         expandedChart.destroy();
     }
     
     const expandedCtx = document.getElementById('highVolumeExpandedChart');
     if (expandedCtx && comparisonData && comparisonData.length > 0) {
-        expandedChart = new Chart(expandedCtx, buildChartConfig(comparisonData, 13));
+        const expandedSize = window.innerWidth < 640 ? 10 : window.innerWidth < 1024 ? 12 : 14;
+        expandedChart = new Chart(expandedCtx, buildChartConfig(comparisonData, expandedSize));
     }
 }
 
@@ -1717,7 +1805,15 @@ function expandChart() {
 function closeChart() {
     const modal = document.getElementById('chartModal');
     modal.classList.add('hidden');
-    
+    document.body.classList.remove('overflow-hidden');
+
+    // Restore navbar
+    const navbar = document.querySelector('nav');
+    if (navbar) {
+        navbar.style.zIndex = '';
+        navbar.style.visibility = '';
+    }
+
     if (expandedChart) {
         expandedChart.destroy();
         expandedChart = null;
@@ -1812,14 +1908,6 @@ function hideModal() {
 
 }
 
-// Function to show confirmation modal (NO BLUR)
-function showConfirmationModal(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    confirmationModal.classList.remove('hidden');
-    // Don't blur the LMI form - keep it clear behind the modal
-}
-
 // Function to hide confirmation modal
 function hideConfirmationModal() {
     confirmationModal.classList.add('hidden');
@@ -1843,7 +1931,13 @@ function hideSuccessModal() {
 }
 
 // Intercept form submission to show confirmation modal instead
-lmiForm.addEventListener('submit', showConfirmationModal);
+lmiForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    // Run Step 4 validation before showing the confirmation modal
+    if (!validateStep(3)) return;
+    confirmationModal.classList.remove('hidden');
+});
 
 // Cancel button in confirmation modal
 cancelSubmitBtn.addEventListener('click', hideConfirmationModal);
@@ -1861,6 +1955,19 @@ confirmSubmitBtn.addEventListener('click', async () => {
         return;
     }
     
+    // Populate contact number carrier before collecting FormData
+    const contactTypeVal = document.getElementById('contact_type_input')?.value;
+    const carrier = document.getElementById('contact_number_carrier');
+    if (carrier) {
+        if (contactTypeVal === 'mobile') {
+            const mob = document.getElementById('mobile-input');
+            carrier.value = mob ? selectedCountry.dial + mob.value : '';
+        } else {
+            const tel = document.getElementById('telephone-input');
+            carrier.value = tel ? tel.value : '';
+        }
+    }
+
     // Gather form data
     const formData = new FormData(lmiForm);
     
@@ -2458,9 +2565,11 @@ document.querySelectorAll('.job-entry').forEach(initializeJobEntry);
 const addJobTitleBtn = document.getElementById('add-job-title-btn');
 const jobTitlesContainer = document.getElementById('jobTitlesContainer');
 
+let jobEntryCounter = 1; // starts at 1 since the first static entry uses index 0
+
 addJobTitleBtn.addEventListener('click', () => {
     const jobCount = jobTitlesContainer.querySelectorAll('.job-entry').length;
-    const entryIndex = jobCount;
+    const entryIndex = jobEntryCounter++; // always unique, even after removals
     
     const newJobEntry = document.createElement('div');
     newJobEntry.className = 'bg-white rounded-lg p-4 border border-gray-200 job-entry relative';
@@ -3542,7 +3651,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ─── VALIDATION ─────────────────────────────────────────
-    function validateStep(idx) {
+    window.validateStep = function validateStep(idx) {
         const step  = steps[idx];
         let   valid = true;
 
@@ -3565,16 +3674,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (contactType && contactType.value === 'mobile' && mobileInp && !mobileInp.disabled) {
                 const digits = mobileInp.value.replace(/\D/g, '');
-                if (digits.length !== 10) {
+                const required = selectedCountry.maxDigits;
+                if (digits.length !== required) {
                     mobileInp.classList.add('border-red-500');
                     if (contactHint) {
-                        contactHint.innerHTML = '<svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span class="text-red-500">Mobile number must be exactly 10 digits</span>';
+                        contactHint.innerHTML = `<svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> <span class="text-red-500">Mobile number must be exactly ${required} digits for ${selectedCountry.name}</span>`;
                     }
                     valid = false;
                 } else {
                     mobileInp.classList.remove('border-red-500');
                     if (contactHint) {
-                        contactHint.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> 10-digit mobile number';
+                        contactHint.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> ${required}-digit mobile number (${selectedCountry.name})`;
                     }
                 }
             } else if (contactType && contactType.value === 'telephone' && telephoneInp && !telephoneInp.disabled) {
@@ -3625,8 +3735,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // -- Step 1 (idx 0): Special validation for salary range and "Below ₱30,000" input --
-        if (idx === 0) {
+        // -- Step 2 (idx 1): validate salary range and "Below ₱30,000" for every job entry --
+        if (idx === 1) {
             step.querySelectorAll('.job-entry').forEach(jobEntry => {
                 const salaryRangeInput = jobEntry.querySelector('.salary-range-input');
                 const salaryRangeBtn = jobEntry.querySelector('.salary-range-btn');
@@ -3641,7 +3751,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (salaryRangeBtn) salaryRangeBtn.classList.remove('border-red-500');
                     
                     // If "Below ₱30,000" is selected, validate the input field
-                    if (salaryRangeInput && salaryRangeInput.value === 'Below ₱30,000') {
+                    if (salaryRangeInput && salaryRangeInput.value === '__below_30k__') {
+                        if (below30kInput && !below30kInput.value.trim()) {
+                            valid = false;
+                            below30kInput.classList.add('border-red-500');
+                        } else if (below30kInput) {
+                            below30kInput.classList.remove('border-red-500');
+                            // Validate that the amount is less than 30,000
+                            const amount = parseInt(below30kInput.value.replace(/,/g, ''));
+                            if (isNaN(amount) || amount >= 30000) {
+                                valid = false;
+                                below30kInput.classList.add('border-red-500');
+                                alert('Salary amount must be less than ₱30,000');
+                            } else {
+                                // Replace sentinel with the actual numeric value
+                                salaryRangeInput.value = String(amount);
+                            }
+                        }
+                    } else if (salaryRangeInput && salaryRangeInput.value === 'Below ₱30,000') {
                         if (below30kInput && !below30kInput.value.trim()) {
                             valid = false;
                             below30kInput.classList.add('border-red-500');
@@ -3690,6 +3817,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (p) p.classList.remove('border-red-500');
                 });
             }
+
+            // Always check: if "Other" rejection is checked, text must be filled
+            const otherRejectionCb = step.querySelector('.other-rejection-checkbox');
+            const otherRejectionText = step.querySelector('input[name="rejection_reasons_other"]');
+            if (otherRejectionCb && otherRejectionCb.checked) {
+                if (otherRejectionText && !otherRejectionText.value.trim()) {
+                    valid = false;
+                    otherRejectionText.classList.add('border-red-500');
+                    otherRejectionText.placeholder = 'This field is required';
+                } else if (otherRejectionText) {
+                    otherRejectionText.classList.remove('border-red-500');
+                }
+            } else if (otherRejectionText) {
+                otherRejectionText.classList.remove('border-red-500');
+            }
+
+            // Always check: if "Other" coordination is selected, text must be filled
+            const otherCoordCb = step.querySelector('.other-coordination-radio');
+            const otherCoordText = step.querySelector('input[name="coordination_frequency_other"]');
+            if (otherCoordCb && otherCoordCb.checked) {
+                if (otherCoordText && !otherCoordText.value.trim()) {
+                    valid = false;
+                    otherCoordText.classList.add('border-red-500');
+                    otherCoordText.placeholder = 'This field is required';
+                } else if (otherCoordText) {
+                    otherCoordText.classList.remove('border-red-500');
+                }
+            } else if (otherCoordText) {
+                otherCoordText.classList.remove('border-red-500');
+            }
         }
 
         // -- Step 4 (idx 3): consent + at least one lmi_features --
@@ -3705,8 +3862,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const lmiChecked = step.querySelectorAll('input[name="lmi_features[]"]:checked');
-            if (lmiChecked.length === 0) {
+            const lmiFeaturesGroup = step.querySelector('#lmi-features-group');
+            if (lmiChecked.length < 2 ) {
                 valid = false;
+                if (lmiFeaturesGroup) lmiFeaturesGroup.classList.add('border-2', 'border-red-400', 'rounded-lg', 'p-2');
+            } else {
+                if (lmiFeaturesGroup) lmiFeaturesGroup.classList.remove('border-2', 'border-red-400', 'rounded-lg', 'p-2');
+            }
+
+            // If "Other" LMI feature is checked, its text must be filled
+            const lmiOtherCb = step.querySelector('.lmi-other-checkbox');
+            const otherText = step.querySelector('input[name="lmi_features_other"]');
+            if (lmiOtherCb && lmiOtherCb.checked) {
+                if (otherText && !otherText.value.trim()) {
+                    valid = false;
+                    otherText.classList.add('border-red-500');
+                    otherText.placeholder = 'This field is required';
+                } else if (otherText) {
+                    otherText.classList.remove('border-red-500');
+                }
+            } else if (otherText) {
+                otherText.classList.remove('border-red-500');
             }
         }
 
@@ -3767,10 +3943,13 @@ function switchContactType(type) {
         telephoneInput.disabled = true;
         telephoneInput.required = false;
         telephoneInput.value = "";
-        hint.innerHTML = "<svg class=\"w-3 h-3\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\"/></svg> 10-digit mobile number";
+        hint.innerHTML = "<svg class=\"w-3 h-3\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\"/></svg> Enter your mobile number with country code";
         contactTypeInput.value = "mobile";
         toggleMobile.classList.add("bg-white", "text-teal-700", "shadow-sm", "border", "border-gray-200");
         toggleMobile.classList.remove("text-gray-500");
+        // Sync carrier
+        const carrier = document.getElementById('contact_number_carrier');
+        if (carrier) carrier.value = selectedCountry.dial + mobileInput.value;
     } else {
         telephoneWrapper.classList.remove("hidden");
         mobileWrapper.classList.add("hidden");
@@ -3783,9 +3962,143 @@ function switchContactType(type) {
         contactTypeInput.value = "telephone";
         toggleTelephone.classList.add("bg-white", "text-teal-700", "shadow-sm", "border", "border-gray-200");
         toggleTelephone.classList.remove("text-gray-500");
+        // Sync carrier
+        const carrier = document.getElementById('contact_number_carrier');
+        if (carrier) carrier.value = telephoneInput.value;
         telephoneInput.focus();
     }
 }
+
+// ─── Country Code Selector ────────────────────────────────────────────────────
+const COUNTRIES = [
+    { flag: '🇵🇭', name: 'Philippines',   dial: '+63',  maxDigits: 10 },
+    { flag: '🇺🇸', name: 'United States', dial: '+1',   maxDigits: 10 },
+    { flag: '🇬🇧', name: 'United Kingdom',dial: '+44',  maxDigits: 10 },
+    { flag: '🇦🇺', name: 'Australia',     dial: '+61',  maxDigits: 9  },
+    { flag: '🇨🇦', name: 'Canada',        dial: '+1',   maxDigits: 10 },
+    { flag: '🇯🇵', name: 'Japan',         dial: '+81',  maxDigits: 10 },
+    { flag: '🇰🇷', name: 'South Korea',   dial: '+82',  maxDigits: 10 },
+    { flag: '🇸🇬', name: 'Singapore',     dial: '+65',  maxDigits: 8  },
+    { flag: '🇲🇾', name: 'Malaysia',      dial: '+60',  maxDigits: 9  },
+    { flag: '🇮🇩', name: 'Indonesia',     dial: '+62',  maxDigits: 11 },
+    { flag: '🇹🇭', name: 'Thailand',      dial: '+66',  maxDigits: 9  },
+    { flag: '🇻🇳', name: 'Vietnam',       dial: '+84',  maxDigits: 9  },
+    { flag: '🇮🇳', name: 'India',         dial: '+91',  maxDigits: 10 },
+    { flag: '🇨🇳', name: 'China',         dial: '+86',  maxDigits: 11 },
+    { flag: '🇭🇰', name: 'Hong Kong',     dial: '+852', maxDigits: 8  },
+    { flag: '🇹🇼', name: 'Taiwan',        dial: '+886', maxDigits: 9  },
+    { flag: '🇸🇦', name: 'Saudi Arabia',  dial: '+966', maxDigits: 9  },
+    { flag: '🇦🇪', name: 'UAE',           dial: '+971', maxDigits: 9  },
+    { flag: '🇶🇦', name: 'Qatar',         dial: '+974', maxDigits: 8  },
+    { flag: '🇩🇪', name: 'Germany',       dial: '+49',  maxDigits: 11 },
+    { flag: '🇫🇷', name: 'France',        dial: '+33',  maxDigits: 9  },
+    { flag: '🇮🇹', name: 'Italy',         dial: '+39',  maxDigits: 10 },
+    { flag: '🇪🇸', name: 'Spain',         dial: '+34',  maxDigits: 9  },
+    { flag: '🇳🇱', name: 'Netherlands',   dial: '+31',  maxDigits: 9  },
+    { flag: '🇳🇿', name: 'New Zealand',   dial: '+64',  maxDigits: 9  },
+    { flag: '🇧🇷', name: 'Brazil',        dial: '+55',  maxDigits: 11 },
+    { flag: '🇲🇽', name: 'Mexico',        dial: '+52',  maxDigits: 10 },
+    { flag: '🇿🇦', name: 'South Africa',  dial: '+27',  maxDigits: 9  },
+    { flag: '🇳🇬', name: 'Nigeria',       dial: '+234', maxDigits: 10 },
+    { flag: '🇰🇪', name: 'Kenya',         dial: '+254', maxDigits: 9  },
+];
+
+let selectedCountry = COUNTRIES[0]; // Default: Philippines
+
+function renderCountryList(filter = '') {
+    const list = document.getElementById('country-list');
+    if (!list) return;
+
+    const filtered = COUNTRIES.filter(c =>
+        c.name.toLowerCase().includes(filter.toLowerCase()) ||
+        c.dial.includes(filter)
+    );
+
+    list.innerHTML = filtered.length
+        ? filtered.map(c => `
+            <div class="country-option flex items-center gap-3 px-4 py-2.5 hover:bg-teal-50 cursor-pointer text-sm transition border-b border-gray-50 last:border-b-0"
+                 data-dial="${c.dial}" data-flag="${c.flag}" data-name="${c.name}" data-max-digits="${c.maxDigits}">
+                <span class="text-lg">${c.flag}</span>
+                <span class="flex-1 text-gray-700">${c.name}</span>
+                <span class="text-gray-400 font-mono text-xs">${c.dial}</span>
+            </div>`).join('')
+        : '<div class="px-4 py-3 text-sm text-gray-400 text-center">No results found</div>';
+
+    list.querySelectorAll('.country-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            selectedCountry = {
+                flag: opt.dataset.flag,
+                name: opt.dataset.name,
+                dial: opt.dataset.dial,
+                maxDigits: parseInt(opt.dataset.maxDigits),
+            };
+            document.getElementById('country-flag').textContent  = selectedCountry.flag;
+            document.getElementById('country-dial-code').textContent = selectedCountry.dial;
+            document.getElementById('country-dropdown').classList.add('hidden');
+
+            // Update maxlength and hint based on selected country
+            const mobileInput = document.getElementById('mobile-input');
+            if (mobileInput) {
+                mobileInput.maxLength = selectedCountry.maxDigits;
+                mobileInput.value = mobileInput.value.slice(0, selectedCountry.maxDigits);
+            }
+            const hint = document.getElementById('contact-hint');
+            if (hint) {
+                hint.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> ${selectedCountry.maxDigits}-digit mobile number (${selectedCountry.name})`;
+            }
+
+            // Keep carrier in sync
+            const carrier = document.getElementById('contact_number_carrier');
+            if (carrier) carrier.value = selectedCountry.dial + (mobileInput?.value || '');
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    renderCountryList();
+
+    const ccBtn     = document.getElementById('country-code-btn');
+    const ccDropdown= document.getElementById('country-dropdown');
+    const ccSearch  = document.getElementById('country-search');
+
+    // Set initial maxlength for default country (Philippines = 10)
+    const mobileInputInit = document.getElementById('mobile-input');
+    if (mobileInputInit) mobileInputInit.maxLength = selectedCountry.maxDigits;
+
+    if (ccBtn) {
+        ccBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            ccDropdown.classList.toggle('hidden');
+            if (!ccDropdown.classList.contains('hidden')) {
+                ccSearch.value = '';
+                renderCountryList();
+                setTimeout(() => ccSearch.focus(), 50);
+            }
+        });
+    }
+
+    if (ccSearch) {
+        ccSearch.addEventListener('input', () => renderCountryList(ccSearch.value));
+        // Prevent Enter from submitting form while searching
+        ccSearch.addEventListener('keydown', (e) => { if (e.key === 'Enter') e.preventDefault(); });
+    }
+
+    // Close dropdown on outside click
+    document.addEventListener('click', (e) => {
+        if (!ccBtn?.contains(e.target) && !ccDropdown?.contains(e.target)) {
+            ccDropdown?.classList.add('hidden');
+        }
+    });
+
+    // Keep carrier in sync as user types the number
+    const mobileInput = document.getElementById('mobile-input');
+    if (mobileInput) {
+        mobileInput.addEventListener('input', () => {
+            const carrier = document.getElementById('contact_number_carrier');
+            if (carrier) carrier.value = selectedCountry.dial + mobileInput.value;
+        });
+    }
+});
 
 // ─── Telephone Auto-Formatter + Area Code Suggestions ────────────────────────
 document.addEventListener("DOMContentLoaded", function () {
