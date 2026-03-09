@@ -306,9 +306,7 @@
             will-change: transform;
         }
 
-        /* Each card: 5 per "page" with 4 gaps of 12px */
         .story-card-slide {
-            /* width computed by JS; defined here as fallback */
             flex: 0 0 calc(20% - 10px);
             background: white;
             border-radius: 14px;
@@ -414,7 +412,6 @@
             gap: 6px;
         }
 
-        /* admin overlay buttons on story cards */
         .story-card-admin {
             position: absolute;
             top: 5px;
@@ -430,7 +427,6 @@
             opacity: 1;
         }
 
-        /* carousel nav dots */
         .story-dot {
             width: 7px;
             height: 7px;
@@ -449,7 +445,6 @@
             border-radius: 4px;
         }
 
-        /* carousel nav arrow buttons */
         .story-nav-btn {
             width: 30px;
             height: 30px;
@@ -470,7 +465,6 @@
             pointer-events: none;
         }
 
-        /* add-story slot inside carousel */
         .story-add-slot {
             flex: 0 0 calc(20% - 10px);
             min-height: 175px;
@@ -496,7 +490,6 @@
             transform: translateY(-4px);
         }
 
-        /* floating arrow wrapper */
         .stories-carousel-wrapper {
             position: relative;
             padding: 0 20px;
@@ -515,6 +508,65 @@
 
         .story-nav-floating.right {
             right: -6px;
+        }
+
+        /* ══════════════════════════════════════════
+           PESO / JPO DIRECTORY STYLES
+        ══════════════════════════════════════════ */
+
+        .peso-province-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid;
+        }
+
+        .peso-office-card {
+            border: 1px solid #f1f5f9;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .peso-office-card.expanded {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .peso-type-badge-p {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .peso-type-badge-j {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .peso-filter-btn {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
         }
     </style>
 </head>
@@ -1091,13 +1143,10 @@
                                         </ol>
                                     </div>
 
-                                    {{-- ══════════════════════════════════════════
-                                         SUCCESS STORIES CAROUSEL
-                                    ══════════════════════════════════════════ --}}
+                                    {{-- SUCCESS STORIES CAROUSEL --}}
                                     <div x-data="storiesCarousel('{{ $programCarouselId }}', '{{ $c['600'] }}')" x-init="init()"
                                         id="{{ $programCarouselId }}-wrapper">
 
-                                        {{-- Section header: title only, no controls --}}
                                         <div class="flex items-center mb-3">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-1 h-6 rounded-full flex-shrink-0"
@@ -1107,10 +1156,7 @@
                                             </div>
                                         </div>
 
-                                        {{-- Carousel with floating side arrows --}}
                                         <div class="stories-carousel-wrapper">
-
-                                            {{-- Left floating arrow --}}
                                             <div class="story-nav-floating left">
                                                 <button @click="prev()" :disabled="currentPage === 0"
                                                     class="story-nav-btn shadow-md"
@@ -1124,24 +1170,18 @@
                                                 </button>
                                             </div>
 
-                                            {{-- Carousel track --}}
                                             <div class="stories-carousel-outer">
                                                 <div class="stories-carousel-track" :id="trackId">
-
-                                                    {{-- Story cards --}}
                                                     @foreach ($program->stories as $story)
                                                         <div class="story-card-slide">
                                                             <div class="story-card-img">
                                                                 <img src="{{ asset($story->image_path) }}"
                                                                     alt="{{ $story->title }}" loading="lazy">
-
-                                                                {{-- Program badge --}}
                                                                 <span
                                                                     class="absolute bottom-1.5 right-1.5 text-white text-xs font-bold px-1.5 py-0.5 rounded-full"
                                                                     style="background:{{ $c['600'] }}">
                                                                     {{ $program->acronym ?? $program->name }}
                                                                 </span>
-                                                                {{-- Admin buttons --}}
                                                                 <div class="story-card-admin">
                                                                     <button
                                                                         @click.stop="$dispatch('open-modal', { type: 'edit-story', id: {{ $story->id }}, data: { title: {{ json_encode($story->title) }}, link: {{ json_encode($story->link) }} } })"
@@ -1192,7 +1232,6 @@
                                                         </div>
                                                     @endforeach
 
-                                                    {{-- Add story slot --}}
                                                     <button
                                                         @click="$dispatch('open-modal', { type: 'add-story', programId: {{ $program->id }} })"
                                                         class="story-add-slot">
@@ -1203,11 +1242,9 @@
                                                         </svg>
                                                         <span>Add Story</span>
                                                     </button>
+                                                </div>
+                                            </div>
 
-                                                </div>{{-- end track --}}
-                                            </div>{{-- end outer --}}
-
-                                            {{-- Right floating arrow --}}
                                             <div class="story-nav-floating right">
                                                 <button @click="next()" :disabled="currentPage >= totalPages - 1"
                                                     class="story-nav-btn shadow-md"
@@ -1220,10 +1257,8 @@
                                                     </svg>
                                                 </button>
                                             </div>
+                                        </div>
 
-                                        </div>{{-- end stories-carousel-wrapper --}}
-
-                                        {{-- Bottom: page counter + dots --}}
                                         <div class="flex items-center justify-center gap-3 mt-3">
                                             <span class="text-xs font-semibold text-slate-400">
                                                 Page <strong x-text="currentPage + 1"
@@ -1241,11 +1276,8 @@
                                                 </template>
                                             </div>
                                         </div>
-
                                     </div>
-                                    {{-- ══════════════════════════════════════════
-                                         END SUCCESS STORIES CAROUSEL
-                                    ══════════════════════════════════════════ --}}
+                                    {{-- END SUCCESS STORIES CAROUSEL --}}
 
                                 </div>{{-- end lg:col-span-2 --}}
 
@@ -1315,11 +1347,10 @@
                                         </button>
                                     @endif
                                 </div>
-                                {{-- END RIGHT --}}
 
                             </div>
 
-                            {{-- ===== PUBLISH FOOTER BAR ===== --}}
+                            {{-- PUBLISH FOOTER BAR --}}
                             <div class="mt-8 pt-6 border-t border-slate-200 flex items-center justify-between gap-4">
                                 <div class="flex items-center gap-2.5">
                                     <span
@@ -1356,7 +1387,6 @@
                                     @endif
                                 </button>
                             </div>
-                            {{-- ===== END PUBLISH FOOTER BAR ===== --}}
 
                         </div>
                     </div>
@@ -1374,6 +1404,348 @@
 
         </div>
     </div>
+    {{-- ===== END PROGRAMS SECTION ===== --}}
+
+
+    {{-- ═══════════════════════════════════════════════════════════════
+         PESO & JPO DIRECTORY SECTION
+    ═══════════════════════════════════════════════════════════════ --}}
+    <div id="peso-jpo-section" class="max-w-7xl mx-auto px-4 sm:px-6 pb-16" x-data="{
+        selectedProvince: null,
+        filter: 'ALL',
+    
+        provinceConfig: {
+            'DAVAO ORIENTAL': { activeBg: '#16a34a', activeShadow: '#bbf7d0', dotColor: '#16a34a', lightBg: '#f0fdf4', borderColor: '#bbf7d0', textColor: '#15803d' },
+            'DAVAO DE ORO': { activeBg: '#d97706', activeShadow: '#fde68a', dotColor: '#d97706', lightBg: '#fffbeb', borderColor: '#fde68a', textColor: '#b45309' },
+            'DAVAO DEL SUR': { activeBg: '#0284c7', activeShadow: '#bae6fd', dotColor: '#0284c7', lightBg: '#f0f9ff', borderColor: '#bae6fd', textColor: '#0369a1' },
+            'DAVAO OCCIDENTAL': { activeBg: '#7c3aed', activeShadow: '#ddd6fe', dotColor: '#7c3aed', lightBg: '#f5f3ff', borderColor: '#ddd6fe', textColor: '#6d28d9' },
+            'DAVAO DEL NORTE': { activeBg: '#e11d48', activeShadow: '#fecdd3', dotColor: '#e11d48', lightBg: '#fff1f2', borderColor: '#fecdd3', textColor: '#be123c' },
+            'DAVAO CITY': { activeBg: '#0d9488', activeShadow: '#99f6e4', dotColor: '#0d9488', lightBg: '#f0fdfa', borderColor: '#99f6e4', textColor: '#0f766e' },
+        },
+    
+        pesoData: {
+            'DAVAO ORIENTAL': [
+                { type: 'PESO', name: 'PESO DAVAO ORIENTAL', manager: 'Jay O. Dayanghirang', email: 'davorpeso@gmail.com', address: 'Provincial Capitol, Mati City, Davao Oriental' },
+                { type: 'PESO', name: 'PESO MATI CITY', manager: 'Pauline Elsa F. Olita', email: 'olitapaulineelsa@gmail.com', address: 'Mati City, Davao Oriental' },
+                { type: 'PESO', name: 'PESO BANAYBANAY', manager: 'Analie E. Nogaliza', email: 'marialindadalapalan@gmail.com', address: 'Municipality Hall, Poblacion, Banaybanay, Davao Oriental' },
+                { type: 'PESO', name: 'PESO LUPON', manager: 'Anna Mariz R. Feliciados', email: 'mariz.feliciados@gmail.com', address: 'New Municipal Hall, National Highway, Bagumbayan, Lupon, Davao Oriental' },
+                { type: 'PESO', name: 'PESO SAN ISIDRO', manager: 'Edgar S. Lingatong', email: 'pesosanisidro@gmail.com', address: 'San Isidro, Davao Oriental' },
+                { type: 'PESO', name: 'PESO GOVERNOR GENEROSO', manager: 'Juvy P. Marimon', email: 'juvypandac1974@gmail.com', address: 'Governor Generoso, Davao Oriental' },
+                { type: 'PESO', name: 'PESO MANAY', manager: 'Anniellou Joy D. Bitac', email: 'ajdbitac@yahoo.com', address: 'LGU Main Building, Manay, Davao Oriental' },
+                { type: 'PESO', name: 'PESO CARAGA', manager: 'John Kenneth G. Mendoza', email: 'verdantlatency@gmail.com', address: 'DonLeon St., Poblacion, Caraga, Davao Oriental' },
+                { type: 'PESO', name: 'PESO BAGANGA', manager: null, email: 'bagangapesooffice@gmail.com', address: 'Baganga, Davao Oriental' },
+                { type: 'PESO', name: 'PESO CATEEL', manager: 'Bryan Ephraem E. Miguel', email: 'pesocateel@gmail.com', address: '2F Cateel Public Transport Terminal, Poblacion, Cateel, Davao Oriental' },
+                { type: 'PESO', name: 'PESO BOSTON', manager: 'Danilo G. Brillantes', email: 'danilobrillantes@gmail.com', address: 'Municipal Hall, Poblacion, Boston, Davao Oriental' },
+                { type: 'PESO', name: 'PESO TARRAGONA', manager: 'Nenita T. Carasca', email: 'pesotarragona@gmail.com', address: 'LGU Tarragona, Davao Oriental' },
+                { type: 'JPO', name: 'JPO DAVAO ORIENTAL STATE UNIVERSITY', manager: 'Trishea Amor C. Jacobe', email: 'pesodoscst@gmail.com', address: 'City of Mati, Davao Oriental' },
+                { type: 'JPO', name: 'JPO DON BOSCO TRAINING CENTER', manager: 'Nino A. Juarez', email: 'donboscomati12.peso@gmail.com', address: 'City of Mati, Davao Oriental' },
+                { type: 'JPO', name: 'JPO CHRISTIAN ACADEMY OF DAVAO ORIENTAL, INC.', manager: 'Chrystie Paz A. Jandayan', email: 'pyaxz@yahoo.com', address: 'City of Mati, Davao Oriental' },
+                { type: 'JPO', name: 'JPO SAINT MARY\'S COLLEGE OF BAGANGA', manager: 'Mariz M. Labos', email: 'smcbdo.guidance@gmail.com', address: 'Baganga, Davao Oriental' },
+                { type: 'JPO', name: 'JPO MATI POLYTECHNIC COLLEGE', manager: 'Dr. Janice Bernadeth G. Agbong', email: 'polytechnicmati@yahoo.com', address: 'Don Mariano Marcos Ave., Brgy. Sainz, City of Mati, Davao Oriental' },
+            ],
+            'DAVAO DE ORO': [
+                { type: 'PESO', name: 'PESO DAVAO DE ORO', manager: 'Miles A. Atugan', email: 'pesodavaodeoro@gmail.com', address: 'Cabidianan, Nabunturan, Davao de Oro' },
+                { type: 'PESO', name: 'PESO COMPOSTELA', manager: 'Loreto Jr B Doydoy', email: 'pesocteccompostela@gmail.com', address: 'Poblacion, Compostela, Davao de Oro' },
+                { type: 'PESO', name: 'PESO LAAK', manager: 'Philip D. Chiu', email: 'philipdchiu0667@gmail.com', address: 'Poblacion Laak, Davao de Oro' },
+                { type: 'PESO', name: 'PESO MABINI', manager: 'Edwin Rey A. Carmelotes', email: 'mabiniddo.peso8807@gmail.com', address: 'Prk. Makugihon, Cuambog, Mabini, Davao de Oro' },
+                { type: 'PESO', name: 'PESO MACO', manager: 'Concepcion C. Concha', email: 'hrmo_peso_maco@yahoo.com', address: 'Binuangan, Maco, Davao de Oro' },
+                { type: 'PESO', name: 'PESO MARAGUSAN', manager: 'Eveliza W. Pantinople', email: 'peesomaragusan2025@gmail.com', address: 'Brgy. Poblacion, Maragusan' },
+                { type: 'PESO', name: 'PESO MAWAB', manager: 'Anna Ayesa B. Arambala', email: 'peso_mawab@yahoo.com', address: 'Brgy. Poblacion, Mawab' },
+                { type: 'PESO', name: 'PESO MONKAYO', manager: 'Aisa P. Tia', email: 'pesomonkayo@gmail.com', address: 'Poblacion Monkayo, Davao de Oro' },
+                { type: 'PESO', name: 'PESO MONTEVISTA', manager: 'Walter C. Dalagan', email: 'peso.montevista123@gmail.com', address: 'Poblacion Montevista, Davao de Oro' },
+                { type: 'PESO', name: 'PESO NABUNTURAN', manager: 'Marieta Calago', email: 'mayetcalago@gmail.com', address: 'Brgy. Magsaysay, Nabunturan, Davao de Oro' },
+                { type: 'PESO', name: 'PESO NEW BATAAN', manager: 'Estrella L. Potenciano', email: 'pesonewbataan@gmail.com', address: 'Española Street, Cabinuangan, New Bataan, Davao de Oro' },
+                { type: 'PESO', name: 'PESO PANTUKAN', manager: 'Nitchell A. Acedillo, DBA', email: 'pesopantukan2022@gmail.com', address: 'Towsite, Kingking, Pantukan, Davao de Oro' },
+                { type: 'JPO', name: 'JPO ASSUMPTION COLLEGE OF NABUNTURAN', manager: 'Glydyl Dalire', email: 'glendabejona1@gmail.com', address: 'Panabo City' },
+                { type: 'JPO', name: 'JPO DAVAO DE ORO STATE COLLEGE', manager: 'Judalyn J. Forro, MPsych', email: 'judalyn.forro@ddosc.edu.ph', address: 'Compostela, Davao de Oro' },
+                { type: 'JPO', name: 'JPO MONKAYO COLLEGE OF ARTS, SCIENCES AND TECHNOLOGY', manager: 'Mike Bacaro', email: 'rhyrhy0521@gmail.com', address: 'Monkayo, Davao de Oro' },
+                { type: 'JPO', name: 'JPO MACO DE ORO COLLEGE', manager: 'Dr. Anthony Pol Fulache', email: 'macodeorocollege2019@gmail.com', address: 'Prk. 3 Hijo, Maco, Davao de Oro' },
+            ],
+            'DAVAO DEL SUR': [
+                { type: 'PESO', name: 'PESO DAVAO DEL SUR', manager: 'Rolly M. Impas, LPT, MBA, J.D', email: 'davaodelsurpeso@gmail.com', address: 'Provincial Capitol, Matti, Digos City, Davao del Sur' },
+                { type: 'PESO', name: 'PESO DIGOS CITY', manager: 'Shany Lou R. Solatorio, MPA', email: 'digoscitypeso@gmail.com', address: 'Jose Abad Santos St., Digos City, Davao del Sur' },
+                { type: 'PESO', name: 'PESO BANSALAN', manager: 'Cory B. Chatto, REA', email: 'corybaloriocha2@gmail.com', address: 'Bansalan, Davao del Sur' },
+                { type: 'PESO', name: 'PESO HAGONOY', manager: 'Agnes C. Labadan', email: 'neslabadan70@gmail.com', address: 'Hagonoy, Davao del Sur' },
+                { type: 'PESO', name: 'PESO KIBLAWAN', manager: 'Conteza May F. Senoy', email: 'tezafiel02@gmail.com', address: 'Kiblawan, Davao del Sur' },
+                { type: 'PESO', name: 'PESO MAGSAYSAY', manager: 'Leonile P. Escarpe', email: 'magsaysaypeso@gmail.com', address: 'Magsaysay, Davao del Sur' },
+                { type: 'PESO', name: 'PESO MALALAG', manager: 'Juanzo G. Calumpong', email: 'jcalumpong557@gmail.com', address: 'Malalag, Davao del Sur' },
+                { type: 'PESO', name: 'PESO MATANAO', manager: 'Michael Mark B. Dela Victoria', email: 'mdelavictoria24@gmail.com', address: 'Matanao, Davao del Sur' },
+                { type: 'PESO', name: 'PESO PADADA', manager: 'Mark Hill M. Delos Reyes', email: 'wilmeeghot901@gmail.com', address: 'Rizal St. NCO District, Padada, Davao del Sur' },
+                { type: 'PESO', name: 'PESO STA. CRUZ', manager: 'Ma. Cheryl D. Serenatas', email: 'peso_stacruz@yahoo.com', address: 'Sta. Cruz, Davao del Sur' },
+                { type: 'PESO', name: 'PESO SULOP', manager: 'Mary Ann Ferenal-Codilla', email: 'pesosulop07@gmail.com', address: 'Sulop, Davao del Sur' },
+                { type: 'JPO', name: 'JPO COR JESU COLLEGE, INC.', manager: 'Jingle S. Navarez, MAED', email: 'jinglenavarez@g.cjc.edu.ph', address: 'Sacred Heart Ave., Digos City, Davao del Sur' },
+                { type: 'JPO', name: 'JPO DAVAO DEL SUR STATE COLLEGE (SPAMAST DIGOS)', manager: 'Pearl Lettee D. Maunes, MBA', email: 'eraaodigos@umindanao.edu.ph', address: '3361, Jose Abad Santos St., Digos City, Davao del Sur' },
+                { type: 'JPO', name: 'JPO DAVAO DEL SUR STATE COLLEGE (MATTI CAMPUS)', manager: 'Arnie B. Grajo', email: 'jpo@dssc.edu.ph', address: 'Matti, Digos City, Davao del Sur' },
+                { type: 'JPO', name: 'JPO POLYTECHNIC COLLEGE OF DAVAO DEL SUR', manager: 'Dr. Jesusa E. Trinidad, RST, RGC', email: 'lady-ams80@yahoo.com', address: 'Digos City, Davao del Sur' },
+            ],
+            'DAVAO OCCIDENTAL': [
+                { type: 'PESO', name: 'PESO DAVAO OCCIDENTAL', manager: 'Wilson G. Monesit', email: 'pesodavaooccidentall@gmail.com', address: 'Poblacion, Malita, Davao Occidental' },
+                { type: 'PESO', name: 'PESO DON MARCELINO', manager: 'Jorge D. Gildore', email: 'jorge.gildore@gmail.com', address: 'Brgy. Lawa, Don Marcelino, Davao Occidental' },
+                { type: 'PESO', name: 'PESO JOSE ABAD SANTOS', manager: 'Winnie P. Malanas', email: 'winniemalanas43@gmail.com', address: 'Caburan Small, Jose Abad Santos, Davao Occidental' },
+                { type: 'PESO', name: 'PESO MALITA', manager: 'Stelito M. Jumaran', email: 'pesomalitalgu@gmail.com', address: 'Poblacion, Malita, Davao Occidental' },
+                { type: 'PESO', name: 'PESO STA. MARIA', manager: 'Angelo D. Carr', email: 'pesostamaria907@gmail.com', address: 'Poblacion, Santa Maria, Davao Occidental' },
+                { type: 'PESO', name: 'PESO SARANGANI', manager: 'Reaggie Nolan L. Regino', email: 'pesodavaocc@gmail.com', address: 'Mabila, Sarangani, Davao Occidental' },
+                { type: 'JPO', name: 'JPO SPAMAST', manager: 'Deanne Abigail C. Bugawisan', email: 'm.depalubos@spamast.edu.ph', address: 'Malita, Davao Occidental' },
+            ],
+            'DAVAO DEL NORTE': [
+                { type: 'PESO', name: 'PESO DAVAO DEL NORTE', manager: 'Gloria Excelsa S. Pamugas', email: 'ddnpesolmi@gmail.com', address: 'DavNor TechVoc Center, Provincial Government Center, Mankilam, Tagum City' },
+                { type: 'PESO', name: 'PESO TAGUM CITY', manager: 'Mae-Ann M. Ang', email: 'tagumpeso@gmail.com', address: 'New City Hall, Apokon, Tagum City' },
+                { type: 'PESO', name: 'PESO PANABO CITY', manager: 'Cherelle B. Espinosa', email: 'pesopanabocity@gmail.com', address: 'City Parks and Plaza, Brgy. New Pandan, Panabo City' },
+                { type: 'PESO', name: 'PESO ISLAND GARDEN CITY OF SAMAL (IGACOS)', manager: 'Ana Fe C. Luga', email: 'samalpeso@gmail.com', address: 'New City Hall Building, Sitio Maag, Barangay Peñaplata, Samal District, Island Garden City of Samal' },
+                { type: 'PESO', name: 'PESO ASUNCION', manager: 'Eufronia J. Mangle, LPT', email: 'pesoasuncion@gmail.com', address: 'Purok 4, Cambanogoy, Asuncion, Davao del Norte' },
+                { type: 'PESO', name: 'PESO BRAULIO E. DUJALI', manager: 'Allan S. Paraguya', email: 'pesodujali@gmail.com', address: 'Prk.6 Pob. Dujali, Braulio E. Dujali, Davao del Norte' },
+                { type: 'PESO', name: 'PESO CARMEN', manager: 'John Kevin M. Amador', email: 'justpesocarmen@yahoo.com', address: 'Purok 7, Ising (Pob.), Carmen, Davao del Norte' },
+                { type: 'PESO', name: 'PESO KAPALONG', manager: 'Delia Ramos Pernites', email: 'pesokapalongddn@gmail.com', address: 'Maniki, Kapalong, Davao del Norte' },
+                { type: 'PESO', name: 'PESO NEW CORELLA', manager: 'Al B. Biotumas', email: 'pesonewcorella@gmail.com', address: 'Purok 2, Poblacion, New Corella' },
+                { type: 'PESO', name: 'PESO SAN ISIDRO', manager: 'Emily D. Cabanlit', email: 'jash_eryne_triff@yahoo.com', address: 'Prk. Cadena De Amor, Visayan Village, Tagum City' },
+                { type: 'PESO', name: 'PESO STO. TOMAS', manager: 'Magierose M. Flores', email: 'pesotomas23@gmail.com', address: 'Feeder Road 3, Barangay Tibal-og, Santo Tomas, Davao del Norte' },
+                { type: 'PESO', name: 'PESO TALAINGOD', manager: 'Edwin Superioridad', email: 'pesotalaingod72@gmail.com', address: 'Balimba Hills, Talaingod, Davao del Norte' },
+                { type: 'JPO', name: 'JPO ST. MARY\'S COLLEGE OF TAGUM', manager: 'Virginia L. Cordoves', email: 'virginia_cordoves@yahoo.com', address: 'St. Mary\'s College of Tagum, Inc., Tagum City' },
+                { type: 'JPO', name: 'JPO UNIVERSITY OF MINDANAO TAGUM COLLEGE', manager: 'Ansona C. Arboiz', email: 'eraaotagum@umindanao.edu.ph', address: 'Mabini Street, Tagum City' },
+                { type: 'JPO', name: 'JPO UNIVERSITY OF MINDANAO PANABO COLLEGE', manager: 'Glezer V. Niez', email: 'eraaopanabo@umindanao.edu.ph', address: 'Sto. Nino, Panabo City, DDN' },
+                { type: 'JPO', name: 'JPO ACES POLYTECHNIC COLLEGE', manager: 'Mariefe S. Pospos', email: 'acespanabo.jpo@gmail.com', address: 'Brgy. San Francisco, Panabo City' },
+                { type: 'JPO', name: 'JPO ACES TAGUM COLLEGE', manager: 'Alfonso R. Ventures, MSIS', email: 'atcdavnor@gmail.com', address: 'Mankilam, Tagum City, Davao del Norte' },
+                { type: 'JPO', name: 'JPO DAVAO DEL NORTE STATE COLLEGE', manager: 'Maricielo Paula E. Funa', email: 'jpo@dnsc.edu.ph', address: 'Brgy. New Visayas, Panabo City' },
+                { type: 'JPO', name: 'JPO KAPALONG COLLEGE OF AGRICULTURE, SCIENCES AND TECHNOLOGY', manager: 'Ronel G. Dagohoy, DPA', email: 'jpo@kcast.edu.ph', address: 'Maniki, Kapalong, Davao del Norte' },
+                { type: 'JPO', name: 'JPO STO. TOMAS COLLEGE OF AGRICULTURE, SCIENCE AND TECHNOLOGY', manager: 'Anilyn C. Aguspina', email: 'anilynstcastjpo@gmail.com', address: 'STCAST, Santo Tomas, DDN' },
+                { type: 'JPO', name: 'JPO SAMAL ISLAND CITY COLLEGE', manager: 'Richard S. Jimenez, RGC, RPm', email: 'richard.filuga@yahoo.com', address: 'Datu Taganiog St., Brgy. Peñaplata, Samal District, Island Garden City of Samal' },
+                { type: 'JPO', name: 'JPO NORTHLINK TECHNOLOGICAL COLLEGE INC.', manager: 'Geanica N. Garcia, RPm', email: 'geagarcia@northlink.edu.ph', address: 'Along Nat\'l Highway, Brgy. New Pandan, Panabo City' },
+                { type: 'JPO', name: 'JPO UM PEÑAPLATA COLLEGE', manager: 'Hector B. Aguilar', email: 'eraaopenaplata@umindanao.edu.ph', address: 'OBENZA St. Peñaplata, IGaCoS' },
+            ],
+            'DAVAO CITY': [
+                { type: 'PESO', name: 'PESO DAVAO CITY', manager: 'Lilibeth D. Pantinople', email: 'peso@davaocity.gov.ph', address: 'Davao City Recreational Center (Formerly Almendras Gym), Quimpo Boulevard, Davao City' },
+                { type: 'PESO', name: 'AGDAO DISTRICT', manager: 'Erwin W. Cagape', email: 'peso@davaocity.gov.ph', address: 'Agdao District Hall, Lapu Lapu St., Davao City' },
+                { type: 'PESO', name: 'TALOMO DISTRICT', manager: 'Renato S. Salazar', email: 'peso@davaocity.gov.ph', address: '74-A, Matina Crossing, Brgy. Hall, Davao City' },
+                { type: 'PESO', name: 'CALINAN DISTRICT', manager: 'Roselyn C. Tahil', email: 'peso@davaocity.gov.ph', address: 'Near Calinan, Brgy. Hall, Calinan District, Davao City' },
+                { type: 'PESO', name: 'BUNAWAN DISTRICT', manager: 'Camille Bianca E. Sanchez', email: 'peso@davaocity.gov.ph', address: 'Km. 23 Bunawan District Office' },
+                { type: 'PESO', name: 'TUGBOK DISTRICT', manager: 'Charisse E. Tolentino', email: 'peso@davaocity.gov.ph', address: 'Mintal District Hall, Gumamela St., Davao City' },
+                { type: 'PESO', name: 'BAGUIO DISTRICT', manager: 'Alma A. Arancis', email: 'peso@davaocity.gov.ph', address: 'PESO Baguio District, Baguio Proper, Davao City' },
+                { type: 'PESO', name: 'BUHANGIN DISTRICT', manager: 'Shirly D. Sahid', email: 'peso@davaocity.gov.ph', address: 'Buhangin Gym, Buhangin Proper, Davao City' },
+                { type: 'PESO', name: 'TORIL DISTRICT', manager: 'Melina I. Isidro', email: 'peso@davaocity.gov.ph', address: 'Toril District Hall, Agton St., Toril Proper, Davao City' },
+                { type: 'JPO', name: 'JPO UNIVERSITY OF MINDANAO (BOLTON CAMPUS)', manager: 'Reynaldo C. Castro', email: 'studentdev@umindanao.edu.ph', address: 'Bolton St., Poblacion District, Davao City' },
+                { type: 'JPO', name: 'JPO HOLY CROSS OF DAVAO COLLEGE', manager: 'Romil L. Torrejos', email: 'externalrelations@hcdc.edu.ph', address: 'Sta. Ana Avenue cor. C. de Guzman St., Brgy. 14-B, Davao City' },
+                { type: 'JPO', name: 'JPO UNIVERSITY OF SOUTHEASTERN PHILIPPINES', manager: 'Dr. Alma Mae G. Salinas', email: 'cac@usep.edu.ph', address: 'Iñigo St., Bo. Obrero, Davao City' },
+                { type: 'JPO', name: 'JPO MAPÚA MALAYAN COLLEGES MINDANAO', manager: 'Trisha Mae A. Menoy', email: 'ccp@mcm.edu.ph', address: 'Gen. Douglas MacArthur Hwy, Talomo, Davao City' },
+            ],
+        },
+    
+        get provinces() { return Object.keys(this.pesoData); },
+    
+        get cfg() {
+            return this.selectedProvince ? this.provinceConfig[this.selectedProvince] : null;
+        },
+    
+        get offices() {
+            if (!this.selectedProvince) return [];
+            const all = this.pesoData[this.selectedProvince];
+            return this.filter === 'ALL' ? all : all.filter(o => o.type === this.filter);
+        },
+    
+        get pesoCount() {
+            return this.selectedProvince ? this.pesoData[this.selectedProvince].filter(o => o.type === 'PESO').length : 0;
+        },
+    
+        get jpoCount() {
+            return this.selectedProvince ? this.pesoData[this.selectedProvince].filter(o => o.type === 'JPO').length : 0;
+        },
+    
+        selectProvince(prov) {
+            this.selectedProvince = (this.selectedProvince === prov) ? null : prov;
+            this.filter = 'ALL';
+        },
+    
+        expandedCard: null,
+        toggleCard(idx) {
+            this.expandedCard = (this.expandedCard === idx) ? null : idx;
+        },
+    }">
+
+        {{-- Section Header --}}
+        <div class="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 rounded-2xl px-8 py-7 shadow-2xl mb-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-white font-bold text-2xl md:text-3xl">PESO & JPO Directory</h2>
+                    <p class="text-slate-300 text-sm md:text-base">Public Employment Service Offices & Job Placement
+                        Offices — Region XI</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="p-6">
+
+                {{-- Province selector label --}}
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Select a Province / City</p>
+
+                {{-- Province Buttons Grid --}}
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                    <template x-for="prov in provinces" :key="prov">
+                        <button @click="selectProvince(prov)"
+                            :style="selectedProvince === prov ?
+                                `background:${provinceConfig[prov].activeBg}; color:white; border-color:${provinceConfig[prov].activeBg}; box-shadow:0 3px 10px ${provinceConfig[prov].activeShadow}` :
+                                `background:white; color:${provinceConfig[prov].textColor}; border-color:${provinceConfig[prov].borderColor}`"
+                            class="peso-province-btn">
+                            <span
+                                :style="selectedProvince === prov ?
+                                    'background:rgba(255,255,255,0.6)' :
+                                    `background:${provinceConfig[prov].dotColor}`"
+                                style="width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block;"></span>
+                            <span class="leading-snug text-left" x-text="prov"></span>
+                        </button>
+                    </template>
+                </div>
+
+                {{-- Province Office Panel --}}
+                <div x-show="selectedProvince && cfg" x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 translate-y-1"
+                    x-transition:enter-end="opacity-100 translate-y-0">
+
+                    {{-- Sub-header with counts + filter --}}
+                    <div class="rounded-xl p-4 mb-4 flex flex-wrap items-center justify-between gap-3"
+                        :style="`background:${cfg ? cfg.lightBg : '#f8fafc'}; border:1px solid ${cfg ? cfg.borderColor : '#e2e8f0'}`">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-base" x-text="selectedProvince"></h3>
+                            <div class="flex gap-4 mt-1">
+                                <span class="text-xs text-slate-500">
+                                    <strong class="text-green-600" x-text="pesoCount"></strong> PESO Offices
+                                </span>
+                                <span class="text-xs text-slate-500">
+                                    <strong class="text-blue-600" x-text="jpoCount"></strong> JPO Offices
+                                </span>
+                            </div>
+                        </div>
+                        {{-- Filter Pills --}}
+                        <div class="flex gap-1 bg-white rounded-lg p-1 border border-slate-200">
+                            <template x-for="f in ['ALL','PESO','JPO']" :key="f">
+                                <button @click="filter = f; expandedCard = null" class="peso-filter-btn"
+                                    :style="filter === f ? 'background:#1e293b; color:white' :
+                                        'background:transparent; color:#64748b'"
+                                    x-text="f">
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- Office Cards --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                        <template x-for="(office, idx) in offices" :key="idx">
+                            <div class="peso-office-card" :class="expandedCard === idx ? 'expanded' : ''"
+                                :style="expandedCard === idx ?
+                                    `border-color:${cfg.borderColor}; background:${cfg.lightBg}` :
+                                    'border-color:#f1f5f9; background:#ffffff'">
+
+                                {{-- Card Header / Toggle --}}
+                                <button @click="toggleCard(idx)"
+                                    class="w-full flex items-center justify-between p-3.5 text-left"
+                                    style="background:none; border:none; cursor:pointer;">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        {{-- Icon --}}
+                                        <div class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+                                            :style="office.type === 'PESO' ? 'background:#16a34a' : 'background:#2563eb'">
+                                            <span x-text="office.type === 'PESO' ? 'P' : 'J'"></span>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-semibold text-slate-800 truncate"
+                                                x-text="office.name"></p>
+                                            <p x-show="office.manager" class="text-xs text-slate-400 truncate"
+                                                x-text="office.manager"></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+                                        <span
+                                            :class="office.type === 'PESO' ? 'peso-type-badge-p' : 'peso-type-badge-j'"
+                                            x-text="office.type"></span>
+                                        <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform duration-200"
+                                            :style="expandedCard === idx ? 'transform:rotate(180deg)' : ''"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </button>
+
+                                {{-- Expanded Details --}}
+                                <div x-show="expandedCard === idx" x-transition class="px-4 pb-4 grid gap-3"
+                                    :style="`border-top:1px solid ${cfg.borderColor}`">
+
+                                    <div x-show="office.manager" class="flex items-start gap-2.5 pt-3">
+                                        <svg class="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        <div>
+                                            <p class="text-xs text-slate-400 uppercase tracking-wide font-semibold"
+                                                x-text="office.type === 'PESO' ? 'PESO Manager' : 'JPO Manager'"></p>
+                                            <p class="text-sm text-slate-700" x-text="office.manager"></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-start gap-2.5">
+                                        <svg class="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        <div>
+                                            <p class="text-xs text-slate-400 uppercase tracking-wide font-semibold">
+                                                Email Address</p>
+                                            <a :href="`mailto:${office.email}`"
+                                                class="text-sm text-blue-600 hover:underline break-all"
+                                                x-text="office.email"></a>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-start gap-2.5">
+                                        <svg class="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        <div>
+                                            <p class="text-xs text-slate-400 uppercase tracking-wide font-semibold">
+                                                Address</p>
+                                            <p class="text-sm text-slate-700" x-text="office.address"></p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Empty state --}}
+                    <p x-show="offices.length === 0" class="text-center text-slate-400 text-sm py-10">No offices
+                        found.</p>
+
+                </div>
+
+                {{-- Empty state: no province selected --}}
+                <div x-show="!selectedProvince" class="text-center py-12 text-slate-300">
+                    <svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    <p class="text-sm font-medium text-slate-400">Select a province above to view its PESO and JPO
+                        offices.</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {{-- ═══════════════════════════════════════════════════════════════
+         END PESO & JPO DIRECTORY SECTION
+    ═══════════════════════════════════════════════════════════════ --}}
+
 
     {{-- CTA SECTION --}}
     <div class="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 py-20 mt-16 relative group/cta">
@@ -1470,9 +1842,8 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">
-                            Slide Image
-                            <span x-show="modal.type === 'edit-slide'" class="text-slate-400 font-normal">(leave blank
-                                to keep current)</span>
+                            Slide Image <span x-show="modal.type === 'edit-slide'"
+                                class="text-slate-400 font-normal">(leave blank to keep current)</span>
                         </label>
                         <div x-show="form.image_preview || (modal.type === 'edit-slide' && form.image_url)"
                             class="mb-2">
@@ -1818,9 +2189,8 @@
 
     <script>
         /* ══════════════════════════════════════════════════════
-                           STORIES CAROUSEL — Alpine component factory
-                           One independent instance per program accordion.
-                        ══════════════════════════════════════════════════════ */
+                       STORIES CAROUSEL — Alpine component factory
+                    ══════════════════════════════════════════════════════ */
         function storiesCarousel(wrapperId, accentColor) {
             return {
                 wrapperId,
@@ -1835,30 +2205,21 @@
                         this.recalc();
                         window.addEventListener('resize', () => this.recalc());
 
-                        // ── Scroll wheel → horizontal page navigation ──
                         const wrapper = document.getElementById(this.wrapperId + '-wrapper');
                         if (wrapper) {
                             let _wheelLocked = false;
                             wrapper.addEventListener('wheel', (e) => {
-                                // Only intercept when there are multiple pages
                                 if (this.totalPages <= 1) return;
-
                                 const isScrollingDown = e.deltaY > 0;
                                 const atStart = this.currentPage === 0;
                                 const atEnd = this.currentPage >= this.totalPages - 1;
-
-                                // If we're at a boundary in the scroll direction, let the
-                                // page scroll normally so the user isn't trapped.
                                 if ((isScrollingDown && atEnd) || (!isScrollingDown && atStart)) return;
-
-                                // Otherwise hijack the scroll: move carousel page instead.
                                 e.preventDefault();
                                 if (_wheelLocked) return;
                                 _wheelLocked = true;
                                 setTimeout(() => {
                                     _wheelLocked = false;
-                                }, 500); // debounce
-
+                                }, 500);
                                 if (isScrollingDown) {
                                     this.next();
                                 } else {
@@ -1874,39 +2235,29 @@
                 recalc() {
                     const track = document.getElementById(this.trackId);
                     if (!track) return;
-
                     const cards = track.querySelectorAll('.story-card-slide, .story-add-slot');
                     const total = cards.length;
                     this.totalPages = Math.max(1, Math.ceil(total / this.PER_PAGE));
-
-                    // Clamp currentPage after possible DOM changes
                     if (this.currentPage >= this.totalPages) {
                         this.currentPage = this.totalPages - 1;
                     }
-
-                    // Set card widths dynamically so 5 fit perfectly
                     const outerWidth = track.parentElement.offsetWidth;
                     const gap = 12;
                     const cardWidth = (outerWidth - gap * (this.PER_PAGE - 1)) / this.PER_PAGE;
-
                     cards.forEach(card => {
                         card.style.flex = `0 0 ${cardWidth}px`;
                         card.style.width = `${cardWidth}px`;
                     });
-
                     this.slide();
                 },
 
                 slide() {
                     const track = document.getElementById(this.trackId);
                     if (!track) return;
-
                     const outerWidth = track.parentElement.offsetWidth;
                     const gap = 12;
                     const cardWidth = (outerWidth - gap * (this.PER_PAGE - 1)) / this.PER_PAGE;
-                    const pageWidth = this.PER_PAGE * cardWidth + (this.PER_PAGE - 1) * gap +
-                        gap; // +gap for the gap after last card
-
+                    const pageWidth = this.PER_PAGE * cardWidth + (this.PER_PAGE - 1) * gap + gap;
                     track.style.transform = `translateX(-${this.currentPage * pageWidth}px)`;
                 },
 
@@ -1916,14 +2267,12 @@
                         this.slide();
                     }
                 },
-
                 next() {
                     if (this.currentPage < this.totalPages - 1) {
                         this.currentPage++;
                         this.slide();
                     }
                 },
-
                 goTo(page) {
                     this.currentPage = page;
                     this.slide();
