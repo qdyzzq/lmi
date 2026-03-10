@@ -306,7 +306,6 @@ class ProgramAdminController extends Controller
             'excerpt'       => 'required|string',
             'link'          => 'nullable|url',
             'program_label' => 'required|string',
-            'color'         => 'required|string',
             'image'         => 'required|image',
         ]);
 
@@ -326,7 +325,6 @@ class ProgramAdminController extends Controller
             'excerpt'       => 'required|string',
             'link'          => 'nullable|url',
             'program_label' => 'required|string',
-            'color'         => 'required|string',
             'image'         => 'nullable|image',
         ]);
 

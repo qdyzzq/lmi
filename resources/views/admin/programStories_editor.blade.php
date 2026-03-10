@@ -1259,24 +1259,45 @@
 
                                 {{-- Dropdown body --}}
                                 <div x-show="isOpen(entry.id)"
-                                    class="border-t border-slate-100 px-4 py-3 flex flex-col gap-2 bg-slate-50">
+                                    class="border-t border-slate-100 px-4 py-4 flex flex-col gap-3 bg-slate-50">
 
-                                    <template x-if="entry.email">
-                                        <div class="flex items-center gap-2">
-                                            <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    {{-- Manager --}}
+                                    <template x-if="entry.manager">
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                             </svg>
-                                            <a :href="'mailto:' + entry.email" class="text-xs text-blue-500 hover:underline truncate" x-text="entry.email" @click.stop></a>
+                                            <div>
+                                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Manager</p>
+                                                <p class="text-xs text-slate-700 font-medium" style="text-transform: capitalize;" x-text="entry.manager.toLowerCase()"></p>
+                                            </div>
                                         </div>
                                     </template>
 
+                                    {{-- Email --}}
+                                    <template x-if="entry.email">
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                            <div>
+                                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Email Address</p>
+                                                <a :href="'mailto:' + entry.email" class="text-xs text-blue-500 hover:underline" x-text="entry.email" @click.stop></a>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    {{-- Address --}}
                                     <template x-if="entry.address">
                                         <div class="flex items-start gap-2">
                                             <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
-                                            <span class="text-xs text-slate-500 leading-relaxed" x-text="entry.address"></span>
+                                            <div>
+                                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Address</p>
+                                                <span class="text-xs text-slate-700 leading-relaxed" style="text-transform: capitalize;" x-text="entry.address.toLowerCase()"></span>
+                                            </div>
                                         </div>
                                     </template>
 
@@ -2988,7 +3009,12 @@
         .then(html => {
             const doc     = new DOMParser().parseFromString(html, 'text/html');
             const newBody = doc.getElementById('program-body-' + programId);
-            if (newBody) body.innerHTML = newBody.innerHTML;
+            if (newBody) {
+                body.innerHTML = newBody.innerHTML;
+                // Re-init Alpine on the new inner nodes (stories carousel,
+                // buttons, testimonials etc.) so they are fully reactive.
+                if (window.Alpine) Alpine.initTree(body);
+            }
             body.style.opacity       = '1';
             body.style.pointerEvents = '';
         })
@@ -3000,6 +3026,11 @@
     }
 
     // Refreshes just the carousel section (used after add/edit/delete slide).
+    // Instead of replacing the DOM node (which breaks Alpine's existing instance,
+    // leaks the autoplay interval, and causes double-init), we fetch the fresh
+    // server-rendered page, parse the new slides JSON from the x-data attribute,
+    // and directly mutate the live Alpine component's reactive `slides` array.
+    // Alpine's reactivity system then updates the DOM automatically.
     function refreshCarousel() {
         const section = document.getElementById('carousel-section');
         if (!section) { window.location.reload(); return; }
@@ -3021,10 +3052,36 @@
         .then(html => {
             const doc        = new DOMParser().parseFromString(html, 'text/html');
             const newSection = doc.getElementById('carousel-section');
+
             if (newSection) {
-                section.replaceWith(newSection);
-                if (window.Alpine) Alpine.initTree(newSection);
+                // Parse the fresh slides array from the server-rendered x-data attribute.
+                // The attribute looks like: x-data="carouselSection([{...}, ...])"
+                const xDataAttr = newSection.getAttribute('x-data') || '';
+                const match = xDataAttr.match(/^carouselSection\(([\s\S]*)\)$/);
+
+                if (match) {
+                    try {
+                        const freshSlides = JSON.parse(match[1]);
+                        // Mutate the LIVE Alpine instance — no DOM swap, no re-init.
+                        const alpineData = section._x_dataStack?.[0];
+                        if (alpineData) {
+                            alpineData.slides = freshSlides;
+                            // Clamp currentSlide to valid range after add/delete.
+                            alpineData.currentSlide = Math.min(
+                                alpineData.currentSlide,
+                                Math.max(0, freshSlides.length - 1)
+                            );
+                        } else {
+                            window.location.reload(); return;
+                        }
+                    } catch (e) {
+                        window.location.reload(); return;
+                    }
+                } else {
+                    window.location.reload(); return;
+                }
             }
+
             section.style.opacity       = '1';
             section.style.pointerEvents = '';
         })
@@ -3060,7 +3117,12 @@
         .then(html => {
             const doc          = new DOMParser().parseFromString(html, 'text/html');
             const newContainer = doc.getElementById('programs-ajax-container');
-            if (newContainer) container.innerHTML = newContainer.innerHTML;
+            if (newContainer) {
+                container.innerHTML = newContainer.innerHTML;
+                // Re-init Alpine on new child nodes so accordions and
+                // inner components are fully reactive after the swap.
+                if (window.Alpine) Alpine.initTree(container);
+            }
             container.style.opacity       = '1';
             container.style.pointerEvents = '';
 

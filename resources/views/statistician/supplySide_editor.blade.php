@@ -75,6 +75,11 @@
         .ql-editor .ql-size-36pt { font-size: 36pt; }
         .ql-editor .ql-size-48pt { font-size: 48pt; }
         .ql-editor .ql-size-72pt { font-size: 72pt; }
+
+        /* Ensure Quill HTML output renders bullets correctly everywhere */
+        [x-html] ul, .prose ul { list-style-type: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
+        [x-html] ol, .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
+        [x-html] li, .prose li { margin: 0.2rem 0; display: list-item; }
     </style>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -541,7 +546,7 @@
                                     </div>
                                 </div>
                                 <!-- Dynamic Analysis Text — scrollable when content is long (exact copy) -->
-                                <div class="flex-1 overflow-y-auto custom-scrollbar space-y-4 text-sm text-slate-700 whitespace-pre-line pr-1"
+                                <div class="flex-1 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-slate-700 pr-1"
                                      style="max-height: 380px;"
                                      x-html="analysisText || '<em class=\'text-slate-400\'>No content yet.</em>'">
                                 </div>

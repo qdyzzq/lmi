@@ -359,21 +359,21 @@
                                 data-original="{{ $submission->industry_sector }}"
                                 data-label="Industry Sector"
                                 class="editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" disabled>
-                            <option value="Accommodation & Food Service" {{ $submission->industry_sector == 'Accommodation & Food Service' ? 'selected' : '' }}>Accommodation & Food Service</option>
-                            <option value="Administrative & Support Services" {{ $submission->industry_sector == 'Administrative & Support Services' ? 'selected' : '' }}>Administrative & Support Services</option>
+                            <option value="Accommodation & Food Service" {{ $submission->industry_sector == 'Accommodation & Food Service' ? 'selected' : '' }}>Accommodation & Food Service (Hotels, Resorts, Restaurants, Fast Food Chains, Catering Services)</option>
+                            <option value="Administrative & Support Services" {{ $submission->industry_sector == 'Administrative & Support Services' ? 'selected' : '' }}>Administrative & Support Services (Security Agencies, Manpower/Recruitment Agencies, Call Centers, Travel Agencies, Janitorial Services)</option>
                             <option value="Agriculture, Forestry, Fishing & Mining" {{ $submission->industry_sector == 'Agriculture, Forestry, Fishing & Mining' ? 'selected' : '' }}>Agriculture, Forestry, Fishing & Mining</option>
                             <option value="Construction" {{ $submission->industry_sector == 'Construction' ? 'selected' : '' }}>Construction</option>
-                            <option value="Education" {{ $submission->industry_sector == 'Education' ? 'selected' : '' }}>Education</option>
-                            <option value="Electricity, Gas, Water & Waste Management" {{ $submission->industry_sector == 'Electricity, Gas, Water & Waste Management' ? 'selected' : '' }}>Electricity, Gas, Water & Waste Management</option>
-                            <option value="Financial & Insurance Activities" {{ $submission->industry_sector == 'Financial & Insurance Activities' ? 'selected' : '' }}>Financial & Insurance Activities</option>
-                            <option value="Human Health & Social Work" {{ $submission->industry_sector == 'Human Health & Social Work' ? 'selected' : '' }}>Human Health & Social Work</option>
-                            <option value="Information & Communication" {{ $submission->industry_sector == 'Information & Communication' ? 'selected' : '' }}>Information & Communication</option>
+                            <option value="Education" {{ $submission->industry_sector == 'Education' ? 'selected' : '' }}>Education (Private Schools, Colleges, Universities, Training Centers)</option>
+                            <option value="Electricity, Gas, Water & Waste Management" {{ $submission->industry_sector == 'Electricity, Gas, Water & Waste Management' ? 'selected' : '' }}>Electricity, Gas, Water & Waste Management (Power Plants, Electric Co-ops, Water Districts, Garbage/Recycling Firms)</option>
+                            <option value="Financial & Insurance Activities" {{ $submission->industry_sector == 'Financial & Insurance Activities' ? 'selected' : '' }}>Financial & Insurance Activities (Banks, Pawnshops, Lending Investors, Insurance Companies)</option>
+                            <option value="Human Health & Social Work" {{ $submission->industry_sector == 'Human Health & Social Work' ? 'selected' : '' }}>Human Health & Social Work (Hospital, Medical Clinics, Diagnostic Labs, Nursing Homes)</option>
+                            <option value="Information & Communication" {{ $submission->industry_sector == 'Information & Communication' ? 'selected' : '' }}>Information & Communication (Software Companies, ISPs, Telecoms, TV/Radio Stations, Non-Voice Tech BPO)</option>
                             <option value="Manufacturing" {{ $submission->industry_sector == 'Manufacturing' ? 'selected' : '' }}>Manufacturing</option>
-                            <option value="Other Service Activities" {{ $submission->industry_sector == 'Other Service Activities' ? 'selected' : '' }}>Other Service Activities</option>
-                            <option value="Professional, Scientific & Technical Services" {{ $submission->industry_sector == 'Professional, Scientific & Technical Services' ? 'selected' : '' }}>Professional, Scientific & Technical Services</option>
-                            <option value="Real Estate Activities" {{ $submission->industry_sector == 'Real Estate Activities' ? 'selected' : '' }}>Real Estate Activities</option>
-                            <option value="Transportation, Storage & Logistics" {{ $submission->industry_sector == 'Transportation, Storage & Logistics' ? 'selected' : '' }}>Transportation, Storage & Logistics</option>
-                            <option value="Wholesale & Retail Trade" {{ $submission->industry_sector == 'Wholesale & Retail Trade' ? 'selected' : '' }}>Wholesale & Retail Trade</option>
+                            <option value="Other Service Activities" {{ $submission->industry_sector == 'Other Service Activities' ? 'selected' : '' }}>Other Service Activities (Repairs Shops, Beauty Salons, Spas, Laundry Shops, Funeral)</option>
+                            <option value="Professional, Scientific & Technical Services" {{ $submission->industry_sector == 'Professional, Scientific & Technical Services' ? 'selected' : '' }}>Professional, Scientific & Technical Services (Law Firms, Accounting/Auditing Firms, Engineering/Architectural Firms, Advertising Agencies)</option>
+                            <option value="Real Estate Activities" {{ $submission->industry_sector == 'Real Estate Activities' ? 'selected' : '' }}>Real Estate Activities (Real Estate Developers, Lessor of Apartment/Office Space)</option>
+                            <option value="Transportation, Storage & Logistics" {{ $submission->industry_sector == 'Transportation, Storage & Logistics' ? 'selected' : '' }}>Transportation, Storage & Logistics (Trucking/Hauling Services, Warehousing, Shipping Lines, Courier Services)</option>
+                            <option value="Wholesale & Retail Trade" {{ $submission->industry_sector == 'Wholesale & Retail Trade' ? 'selected' : '' }}>Wholesale & Retail Trade (Trading Companies, Malls, Hardware Stores, Car Dealers, Online Shops, etc.)</option>
                         </select>
                     </td>
                 </tr>
@@ -729,7 +729,11 @@
                         <td class="px-6 py-4">
                             <div class="space-y-2">
                                 @php
-                                    $lmiFeatures = is_array($submission->engagement->lmi_features) ? $submission->engagement->lmi_features : [];
+                                    $lmiFeatures = is_array($submission->engagement->lmi_features) 
+                                        ? $submission->engagement->lmi_features 
+                                        : (is_string($submission->engagement->lmi_features) 
+                                            ? json_decode($submission->engagement->lmi_features, true) ?? [] 
+                                            : []);
                                     // Detect if an "Other: ..." value exists
                                     $lmiOtherValue = '';
                                     foreach ($lmiFeatures as $f) {

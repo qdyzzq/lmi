@@ -8,7 +8,7 @@ class CarouselSlide extends Model
 {
      protected $fillable = [
         'title', 'excerpt', 'link', 'image_path',
-        'program_label', 'color', 'sort_order', 'is_active'
+        'program_label',  'sort_order', 'is_active'
     ];
 
     

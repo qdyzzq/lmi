@@ -722,9 +722,12 @@
                     _fuseCache: {},
                     _filteredCache: null,
                     _filteredCacheKey: '',
-                    typeColors: [
-                        { main: '#3b82f6', bg: '#eff6ff', border: '#bfdbfe' },
-                        { main: '#f97316', bg: '#fff7ed', border: '#fed7aa' },
+                    // Fixed color map — pinned by type name so public & admin always match
+                    typeColorMap: {
+                        'PESO': { main: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
+                        'JPO':  { main: '#3b82f6', bg: '#eff6ff', border: '#bfdbfe' },
+                    },
+                    typeColorFallbacks: [
                         { main: '#10b981', bg: '#ecfdf5', border: '#a7f3d0' },
                         { main: '#8b5cf6', bg: '#f5f3ff', border: '#ddd6fe' },
                         { main: '#ec4899', bg: '#fdf2f8', border: '#fbcfe8' },
@@ -737,8 +740,11 @@
                         return [...new Set(all.map(e => e.type).filter(Boolean))].sort();
                     },
                     typeColor(type, part) {
-                        const idx = this.officeTypes.indexOf(type);
-                        return (this.typeColors[(idx === -1 ? 0 : idx) % this.typeColors.length])[part];
+                        if (this.typeColorMap[type]) return this.typeColorMap[type][part];
+                        // Unknown types get a fallback color by alphabetical index
+                        const unknowns = this.officeTypes.filter(t => !this.typeColorMap[t]);
+                        const idx = unknowns.indexOf(type);
+                        return this.typeColorFallbacks[(idx === -1 ? 0 : idx) % this.typeColorFallbacks.length][part];
                     },
                     selectProvince(val) {
                         this.province = val;
@@ -964,23 +970,43 @@
                                         x-transition:leave="transition ease-in duration-150"
                                         x-transition:leave-start="opacity-100 translate-y-0"
                                         x-transition:leave-end="opacity-0 -translate-y-1"
-                                        class="border-t border-slate-100 px-4 py-3 flex flex-col gap-2 bg-slate-50"
+                                        class="border-t border-slate-100 px-4 py-4 flex flex-col gap-3 bg-slate-50"
                                         x-cloak>
-                                        <template x-if="entry.email">
-                                            <div class="flex items-center gap-2">
-                                                <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        {{-- Manager --}}
+                                        <template x-if="entry.manager">
+                                            <div class="flex items-start gap-2">
+                                                <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                 </svg>
-                                                <a :href="'mailto:' + entry.email" class="text-xs text-blue-500 hover:underline truncate" x-text="entry.email"></a>
+                                                <div>
+                                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Manager</p>
+                                                    <p class="text-xs text-slate-700 font-medium" style="text-transform: capitalize;" x-text="entry.manager.toLowerCase()"></p>
+                                                </div>
                                             </div>
                                         </template>
+                                        {{-- Email --}}
+                                        <template x-if="entry.email">
+                                            <div class="flex items-start gap-2">
+                                                <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                </svg>
+                                                <div>
+                                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Email Address</p>
+                                                    <a :href="'mailto:' + entry.email" class="text-xs text-blue-500 hover:underline" x-text="entry.email"></a>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        {{-- Address --}}
                                         <template x-if="entry.address">
                                             <div class="flex items-start gap-2">
                                                 <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 </svg>
-                                                <span class="text-xs text-slate-500 leading-relaxed" style="text-transform: capitalize;" x-text="entry.address.toLowerCase()"></span>
+                                                <div>
+                                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Address</p>
+                                                    <span class="text-xs text-slate-700 leading-relaxed" style="text-transform: capitalize;" x-text="entry.address.toLowerCase()"></span>
+                                                </div>
                                             </div>
                                         </template>
                                     </div>

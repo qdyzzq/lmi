@@ -47,6 +47,23 @@
             .ql-size-48pt { font-size: 48pt; }
             .ql-size-72pt { font-size: 72pt; }
 
+            /* ── Bullet & list rendering fix ──
+               Tailwind resets all list styles to none. These rules restore them
+               for any element that renders Quill HTML output via x-html.
+               Applied broadly so it covers all current and future Quill editors. */
+            [x-html] ul, .prose ul { list-style-type: disc !important; padding-left: 1.5rem !important; margin: 0.5rem 0 !important; }
+            [x-html] ol, .prose ol { list-style-type: decimal !important; padding-left: 1.5rem !important; margin: 0.5rem 0 !important; }
+            [x-html] li, .prose li { display: list-item !important; margin: 0.25rem 0 !important; }
+            [x-html] ul ul, .prose ul ul { list-style-type: circle !important; }
+            [x-html] ul ul ul, .prose ul ul ul { list-style-type: square !important; }
+            [x-html] .ql-indent-1 { padding-left: 3rem !important; }
+            [x-html] .ql-indent-2 { padding-left: 4.5rem !important; }
+            [x-html] .ql-indent-3 { padding-left: 6rem !important; }
+            [x-html] blockquote { border-left: 4px solid #cbd5e1; padding-left: 1rem; color: #64748b; margin: 0.5rem 0; }
+            [x-html] h1 { font-size: 1.5rem; font-weight: 700; margin: 0.75rem 0; }
+            [x-html] h2 { font-size: 1.25rem; font-weight: 700; margin: 0.5rem 0; }
+            [x-html] h3 { font-size: 1.1rem; font-weight: 600; margin: 0.5rem 0; }
+
             /* ── Hero: smaller title on small phones ── */
             @media (max-width: 480px) {
                 .hero-title-supply { font-size: 1.6rem !important; line-height: 1.2 !important; }
@@ -163,7 +180,7 @@
             <div class="relative z-10 h-full flex items-center justify-center px-4">
                 <div class="text-center text-white">
                     <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-lg hero-title-supply">
-                        Education to Employement Pipeline
+                        Education to Employment Pipeline
                     </h1>
                     <p class="text-base md:text-xl lg:text-2xl text-slate-100 drop-shadow-md">
                         Regional Labor Market Intelligence & Trends

@@ -777,7 +777,7 @@
                                     <template x-if="!result.hard_skills || result.hard_skills.length === 0">
                                         <div class="text-center py-6">
                                             <div class="text-3xl mb-2 opacity-20">✓</div>
-                                            <p class="text-sm text-gray-400 font-medium">No technical skill gaps identified</p>
+                                            <p class="text-sm text-gray-400 font-medium">No specific technical skill gaps identified</p>
                                         </div>
                                     </template>
                                 </div>
@@ -1112,21 +1112,21 @@
                             </svg>
                         </button>
                         <div id="industry-dropdown-menu"
-                            class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
-                            <div data-value="Accommodation &amp; Food Service" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Accommodation &amp; Food Service (Hotels, Resorts, Restaurants, Fast Food Chains, Catering Services)</div>
-                            <div data-value="Administrative &amp; Support Services" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Administrative &amp; Support Services (Security Agencies, Manpower/Recruitment Agencies, Call Centers, Travel Agencies, Janitorial Services)</div>
+                            class="fixed z-[999] bg-white border border-gray-200 rounded-xl shadow-lg max-h-96 overflow-y-auto hidden">
+                            <div data-value="Accommodation &amp; Food Service (Hotels, Resorts, Restaurants, Fast Food Chains, Catering Services)" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Accommodation &amp; Food Service (Hotels, Resorts, Restaurants, Fast Food Chains, Catering Services)</div>
+                            <div data-value="Administrative &amp; Support Services (Security Agencies, Manpower/Recruitment Agencies, Call Centers, Travel Agencies, Janitorial Services)" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Administrative &amp; Support Services (Security Agencies, Manpower/Recruitment Agencies, Call Centers, Travel Agencies, Janitorial Services)</div>
                             <div data-value="Agriculture, Forestry, Fishing &amp; Mining" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Agriculture, Forestry, Fishing &amp; Mining</div>
                             <div data-value="Construction" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Construction</div>
-                            <div data-value="Education" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Education (Private Schools, Colleges, Universities, Training Centers)</div>
-                            <div data-value="Electricity, Gas, Water &amp; Waste Management" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Electricity, Gas, Water &amp; Waste Management (Power Plants, Electric Co-ops, Water Districts, Garbage/Recycling Firms)</div>
-                            <div data-value="Financial &amp; Insurance Activities" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Financial &amp; Insurance Activities (Banks, Pawnshops, Lending Investors, Insurance Companies)</div>
-                            <div data-value="Human Health &amp; Social Work" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Human Health &amp; Social Work (Hospital, Medical Clinics, Diagnostic Labs, Nursing Homes)</div>
-                            <div data-value="Information &amp; Communication" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Information &amp; Communication (Software Companies, ISPs, Telecoms, TV/Radio Stations, Non-Voice Tech BPO)</div>
-                            <div data-value="Other Service Activities" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Other Service Activities (Repairs Shops, Beauty Salons, Spas, Laundry Shops, Funeral)</div>
-                            <div data-value="Professional, Scientific &amp; Technical Services" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Professional, Scientific &amp; Technical Services (Law Firms, Accounting/Auditing Firms, Engineering/Architectural Firms, Advertising Agencies)</div>
-                            <div data-value="Real Estate Activities" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Real Estate Activities (Real Estate Developers, Lessor of Apartment/Office Space)</div>
-                            <div data-value="Transportation, Storage &amp; Logistics" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Transportation, Storage &amp; Logistics (Trucking/Hauling Services, Warehousing, Shipping Lines, Courier Services)</div>
-                            <div data-value="Wholesale &amp; Retail Trade" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Wholesale &amp; Retail Trade (Trading Companies, Malls, Hardware Stores, Car Dealers, Online Shops, etc.)</div>
+                            <div data-value="Education (Private Schools, Colleges, Universities, Training Centers)" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Education (Private Schools, Colleges, Universities, Training Centers)</div>
+                            <div data-value="Electricity, Gas, Water &amp; Waste Management (Power Plants, Electric Co-ops, Water Districts, Garbage/Recycling Firms)" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Electricity, Gas, Water &amp; Waste Management (Power Plants, Electric Co-ops, Water Districts, Garbage/Recycling Firms)</div>
+                            <div data-value="Financial &amp; Insurance Activities (Banks, Pawnshops, Lending Investors, Insurance Companies)" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Financial &amp; Insurance Activities (Banks, Pawnshops, Lending Investors, Insurance Companies)</div>
+                            <div data-value="Human Health &amp; Social Work (Hospital, Medical Clinics, Diagnostic Labs, Nursing Homes)" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Human Health &amp; Social Work (Hospital, Medical Clinics, Diagnostic Labs, Nursing Homes)</div>
+                            <div data-value="Information &amp; Communication (Software Companies, ISPs, Telecoms, TV/Radio Stations, Non-Voice Tech BPO)" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Information &amp; Communication (Software Companies, ISPs, Telecoms, TV/Radio Stations, Non-Voice Tech BPO)</div>
+                            <div data-value="Other Service Activities (Repairs Shops, Beauty Salons, Spas, Laundry Shops, Funeral)" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Other Service Activities (Repairs Shops, Beauty Salons, Spas, Laundry Shops, Funeral)</div>
+                            <div data-value="Professional, Scientific &amp; Technical Services (Law Firms, Accounting/Auditing Firms, Engineering/Architectural Firms, Advertising Agencies)" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Professional, Scientific &amp; Technical Services (Law Firms, Accounting/Auditing Firms, Engineering/Architectural Firms, Advertising Agencies)</div>
+                            <div data-value="Real Estate Activities (Real Estate Developers, Lessor of Apartment/Office Space)" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Real Estate Activities (Real Estate Developers, Lessor of Apartment/Office Space)</div>
+                            <div data-value="Transportation, Storage &amp; Logistics (Trucking/Hauling Services, Warehousing, Shipping Lines, Courier Services)" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Transportation, Storage &amp; Logistics (Trucking/Hauling Services, Warehousing, Shipping Lines, Courier Services)</div>
+                            <div data-value="Wholesale &amp; Retail Trade (Trading Companies, Malls, Hardware Stores, Car Dealers, Online Shops, etc.)" class="industry-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">• Wholesale &amp; Retail Trade (Trading Companies, Malls, Hardware Stores, Car Dealers, Online Shops, etc.)</div>
                         </div>
                         <input type="hidden" id="industry-selector-input" name="industrySelector" required>
                     </div>
@@ -1141,7 +1141,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </button>
-                        <div id="company-size-dropdown" class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
+                        <div id="company-size-dropdown" class="fixed z-[999] bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
                             <div data-value="Less than 50" class="company-size-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">Less than 50</div>
                             <div data-value="51-200" class="company-size-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">51-200</div>
                             <div data-value="201-500" class="company-size-option px-4 py-3 hover:bg-teal-50 cursor-pointer text-sm text-gray-700 transition">201-500</div>
@@ -2171,10 +2171,24 @@ document.addEventListener('keydown', (e) => {
         const arrow = arrowId ? document.getElementById(arrowId) : null;
         const options = menu.querySelectorAll(optionsSelector);
 
+        function positionMenu() {
+            const rect = button.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom - 12;
+            menu.style.top = (rect.bottom + 8) + 'px';
+            menu.style.left = rect.left + 'px';
+            menu.style.width = rect.width + 'px';
+            menu.style.maxHeight = Math.min(384, spaceBelow) + 'px';
+        }
+
         function toggleMenu() {
+            const isHidden = menu.classList.contains('hidden');
             menu.classList.toggle('hidden');
             if (arrow) {
                 arrow.classList.toggle('rotate-180');
+            }
+            if (isHidden) {
+                positionMenu();
+                menu.scrollTop = 0;
             }
             
             // Close other dropdowns
@@ -2217,6 +2231,10 @@ document.addEventListener('keydown', (e) => {
                 }
             }
         });
+
+        // Reposition on scroll or resize
+        window.addEventListener('scroll', () => { if (!menu.classList.contains('hidden')) positionMenu(); }, true);
+        window.addEventListener('resize', () => { if (!menu.classList.contains('hidden')) positionMenu(); });
 
         return { button, menu, selectedText, hiddenInput };
     }
