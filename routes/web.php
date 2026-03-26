@@ -13,7 +13,7 @@ use App\Http\Controllers\DisciplineGraduateController;
 use App\Http\Controllers\SupplySideAnalysisController;
 use App\Http\Controllers\ProgramsController;
 use App\Http\Controllers\ProgramAdminController;
-
+use App\Http\Controllers\PesoDirectoryController;
 
 
 
@@ -21,7 +21,7 @@ use App\Http\Controllers\ProgramAdminController;
 Route::get('/programs-stories', [ProgramsController::class, 'index'])
     ->name('programStories');
 
-
+Route::get('/peso-directory', [PesoDirectoryController::class, 'index'])->name('peso.directory');
 
 Route::post('/lmi/submit', [LmiSubmissionController::class, 'store'])->name('lmi.submit');
 
@@ -251,6 +251,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/programs-stories/preview', [ProgramAdminController::class, 'preview'])
         ->name('program-stories-preview');
+    Route::get('/stories/filter',  [ProgramAdminController::class, 'filterStories'])->name('stories.filter');
+    Route::get('/stories/years',   [ProgramAdminController::class, 'storyYears'])  ->name('stories.years');
+    Route::get('/stories/export',  [ProgramAdminController::class, 'exportStories'])->name('stories.export');
 
     // ==================== PROGRAM ADMIN CRUD ====================
     Route::post('/programs', [ProgramAdminController::class, 'storeProgram'])->name('programs.store');
@@ -259,13 +262,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/programs/{program}/description', [ProgramAdminController::class, 'updateDescription'])->name('programs.description');
     Route::delete('/programs/{program}/description', [ProgramAdminController::class, 'destroyDescription'])->name('programs.description.destroy');
     Route::patch('/programs/{program}/toggle-publish', [ProgramAdminController::class, 'togglePublish'])->name('programs.toggle-publish');
-    Route::get('/programs/{program}/fragment', [ProgramController::class, 'fragment']);
+    Route::get('/programs/{program}/fragment', [ProgramAdminController::class, 'fragment']);
     Route::patch('/programs/{program}/republish', [ProgramAdminController::class, 'republish']);
     Route::post('/qualifications', [ProgramAdminController::class, 'storeQualification'])->name('qualifications.store');
     Route::put('/qualifications/{qualification}', [ProgramAdminController::class, 'updateQualification'])->name('qualifications.update');
     Route::delete('/qualifications/{qualification}', [ProgramAdminController::class, 'destroyQualification'])->name('qualifications.destroy');
     Route::delete('/qualifications/type/{type}/program/{program}', [ProgramAdminController::class, 'destroyQualificationsByType'])
-    ->name('qualifications.destroy-by-type');
+        ->name('qualifications.destroy-by-type');
+    Route::get('/admin/stories/export', [ProgramAdminController::class, 'exportStories']);
 
     Route::post('/steps', [ProgramAdminController::class, 'storeStep'])->name('steps.store');
     Route::put('/steps/{step}', [ProgramAdminController::class, 'updateStep'])->name('steps.update');
@@ -282,21 +286,27 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/carousel', [ProgramAdminController::class, 'storeSlide'])->name('carousel.store');
     Route::put('/carousel/{slide}', [ProgramAdminController::class, 'updateSlide'])->name('carousel.update');
     Route::delete('/carousel/{slide}', [ProgramAdminController::class, 'destroySlide'])->name('carousel.destroy');
-    
 
     // ==================== FIELD OFFICES (PESO/JPO Directory) ====================
-    Route::post('/field-offices',            [ProgramAdminController::class, 'storeFieldOffice'])  ->name('field-offices.store');
-    Route::put('/field-offices/{office}',    [ProgramAdminController::class, 'updateFieldOffice']) ->name('field-offices.update');
-    Route::delete('/field-offices/{office}', [ProgramAdminController::class, 'destroyFieldOffice'])->name('field-offices.destroy');
-    Route::post('/field-offices/touch', [ProgramAdminController::class, 'touchDirectory']);
-    Route::post('/field-offices/publish', [ProgramAdminController::class, 'publishDirectory']);
-    Route::get('/office-types', [ProgramAdminController::class, 'getOfficeTypes']);
-    Route::post('/office-types', [ProgramAdminController::class, 'storeOfficeType']);
-    Route::put('/office-types/{name}', [ProgramAdminController::class, 'updateOfficeType']);
-    Route::delete('/office-types/{name}', [ProgramAdminController::class, 'destroyOfficeType']);
+    Route::get('/peso-directory',            [PesoDirectoryController::class, 'adminIndex'])       ->name('peso-directory.index');
+    Route::post('/field-offices',            [PesoDirectoryController::class, 'storeFieldOffice']) ->name('field-offices.store');
+    Route::put('/field-offices/{office}',    [PesoDirectoryController::class, 'updateFieldOffice'])->name('field-offices.update');
+    Route::delete('/field-offices/{office}', [PesoDirectoryController::class, 'destroyFieldOffice'])->name('field-offices.destroy');
+    Route::post('/field-offices/touch',      [PesoDirectoryController::class, 'touchDirectory']);
+    Route::post('/field-offices/publish',    [PesoDirectoryController::class, 'publishDirectory']);
+    Route::get('/office-types',              [PesoDirectoryController::class, 'getOfficeTypes']);
+    Route::post('/office-types',             [PesoDirectoryController::class, 'storeOfficeType']);
+    Route::put('/office-types/{name}',       [PesoDirectoryController::class, 'updateOfficeType']);
+    Route::delete('/office-types/{name}',    [PesoDirectoryController::class, 'destroyOfficeType']);
+
+    // ✅ PESO Info Settings (description, objective, how to avail, lists)
+    Route::get('/peso-info',           [PesoDirectoryController::class, 'getPesoInfo']);
+    // ⚠️ publish MUST be declared before the {key} wildcard to avoid being swallowed by it
+    Route::post('/peso-info/publish',  [PesoDirectoryController::class, 'publishPesoInfo']);
+    Route::put('/peso-info/{key}',     [PesoDirectoryController::class, 'updatePesoInfo']);
 
     //=========================CTA SECTION=====================
-    Route::get('/cta-section',  [ProgramAdminController::class, 'getCtaSection'])   ->name('cta-section.show');
-    Route::put('/cta-section', [ProgramAdminController::class, 'updateCtaSection']);
-    Route::post('/cta-section/publish',[ProgramAdminController::class, 'publishCtaSection'])  ->name('cta-section.publish');
+    Route::get('/cta-section',     [ProgramAdminController::class, 'getCtaSection'])    ->name('cta-section.show');
+    Route::put('/cta-section',     [ProgramAdminController::class, 'updateCtaSection']);
+    Route::post('/cta-section/publish', [ProgramAdminController::class, 'publishCtaSection']) ->name('cta-section.publish');
 });

@@ -23,6 +23,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(ProgramSeeder::class);
+        $this->call([
+    PesoInfoSettingsSeeder::class,
+]);
 
     }
 }

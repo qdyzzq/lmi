@@ -14,7 +14,7 @@ class FieldOffice extends Model
     protected $fillable = [
         'province',
         'name',
-        'office_type',   // e.g. PESO, JPO, DOLE, TESDA, etc. — not limited
+        'office_type',  
         'manager_name',
         'email',
         'address',

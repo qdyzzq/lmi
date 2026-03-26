@@ -26,8 +26,7 @@
         'bg-gradient-to-b from-slate-900/95 via-slate-900/90 to-transparent backdrop-blur-md': isAtTop,
         'bg-slate-900/98 backdrop-blur-xl shadow-lg': !isAtTop
     }"
-    class="fixed top-0 left-0 right-0 z-50 border-b border-white/10 transition-all duration-300 ease-in-out rounded-b-xl"
->
+    class="fixed top-0 left-0 right-0 z-50 border-b border-white/10 transition-all duration-300 ease-in-out rounded-b-xl">
 
     <div class="max-w-7xl mx-auto px-6 transition-all duration-300" :class="isScrolled ? 'py-2' : 'py-4'">
         <div class="flex items-center justify-between gap-4">
@@ -41,10 +40,8 @@
                 --}}
                 <div class="w-14 h-14 flex items-center justify-center shrink-0 overflow-hidden bg-white rounded-full shadow-lg ring-2 ring-white/20 transition-all duration-300"
                     :class="isScrolled ? 'w-9 h-9' : 'w-14 h-14'">
-                    <img src="{{ asset('images/dole_logo.png') }}"
-                         alt="LMI Logo"
-                         width="56" height="56"
-                         class="w-full h-full object-contain p-1">
+                    <img src="{{ asset('images/dole_logo.png') }}" alt="LMI Logo" width="56" height="56"
+                        class="w-full h-full object-contain p-1">
                 </div>
 
                 <div class="leading-tight overflow-hidden">
@@ -122,7 +119,17 @@
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    <span>Programs & Stories</span>
+                    <span>Employment Programs</span>
+                </a>
+
+                <a href="{{ route('peso.directory') }}"
+                    class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-colors
+          {{ request()->routeIs('peso.directory') ? 'bg-slate-600 text-white' : 'text-slate-300 hover:text-white' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    PESO/JPO Directory
                 </a>
 
             </div>
@@ -130,8 +137,7 @@
             <!-- Mobile Menu Button -->
             <button
                 class="xl:hidden p-2.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-white transition-all duration-200"
-                @click.stop="mobileMenuOpen = !mobileMenuOpen"
-                :aria-expanded="mobileMenuOpen"
+                @click.stop="mobileMenuOpen = !mobileMenuOpen" :aria-expanded="mobileMenuOpen"
                 aria-label="Toggle menu">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <!-- Top line -->
@@ -155,28 +161,24 @@
     <div x-show="mobileMenuOpen" x-transition
         class="xl:hidden border-t border-white/10 bg-slate-900/98 backdrop-blur-md" style="display: none;">
         <div class="px-6 py-4 space-y-2">
-            <a href="{{ route('home') }}"
-                @click="mobileMenuOpen = false"
+            <a href="{{ route('home') }}" @click="mobileMenuOpen = false"
                 class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('home') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 Regional Statistics
             </a>
-            <a href="{{ route('Job.Market.Demands') }}"
-                @click="mobileMenuOpen = false"
+            <a href="{{ route('Job.Market.Demands') }}" @click="mobileMenuOpen = false"
                 class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Job.Market.Demands') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 Labor Demand
             </a>
-            <a href="{{ route('Supply.Side') }}"
-                @click="mobileMenuOpen = false"
+            <a href="{{ route('Supply.Side') }}" @click="mobileMenuOpen = false"
                 class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Supply.Side') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 Labor Supply Data
             </a>
-            <a href="{{ route('programStories') }}"
-                @click="mobileMenuOpen = false"
+            <a href="{{ route('programStories') }}" @click="mobileMenuOpen = false"
                 class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('programs.stories') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 Programs & Stories
             </a>
-            
-            </div>
+
         </div>
+    </div>
     </div>
 </nav>

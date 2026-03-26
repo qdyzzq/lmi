@@ -9,8 +9,6 @@ use App\Models\ProgramStory;
 use App\Models\ProgramTestimonial;
 use App\Models\CarouselSlide;
 use App\Models\CtaSection;
-use App\Models\FieldOffice;
-use App\Models\OfficeType;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -39,11 +37,23 @@ class ProgramAdminController extends Controller
             ->sort()
             ->values();
 
-        $fieldOffices = FieldOffice::ordered()->get();
-
         $ctaSection = CtaSection::first();
 
-        return view('admin.programStories_editor', compact('programs', 'carouselSlides', 'qualificationTypes', 'fieldOffices', 'ctaSection'));
+        $directoryHasDraft = Program::where('is_active', true)
+            ->where('is_published', true)
+            ->where('has_draft_changes', true)
+            ->exists();
+
+        $directoryChangelog = [];
+
+        return view('admin.programStories_editor', compact(
+            'programs',
+            'carouselSlides',
+            'qualificationTypes',
+            'ctaSection',
+            'directoryHasDraft',
+            'directoryChangelog'
+        ));
     }
 
     // ===== DRAFT PREVIEW (Admin only — shows live draft data on the public blade) =====
@@ -65,11 +75,9 @@ class ProgramAdminController extends Controller
 
         $isPreview = true;
 
-        $fieldOffices = FieldOffice::ordered()->get();
-
         $ctaSection = CtaSection::first();
 
-        return view('programStories', compact('programs', 'carouselSlides', 'isPreview', 'fieldOffices', 'ctaSection'));
+        return view('programStories', compact('programs', 'carouselSlides', 'isPreview', 'ctaSection'));
     }
 
     // ===== PROGRAMS =====
@@ -226,24 +234,32 @@ class ProgramAdminController extends Controller
             'title'      => 'required|string',
             'link'       => 'nullable|url',
             'image'      => 'required|image',
+            'story_year' => 'required|integer|min:2000|max:2100',
         ]);
 
         $data['image_path'] = 'images/' . $request->file('image')->store('stories', 'public_images');
         $data['sort_order'] = ProgramStory::where('program_id', $data['program_id'])->max('sort_order') + 1;
         $data['is_active']  = true;
+
         unset($data['image']);
 
         $story = ProgramStory::create($data);
+
         $this->markDirty($data['program_id']);
-        return response()->json(['success' => true, 'story' => $story]);
+
+        return response()->json([
+            'success' => true,
+            'story'   => $story
+        ]);
     }
 
     public function updateStory(Request $request, ProgramStory $story)
     {
         $data = $request->validate([
-            'title' => 'required|string',
-            'link'  => 'nullable|url',
-            'image' => 'nullable|image',
+            'title'      => 'required|string',
+            'link'       => 'nullable|url',
+            'image'      => 'nullable|image',
+            'story_year' => 'required|integer|min:2000|max:2100',
         ]);
 
         if ($request->hasFile('image')) {
@@ -251,8 +267,11 @@ class ProgramAdminController extends Controller
         }
 
         unset($data['image']);
+
         $story->update($data);
+
         $this->markDirty($story->program_id);
+
         return response()->json(['success' => true]);
     }
 
@@ -261,6 +280,57 @@ class ProgramAdminController extends Controller
         $this->markDirty($story->program_id);
         $story->update(['is_active' => false]);
         return response()->json(['success' => true]);
+    }
+
+    public function filterStories(Request $request): JsonResponse
+    {
+        $request->validate([
+            'program_id' => 'required|exists:programs,id',
+            'year'       => 'nullable|integer|min:2000|max:2100',
+        ]);
+
+        $query = ProgramStory::where('program_id', $request->program_id)
+            ->where('is_active', true)
+            ->orderBy('sort_order');
+
+        if ($request->filled('year')) {
+            $query->where('story_year', $request->year);
+        }
+
+        $stories = $query->get()->map(function ($s) {
+            return [
+                'id'         => $s->id,
+                'title'      => $s->title,
+                'link'       => $s->link,
+                'image_path' => asset($s->image_path),
+                'story_year' => $s->story_year,
+                'program_id' => $s->program_id,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'stories' => $stories
+        ]);
+    }
+
+    public function storyYears(Request $request): JsonResponse
+    {
+        $request->validate([
+            'program_id' => 'required|exists:programs,id'
+        ]);
+
+        $years = ProgramStory::where('program_id', $request->program_id)
+            ->where('is_active', true)
+            ->whereNotNull('story_year')
+            ->distinct()
+            ->orderByDesc('story_year')
+            ->pluck('story_year');
+
+        return response()->json([
+            'success' => true,
+            'years'   => $years
+        ]);
     }
 
     // ===== TESTIMONIALS =====
@@ -432,6 +502,7 @@ class ProgramAdminController extends Controller
                     'title'      => $s->title,
                     'link'       => $s->link,
                     'image_path' => $s->image_path,
+                    'story_year' => $s->story_year,
                 ])->values()->toArray(),
 
                 'testimonials' => $program->testimonials->map(fn($t) => [
@@ -456,6 +527,7 @@ class ProgramAdminController extends Controller
                ->where('is_published', true)
                ->update(['has_draft_changes' => true]);
     }
+
     public function destroyQualificationsByType(string $type, Program $program)
     {
         $this->markDirty($program->id);
@@ -464,124 +536,13 @@ class ProgramAdminController extends Controller
         return response()->json(['success' => true]);
     }
 
-    // ===== OFFICE TYPES =====
-    public function getOfficeTypes(): JsonResponse
-    {
-        return response()->json(
-            OfficeType::orderBy('name')->pluck('name')
-        );
-    }
-
-    public function storeOfficeType(Request $request): JsonResponse
-    {
-        $request->validate([
-            'name' => 'required|string|max:50|unique:office_types,name',
-        ]);
-
-        $type = OfficeType::create([
-            'name' => strtoupper(trim($request->name)),
-        ]);
-
-        return response()->json(['success' => true, 'name' => $type->name]);
-    }
-
-    public function updateOfficeType(Request $request, string $name): JsonResponse
-    {
-        $request->validate([
-            'name' => 'required|string|max:50|unique:office_types,name',
-        ]);
-
-        $type = OfficeType::where('name', strtoupper(trim($name)))->firstOrFail();
-        $newName = strtoupper(trim($request->name));
-        $type->update(['name' => $newName]);
-
-        return response()->json(['success' => true, 'name' => $newName]);
-    }
-
-    public function destroyOfficeType(string $name): JsonResponse
-    {
-        $type = OfficeType::where('name', strtoupper(trim($name)))->firstOrFail();
-        $type->delete();
-
-        return response()->json(['success' => true]);
-    }
-
-    // ===== FIELD OFFICES (PESO/JPO Directory) =====
-    public function storeFieldOffice(Request $request): JsonResponse
-    {
-        $data = $request->validate([
-            'name'         => 'required|string|max:255',
-            'office_type'  => 'required|string|max:100',
-            'province'     => 'required|string|max:255',
-            'manager_name' => 'nullable|string|max:255',
-            'email'        => 'nullable|email|max:255',
-            'address'      => 'nullable|string|max:500',
-        ]);
-
-        $data['sort_order'] = FieldOffice::where('province', $data['province'])->max('sort_order') + 1;
-        $office = FieldOffice::create($data);
-
-        return response()->json(['success' => true, 'id' => $office->id]);
-    }
-
-    public function updateFieldOffice(Request $request, FieldOffice $office): JsonResponse
-    {
-        $data = $request->validate([
-            'name'         => 'required|string|max:255',
-            'office_type'  => 'required|string|max:100',
-            'province'     => 'required|string|max:255',
-            'manager_name' => 'nullable|string|max:255',
-            'email'        => 'nullable|email|max:255',
-            'address'      => 'nullable|string|max:500',
-        ]);
-
-        $office->update($data);
-
-        return response()->json(['success' => true]);
-    }
-
-    public function destroyFieldOffice(FieldOffice $office): JsonResponse
-    {
-        $office->delete();
-
-        return response()->json(['success' => true]);
-    }
-
-    // ── Publish Directory — snapshots all field offices for the public view ──
-    // POST /admin/field-offices/publish
-    public function publishDirectory(): JsonResponse
-    {
-        $snapshot = FieldOffice::ordered()
-            ->get()
-            ->groupBy('province')
-            ->map(fn($offices) => $offices->map(fn($o) => [
-                'id'       => $o->id,
-                'name'     => $o->name,
-                'manager'  => $o->manager_name ?? '',
-                'email'    => $o->email ?? '',
-                'address'  => $o->address ?? '',
-                'type'     => $o->office_type,
-                'province' => $o->province,
-            ])->values())
-            ->toArray();
-
-        // Store snapshot in cache so the public page reads from it
-        \Cache::put('field_offices_published_snapshot', $snapshot, now()->addYears(10));
-        \Cache::put('field_offices_published_at', now()->toIso8601String(), now()->addYears(10));
-
-        // Clear the dirty flag — next page load will show green button
-        \Cache::forget('field_offices_last_modified_at');
-        \Cache::forget('field_offices_changelog');
-
-        return response()->json(['success' => true, 'published_at' => now()->toIso8601String()]);
-    }
-
     /**
      * Stamp a last-modified timestamp so the admin UI knows there are
      * unpublished changes even after a page refresh.
      * Also appends the change entry to a persistent changelog.
      * Called automatically after every add / edit / delete.
      */
+
     // ===== CTA SECTION =====
 
     // GET /admin/cta-section
@@ -637,20 +598,4 @@ class ProgramAdminController extends Controller
 
         return response()->json(['success' => true, 'has_draft' => false]);
     }
-
-    public function touchDirectory(Request $request): JsonResponse
-    {
-        \Cache::put('field_offices_last_modified_at', now()->toIso8601String(), now()->addYears(10));
-
-        // Append the change entry to the persistent changelog
-        $entry = $request->only(['action', 'label', 'type', 'province', 'time']);
-        if (!empty($entry)) {
-            $log = \Cache::get('field_offices_changelog', []);
-            $log[] = $entry;
-            \Cache::put('field_offices_changelog', $log, now()->addYears(10));
-        }
-
-        return response()->json(['success' => true]);
-    }
-
 }

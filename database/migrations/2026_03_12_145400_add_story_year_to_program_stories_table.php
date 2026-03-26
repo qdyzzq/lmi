@@ -1,0 +1,23 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('program_stories', function (Blueprint $table) {
+            // Nullable so existing rows are unaffected
+            $table->unsignedSmallInteger('story_year')->nullable()->after('sort_order');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('program_stories', function (Blueprint $table) {
+            $table->dropColumn('story_year');
+        });
+    }
+};

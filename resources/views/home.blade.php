@@ -25,17 +25,26 @@
 
         /* Mobile: taller aspect so charts breathe */
         @media (max-width: 640px) {
-            .chart-wrapper { aspect-ratio: 4 / 3; min-height: 220px; }
+            .chart-wrapper {
+                aspect-ratio: 4 / 3;
+                min-height: 220px;
+            }
         }
 
         /* Tablet */
         @media (min-width: 641px) and (max-width: 1023px) {
-            .chart-wrapper { aspect-ratio: 16 / 9; }
+            .chart-wrapper {
+                aspect-ratio: 16 / 9;
+            }
         }
 
         /* Desktop */
         @media (min-width: 1024px) {
-            .chart-wrapper { height: 384px; } /* same as old h-96 */
+            .chart-wrapper {
+                height: 384px;
+            }
+
+            /* same as old h-96 */
         }
 
         /* Responsive filter dropdowns — prevent overflow on mobile */
@@ -51,6 +60,7 @@
             z-index: 30;
             padding: 1.25rem;
         }
+
         @media (max-width: 640px) {
             .filter-dropdown {
                 right: auto;
@@ -64,6 +74,7 @@
         .table-scroll-hint {
             display: none;
         }
+
         @media (max-width: 767px) {
             .table-scroll-hint {
                 display: flex;
@@ -140,8 +151,12 @@
                                 <div
                                     class="group relative bg-white/95 backdrop-blur-sm border-l-4 border-[#023E8A] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
                                     <!-- Bubble decorations -->
-                                    <div class="absolute -top-6 -right-6 w-28 h-28 bg-blue-100/60 rounded-full pointer-events-none"></div>
-                                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-blue-200/40 rounded-full pointer-events-none"></div>
+                                    <div
+                                        class="absolute -top-6 -right-6 w-28 h-28 bg-blue-100/60 rounded-full pointer-events-none">
+                                    </div>
+                                    <div
+                                        class="absolute -top-2 -right-2 w-16 h-16 bg-blue-200/40 rounded-full pointer-events-none">
+                                    </div>
                                     <div class="flex justify-between items-center mb-3 relative z-10">
                                         <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">
                                             Participation Rate</p>
@@ -156,7 +171,8 @@
                                     </div>
                                     <h2 class="text-4xl font-black text-slate-900 mb-2 relative z-10"
                                         x-text="kpiData.participation_rate?.rate || '0%'">67.0%</h2>
-                                    <div class="h-1 w-16 bg-gradient-to-r from-[#023E8A] to-blue-300 rounded-full mb-3 relative z-10">
+                                    <div
+                                        class="h-1 w-16 bg-gradient-to-r from-[#023E8A] to-blue-300 rounded-full mb-3 relative z-10">
                                     </div>
                                     <p class="text-xs text-slate-600 font-medium relative z-10"
                                         x-text="(kpiData.participation_rate?.active_workforce || '0') + ' Estimate number of people'">
@@ -166,8 +182,12 @@
                                 <div
                                     class="group relative bg-white/95 backdrop-blur-sm border-l-4 border-[#006400] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
                                     <!-- Bubble decorations -->
-                                    <div class="absolute -top-6 -right-6 w-28 h-28 bg-green-100/60 rounded-full pointer-events-none"></div>
-                                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-green-200/40 rounded-full pointer-events-none"></div>
+                                    <div
+                                        class="absolute -top-6 -right-6 w-28 h-28 bg-green-100/60 rounded-full pointer-events-none">
+                                    </div>
+                                    <div
+                                        class="absolute -top-2 -right-2 w-16 h-16 bg-green-200/40 rounded-full pointer-events-none">
+                                    </div>
                                     <div class="flex justify-between items-center mb-3 relative z-10">
                                         <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">Employment
                                             Rate</p>
@@ -193,8 +213,12 @@
                                 <div
                                     class="group relative bg-white/95 backdrop-blur-sm border-l-4 border-[#FF8C00] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
                                     <!-- Bubble decorations -->
-                                    <div class="absolute -top-6 -right-6 w-28 h-28 bg-orange-100/60 rounded-full pointer-events-none"></div>
-                                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-orange-200/40 rounded-full pointer-events-none"></div>
+                                    <div
+                                        class="absolute -top-6 -right-6 w-28 h-28 bg-orange-100/60 rounded-full pointer-events-none">
+                                    </div>
+                                    <div
+                                        class="absolute -top-2 -right-2 w-16 h-16 bg-orange-200/40 rounded-full pointer-events-none">
+                                    </div>
                                     <div class="flex justify-between items-center mb-3 relative z-10">
                                         <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">
                                             Underemployment</p>
@@ -220,8 +244,12 @@
                                 <div
                                     class="group relative bg-white/95 backdrop-blur-sm border-l-4 border-[#D30000] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
                                     <!-- Bubble decorations -->
-                                    <div class="absolute -top-6 -right-6 w-28 h-28 bg-red-100/60 rounded-full pointer-events-none"></div>
-                                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-red-200/40 rounded-full pointer-events-none"></div>
+                                    <div
+                                        class="absolute -top-6 -right-6 w-28 h-28 bg-red-100/60 rounded-full pointer-events-none">
+                                    </div>
+                                    <div
+                                        class="absolute -top-2 -right-2 w-16 h-16 bg-red-200/40 rounded-full pointer-events-none">
+                                    </div>
                                     <div class="flex justify-between items-center mb-3 relative z-10">
                                         <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">
                                             Unemployment
@@ -237,7 +265,8 @@
                                     </div>
                                     <h2 class="text-4xl font-black text-slate-900 mb-2 relative z-10"
                                         x-text="kpiData.unemployment_rate?.rate || '0%'">7.0%</h2>
-                                    <div class="h-1 w-16 bg-gradient-to-r from-[#D30000] to-red-300 rounded-full mb-3 relative z-10">
+                                    <div
+                                        class="h-1 w-16 bg-gradient-to-r from-[#D30000] to-red-300 rounded-full mb-3 relative z-10">
                                     </div>
                                     <p class="text-xs text-slate-600 font-medium relative z-10"
                                         x-text="(kpiData.unemployment_rate?.count_formatted || '0') + ' Estimate number of people'">
@@ -520,8 +549,7 @@
                                                             </svg>
                                                         </button>
                                                         <div x-show="laborOpen" @click.away="laborOpen = false"
-                                                            x-transition
-                                                            class="filter-dropdown">
+                                                            x-transition class="filter-dropdown">
                                                             <div class="mb-4">
                                                                 <label
                                                                     class="block text-xs font-semibold text-slate-700 mb-3">Select
@@ -597,7 +625,8 @@
                                                 <canvas id="laborEmploymentChart"></canvas>
                                             </div>
                                             <!-- Mobile tip -->
-                                            <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">Tap "Expand" above for a full-screen view</p>
+                                            <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">
+                                                Tap "Expand" above for a full-screen view</p>
                                         </div>
 
                                         <!-- Compiled Indicators Chart -->
@@ -605,7 +634,8 @@
                                             x-show="activeChart === 'compiled' || activeChart === 'side'" x-transition>
                                             <div class="flex flex-wrap items-start justify-between gap-2 mb-4">
                                                 <div>
-                                                    <h3 class="font-semibold text-slate-800 text-base">DAVAO REGION LABOR MARKET PERFORMANCE</h3>
+                                                    <h3 class="font-semibold text-slate-800 text-base">DAVAO REGION
+                                                        LABOR MARKET PERFORMANCE</h3>
                                                     <p class="text-xs text-slate-500">Key Employment Indicators</p>
                                                 </div>
                                                 <div class="flex items-center gap-2">
@@ -631,8 +661,7 @@
                                                             </svg>
                                                         </button>
                                                         <div x-show="unempOpen" @click.away="unempOpen = false"
-                                                            x-transition
-                                                            class="filter-dropdown">
+                                                            x-transition class="filter-dropdown">
                                                             <div class="mb-4">
                                                                 <label
                                                                     class="block text-xs font-semibold text-slate-700 mb-3">Select
@@ -708,7 +737,8 @@
                                                 <canvas id="unemploymentChart"></canvas>
                                             </div>
                                             <!-- Mobile tip -->
-                                            <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">Tap "Expand" above for a full-screen view</p>
+                                            <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">
+                                                Tap "Expand" above for a full-screen view</p>
                                         </div>
 
                                         <!-- Modal -->
@@ -744,7 +774,8 @@
                                                         </button>
                                                     </div>
                                                     <div class="p-6">
-                                                        <div class="relative w-full" style="height: clamp(280px, 60vh, 600px);">
+                                                        <div class="relative w-full"
+                                                            style="height: clamp(280px, 60vh, 600px);">
                                                             <canvas id="expandedChart"></canvas>
                                                         </div>
                                                     </div>
@@ -752,7 +783,7 @@
                                                         class="p-6 border-t border-gray-200 bg-slate-50 flex justify-between items-center">
                                                         <p class="text-xs text-slate-500">Press ESC or click outside to
                                                             close</p>
-                                                        
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -864,9 +895,12 @@
                                         </div>
                                     </div>
                                     <!-- Table scroll hint for mobile -->
-                                    <div class="table-scroll-hint items-center gap-2 px-5 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-600 font-medium">
-                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                    <div
+                                        class="table-scroll-hint items-center gap-2 px-5 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-600 font-medium">
+                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                                         </svg>
                                         Scroll horizontally to see all columns
                                     </div>
@@ -1216,41 +1250,46 @@
 
                     // ── Step 1: Try to load saved/published templates first ──
                     try {
-                        const tplResponse = await fetch(`/api/analysis-templates?year=${this.selectedYear}&month=${this.selectedMonth}`);
+                        const tplResponse = await fetch(
+                            `/api/analysis-templates?year=${this.selectedYear}&month=${this.selectedMonth}`);
                         if (tplResponse.ok) {
                             const tplResult = await tplResponse.json();
                             if (tplResult.success && tplResult.data) {
                                 const d = tplResult.data;
                                 // Extract template_text from each key (matches template editor structure)
-                                const lfprText       = d.lfpr?.template_text           || '';
-                                const employmentText = d.employment?.template_text     || '';
-                                const underempText   = d.underemployment?.template_text || '';
-                                const unempText      = d.unemployment?.template_text   || '';
+                                const lfprText = d.lfpr?.template_text || '';
+                                const employmentText = d.employment?.template_text || '';
+                                const underempText = d.underemployment?.template_text || '';
+                                const unempText = d.unemployment?.template_text || '';
 
                                 // Only use saved templates if at least one has content
                                 if (lfprText || employmentText || underempText || unempText) {
                                     const cur = this.kpiData;
-                                    const b   = (val) => `<span class="font-bold text-slate-900">${val}</span>`;
+                                    const b = (val) => `<span class="font-bold text-slate-900">${val}</span>`;
 
                                     // Fetch previous year data to resolve {previous_rate} and {trend}
                                     let prev = null;
                                     try {
-                                        const prevRes = await fetch(`/api/kpi-cards?year=${prevYear}&month=${this.selectedMonth}`);
+                                        const prevRes = await fetch(
+                                            `/api/kpi-cards?year=${prevYear}&month=${this.selectedMonth}`);
                                         const prevResult = await prevRes.json();
                                         if (prevResult.success) prev = prevResult.data;
                                     } catch (_) {}
 
                                     const replacePlaceholders = (text, currentRate, previousRate, trendWord) => {
                                         return text
-                                            .replace(/\{current_period\}/g,  `<strong>${monthName} ${currentYear}</strong>`)
-                                            .replace(/\{previous_period\}/g, `<strong>${monthName} ${prevYear}</strong>`)
-                                            .replace(/\{current_rate\}/g,    `<strong>${currentRate}</strong>`)
-                                            .replace(/\{previous_rate\}/g,   `<strong>${previousRate}</strong>`)
-                                            .replace(/\{trend\}/g,           `<strong>${trendWord}</strong>`);
+                                            .replace(/\{current_period\}/g,
+                                                `<strong>${monthName} ${currentYear}</strong>`)
+                                            .replace(/\{previous_period\}/g,
+                                                `<strong>${monthName} ${prevYear}</strong>`)
+                                            .replace(/\{current_rate\}/g, `<strong>${currentRate}</strong>`)
+                                            .replace(/\{previous_rate\}/g, `<strong>${previousRate}</strong>`)
+                                            .replace(/\{trend\}/g, `<strong>${trendWord}</strong>`);
                                     };
 
                                     if (employmentText) {
-                                        const empHigher = prev ? parseFloat(cur.employment_rate.raw_value) >= parseFloat(prev.employment_rate.raw_value) : true;
+                                        const empHigher = prev ? parseFloat(cur.employment_rate.raw_value) >=
+                                            parseFloat(prev.employment_rate.raw_value) : true;
                                         this.analysis.employment = replacePlaceholders(
                                             employmentText,
                                             cur.employment_rate.rate,
@@ -1260,7 +1299,8 @@
                                     }
 
                                     if (underempText) {
-                                        const underHigher = prev ? parseFloat(cur.underemployment_rate.raw_value) >= parseFloat(prev.underemployment_rate.raw_value) : true;
+                                        const underHigher = prev ? parseFloat(cur.underemployment_rate.raw_value) >=
+                                            parseFloat(prev.underemployment_rate.raw_value) : true;
                                         this.analysis.underemployment = replacePlaceholders(
                                             underempText,
                                             cur.underemployment_rate.rate,
@@ -1270,7 +1310,8 @@
                                     }
 
                                     if (unempText) {
-                                        const unempHigher = prev ? parseFloat(cur.unemployment_rate.raw_value) >= parseFloat(prev.unemployment_rate.raw_value) : true;
+                                        const unempHigher = prev ? parseFloat(cur.unemployment_rate.raw_value) >=
+                                            parseFloat(prev.unemployment_rate.raw_value) : true;
                                         this.analysis.unemployment = replacePlaceholders(
                                             unempText,
                                             cur.unemployment_rate.rate,
@@ -1280,7 +1321,8 @@
                                     }
 
                                     if (lfprText) {
-                                        const lfprHigher = prev ? parseFloat(cur.participation_rate.raw_value) >= parseFloat(prev.participation_rate.raw_value) : true;
+                                        const lfprHigher = prev ? parseFloat(cur.participation_rate.raw_value) >=
+                                            parseFloat(prev.participation_rate.raw_value) : true;
                                         this.analysis.lfpr = replacePlaceholders(
                                             lfprText,
                                             cur.participation_rate.rate,
@@ -1408,7 +1450,10 @@
                     this.expandedChart = chartType;
                     document.body.classList.add('overflow-hidden');
                     const navbar = document.querySelector('nav');
-                    if (navbar) { navbar.style.zIndex = '-1'; navbar.style.visibility = 'hidden'; }
+                    if (navbar) {
+                        navbar.style.zIndex = '-1';
+                        navbar.style.visibility = 'hidden';
+                    }
                     this.$nextTick(() => {
                         if (chartType === 'labor') {
                             this.drawExpandedLaborChart();
@@ -1422,7 +1467,10 @@
                     this.expandedChart = null;
                     document.body.classList.remove('overflow-hidden');
                     const navbar = document.querySelector('nav');
-                    if (navbar) { navbar.style.zIndex = ''; navbar.style.visibility = ''; }
+                    if (navbar) {
+                        navbar.style.zIndex = '';
+                        navbar.style.visibility = '';
+                    }
                     if (window.expandedChartInstance) {
                         window.expandedChartInstance.destroy();
                         window.expandedChartInstance = null;
@@ -1477,7 +1525,8 @@
                                         formatter: (value, context) => {
                                             const total = context.chart.data.labels.length;
                                             const step = total > 12 ? 3 : total > 6 ? 2 : 1;
-                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' :
+                                                null;
                                         }
                                     }
                                 },
@@ -1487,9 +1536,13 @@
                                     data: originalChart.data.datasets[1].data,
                                     backgroundColor: function(context) {
                                         const chart = context.chart;
-                                        const { ctx, chartArea } = chart;
+                                        const {
+                                            ctx,
+                                            chartArea
+                                        } = chart;
                                         if (!chartArea) return '#182337';
-                                        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                                        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0,
+                                            chartArea.top);
                                         gradient.addColorStop(0, '#3B5175');
                                         gradient.addColorStop(0.5, '#2A3F5F');
                                         gradient.addColorStop(1, '#182337');
@@ -1512,7 +1565,8 @@
                                         formatter: (value, context) => {
                                             const total = context.chart.data.labels.length;
                                             const step = total > 12 ? 3 : total > 6 ? 2 : 1;
-                                            return context.dataIndex % step === 0 ? new Intl.NumberFormat('en-US').format(value) : null;
+                                            return context.dataIndex % step === 0 ? new Intl.NumberFormat(
+                                                'en-US').format(value) : null;
                                         }
                                     }
                                 }
@@ -1522,9 +1576,17 @@
                             responsive: true,
                             maintainAspectRatio: false,
                             layout: {
-                                padding: { top: isMobile ? 25 : 40, bottom: 10, left: 5, right: 10 }
+                                padding: {
+                                    top: isMobile ? 25 : 40,
+                                    bottom: 10,
+                                    left: 5,
+                                    right: 10
+                                }
                             },
-                            interaction: { mode: 'index', intersect: false },
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
                             plugins: {
                                 legend: {
                                     position: 'top',
@@ -1548,7 +1610,8 @@
                                             let label = context.dataset.label || '';
                                             if (label) label += ': ';
                                             if (context.dataset.yAxisID === 'y') {
-                                                label += new Intl.NumberFormat('en-US').format(Math.round(context.parsed.y * 1000));
+                                                label += new Intl.NumberFormat('en-US').format(Math.round(
+                                                    context.parsed.y * 1000));
                                             } else {
                                                 label += context.parsed.y.toFixed(1) + '%';
                                             }
@@ -1572,8 +1635,13 @@
                                         },
                                         padding: 8
                                     },
-                                    grid: { display: false },
-                                    border: { color: '#e2e8f0', width: 2 }
+                                    grid: {
+                                        display: false
+                                    },
+                                    border: {
+                                        color: '#e2e8f0',
+                                        width: 2
+                                    }
                                 },
                                 y: {
                                     beginAtZero: true,
@@ -1599,13 +1667,24 @@
                                         maxTicksLimit: isMobile ? 4 : 6,
                                         callback: (value) => {
                                             const num = value * 1000;
-                                            return isMobile ? (num/1000).toFixed(0)+'k' : new Intl.NumberFormat('en-US').format(num);
+                                            return isMobile ? (num / 1000).toFixed(0) + 'k' : new Intl
+                                                .NumberFormat('en-US').format(num);
                                         }
                                     },
-                                    grid: { color: '#f1f5f9', lineWidth: 1 },
-                                    border: { display: false }
+                                    grid: {
+                                        color: '#f1f5f9',
+                                        lineWidth: 1
+                                    },
+                                    border: {
+                                        display: false
+                                    }
                                 },
-                                y1: { display: false, position: 'right', min: 80, max: 100 }
+                                y1: {
+                                    display: false,
+                                    position: 'right',
+                                    min: 80,
+                                    max: 100
+                                }
                             }
                         }
                     });
@@ -1675,7 +1754,17 @@
                             color: '#1e293b',
                             backgroundColor: 'rgba(255,255,255,0.92)',
                             borderRadius: 4,
-                            padding: isMobile ? { top: 2, bottom: 2, left: 3, right: 3 } : { top: 3, bottom: 3, left: 5, right: 5 },
+                            padding: isMobile ? {
+                                top: 2,
+                                bottom: 2,
+                                left: 3,
+                                right: 3
+                            } : {
+                                top: 3,
+                                bottom: 3,
+                                left: 5,
+                                right: 5
+                            },
                             font: {
                                 family: 'Inter, system-ui, -apple-system, sans-serif',
                                 size: isMobile ? 8 : 12,
@@ -1699,7 +1788,12 @@
                             responsive: true,
                             maintainAspectRatio: false,
                             layout: {
-                                padding: { top: isMobile ? 20 : 40, bottom: isMobile ? 10 : 30, left: 5, right: 10 }
+                                padding: {
+                                    top: isMobile ? 20 : 40,
+                                    bottom: isMobile ? 10 : 30,
+                                    left: 5,
+                                    right: 10
+                                }
                             },
                             plugins: {
                                 legend: {
@@ -1720,7 +1814,9 @@
                                         pointStyle: 'circle'
                                     }
                                 },
-                                datalabels: { display: true }
+                                datalabels: {
+                                    display: true
+                                }
                             },
                             scales: {
                                 x: {
@@ -1736,8 +1832,13 @@
                                             weight: '600'
                                         }
                                     },
-                                    grid: { display: false },
-                                    border: { color: '#e2e8f0', width: 2 }
+                                    grid: {
+                                        display: false
+                                    },
+                                    border: {
+                                        color: '#e2e8f0',
+                                        width: 2
+                                    }
                                 },
                                 y: {
                                     beginAtZero: true,
@@ -1755,11 +1856,19 @@
                                         display: !isMobile,
                                         text: 'Rate (%)',
                                         color: '#1e293b',
-                                        font: { size: 13, weight: '600' },
+                                        font: {
+                                            size: 13,
+                                            weight: '600'
+                                        },
                                         padding: 10
                                     },
-                                    grid: { color: '#f1f5f9', lineWidth: 1 },
-                                    border: { display: false }
+                                    grid: {
+                                        color: '#f1f5f9',
+                                        lineWidth: 1
+                                    },
+                                    border: {
+                                        display: false
+                                    }
                                 }
                             }
                         }
@@ -1908,7 +2017,9 @@
                         const data = await response.json();
 
                         data.forEach(item => {
-                            labels.push(window.innerWidth < 640 ? `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` : `${year} ${this.quarterToMonth(item.quarter)}`);
+                            labels.push(window.innerWidth < 640 ?
+                                `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` :
+                                `${year} ${this.quarterToMonth(item.quarter)}`);
                             laborData.push(parseFloat(item.labor_force_thousands) || 0);
                             empRateData.push(parseFloat(item.employment_rate) || 0);
                         });
@@ -1950,7 +2061,8 @@
                                         formatter: (value, context) => {
                                             const total = context.chart.data.labels.length;
                                             const step = total > 20 ? 4 : total > 10 ? 3 : 1;
-                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                            return context.dataIndex % step === 0 ? value.toFixed(1) +
+                                                '%' : null;
                                         }
                                     }
                                 },
@@ -1984,12 +2096,14 @@
                                         color: "#FFFFFF",
                                         font: {
                                             weight: 'bold',
-                                            size: window.innerWidth < 640 ? 9 : window.innerWidth < 1024 ? 13 : 18
+                                            size: window.innerWidth < 640 ? 9 : window.innerWidth < 1024 ?
+                                                13 : 18
                                         },
                                         formatter: (value, context) => {
                                             const total = context.chart.data.labels.length;
                                             const step = total > 20 ? 4 : total > 10 ? 3 : 1;
-                                            return context.dataIndex % step === 0 ? new Intl.NumberFormat('en-US').format(value) : null;
+                                            return context.dataIndex % step === 0 ? new Intl
+                                                .NumberFormat('en-US').format(value) : null;
                                         }
                                     }
                                 }
@@ -2037,7 +2151,8 @@
                                 x: {
                                     ticks: {
                                         autoSkip: true,
-                                        maxTicksLimit: window.innerWidth < 640 ? 3 : window.innerWidth < 1024 ? 6 : 12,
+                                        maxTicksLimit: window.innerWidth < 640 ? 3 : window.innerWidth < 1024 ?
+                                            6 : 12,
                                         maxRotation: 90,
                                         minRotation: 0,
                                         color: '#475569',
@@ -2048,8 +2163,13 @@
                                         },
                                         padding: 4
                                     },
-                                    grid: { display: false },
-                                    border: { color: '#e2e8f0', width: 2 }
+                                    grid: {
+                                        display: false
+                                    },
+                                    border: {
+                                        color: '#e2e8f0',
+                                        width: 2
+                                    }
                                 },
                                 y: {
                                     beginAtZero: true,
@@ -2076,13 +2196,18 @@
                                         callback: (value) => {
                                             const num = value * 1000;
                                             if (window.innerWidth < 640) {
-                                                return num >= 1000 ? (num/1000).toFixed(0)+'k' : num;
+                                                return num >= 1000 ? (num / 1000).toFixed(0) + 'k' : num;
                                             }
                                             return new Intl.NumberFormat('en-US').format(num);
                                         }
                                     },
-                                    grid: { color: '#f1f5f9', lineWidth: 1 },
-                                    border: { display: false }
+                                    grid: {
+                                        color: '#f1f5f9',
+                                        lineWidth: 1
+                                    },
+                                    border: {
+                                        display: false
+                                    }
                                 },
                                 y1: {
                                     display: false,
@@ -2116,7 +2241,9 @@
                             const itemQ = quarterToNum(item.quarter);
 
                             if (year > startYear && year < endYear) {
-                                labels.push(window.innerWidth < 640 ? `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` : `${year} ${this.quarterToMonth(item.quarter)}`);
+                                labels.push(window.innerWidth < 640 ?
+                                    `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` :
+                                    `${year} ${this.quarterToMonth(item.quarter)}`);
                                 laborData.push(parseFloat(item.labor_force_thousands) ||
                                     0);
                                 empRateData.push(parseFloat(item.employment_rate) || 0);
@@ -2126,7 +2253,9 @@
                             if (year === startYear && itemQ < startQ) return;
                             if (year === endYear && itemQ > endQ) return;
 
-                            labels.push(window.innerWidth < 640 ? `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` : `${year} ${this.quarterToMonth(item.quarter)}`);
+                            labels.push(window.innerWidth < 640 ?
+                                `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` :
+                                `${year} ${this.quarterToMonth(item.quarter)}`);
                             laborData.push(parseFloat(item.labor_force_thousands) || 0);
                             empRateData.push(parseFloat(item.employment_rate) || 0);
                         });
@@ -2157,7 +2286,9 @@
                         const data = await response.json();
 
                         data.forEach(item => {
-                            labels.push(window.innerWidth < 640 ? `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` : `${year} ${this.quarterToMonth(item.quarter)}`);
+                            labels.push(window.innerWidth < 640 ?
+                                `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` :
+                                `${year} ${this.quarterToMonth(item.quarter)}`);
                             empRateData.push(parseFloat(item.employment_rate) || 0);
                             lfprData.push(parseFloat(item.lfpr) || 0);
                             underempData.push(parseFloat(item
@@ -2190,7 +2321,8 @@
                                         formatter: (value, context) => {
                                             const total = context.chart.data.labels.length;
                                             const step = total > 20 ? 4 : total > 10 ? 3 : 1;
-                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                            return context.dataIndex % step === 0 ? value.toFixed(1) +
+                                                '%' : null;
                                         }
                                     }
                                 },
@@ -2213,7 +2345,8 @@
                                         formatter: (value, context) => {
                                             const total = context.chart.data.labels.length;
                                             const step = total > 20 ? 4 : total > 10 ? 3 : 1;
-                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                            return context.dataIndex % step === 0 ? value.toFixed(1) +
+                                                '%' : null;
                                         }
                                     }
                                 },
@@ -2236,7 +2369,8 @@
                                         formatter: (value, context) => {
                                             const total = context.chart.data.labels.length;
                                             const step = total > 20 ? 4 : total > 10 ? 3 : 1;
-                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                            return context.dataIndex % step === 0 ? value.toFixed(1) +
+                                                '%' : null;
                                         }
                                     }
                                 },
@@ -2259,7 +2393,8 @@
                                         formatter: (value, context) => {
                                             const total = context.chart.data.labels.length;
                                             const step = total > 20 ? 4 : total > 10 ? 3 : 1;
-                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                            return context.dataIndex % step === 0 ? value.toFixed(1) +
+                                                '%' : null;
                                         }
                                     }
                                 }
@@ -2307,7 +2442,8 @@
                                 x: {
                                     ticks: {
                                         autoSkip: true,
-                                        maxTicksLimit: window.innerWidth < 640 ? 3 : window.innerWidth < 1024 ? 6 : 12,
+                                        maxTicksLimit: window.innerWidth < 640 ? 3 : window.innerWidth < 1024 ?
+                                            6 : 12,
                                         maxRotation: 90,
                                         minRotation: 0,
                                         padding: window.innerWidth < 640 ? 4 : 12,
@@ -2318,8 +2454,13 @@
                                             weight: '600'
                                         }
                                     },
-                                    grid: { display: false },
-                                    border: { color: '#e2e8f0', width: 2 }
+                                    grid: {
+                                        display: false
+                                    },
+                                    border: {
+                                        color: '#e2e8f0',
+                                        width: 2
+                                    }
                                 },
                                 y: {
                                     beginAtZero: true,
@@ -2345,8 +2486,13 @@
                                         },
                                         padding: 8
                                     },
-                                    grid: { color: '#f1f5f9', lineWidth: 1 },
-                                    border: { display: false }
+                                    grid: {
+                                        color: '#f1f5f9',
+                                        lineWidth: 1
+                                    },
+                                    border: {
+                                        display: false
+                                    }
                                 }
                             }
                         }
@@ -2375,7 +2521,9 @@
                             if (year === startYear && itemQ < startQ) return;
                             if (year === endYear && itemQ > endQ) return;
 
-                            labels.push(window.innerWidth < 640 ? `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` : `${year} ${this.quarterToMonth(item.quarter)}`);
+                            labels.push(window.innerWidth < 640 ?
+                                `'${String(year).slice(2)} ${this.quarterToMonth(item.quarter)}` :
+                                `${year} ${this.quarterToMonth(item.quarter)}`);
                             emp.push(parseFloat(item.employment_rate) || 0);
                             lfpr.push(parseFloat(item.lfpr) || 0);
                             under.push(parseFloat(item.underemployment_rate) ||

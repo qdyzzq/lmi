@@ -1,28 +1,23 @@
-<aside
-    x-data="{
-        sidebarExpanded: JSON.parse(localStorage.getItem('sidebarExpanded') ?? 'true'),
-        toggleSidebar() {
-            this.sidebarExpanded = !this.sidebarExpanded;
-            localStorage.setItem('sidebarExpanded', this.sidebarExpanded);
-        }
-    }"
-    x-init="
-        $el.classList.remove('w-64', 'w-16');
-        $el.classList.remove('transition-all', 'duration-300', 'ease-in-out');
-        $el.classList.add(sidebarExpanded ? 'w-64' : 'w-16');
-        $nextTick(() => {
-            $el.style.visibility = 'visible';
-            setTimeout(() => $el.classList.add('transition-all', 'duration-300', 'ease-in-out'), 50);
-        });
-    "
-    :class="sidebarExpanded ? 'w-64' : 'w-16'"
+<aside x-data="{
+    sidebarExpanded: JSON.parse(localStorage.getItem('sidebarExpanded') ?? 'true'),
+    toggleSidebar() {
+        this.sidebarExpanded = !this.sidebarExpanded;
+        localStorage.setItem('sidebarExpanded', this.sidebarExpanded);
+    }
+}" x-init="$el.classList.remove('w-64', 'w-16');
+$el.classList.remove('transition-all', 'duration-300', 'ease-in-out');
+$el.classList.add(sidebarExpanded ? 'w-64' : 'w-16');
+$nextTick(() => {
+    $el.style.visibility = 'visible';
+    setTimeout(() => $el.classList.add('transition-all', 'duration-300', 'ease-in-out'), 50);
+});" :class="sidebarExpanded ? 'w-64' : 'w-16'"
     style="visibility: hidden;"
     class="bg-white text-slate-700 flex flex-col shadow-sm z-10 h-screen overflow-visible shrink-0 transition-all duration-300 ease-in-out border-r border-slate-200 relative">
 
     <!-- Top accent line -->
     <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-600 via-blue-400 to-sky-300"></div>
 
-    <!-- Edge toggle handle — floats on the right border, vertically centered -->
+    <!-- Edge toggle handle -->
     <button @click="toggleSidebar()"
         class="absolute -right-3.5 top-1/2 -translate-y-1/2 z-50 w-7 h-7 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-md hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600 text-slate-400 transition-all duration-200 cursor-pointer">
         <svg x-show="sidebarExpanded" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,20 +30,20 @@
 
     <!-- Logo Header -->
     <div class="pt-5 pb-4 border-b border-slate-100" :class="sidebarExpanded ? 'px-3' : 'px-2'">
-        <!-- Expanded state -->
         <div x-show="sidebarExpanded" class="flex items-center gap-2 min-w-0">
-            <div class="w-9 h-9 flex items-center justify-center shrink-0 bg-slate-50 border border-slate-200 rounded-xl p-1.5 shadow-sm">
+            <div
+                class="w-9 h-9 flex items-center justify-center shrink-0 bg-slate-50 border border-slate-200 rounded-xl p-1.5 shadow-sm">
                 <img src="{{ asset('images/dole_logo.png') }}" alt="DOLE Logo" class="w-full h-full object-contain">
             </div>
             <div class="min-w-0">
-                <p class="font-semibold text-[13px] text-slate-900 tracking-tight truncate">Labor Market Intelligence</p>
+                <p class="font-semibold text-[13px] text-slate-900 tracking-tight truncate">Labor Market Intelligence
+                </p>
                 <p class="text-[10px] text-slate-400 italic mt-0.5 truncate">Bridging Education & Industry</p>
             </div>
         </div>
-
-        <!-- Collapsed state — just logo centered -->
         <div x-show="!sidebarExpanded" class="flex justify-center">
-            <div class="w-9 h-9 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl p-1.5 shadow-sm">
+            <div
+                class="w-9 h-9 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl p-1.5 shadow-sm">
                 <img src="{{ asset('images/dole_logo.png') }}" alt="DOLE Logo" class="w-full h-full object-contain">
             </div>
         </div>
@@ -71,14 +66,18 @@
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.job.Market.Demands.Form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5h4.5v7.5H3zM9.75 9h4.5v12h-4.5zM16.5 4.5H21V21h-4.5z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 13.5h4.5v7.5H3zM9.75 9h4.5v12h-4.5zM16.5 4.5H21V21h-4.5z" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Regional Statistics</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Regional
+                        Statistics</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     Regional Statistics
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
 
@@ -91,14 +90,18 @@
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.job-titles.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Job Titles Form</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Job Titles
+                        Form</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     Job Titles Form
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
 
@@ -111,14 +114,18 @@
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.licensure-rates.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-.44 3.899 3.745 3.745 0 01-3.899.44A3.745 3.745 0 0112 21a3.745 3.745 0 01-3.068-1.593 3.745 3.745 0 01-3.899-.44 3.745 3.745 0 01-.44-3.899A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 01.44-3.899 3.745 3.745 0 013.899-.44A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.899.44 3.746 3.746 0 01.44 3.899A3.746 3.746 0 0121 12z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-.44 3.899 3.745 3.745 0 01-3.899.44A3.745 3.745 0 0112 21a3.745 3.745 0 01-3.068-1.593 3.745 3.745 0 01-3.899-.44 3.745 3.745 0 01-.44-3.899A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 01.44-3.899 3.745 3.745 0 013.899-.44A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.899.44 3.746 3.746 0 01.44 3.899A3.746 3.746 0 0121 12z" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Licensure Passing Rates</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Licensure Passing
+                        Rates</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     Licensure Passing Rates
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
 
@@ -131,19 +138,24 @@
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.discipline-enrollment.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Enrollment Form</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Enrollment
+                        Form</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     Enrollment Form
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
 
             <!-- Graduate Form -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true"
+                @mouseleave="hovered = false">
                 <a href="{{ route('admin.discipline-graduate.form') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
                         {{ request()->routeIs('admin.discipline-graduate.form')
@@ -151,79 +163,126 @@
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.discipline-graduate.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Graduate Form</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Graduate
+                        Form</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     Graduate Form
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
-                <!-- Analysis Template -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.supply-side-editor') }}"   {{-- ← changed --}}
+
+            <!-- Analysis Labor Supply -->
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true"
+                @mouseleave="hovered = false">
+                <a href="{{ route('admin.supply-side-editor') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.supply-side-editor')   {{-- ← changed --}}
+                        {{ request()->routeIs('admin.supply-side-editor')
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.supply-side-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"   {{-- ← changed --}}
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.supply-side-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis Labor Supply</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis Labor
+                        Supply</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     Analysis Labor Supply
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
-            <!-- Analysis Template JobMarketDemand Side -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.template-editor') }}"   {{-- ← changed --}}
+
+            <!-- Analysis JobMarketDemands -->
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true"
+                @mouseleave="hovered = false">
+                <a href="{{ route('admin.template-editor') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.template-editor')   {{-- ← changed --}}
+                        {{ request()->routeIs('admin.template-editor')
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.stemplate-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"   {{-- ← changed --}}
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.template-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.073a2.25 2.25 0 01-2.25 2.25H5.25a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 015.25 4.5h7.5M9 4.5V3a.75.75 0 01.75-.75h4.5A.75.75 0 0115 3v1.5m-5.25 6h6M3.75 10.5h7.5"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5l1.5-1.5a1.06 1.06 0 00-1.5-1.5L18 9l1.5 1.5zm0 0l-4.5 4.5-2 .5.5-2 4-3z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M20.25 14.15v4.073a2.25 2.25 0 01-2.25 2.25H5.25a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 015.25 4.5h7.5M9 4.5V3a.75.75 0 01.75-.75h4.5A.75.75 0 0115 3v1.5m-5.25 6h6M3.75 10.5h7.5" />
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19.5 10.5l1.5-1.5a1.06 1.06 0 00-1.5-1.5L18 9l1.5 1.5zm0 0l-4.5 4.5-2 .5.5-2 4-3z" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis JobMarketDemands</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis
+                        JobMarketDemands</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     Analysis JobMarketDemands
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
 
-
             <!-- Programs & Stories -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true"
+                @mouseleave="hovered = false">
                 <a href="{{ route('admin.program-stories-editor') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.program-stories')
+                        {{ request()->routeIs('admin.program-stories-editor')
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.program-stories-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Programs & Stories</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Programs &
+                        Stories</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     Programs & Stories
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PESO / JPO Directory -->
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true"
+                @mouseleave="hovered = false">
+                <a href="{{ route('admin.peso-directory.index') }}"
+                    class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
+                        {{ request()->routeIs('admin.peso-directory.index')
+                            ? 'text-amber-700 bg-amber-50 border-amber-500'
+                            : 'text-slate-800 border-transparent hover:text-amber-700 hover:bg-amber-50 hover:border-amber-500' }}">
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.peso-directory.index') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">PESO / JPO
+                        Directory</span>
+                </a>
+                <div x-show="!sidebarExpanded && hovered"
+                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    PESO / JPO Directory
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
 
             <!-- LMI Submissions -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true"
+                @mouseleave="hovered = false">
                 <a href="{{ route('admin.lmi-submissions.index') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
                         {{ request()->routeIs('admin.lmi-submissions.*')
@@ -231,20 +290,25 @@
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.lmi-submissions.*') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">LMI Submissions</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">LMI
+                        Submissions</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     LMI Submissions
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
+
         </div>
     </nav>
 
-    <!-- Account Section (pinned to bottom) -->
+    <!-- Account Section -->
     <div class="px-2 pb-2 border-t border-slate-100">
         <p x-show="sidebarExpanded"
             class="text-[9px] uppercase tracking-[0.14em] text-slate-400 font-semibold font-mono mb-1 px-2 whitespace-nowrap pt-3">
@@ -257,8 +321,10 @@
                 @csrf
                 <button type="submit"
                     class="flex items-center gap-3 px-2.5 py-2.5 w-full text-left text-slate-700 hover:text-red-500 hover:bg-red-50 border-l-[3px] border-transparent hover:border-red-400 rounded-r-lg transition-all group">
-                    <svg class="w-[18px] h-[18px] shrink-0 opacity-50 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+                    <svg class="w-[18px] h-[18px] shrink-0 opacity-50 group-hover:opacity-100" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
                     </svg>
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Logout</span>
                 </button>
@@ -266,7 +332,9 @@
             <div x-show="!sidebarExpanded && hovered"
                 class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                 Logout
-                <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                <div
+                    class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                </div>
             </div>
         </div>
     </div>
