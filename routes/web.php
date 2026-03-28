@@ -287,7 +287,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/carousel/{slide}', [ProgramAdminController::class, 'updateSlide'])->name('carousel.update');
     Route::delete('/carousel/{slide}', [ProgramAdminController::class, 'destroySlide'])->name('carousel.destroy');
 
-    // ==================== FIELD OFFICES (PESO/JPO Directory) ====================
+   // ==================== FIELD OFFICES (PESO/JPO Directory) ====================
     Route::get('/peso-directory',            [PesoDirectoryController::class, 'adminIndex'])       ->name('peso-directory.index');
     Route::post('/field-offices',            [PesoDirectoryController::class, 'storeFieldOffice']) ->name('field-offices.store');
     Route::put('/field-offices/{office}',    [PesoDirectoryController::class, 'updateFieldOffice'])->name('field-offices.update');
@@ -298,12 +298,16 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/office-types',             [PesoDirectoryController::class, 'storeOfficeType']);
     Route::put('/office-types/{name}',       [PesoDirectoryController::class, 'updateOfficeType']);
     Route::delete('/office-types/{name}',    [PesoDirectoryController::class, 'destroyOfficeType']);
-
+ 
+    // ==================== POSITION TITLES ====================
+    Route::get('/position-titles',           [PesoDirectoryController::class, 'getPositionTitles']);
+    Route::post('/position-titles',          [PesoDirectoryController::class, 'storePositionTitle']);
+    Route::put('/position-titles/{name}',    [PesoDirectoryController::class, 'updatePositionTitle']);
+    Route::delete('/position-titles/{name}', [PesoDirectoryController::class, 'destroyPositionTitle']);
+ 
     // ✅ PESO Info Settings (description, objective, how to avail, lists)
-    Route::get('/peso-info',           [PesoDirectoryController::class, 'getPesoInfo']);
-    // ⚠️ publish MUST be declared before the {key} wildcard to avoid being swallowed by it
-    Route::post('/peso-info/publish',  [PesoDirectoryController::class, 'publishPesoInfo']);
-    Route::put('/peso-info/{key}',     [PesoDirectoryController::class, 'updatePesoInfo']);
+    Route::get('/peso-info',       [PesoDirectoryController::class, 'getPesoInfo']);
+    Route::put('/peso-info/{key}', [PesoDirectoryController::class, 'updatePesoInfo']);
 
     //=========================CTA SECTION=====================
     Route::get('/cta-section',     [ProgramAdminController::class, 'getCtaSection'])    ->name('cta-section.show');

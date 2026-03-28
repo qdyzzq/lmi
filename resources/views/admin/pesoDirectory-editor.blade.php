@@ -159,17 +159,6 @@
                         </div>
                     </div>
 
-                    {{-- Toast --}}
-                    <div x-show="toast.show" x-cloak x-transition
-                        class="mx-6 mt-4 px-4 py-3 rounded-lg text-sm font-semibold flex items-center gap-2"
-                        :class="toast.success ? 'bg-green-50 text-green-700 border border-green-200' :
-                            'bg-red-50 text-red-700 border border-red-200'">
-                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                :d="toast.success ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'" />
-                        </svg>
-                        <span x-text="toast.message"></span>
-                    </div>
 
                     {{-- Unpublished changes banner --}}
                     <div x-show="pesoInfoHasDraft && pesoInfoChangelog.length > 0" x-cloak
@@ -609,7 +598,8 @@
                             fn($o) => [
                                 'id' => $o->id,
                                 'name' => $o->name,
-                                'manager' => $o->manager_name ?? '',
+                                'persons_name' => $o->persons_name ?? '',
+                                'position_title' => $o->positionTitle?->name ?? '',
                                 'email' => $o->email ?? '',
                                 'address' => $o->address ?? '',
                                 'type' => $o->office_type,
@@ -640,12 +630,6 @@
                             publishing: false,
                             pesoInfoHasDraft: @json($pesoInfoHasDraft),
                             pesoInfoChangelog: @json($pesoInfoChangelog),
-
-                            toast: {
-                                show: false,
-                                success: true,
-                                message: ''
-                            },
 
                             form: {
                                 description: @json($pesoInfo['description'] ?? ''),
@@ -788,12 +772,7 @@
                             },
 
                             showToast(success, message) {
-                                this.toast = {
-                                    show: true,
-                                    success,
-                                    message
-                                };
-                                setTimeout(() => this.toast.show = false, 3500);
+                                showToast(message, success ? 'success' : 'error');
                             },
 
                             // ── Resolve the correct payload value for a given key ──
@@ -1173,7 +1152,7 @@
                                             name: 'name',
                                             weight: 0.6
                                         }, {
-                                            name: 'manager',
+                                            name: 'persons_name',
                                             weight: 0.3
                                         }, {
                                             name: 'type',
@@ -1358,7 +1337,7 @@
                                     </svg>
                                 </span>
                                 <input type="text" x-model="search"
-                                    placeholder="Search by office name, manager..."
+                                    placeholder="Search by office name, manager/person name..."
                                     class="w-full border border-slate-200 rounded-xl pl-9 pr-10 py-2.5 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-400 outline-none transition bg-slate-50 focus:bg-white" />
                                 <button x-show="search.trim()" @click="search = ''"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
@@ -1393,10 +1372,11 @@
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-semibold text-slate-800 truncate"
                                                     style="text-transform: capitalize;"
-                                                    x-text="entry.name.toLowerCase()"></p>
-                                                <p class="text-xs text-slate-400 truncate"
-                                                    style="text-transform: capitalize;"
-                                                    x-text="(entry.manager || '—').toLowerCase()"></p>
+                                                    x-text="entry.name.toLowerCase().replace(/^(peso|jpo)\s+/i, '')">
+                                                </p>
+                                                <p class="text-xs text-slate-400 truncate font-semibold uppercase tracking-wide"
+                                                    x-text="(entry.position_title || '') + (entry.persons_name ? ' · ' + entry.persons_name : '')">
+                                                </p>
                                             </div>
                                             <span
                                                 class="inline-flex items-center text-xs font-bold px-2 py-0.5 rounded flex-shrink-0"
@@ -1415,7 +1395,7 @@
 
                                         <div x-show="isOpen(entry.id)"
                                             class="border-t border-slate-100 px-4 py-4 flex flex-col gap-3 bg-slate-50">
-                                            <template x-if="entry.manager">
+                                            <template x-if="entry.persons_name">
                                                 <div class="flex items-start gap-2">
                                                     <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5"
                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1424,12 +1404,10 @@
                                                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                     </svg>
                                                     <div>
-                                                        <p
-                                                            class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">
-                                                            Manager</p>
+                                                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5"
+                                                            x-text="entry.position_title || 'Personnel'"></p>
                                                         <p class="text-xs text-slate-700 font-medium"
-                                                            style="text-transform: capitalize;"
-                                                            x-text="entry.manager.toLowerCase()"></p>
+                                                            x-text="entry.persons_name"></p>
                                                     </div>
                                                 </div>
                                             </template>
@@ -1473,7 +1451,7 @@
                                             </template>
                                             <div class="flex gap-2 pt-1">
                                                 <button
-                                                    @click.stop="$dispatch('open-modal', { type: 'edit-peso', id: entry.id, data: { name: entry.name, manager: entry.manager, email: entry.email, address: entry.address, type: entry.type, province: province } })"
+                                                    @click.stop="$dispatch('open-modal', { type: 'edit-peso', id: entry.id, data: { name: entry.name, persons_name: entry.persons_name, position_title: entry.position_title, email: entry.email, address: entry.address, type: entry.type, province: province } })"
                                                     class="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold bg-indigo-50 hover:bg-indigo-500 text-indigo-500 hover:text-white border border-indigo-200 rounded-lg transition">
                                                     <svg class="w-3 h-3" fill="none" stroke="currentColor"
                                                         viewBox="0 0 24 24">
@@ -1681,13 +1659,128 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Manager / Head Name
                                         <span class="text-red-500">*</span></label>
-                                    <input type="text" x-model="form.manager" placeholder="e.g. Juan dela Cruz"
-                                        :class="formErrors.manager ? 'border-red-500 ring-2 ring-red-200' :
+                                    <input type="text" x-model="form.persons_name"
+                                        placeholder="e.g. Juan dela Cruz"
+                                        :class="formErrors.persons_name ? 'border-red-500 ring-2 ring-red-200' :
                                             'border-slate-300 focus:ring-indigo-400'"
-                                        @input="formErrors.manager = false"
+                                        @input="formErrors.persons_name = false"
                                         class="w-full border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none" />
-                                    <p x-show="formErrors.manager" class="mt-1 text-xs text-red-500 font-semibold"
-                                        x-cloak>Manager name is required.</p>
+                                    <p x-show="formErrors.persons_name"
+                                        class="mt-1 text-xs text-red-500 font-semibold" x-cloak>Manager name is
+                                        required.</p>
+                                </div>
+                            </div>
+
+                            {{-- Position Title row --}}
+                            <div x-data="positionTitleSelector()" x-init="init()">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Position Title <span
+                                        class="text-red-500">*</span></label>
+
+                                {{-- SELECT mode --}}
+                                <div x-show="mode === 'select'" class="space-y-2">
+                                    <div class="flex gap-2">
+                                        <select x-model="form.position_title"
+                                            :class="formErrors.position_title ? 'border-red-500 ring-2 ring-red-200' :
+                                                'border-slate-300 focus:ring-indigo-400'"
+                                            @change="formErrors.position_title = false"
+                                            class="flex-1 border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none bg-white cursor-pointer">
+                                            <option value="" disabled selected hidden>— Select position —
+                                            </option>
+                                            <template x-for="t in titles" :key="t">
+                                                <option :value="t" x-text="t"
+                                                    :selected="form.position_title === t"></option>
+                                            </template>
+                                        </select>
+                                        <button type="button" @click="mode = 'add'; inputName = ''"
+                                            title="Add new position title"
+                                            class="flex-shrink-0 w-10 h-10 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-600 flex items-center justify-center transition">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    stroke-width="2.5" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                        </button>
+                                        <button type="button" @click="startEdit()" :disabled="!form.position_title"
+                                            title="Rename selected position"
+                                            class="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-600 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                        </button>
+                                        <button type="button" @click="mode = 'delete'"
+                                            :disabled="!form.position_title" title="Delete selected position"
+                                            class="flex-shrink-0 w-10 h-10 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-red-500 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <p x-show="titleError" x-text="titleError"
+                                        class="text-xs text-red-500 font-semibold" x-cloak></p>
+                                    <p x-show="formErrors.position_title && !titleError"
+                                        class="text-xs text-red-500 font-semibold" x-cloak>Please select a position
+                                        title.</p>
+                                </div>
+
+                                {{-- ADD mode --}}
+                                <div x-show="mode === 'add'" x-cloak class="space-y-2">
+                                    <div class="flex gap-2">
+                                        <input type="text" x-model="inputName"
+                                            @keydown.enter.prevent="saveNewTitle(form)"
+                                            @keydown.escape.prevent="mode = 'select'" placeholder="e.g. District Head"
+                                            class="flex-1 border border-indigo-400 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none">
+                                        <button type="button" @click="saveNewTitle(form)" :disabled="saving"
+                                            class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition disabled:opacity-50">
+                                            <span x-show="!saving">Save</span><span x-show="saving" x-cloak>…</span>
+                                        </button>
+                                        <button type="button" @click="mode = 'select'; titleError = ''"
+                                            class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition">Cancel</button>
+                                    </div>
+                                    <p x-show="titleError" x-text="titleError"
+                                        class="text-xs text-red-500 font-semibold" x-cloak></p>
+                                </div>
+
+                                {{-- EDIT mode --}}
+                                <div x-show="mode === 'edit'" x-cloak class="space-y-2">
+                                    <p class="text-xs text-slate-500">Renaming: <strong
+                                            x-text="form.position_title"></strong></p>
+                                    <div class="flex gap-2">
+                                        <input type="text" x-model="inputName"
+                                            @keydown.enter.prevent="updateTitle(form)"
+                                            @keydown.escape.prevent="mode = 'select'" placeholder="New name..."
+                                            class="flex-1 border border-amber-400 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-400 outline-none"
+                                            x-ref="editTitleInput">
+                                        <button type="button" @click="updateTitle(form)" :disabled="saving"
+                                            class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition disabled:opacity-50">
+                                            <span x-show="!saving">Rename</span><span x-show="saving" x-cloak>…</span>
+                                        </button>
+                                        <button type="button" @click="mode = 'select'; titleError = ''"
+                                            class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition">Cancel</button>
+                                    </div>
+                                    <p x-show="titleError" x-text="titleError"
+                                        class="text-xs text-red-500 font-semibold" x-cloak></p>
+                                </div>
+
+                                {{-- DELETE confirm --}}
+                                <div x-show="mode === 'delete'" x-cloak
+                                    class="rounded-lg border border-red-200 bg-red-50 p-3 space-y-2">
+                                    <p class="text-sm text-red-700 font-semibold">Delete position "<span
+                                            x-text="form.position_title"></span>"?</p>
+                                    <p class="text-xs text-red-500">This only removes it from the list. Existing
+                                        offices are not affected.</p>
+                                    <div class="flex gap-2">
+                                        <button type="button" @click="deleteTitle(form)" :disabled="saving"
+                                            class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition disabled:opacity-50">
+                                            <span x-show="!saving">Yes, Delete</span><span x-show="saving"
+                                                x-cloak>…</span>
+                                        </button>
+                                        <button type="button" @click="mode = 'select'"
+                                            class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition">Cancel</button>
+                                    </div>
                                 </div>
                             </div>
                             <div>
@@ -2164,7 +2257,8 @@
                     if (!this.form.name?.trim()) this.formErrors.name = true;
                     if (!this.form.type) this.formErrors.type = true;
                     if (!this.form.province?.trim()) this.formErrors.province = true;
-                    if (!this.form.manager?.trim()) this.formErrors.manager = true;
+                    if (!this.form.persons_name?.trim()) this.formErrors.persons_name = true;
+                    if (!this.form.position_title?.trim()) this.formErrors.position_title = true;
                     if (!this.form.email?.trim() || !emailRegex.test(this.form.email.trim())) this.formErrors.email =
                         true;
                     if (!this.form.address?.trim()) this.formErrors.address = true;
@@ -2176,7 +2270,8 @@
                         name: this.form.name,
                         office_type: this.form.type,
                         province: this.form.province,
-                        manager_name: this.form.manager,
+                        persons_name: this.form.persons_name,
+                        position_title: this.form.position_title,
                         email: this.form.email,
                         address: this.form.address
                     };
@@ -2195,7 +2290,8 @@
                                         ...pesoState.pesoData[prov][idx],
                                         name: body.name,
                                         type: body.office_type,
-                                        manager: body.manager_name,
+                                        persons_name: body.persons_name,
+                                        position_title: body.position_title,
                                         email: body.email,
                                         address: body.address,
                                         id: this.modal.id
@@ -2207,7 +2303,8 @@
                                     id: res.id ?? Date.now(),
                                     name: body.name,
                                     type: body.office_type,
-                                    manager: body.manager_name,
+                                    persons_name: body.persons_name,
+                                    position_title: body.position_title,
                                     email: body.email,
                                     address: body.address
                                 }];
@@ -2476,72 +2573,234 @@
             };
         }
 
-        function showToast(message, type = 'error') {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
-            const configs = {
-                error: {
-                    border: 'border-red-500',
-                    icon: `<svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
-                    labelColor: 'text-red-600',
-                    label: 'Error'
+        // ─── Position Title Selector ─────────────────────────────────────────────
+        function positionTitleSelector() {
+            return {
+                titles: [],
+                mode: 'select',
+                inputName: '',
+                saving: false,
+                titleError: '',
+
+                async init() {
+                    try {
+                        const res = await fetch('/admin/position-titles', {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        if (res.ok) this.titles = await res.json();
+                    } catch (e) {}
                 },
-                success: {
-                    border: 'border-green-500',
-                    icon: `<svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
-                    labelColor: 'text-green-600',
-                    label: 'Success'
+
+                startEdit() {
+                    this.inputName = '';
+                    this.mode = 'edit';
+                    this.$nextTick(() => this.$refs.editTitleInput?.focus());
                 },
-                warning: {
-                    border: 'border-yellow-500',
-                    icon: `<svg class="w-5 h-5 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`,
-                    labelColor: 'text-yellow-600',
-                    label: 'Warning'
+
+                async saveNewTitle(form) {
+                    this.titleError = '';
+                    const name = this.inputName.trim();
+                    if (!name) {
+                        this.titleError = 'Please enter a position title.';
+                        return;
+                    }
+                    if (this.titles.includes(name)) {
+                        this.titleError = 'That title already exists.';
+                        return;
+                    }
+                    this.saving = true;
+                    try {
+                        const res = await fetch('/admin/position-titles', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({
+                                name
+                            })
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.success) {
+                            this.titles.push(data.name);
+                            this.titles.sort();
+                            form.position_title = data.name;
+                            this.mode = 'select';
+                            this.inputName = '';
+                        } else {
+                            this.titleError = data.message ?? 'Failed to save.';
+                        }
+                    } catch (e) {
+                        this.titleError = 'Network error. Please try again.';
+                    }
+                    this.saving = false;
+                },
+
+                async updateTitle(form) {
+                    this.titleError = '';
+                    const oldName = form.position_title;
+                    const newName = this.inputName.trim();
+                    if (!newName) {
+                        this.titleError = 'Please enter a new name.';
+                        return;
+                    }
+                    if (newName === oldName) {
+                        this.mode = 'select';
+                        return;
+                    }
+                    if (this.titles.includes(newName)) {
+                        this.titleError = 'That title already exists.';
+                        return;
+                    }
+                    this.saving = true;
+                    try {
+                        const res = await fetch('/admin/position-titles/' + encodeURIComponent(oldName), {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({
+                                name: newName
+                            })
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.success) {
+                            const idx = this.titles.indexOf(oldName);
+                            if (idx !== -1) this.titles.splice(idx, 1, newName);
+                            this.titles.sort();
+                            form.position_title = newName;
+                            this.mode = 'select';
+                            this.inputName = '';
+                        } else {
+                            this.titleError = data.message ?? 'Failed to rename.';
+                        }
+                    } catch (e) {
+                        this.titleError = 'Network error. Please try again.';
+                    }
+                    this.saving = false;
+                },
+
+                async deleteTitle(form) {
+                    const name = form.position_title;
+                    this.saving = true;
+                    try {
+                        const res = await fetch('/admin/position-titles/' + encodeURIComponent(name), {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.success) {
+                            this.titles = this.titles.filter(t => t !== name);
+                            form.position_title = '';
+                            this.mode = 'select';
+                            window.dispatchEvent(new CustomEvent('show-success-modal', {
+                                detail: {
+                                    title: 'Position Deleted',
+                                    message: 'Position title "' + escapeText(name) + '" has been removed.'
+                                }
+                            }));
+                        } else {
+                            this.titleError = data.message ?? 'Failed to delete.';
+                            this.mode = 'select';
+                        }
+                    } catch (e) {
+                        this.titleError = 'Network error. Please try again.';
+                        this.mode = 'select';
+                    }
+                    this.saving = false;
                 },
             };
+        }
+
+        // ─── Toast Notification System ──────────────────────────────────────────
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toastContainer');
+
+            const configs = {
+                error: {
+                    bg: 'bg-red-50 border-red-400',
+                    icon: `<svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                           </svg>`,
+                    text: 'text-red-800',
+                    bar: 'bg-red-400',
+                },
+                warning: {
+                    bg: 'bg-amber-50 border-amber-400',
+                    icon: `<svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                           </svg>`,
+                    text: 'text-amber-800',
+                    bar: 'bg-amber-400',
+                },
+                success: {
+                    bg: 'bg-green-50 border-green-400',
+                    icon: `<svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                           </svg>`,
+                    text: 'text-green-800',
+                    bar: 'bg-green-400',
+                },
+                info: {
+                    bg: 'bg-blue-50 border-blue-400',
+                    icon: `<svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                           </svg>`,
+                    text: 'text-blue-800',
+                    bar: 'bg-blue-400',
+                },
+            };
+
             const c = configs[type] || configs.error;
+
             const toast = document.createElement('div');
-            toast.className =
-                `pointer-events-auto w-full border-l-4 bg-white rounded-xl shadow-xl overflow-hidden transition-all duration-300 ease-out translate-x-full opacity-0 ${c.border}`;
-            const inner = document.createElement('div');
-            inner.className = 'flex items-start gap-3 px-4 py-3.5';
-            const iconWrap = document.createElement('div');
-            iconWrap.innerHTML = c.icon;
-            inner.appendChild(iconWrap.firstChild);
-            const textDiv = document.createElement('div');
-            textDiv.className = 'flex-1 min-w-0';
-            const labelEl = document.createElement('p');
-            labelEl.className = `text-xs font-bold uppercase tracking-wide ${c.labelColor} mb-0.5`;
-            labelEl.textContent = c.label;
-            const msgEl = document.createElement('p');
-            msgEl.className = 'text-sm text-slate-700 leading-snug';
-            msgEl.textContent = message;
-            textDiv.appendChild(labelEl);
-            textDiv.appendChild(msgEl);
-            inner.appendChild(textDiv);
-            const closeBtn = document.createElement('button');
-            closeBtn.className =
-                'flex-shrink-0 w-5 h-5 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition mt-0.5';
-            closeBtn.innerHTML =
-                `<svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
-            closeBtn.addEventListener('click', () => toast.remove());
-            inner.appendChild(closeBtn);
-            toast.appendChild(inner);
-            const progress = document.createElement('div');
-            progress.className = `toast-progress h-1 ${c.border.replace('border-', 'bg-')} w-full origin-left`;
-            toast.appendChild(progress);
+            toast.className = `pointer-events-auto w-full border-l-4 ${c.bg} rounded-xl shadow-xl overflow-hidden
+                               transform transition-all duration-300 translate-x-full opacity-0`;
+
+            toast.innerHTML = `
+                <div class="flex items-start gap-3 px-4 py-4">
+                    ${c.icon}
+                    <p class="text-sm font-medium ${c.text} flex-1 leading-snug">${message}</p>
+                    <button onclick="this.closest('.pointer-events-auto').remove()"
+                            class="text-gray-400 hover:text-gray-600 transition ml-1 flex-shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="h-1 ${c.bar}" style="animation: shrink 4s linear forwards;"></div>
+            `;
+
             container.appendChild(toast);
-            requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.remove('translate-x-full',
-                'opacity-0')));
-            const duration = type === 'error' ? 5000 : 3500;
-            progress.style.transition = `transform ${duration}ms linear`;
+
+            // Slide in
             requestAnimationFrame(() => {
-                progress.style.transform = 'scaleX(0)';
+                requestAnimationFrame(() => {
+                    toast.classList.remove('translate-x-full', 'opacity-0');
+                });
             });
+
+            // Auto-remove after 4s
             setTimeout(() => {
                 toast.classList.add('translate-x-full', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
-            }, duration);
+            }, 4000);
+        }
+
+        // CSS for the shrink progress bar
+        if (!document.getElementById('toastStyle')) {
+            const style = document.createElement('style');
+            style.id = 'toastStyle';
+            style.textContent = `@keyframes shrink { from { width: 100%; } to { width: 0%; } }`;
+            document.head.appendChild(style);
         }
     </script>
 

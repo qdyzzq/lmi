@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Cache;
 use App\Models\FieldOffice;
 use App\Models\OfficeType;
+use App\Models\PositionTitle;
 use App\Models\PesoInfoSection;
 use App\Models\PesoObjective;
 use App\Models\PesoCoreService;
@@ -19,7 +20,6 @@ class PesoDirectoryController extends Controller
 {
     // --------------------------------------------------
     // HELPER: build the live $pesoInfo array from DB
-    // Used by the admin editor and by publishPesoInfo()
     // --------------------------------------------------
     private function buildPesoInfo(): array
     {
@@ -46,7 +46,6 @@ class PesoDirectoryController extends Controller
 
     // --------------------------------------------------
     // HELPER: stamp a draft modification on PESO Info
-    // Called after every individual Save button write
     // --------------------------------------------------
     private function touchPesoInfo(array $entry = []): void
     {
@@ -61,15 +60,12 @@ class PesoDirectoryController extends Controller
 
     // ===================================================
     // PUBLIC PAGE  —  GET /peso-directory
-    // Reads ONLY from the published snapshot — never live DB
     // ===================================================
     public function index(): View
     {
-        // Field offices snapshot (existing)
         $snapshot         = Cache::get('field_offices_published_snapshot', []);
         $pesoProvinceKeys = collect(array_keys($snapshot));
 
-        // PESO Info snapshot — falls back to empty structure if never published
         $pesoInfo = Cache::get('peso_info_published_snapshot', [
             'description'   => '',
             'objective'     => '',
@@ -87,15 +83,15 @@ class PesoDirectoryController extends Controller
     // ===================================================
     public function adminIndex(): View
     {
-        $fieldOffices       = FieldOffice::ordered()->get();
-        $pesoInfo           = $this->buildPesoInfo();          // always live DB for the editor
+        // Eager-load positionTitle so blade can access $o->positionTitle->name
+        $fieldOffices       = FieldOffice::with('positionTitle')->ordered()->get();
+        $pesoInfo           = $this->buildPesoInfo();
         $directoryPublished = Cache::has('field_offices_published_snapshot');
         $lastModifiedAt     = Cache::get('field_offices_last_modified_at');
         $publishedAt        = Cache::get('field_offices_published_at');
         $directoryHasDraft  = $lastModifiedAt && (!$publishedAt || $lastModifiedAt > $publishedAt);
         $directoryChangelog = $directoryHasDraft ? Cache::get('field_offices_changelog', []) : [];
 
-        // PESO Info draft state
         $pesoInfoPublishedAt  = Cache::get('peso_info_published_at');
         $pesoInfoLastModified = Cache::get('peso_info_last_modified_at');
         $pesoInfoPublished    = Cache::has('peso_info_published_snapshot');
@@ -119,7 +115,6 @@ class PesoDirectoryController extends Controller
 
     // ===================================================
     // PESO INFO — GET /admin/peso-info
-    // Returns full live pesoInfo as JSON
     // ===================================================
     public function getPesoInfo(): JsonResponse
     {
@@ -129,7 +124,6 @@ class PesoDirectoryController extends Controller
     // ===================================================
     // PESO INFO — PUT /admin/peso-info/{key}
     // Saves to DB (draft) — does NOT update the public snapshot
-    // After saving, stamps a draft modification timestamp
     // ===================================================
     public function updatePesoInfo(Request $request, string $key): JsonResponse
     {
@@ -144,32 +138,25 @@ class PesoDirectoryController extends Controller
         $value = $request->value;
  
         switch ($key) {
- 
             case 'description':
                 PesoInfoSection::updateOrCreate(
                     ['section_key' => 'about'],
                     ['title' => 'What is PESO?', 'content' => $value, 'is_active' => true]
                 );
                 break;
- 
+
             case 'objective':
                 $obj = PesoObjective::where('is_active', true)->first();
-                if ($obj) {
-                    $obj->update(['content' => $value]);
-                } else {
-                    PesoObjective::create(['content' => $value, 'is_active' => true]);
-                }
+                $obj ? $obj->update(['content' => $value])
+                     : PesoObjective::create(['content' => $value, 'is_active' => true]);
                 break;
- 
+
             case 'how_to_avail':
                 $avail = PesoHowToAvail::where('is_active', true)->first();
-                if ($avail) {
-                    $avail->update(['content' => $value]);
-                } else {
-                    PesoHowToAvail::create(['content' => $value, 'is_active' => true]);
-                }
+                $avail ? $avail->update(['content' => $value])
+                       : PesoHowToAvail::create(['content' => $value, 'is_active' => true]);
                 break;
- 
+
             case 'core_services':
                 $items = json_decode($value, true);
                 if (!is_array($items)) {
@@ -181,7 +168,7 @@ class PesoDirectoryController extends Controller
                     fn($item) => ['name' => $item['name'], 'is_active' => true]
                 );
                 break;
- 
+
             case 'dole_programs':
                 $items = json_decode($value, true);
                 if (!is_array($items)) {
@@ -193,7 +180,7 @@ class PesoDirectoryController extends Controller
                     fn($item) => ['name' => $item['name'], 'acronym' => $item['acronym'] ?? null, 'is_active' => true]
                 );
                 break;
- 
+
             case 'beneficiaries':
                 $items = json_decode($value, true);
                 if (!is_array($items)) {
@@ -207,7 +194,6 @@ class PesoDirectoryController extends Controller
                 break;
 
             case 'extra_sections':
-                // Stored as a JSON blob in the peso_info_sections table under section_key 'extra_sections'
                 $items = json_decode($value, true);
                 if (!is_array($items)) {
                     return response()->json(['success' => false, 'message' => 'Invalid JSON for extra_sections.'], 422);
@@ -219,7 +205,6 @@ class PesoDirectoryController extends Controller
                 break;
         }
 
-        // Stamp the draft — public page still shows the old snapshot until publishPesoInfo()
         $this->touchPesoInfo([
             'field' => $key,
             'time'  => now()->toIso8601String(),
@@ -230,8 +215,6 @@ class PesoDirectoryController extends Controller
 
     // ===================================================
     // PESO INFO — POST /admin/peso-info/publish
-    // Freezes current DB state into a Cache snapshot
-    // that the public page will now read from
     // ===================================================
     public function publishPesoInfo(): JsonResponse
     {
@@ -248,7 +231,7 @@ class PesoDirectoryController extends Controller
         ]);
     }
  
-    // ── Helper: sync a list table (delete removed, update existing, insert new) ──
+    // ── Helper: sync a list table ──
     private function syncList(string $modelClass, array $items, callable $mapper): void
     {
         $incomingIds = collect($items)->pluck('id')->filter()->values()->toArray();
@@ -269,9 +252,8 @@ class PesoDirectoryController extends Controller
     }
  
     // ===================================================
-    // OFFICE TYPES  
+    // OFFICE TYPES
     // ===================================================
- 
     public function getOfficeTypes(): JsonResponse
     {
         return response()->json(OfficeType::orderBy('name')->pluck('name'));
@@ -298,21 +280,60 @@ class PesoDirectoryController extends Controller
         OfficeType::where('name', strtoupper(trim($name)))->firstOrFail()->delete();
         return response()->json(['success' => true]);
     }
- 
+
     // ===================================================
-    // FIELD OFFICES  
+    // POSITION TITLES
     // ===================================================
- 
+    public function getPositionTitles(): JsonResponse
+    {
+        return response()->json(PositionTitle::orderBy('name')->pluck('name'));
+    }
+
+    public function storePositionTitle(Request $request): JsonResponse
+    {
+        $request->validate(['name' => 'required|string|max:100|unique:position_titles,name']);
+        $pt = PositionTitle::create(['name' => trim($request->name)]);
+        return response()->json(['success' => true, 'name' => $pt->name]);
+    }
+
+    public function updatePositionTitle(Request $request, string $name): JsonResponse
+    {
+        $request->validate(['name' => 'required|string|max:100|unique:position_titles,name']);
+        $pt      = PositionTitle::where('name', trim($name))->firstOrFail();
+        $newName = trim($request->name);
+        $pt->update(['name' => $newName]);
+        return response()->json(['success' => true, 'name' => $newName]);
+    }
+
+    public function destroyPositionTitle(string $name): JsonResponse
+    {
+        PositionTitle::where('name', trim($name))->firstOrFail()->delete();
+        return response()->json(['success' => true]);
+    }
+
+    // ===================================================
+    // FIELD OFFICES
+    // ===================================================
     public function storeFieldOffice(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name'         => 'required|string|max:255',
-            'office_type'  => 'required|string|max:100',
-            'province'     => 'required|string|max:255',
-            'manager_name' => 'nullable|string|max:255',
-            'email'        => 'nullable|email|max:255',
-            'address'      => 'nullable|string|max:500',
+            'name'           => 'required|string|max:255',
+            'office_type'    => 'required|string|max:100',
+            'province'       => 'required|string|max:255',
+            'position_title' => 'nullable|string|max:255',
+            'persons_name'   => 'nullable|string|max:255',
+            'email'          => 'nullable|email|max:255',
+            'address'        => 'nullable|string|max:500',
         ]);
+
+        // Resolve position title name → ID
+        $data['position_title_id'] = null;
+        if (!empty($data['position_title'])) {
+            $pt = PositionTitle::where('name', $data['position_title'])->first();
+            $data['position_title_id'] = $pt?->id;
+        }
+        unset($data['position_title']);
+
         $data['sort_order'] = FieldOffice::where('province', $data['province'])->max('sort_order') + 1;
         $office = FieldOffice::create($data);
         return response()->json(['success' => true, 'id' => $office->id]);
@@ -321,13 +342,23 @@ class PesoDirectoryController extends Controller
     public function updateFieldOffice(Request $request, FieldOffice $office): JsonResponse
     {
         $data = $request->validate([
-            'name'         => 'required|string|max:255',
-            'office_type'  => 'required|string|max:100',
-            'province'     => 'required|string|max:255',
-            'manager_name' => 'nullable|string|max:255',
-            'email'        => 'nullable|email|max:255',
-            'address'      => 'nullable|string|max:500',
+            'name'           => 'required|string|max:255',
+            'office_type'    => 'required|string|max:100',
+            'province'       => 'required|string|max:255',
+            'position_title' => 'nullable|string|max:255',
+            'persons_name'   => 'nullable|string|max:255',
+            'email'          => 'nullable|email|max:255',
+            'address'        => 'nullable|string|max:500',
         ]);
+
+        // Resolve position title name → ID
+        $data['position_title_id'] = null;
+        if (!empty($data['position_title'])) {
+            $pt = PositionTitle::where('name', $data['position_title'])->first();
+            $data['position_title_id'] = $pt?->id;
+        }
+        unset($data['position_title']);
+
         $office->update($data);
         return response()->json(['success' => true]);
     }
@@ -340,16 +371,17 @@ class PesoDirectoryController extends Controller
  
     public function publishDirectory(): JsonResponse
     {
-        $snapshot = FieldOffice::ordered()->get()
+        $snapshot = FieldOffice::with('positionTitle')->ordered()->get()
             ->groupBy('province')
             ->map(fn($offices) => $offices->map(fn($o) => [
-                'id'       => $o->id,
-                'name'     => $o->name,
-                'manager'  => $o->manager_name ?? '',
-                'email'    => $o->email ?? '',
-                'address'  => $o->address ?? '',
-                'type'     => $o->office_type,
-                'province' => $o->province,
+                'id'             => $o->id,
+                'name'           => $o->name,
+                'position_title' => $o->positionTitle->name ?? '',
+                'persons_name'   => $o->persons_name ?? '',
+                'email'          => $o->email ?? '',
+                'address'        => $o->address ?? '',
+                'type'           => $o->office_type,
+                'province'       => $o->province,
             ])->values())
             ->toArray();
  

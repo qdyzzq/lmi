@@ -3481,20 +3481,48 @@
                             });
                         },
 
-                        async submitSlide() {
+                        // Validates a list of {key, label, check} rules.
+                        // Marks all failing fields in formErrors and fires a warning
+                        // toast naming the first empty field. Returns true if all pass.
+                        validateFields(rules) {
                             this.formErrors = {};
-                            if (!this.form.title?.trim()) this.formErrors.title = true;
-                            if (this.modal.type === 'add-slide' && !this.form.image) this.formErrors.image = true;
-                            if (Object.keys(this.formErrors).length) return;
+                            for (const rule of rules) {
+                                if (!rule.check) this.formErrors[rule.key] = true;
+                            }
+                            const failed = rules.filter(r => !r.check);
+                            if (failed.length === 0) return true;
+                            const label = failed[0].label;
+                            showToast(
+                                failed.length === 1 ?
+                                `"${label}" is required. Please fill it in before saving.` :
+                                `"${label}" is required — and ${failed.length - 1} other field${failed.length > 2 ? 's are' : ' is'} also empty.`,
+                                'warning'
+                            );
+                            return false;
+                        },
+
+                        async submitSlide() {
+                            const isEdit = this.modal.type === 'edit-slide';
+                            const rules = [{
+                                    key: 'title',
+                                    label: 'Story Title',
+                                    check: !!this.form.title?.trim()
+                                },
+                                ...(!isEdit ? [{
+                                    key: 'image',
+                                    label: 'Slide Image',
+                                    check: !!this.form.image
+                                }] : []),
+                            ];
+                            if (!this.validateFields(rules)) return;
                             this.modal.loading = true;
                             this.modal.error = null;
-                            const isEdit = this.modal.type === 'edit-slide';
                             const data = {
                                 title: this.form.title,
                                 excerpt: this.form.excerpt,
                                 program_label: this.form.program_label,
                                 color: this.form.color,
-                                link: this.form.link
+                                link: this.form.link || null,
                             };
                             if (this.form.image) data.image = this.form.image;
                             const res = await formRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/admin/carousel/${this.modal.id}` :
@@ -3503,10 +3531,18 @@
                         },
 
                         async submitProgram() {
-                            this.formErrors = {};
-                            if (!this.form.name?.trim()) this.formErrors.name = true;
-                            if (!this.form.color) this.formErrors.color = true;
-                            if (Object.keys(this.formErrors).length) return;
+                            const rules = [{
+                                    key: 'name',
+                                    label: 'Program Name',
+                                    check: !!this.form.name?.trim()
+                                },
+                                {
+                                    key: 'color',
+                                    label: 'Theme Color',
+                                    check: !!this.form.color
+                                },
+                            ];
+                            if (!this.validateFields(rules)) return;
                             this.modal.loading = true;
                             this.modal.error = null;
                             const isEdit = this.modal.type === 'edit-program';
@@ -3533,11 +3569,13 @@
                         },
 
                         async submitQualification() {
-                            this.formErrors = {};
-                            if (!this.form.content?.trim() || this.form.content === '<p><br></p>') {
-                                this.formErrors.content = true;
-                                return;
-                            }
+                            const isBlankContent = !this.form.content?.trim() || this.form.content === '<p><br></p>';
+                            const rules = [{
+                                key: 'content',
+                                label: 'Content',
+                                check: !isBlankContent
+                            }, ];
+                            if (!this.validateFields(rules)) return;
                             this.modal.loading = true;
                             this.modal.error = null;
                             const isEdit = this.modal.type === 'edit-qualification';
@@ -3574,11 +3612,13 @@
                         },
 
                         async submitStep() {
-                            this.formErrors = {};
-                            if (!this.form.content?.trim() || this.form.content === '<p><br></p>') {
-                                this.formErrors.content = true;
-                                return;
-                            }
+                            const isBlankStep = !this.form.content?.trim() || this.form.content === '<p><br></p>';
+                            const rules = [{
+                                key: 'content',
+                                label: 'Step Content',
+                                check: !isBlankStep
+                            }, ];
+                            if (!this.validateFields(rules)) return;
                             this.modal.loading = true;
                             this.modal.error = null;
                             const isEdit = this.modal.type === 'edit-step';
@@ -3593,11 +3633,24 @@
                         },
 
                         async submitStory() {
-                            this.formErrors = {};
-                            if (!this.form.title?.trim()) this.formErrors.title = true;
-                            if (!this.form.story_year) this.formErrors.story_year = true;
-                            if (this.modal.type === 'add-story' && !this.form.image) this.formErrors.image = true;
-                            if (Object.keys(this.formErrors).length) return;
+                            const isAddStory = this.modal.type === 'add-story';
+                            const rules = [{
+                                    key: 'title',
+                                    label: 'Story Title',
+                                    check: !!this.form.title?.trim()
+                                },
+                                {
+                                    key: 'story_year',
+                                    label: 'Year',
+                                    check: !!this.form.story_year
+                                },
+                                ...(isAddStory ? [{
+                                    key: 'image',
+                                    label: 'Thumbnail Image',
+                                    check: !!this.form.image
+                                }] : []),
+                            ];
+                            if (!this.validateFields(rules)) return;
                             this.modal.loading = true;
                             this.modal.error = null;
                             const isEdit = this.modal.type === 'edit-story';
@@ -3614,10 +3667,18 @@
                         },
 
                         async submitTestimonial() {
-                            this.formErrors = {};
-                            if (!this.form.quote?.trim()) this.formErrors.quote = true;
-                            if (!this.form.author_name?.trim()) this.formErrors.author_name = true;
-                            if (Object.keys(this.formErrors).length) return;
+                            const rules = [{
+                                    key: 'quote',
+                                    label: 'Quote',
+                                    check: !!this.form.quote?.trim()
+                                },
+                                {
+                                    key: 'author_name',
+                                    label: 'Author Name',
+                                    check: !!this.form.author_name?.trim()
+                                },
+                            ];
+                            if (!this.validateFields(rules)) return;
                             this.modal.loading = true;
                             this.modal.error = null;
                             const isEdit = this.modal.type === 'edit-testimonial';
@@ -3668,11 +3729,18 @@
                         },
 
                         openCtaConfirm() {
-                            // Validate before showing confirm modal
-                            this.formErrors = {};
-                            if (!this.form.title?.trim()) this.formErrors.title = true;
-                            if (!this.form.subtitle?.trim()) this.formErrors.subtitle = true;
-                            if (Object.keys(this.formErrors).length) return;
+                            const rules = [{
+                                    key: 'title',
+                                    label: 'CTA Title',
+                                    check: !!this.form.title?.trim()
+                                },
+                                {
+                                    key: 'subtitle',
+                                    label: 'CTA Subtitle',
+                                    check: !!this.form.subtitle?.trim()
+                                },
+                            ];
+                            if (!this.validateFields(rules)) return;
                             // Stash values, close edit modal, show plain-JS confirm modal
                             window._ctaPending = {
                                 title: this.form.title.trim(),
@@ -3687,17 +3755,40 @@
                         },
 
                         async submitFieldOffice() {
-                            this.formErrors = {};
-                            // FIX #7: Added email format validation (client-side guard)
                             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                            if (!this.form.name?.trim()) this.formErrors.name = true;
-                            if (!this.form.type) this.formErrors.type = true;
-                            if (!this.form.province?.trim()) this.formErrors.province = true;
-                            if (!this.form.manager?.trim()) this.formErrors.manager = true;
-                            if (!this.form.email?.trim() || !emailRegex.test(this.form.email.trim())) this.formErrors.email =
-                                true;
-                            if (!this.form.address?.trim()) this.formErrors.address = true;
-                            if (Object.keys(this.formErrors).length) return;
+                            const validEmail = !!this.form.email?.trim() && emailRegex.test(this.form.email.trim());
+                            const rules = [{
+                                    key: 'name',
+                                    label: 'Office Name',
+                                    check: !!this.form.name?.trim()
+                                },
+                                {
+                                    key: 'type',
+                                    label: 'Office Type',
+                                    check: !!this.form.type
+                                },
+                                {
+                                    key: 'province',
+                                    label: 'Province',
+                                    check: !!this.form.province?.trim()
+                                },
+                                {
+                                    key: 'manager',
+                                    label: 'Manager / Head Name',
+                                    check: !!this.form.manager?.trim()
+                                },
+                                {
+                                    key: 'email',
+                                    label: 'Email Address',
+                                    check: validEmail
+                                },
+                                {
+                                    key: 'address',
+                                    label: 'Address',
+                                    check: !!this.form.address?.trim()
+                                },
+                            ];
+                            if (!this.validateFields(rules)) return;
                             this.modal.loading = true;
                             this.modal.error = null;
                             const isEdit = this.modal.type === 'edit-peso';

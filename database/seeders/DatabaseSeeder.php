@@ -26,6 +26,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
     PesoInfoSettingsSeeder::class,
 ]);
+        $this->call([
+        PesoDirectorySeeder::class,
+    ]);
 
     }
 }

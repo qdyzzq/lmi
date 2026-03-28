@@ -32,6 +32,47 @@
         .peso-howto-content * {
             color: white !important;
         }
+
+        /* ── PESO Carousel ── */
+        #peso-carousel-section {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .peso-carousel-slide {
+            position: absolute;
+            inset: 0;
+            transition: opacity 0.7s ease-in-out;
+        }
+
+        .peso-carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+
+        /* Subtle dark vignette so arrows/dots are always visible */
+        .peso-carousel-slide::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom,
+                    rgba(0, 0, 0, 0.15) 0%,
+                    rgba(0, 0, 0, 0.05) 40%,
+                    rgba(0, 0, 0, 0.05) 60%,
+                    rgba(0, 0, 0, 0.35) 100%);
+            pointer-events: none;
+        }
+
+        .peso-objective-content,
+        .peso-objective-content * {
+            font-size: 0.75rem !important;
+            line-height: 1.5 !important;
+            color: #475569 !important;
+        }
     </style>
 </head>
 
@@ -39,83 +80,161 @@
 
     @include('partials.navbar')
 
+    {{-- ===== PESO PHOTO CAROUSEL ===== --}}
     @php
-        $pesoJson = collect($snapshot)->map(
-            fn($offices) => collect($offices)
-                ->map(
-                    fn($o) => [
-                        'id' => $o['id'] ?? null,
-                        'name' => $o['name'] ?? '',
-                        'manager' => $o['manager'] ?? ($o['manager_name'] ?? ''),
-                        'email' => $o['email'] ?? '',
-                        'address' => $o['address'] ?? '',
-                        'type' => $o['type'] ?? ($o['office_type'] ?? ''),
-                    ],
-                )
-                ->values(),
-        );
+        $pesoCarouselDir = public_path('images/peso-carousel');
+        $pesoCarouselImages = [];
+        if (is_dir($pesoCarouselDir)) {
+            $files = glob($pesoCarouselDir . '/*.{jpg,jpeg,png,webp,gif}', GLOB_BRACE);
+            natsort($files);
+            foreach ($files as $file) {
+                $pesoCarouselImages[] = asset('images/peso-carousel/' . basename($file));
+            }
+        }
     @endphp
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-16">
+    @if (count($pesoCarouselImages) > 0)
+        <script>
+            function pesoPhotoCarousel(images) {
+                return {
+                    slides: images,
+                    current: 0,
+                    autoplayTimer: null,
 
-        {{-- ===== HERO HEADER ===== --}}
-        <div class="relative rounded-2xl overflow-hidden shadow-2xl mb-4"
-            style="background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 45%, #1e40af 100%);">
-            <div class="absolute inset-0 overflow-hidden pointer-events-none">
-                <div class="absolute -top-16 -right-16 w-72 h-72 rounded-full opacity-10"
-                    style="background: radial-gradient(circle, #fff 0%, transparent 70%);"></div>
-                <div class="absolute -bottom-20 -left-10 w-64 h-64 rounded-full opacity-[0.07]"
-                    style="background: radial-gradient(circle, #fbbf24 0%, transparent 70%);"></div>
-                <div class="absolute top-1/2 right-1/4 w-40 h-40 rounded-full opacity-[0.06]"
-                    style="background: radial-gradient(circle, #93c5fd 0%, transparent 70%);"></div>
-                <svg class="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <pattern id="diag" width="20" height="20" patternUnits="userSpaceOnUse"
-                            patternTransform="rotate(45)">
-                            <line x1="0" y1="0" x2="0" y2="20" stroke="white"
-                                stroke-width="1" />
-                        </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#diag)" />
+                    next() {
+                        this.current = (this.current + 1) % this.slides.length;
+                    },
+                    prev() {
+                        this.current = (this.current - 1 + this.slides.length) % this.slides.length;
+                    },
+                    goTo(i) {
+                        this.current = i;
+                    },
+                    startAutoplay() {
+                        this.autoplayTimer = setInterval(() => this.next(), 5000);
+                    },
+                    stopAutoplay() {
+                        if (this.autoplayTimer) {
+                            clearInterval(this.autoplayTimer);
+                            this.autoplayTimer = null;
+                        }
+                    },
+                };
+            }
+        </script>
+
+        <div id="peso-carousel-section" x-data="pesoPhotoCarousel({{ json_encode($pesoCarouselImages) }})" x-init="startAutoplay()" @mouseenter="stopAutoplay()"
+            @mouseleave="startAutoplay()">
+
+            {{-- Slides --}}
+            <template x-for="(src, index) in slides" :key="index">
+                <div class="peso-carousel-slide"
+                    :style="current === index ?
+                        'opacity:1; z-index:1;' :
+                        'opacity:0; z-index:0;'">
+                    <img :src="src" :alt="'PESO Slide ' + (index + 1)">
+                </div>
+            </template>
+
+            {{-- Carousel Title Overlay — bottom-left, avoids covering faces --}}
+            <div class="absolute bottom-20 sm:bottom-24 left-6 sm:left-12 z-20 pointer-events-none">
+                <p class="text-blue-200 text-xs font-bold uppercase tracking-[0.25em] mb-1"
+                    style="text-shadow: 0 1px 8px rgba(0,0,0,1);">DOLE · Region XI</p>
+                <h2 class="text-white font-black leading-tight tracking-tight"
+                    style="font-size: clamp(2rem, 5vw, 3.5rem); text-shadow: 0 2px 16px rgba(0,0,0,1), 0 0 40px rgba(0,0,0,0.7);">
+                    Davao Region
+                </h2>
+                <h2 class="font-bold leading-tight tracking-tight"
+                    style="color: #93c5fd; font-size: clamp(1.25rem, 3vw, 2.25rem); text-shadow: 0 2px 12px rgba(0,0,0,1);">
+                    PESO / JPO
+                </h2>
+            </div>
+
+            {{-- Prev arrow --}}
+            <button @click="prev()"
+                class="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20
+                   w-11 h-11 sm:w-14 sm:h-14
+                   bg-white/20 hover:bg-white/40 backdrop-blur-md
+                   rounded-full border border-white/30
+                   flex items-center justify-center
+                   transition-all duration-200"
+                aria-label="Previous slide">
+                <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
                 </svg>
+            </button>
+
+            {{-- Next arrow --}}
+            <button @click="next()"
+                class="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20
+                   w-11 h-11 sm:w-14 sm:h-14
+                   bg-white/20 hover:bg-white/40 backdrop-blur-md
+                   rounded-full border border-white/30
+                   flex items-center justify-center
+                   transition-all duration-200"
+                aria-label="Next slide">
+                <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
+            {{-- Dot indicators --}}
+            <div
+                class="absolute bottom-24 sm:bottom-28 left-0 right-0 z-20
+                    flex items-center justify-center gap-3">
+                <template x-for="(src, index) in slides" :key="index">
+                    <button @click="goTo(index)"
+                        class="transition-all duration-300 rounded-full backdrop-blur-md border-2"
+                        :class="current === index ?
+                            'w-14 h-4 bg-white border-white' :
+                            'w-4 h-4 bg-white/40 border-white/60'"
+                        :aria-label="'Go to slide ' + (index + 1)">
+                    </button>
+                </template>
             </div>
-            <div class="relative flex flex-col sm:flex-row items-center sm:items-stretch gap-0">
-                <div class="flex-shrink-0 flex items-center justify-center px-6 sm:px-8 py-6 sm:py-0"
-                    style="background: rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.1);">
-                    <div class="relative">
-                        <div class="absolute inset-0 rounded-full blur-xl opacity-40"
-                            style="background: radial-gradient(circle, #fbbf24 0%, #1d4ed8 60%, transparent 80%); transform: scale(1.3);">
-                        </div>
-                        <img src="{{ asset('images/PESO.png') }}" alt="PESO Logo"
-                            class="relative w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-2xl"
-                            style="filter: drop-shadow(0 0 12px rgba(251,191,36,0.35));">
-                    </div>
+
+            {{-- Scroll down arrow --}}
+            <a href="#peso-directory-content"
+                class="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-20"
+                @click.prevent="document.getElementById('peso-directory-content').scrollIntoView({ behavior: 'smooth' })">
+                <div class="flex flex-col items-center">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                    <p class="text-white text-sm mt-2 font-medium">Scroll to explore</p>
                 </div>
-                <div class="flex-1 flex flex-col justify-center px-6 sm:px-8 py-6 text-center sm:text-left">
-                    <div class="flex items-center gap-2 justify-center sm:justify-start mb-1">
-                        <span
-                            class="inline-block text-xs font-bold uppercase tracking-[0.2em] text-blue-200 bg-blue-900/40 px-3 py-1 rounded-full border border-blue-700/50">
-                            DOLE · Region XI
-                        </span>
-                    </div>
-                    <h1
-                        class="text-white font-black text-3xl sm:text-4xl md:text-5xl leading-tight tracking-tight mt-1">
-                        PESO <span class="text-blue-300 font-light">/</span> JPO
-                        <span
-                            class="block text-2xl sm:text-3xl md:text-4xl font-bold text-blue-100 mt-0.5">Directory</span>
-                    </h1>
-                    <p class="text-blue-200/80 text-sm sm:text-base mt-2 max-w-lg">
-                        Find Public Employment Service Offices and Job Placement Offices across the region
-                    </p>
-                </div>
-            </div>
+            </a>
+
         </div>
-        {{-- ===== END HERO HEADER ===== --}}
+        {{-- ===== END PESO PHOTO CAROUSEL ===== --}}
+    @endif
+
+    <div id="peso-directory-content" class="max-w-7xl mx-auto px-4 sm:px-6 py-16">
+
+        @php
+            $pesoJson = collect($snapshot)->map(
+                fn($offices) => collect($offices)
+                    ->map(
+                        fn($o) => [
+                            'id' => $o['id'] ?? null,
+                            'name' => $o['name'] ?? '',
+                            'position_title' => $o['position_title'] ?? '',
+                            'persons_name' => $o['persons_name'] ?? '',
+                            'email' => $o['email'] ?? '',
+                            'address' => $o['address'] ?? '',
+                            'type' => $o['type'] ?? ($o['office_type'] ?? ''),
+                        ],
+                    )
+                    ->values(),
+            );
+        @endphp
 
         {{-- ===== PESO INFO SECTION ===== --}}
         <div class="mt-4 mb-6 bg-white border border-slate-200 rounded-2xl shadow-md overflow-hidden">
 
-            {{-- Hero banner --}}
+            {{-- Hero banner with PESO logo integrated --}}
             <div class="relative overflow-hidden px-6 sm:px-8 py-7"
                 style="background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 60%, #1e40af 100%);">
                 <div class="absolute inset-0 overflow-hidden pointer-events-none">
@@ -125,96 +244,84 @@
                         style="background: radial-gradient(circle, #93c5fd 0%, transparent 70%);"></div>
                 </div>
                 <div class="relative flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                    {{-- PESO Logo --}}
+                    <div class="flex-shrink-0 flex items-center justify-center">
+                        <div class="relative">
+                            <div class="absolute inset-0 rounded-full blur-xl opacity-40"
+                                style="background: radial-gradient(circle, #fbbf24 0%, #1d4ed8 60%, transparent 80%); transform: scale(1.3);">
+                            </div>
+                            <img src="{{ asset('images/PESO.png') }}" alt="PESO Logo"
+                                class="relative w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-2xl"
+                                style="filter: drop-shadow(0 0 12px rgba(251,191,36,0.35));">
+                        </div>
+                    </div>
                     <div>
                         <p class="text-amber-300 text-xs font-bold uppercase tracking-[0.2em] mb-1">What is PESO?</p>
-                        <div class="text-sm sm:text-base leading-relaxed peso-description-content">
+                        <div class="text-sm sm:text-base leading-relaxed peso-description-content"
+                            style="text-align: justify;">
                             {!! $pesoInfo['description'] ?? '' !!}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+            <div class="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-3 gap-5">
 
-                {{-- Objectives --}}
-                <div class="col-span-1 md:col-span-2 bg-blue-50 border border-blue-100 rounded-xl p-5">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {{-- Objectives — compact --}}
+                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                             </svg>
                         </div>
-                        <h3 class="text-sm font-bold text-blue-800 uppercase tracking-wide">Objective</h3>
+                        <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wide">Objective</h3>
                     </div>
-                    <p class="text-sm text-slate-600 leading-relaxed">
+                    <p class="text-xs text-slate-600 leading-relaxed peso-objective-content">
                         {!! $pesoInfo['objective'] ?? '' !!}
                     </p>
                 </div>
 
                 {{-- Core Services --}}
-                {{-- $pesoInfo['core_services'] => [['id' => int, 'name' => string], ...] --}}
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-6 h-6 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
                         </div>
-                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Core Services</h3>
+                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wide">Core Services</h3>
                     </div>
-                    <ul class="space-y-2">
+                    <ul class="space-y-1.5">
                         @foreach ($pesoInfo['core_services'] as $service)
-                            <li class="flex items-start gap-2 text-sm text-slate-600">
-                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
+                            <li class="flex items-start gap-2 text-xs text-slate-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1 flex-shrink-0"></span>
                                 {{ $service['name'] }}
                             </li>
                         @endforeach
                     </ul>
                 </div>
 
-                {{-- DOLE Programs --}}
-                {{-- $pesoInfo['dole_programs'] => [['id' => int, 'name' => string, 'acronym' => string|null], ...] --}}
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                        </div>
-                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">DOLE Programs</h3>
-                    </div>
-                    <ul class="space-y-2">
-                        @foreach ($pesoInfo['dole_programs'] as $program)
-                            <li class="flex items-start gap-2 text-sm text-slate-600">
-                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>
-                                <span>
-                                    {{ $program['name'] }}{{ $program['acronym'] ? ' (' . $program['acronym'] . ')' : '' }}
-                                </span>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-
                 {{-- Beneficiaries --}}
-                {{-- $pesoInfo['beneficiaries'] => [['id' => int, 'name' => string], ...] --}}
-                <div class="col-span-1 md:col-span-2 xl:col-span-4 border border-slate-200 rounded-xl p-5">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                         </div>
-                        <h3 class="text-sm font-bold text-blue-800 uppercase tracking-wide">Beneficiaries</h3>
+                        <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wide">Beneficiaries</h3>
                     </div>
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-wrap gap-1.5">
                         @foreach ($pesoInfo['beneficiaries'] as $ben)
                             <span
-                                class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                                class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
                                 <span class="w-1 h-1 rounded-full bg-blue-400 flex-shrink-0"></span>
                                 {{ $ben['name'] }}
                             </span>
@@ -225,17 +332,43 @@
             </div>
 
             {{-- How to avail footer --}}
-            <div class="mx-6 sm:mx-8 mb-6 bg-blue-600 rounded-xl px-5 py-4 flex items-center gap-3">
-                <svg class="w-5 h-5 text-blue-200 flex-shrink-0" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <div class="text-sm peso-howto-content">
-                    <strong style="color: #bfdbfe !important;">How to Avail:</strong>
-                    {!! $pesoInfo['how_to_avail'] ?? '' !!}
+            <div class="mx-6 sm:mx-8 mb-6 bg-blue-600 rounded-xl px-5 py-4 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg class="w-5 h-5 text-blue-200 flex-shrink-0" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 016 0z" />
+                    </svg>
+                    <div class="text-sm peso-howto-content">
+                        <strong style="color: #bfdbfe !important;">How to Avail:</strong>
+                        {!! $pesoInfo['how_to_avail'] ?? '' !!}
+                    </div>
                 </div>
+                {{-- Scroll-to-directory indicator --}}
+                <button
+                    onclick="document.querySelector('.bg-white.rounded-2xl.shadow-2xl')?.scrollIntoView({behavior:'smooth'})"
+                    class="flex-shrink-0 flex flex-col items-center gap-1 group cursor-pointer bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl px-4 py-2.5 transition-all duration-200">
+                    <span class="text-white/80 text-xs font-semibold whitespace-nowrap">View Directory</span>
+                    <svg class="w-4 h-4 text-white group-hover:text-blue-200 transition-all duration-200"
+                        style="animation: howtoArrowBounce 1.4s ease-in-out infinite;" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
             </div>
+            <style>
+                @keyframes howtoArrowBounce {
+
+                    0%,
+                    100% {
+                        transform: translateY(0);
+                    }
+
+                    50% {
+                        transform: translateY(4px);
+                    }
+                }
+            </style>
 
         </div>
         {{-- ===== END PESO INFO SECTION ===== --}}
@@ -336,7 +469,8 @@
                                         name: 'name',
                                         weight: 0.6
                                     }, {
-                                        name: 'manager',
+                                        name: 'persons_name',
+                                        {{-- FIX: was 'manager', now matches actual field --}}
                                         weight: 0.3
                                     }, {
                                         name: 'type',
@@ -541,10 +675,12 @@
                                         x-text="entry.name.charAt(0)"></div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-bold text-slate-800 truncate uppercase"
-                                            x-text="entry.name"></p>
-                                        <p class="text-xs truncate mt-0.5"
+                                            x-text="entry.name.replace(/^(PESO|JPO)\s+/i, '')"></p>
+                                        {{-- FIX 2: Show position_title · persons_name instead of entry.manager --}}
+                                        <p class="text-xs truncate mt-0.5 font-semibold"
                                             :style="`color:${typeColor(entry.type,'main')}`"
-                                            x-text="entry.manager || '—'"></p>
+                                            x-text="(entry.position_title ? entry.position_title + ' · ' : '') + (entry.persons_name || '—')">
+                                        </p>
                                     </div>
                                     <span
                                         class="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-lg flex-shrink-0"
@@ -569,9 +705,10 @@
                                     class="px-4 pb-4 pt-3 flex flex-col gap-2.5"
                                     :style="`border-top:1.5px solid ${typeColor(entry.type,'border')}`">
 
+                                    {{-- FIX 3: label = actual position_title, value = persons_name --}}
                                     <template
                                         x-for="[label, icon, value, href] in [
-                                        [entry.type === 'JPO' ? 'JPO Manager' : 'PESO Manager', 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', entry.manager, null],
+                                        [entry.position_title || (entry.type === 'JPO' ? 'JPO Manager' : 'PESO Manager'), 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', entry.persons_name, null],
                                         ['Email Address', 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', entry.email, entry.email ? `mailto:${entry.email}` : null],
                                         ['Address', 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z', entry.address, null],
                                     ].filter(r => r[2])">
@@ -617,6 +754,7 @@
         </div>
 
     </div>
+    {{-- ===== END PESO DIRECTORY CONTENT ===== --}}
 
 </body>
 
