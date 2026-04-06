@@ -8,7 +8,10 @@ class ProgramStory extends Model
 {
      protected $fillable = [
         'program_id', 'title', 'link', 
-        'image_path', 'sort_order', 'is_active'
+        'image_path', 'story_year', 'sort_order', 'is_active'
+    ];
+     protected $casts = [
+        'story_year' => 'integer',
     ];
 
     public function program()

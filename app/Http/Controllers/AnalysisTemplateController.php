@@ -61,9 +61,11 @@ class AnalysisTemplateController extends Controller
             // 3. Pick the month
             $month = (int)($request->query('month', $availableMonths[0]));
 
-            // 4. Fetch templates for year + month
+            // 4. Fetch ONLY published templates for year + month
+            //    Pending drafts must NOT appear on the public site.
             $fetched = AnalysisTemplate::where('year', $year)
                 ->where('month', $month)
+                ->where('status', 'published')
                 ->get()
                 ->keyBy('template_key');
 

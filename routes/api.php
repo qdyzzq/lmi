@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\JobMarketDemandsController;
 use App\Http\Controllers\KpiController;
 use App\Http\Controllers\LaborMarketController;
 use App\Http\Controllers\AutocompleteController;
@@ -28,7 +29,12 @@ Route::get('/quarterly/{year}', [ChartController::class, 'getQuarterlyData']);
 Route::get('/quarterly-range', [ChartController::class, 'getQuarterlyRange']);
 Route::get('/available-years', [ChartController::class, 'getAvailableYears']);
 Route::get('/latest-quarter', [ChartController::class, 'getLatestQuarter']);
-Route::get('/job-market/chart-data', [DashboardController::class, 'chartData']);
+Route::get('/job-market/chart-data', [JobMarketDemandsController::class, 'chartData']);
+Route::get('/job-market/hard-to-fill-data', [JobMarketDemandsController::class, 'hardToFillData']);
+// ↓ INSERTED: Critical Skills Requirements year/month filter endpoint
+Route::get('/job-market/matrix-data', [JobMarketDemandsController::class, 'matrixData']);
+Route::get('/job-market/matrix-date-options', [JobMarketDemandsController::class, 'matrixDateOptions']);
+// ↑ END INSERTED
 
 // ==================== KPI ROUTES ====================
 Route::get('/kpi-cards', [KpiController::class, 'getKpiCards']);

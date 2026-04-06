@@ -55,14 +55,16 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 px-2 py-4 space-y-0.5 overflow-visible">
-        <div class="mb-4">
+    <nav class="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto overflow-x-visible">
+
+        {{-- ── Module 1 ── --}}
+        <div class="mb-1">
             <p x-show="sidebarExpanded"
                 class="text-[9px] uppercase tracking-[0.14em] text-slate-400 font-semibold font-mono mb-2 px-2 whitespace-nowrap">
-                Main Menu
+                Module 1
             </p>
 
-            <!-- Statistician Review -->
+            <!-- Regional Statistics Pending -->
             <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
                 <a href="{{ route('statistician.review') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
@@ -73,14 +75,45 @@
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5h4.5v7.5H3zM9.75 9h4.5v12h-4.5zM16.5 4.5H21V21h-4.5z"/>
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Statistician Review</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Regional Statistics Pending</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    Statistician Review
+                    Regional Statistics Pending
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
+
+            <!-- JobMarketDemands Analysis Pending -->
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+                <a href="{{ route('statistician.templates') }}"
+                    class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
+                        {{ request()->routeIs('statistician.templates')
+                            ? 'text-blue-700 bg-blue-50 border-blue-500'
+                            : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('statistician.templates') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+                    </svg>
+                    <span x-show="sidebarExpanded" class="font-medium text-[13.5px] whitespace-normal leading-tight">JobMarketDemands <br> Analysis Pending</span>
+                </a>
+                <div x-show="!sidebarExpanded && hovered"
+                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    JobMarketDemands Analysis Pending
+                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── Divider ── --}}
+        <div class="border-t border-slate-200 my-2 mx-2"></div>
+
+        {{-- ── Module 2 ── --}}
+        <div class="mb-1">
+            <p x-show="sidebarExpanded"
+                class="text-[9px] uppercase tracking-[0.14em] text-slate-400 font-semibold font-mono mb-2 px-2 whitespace-nowrap mt-2">
+                Module 2
+            </p>
 
             <!-- Job Titles Pending -->
             <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
@@ -101,8 +134,19 @@
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
+        </div>
 
-            <!-- Supply Side Editor -->
+        {{-- ── Divider ── --}}
+        <div class="border-t border-slate-200 my-2 mx-2"></div>
+
+        {{-- ── Module 3 ── --}}
+        <div class="mb-1">
+            <p x-show="sidebarExpanded"
+                class="text-[9px] uppercase tracking-[0.14em] text-slate-400 font-semibold font-mono mb-2 px-2 whitespace-nowrap mt-2">
+                Module 3
+            </p>
+
+            <!-- Supply Side Pending -->
             <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
                 <a href="{{ route('statistician.supply-side-editor') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
@@ -113,35 +157,16 @@
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Supply Side Editor</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Supply Side Pending</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    Supply Side Editor
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
-                </div>
-            </div>
-
-            <!-- Analysis Editor -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('statistician.templates') }}"
-                    class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('statistician.templates')
-                            ? 'text-blue-700 bg-blue-50 border-blue-500'
-                            : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('statistician.templates') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
-                    </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis Editor</span>
-                </a>
-                <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    Analysis Editor
+                    Supply Side Pending
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
         </div>
+
     </nav>
 
     <!-- Account Section (pinned to bottom) -->

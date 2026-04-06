@@ -17,5 +17,11 @@
         "tailwind-scrollbar": "^4.0.2",
         "tailwindcss": "^4.1.18",
         "vite": "^7.0.7"
+    },
+    "dependencies": {
+        "@alpinejs/collapse": "^3.15.8",
+        "alpinejs": "^3.15.8",
+        "chart.js": "^4.5.1",
+        "chartjs-plugin-datalabels": "^2.2.0"
     }
 }

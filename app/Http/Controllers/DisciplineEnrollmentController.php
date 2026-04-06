@@ -27,7 +27,7 @@ class DisciplineEnrollmentController extends Controller
         $validator = Validator::make($request->all(), [
             'academic_year' => 'required|string|regex:/^\d{4}-\d{4}$/',
             'province' => 'required|string',
-            'institution_type' => 'required|in:Private,Public,Total',
+            'institution_type' => 'required|in:Private,Public',
             'disciplines' => 'required|array',
             'disciplines.agriculture' => 'nullable|integer|min:0',
             'disciplines.architecture' => 'nullable|integer|min:0',
@@ -67,21 +67,6 @@ class DisciplineEnrollmentController extends Controller
             $province = $request->province;
             $institutionType = $request->institution_type;
             $submittedBy = Auth::id();
-
-            // "Davao Region" must use institution_type "Total" (region-wide entry).
-            // Specific provinces must use Private or Public only.
-            if ($province === 'Davao Region' && $institutionType !== 'Total') {
-                return response()->json([
-                    'success' => false,
-                    'message' => '"Davao Region" entries must use institution type "Total".'
-                ], 400);
-            }
-            if ($province !== 'Davao Region' && $institutionType === 'Total') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Institution type "Total" is only allowed for "Davao Region".'
-                ], 400);
-            }
 
             // Calculate grand total
             $grandTotal = array_sum(array_map(fn($val) => (int)($val ?? 0), $request->disciplines));
@@ -163,60 +148,7 @@ class DisciplineEnrollmentController extends Controller
                 ], 400);
             }
 
-            // Handle "Davao Region" — fetch the directly stored "Total" record
-            if ($this->isAllProvinces($province)) {
-                $data = DisciplineEnrollment::where('academic_year', $academicYear)
-                    ->where('province', 'Davao Region')
-                    ->where('institution_type', 'Total')
-                    ->first();
-
-                if (!$data) {
-                    return response()->json([
-                        'success' => true,
-                        'exists' => false,
-                        'data' => null
-                    ], 404);
-                }
-
-                return response()->json([
-                    'success' => true,
-                    'exists' => true,
-                    'data' => [
-                        'id'               => $data->id,
-                        'academic_year'    => $data->academic_year,
-                        'province'         => $data->province,
-                        'institution_type' => $data->institution_type,
-                        'disciplines'      => [
-                            'agriculture'       => $data->agriculture,
-                            'architecture'      => $data->architecture,
-                            'business'          => $data->business,
-                            'criminal_justice'  => $data->criminal_justice,
-                            'education'         => $data->education,
-                            'engineering'       => $data->engineering,
-                            'arts'              => $data->arts,
-                            'general'           => $data->general ?? 0,
-                            'home_economics'    => $data->home_economics ?? 0,
-                            'humanities'        => $data->humanities,
-                            'it'                => $data->it,
-                            'law'               => $data->law,
-                            'maritime'          => $data->maritime,
-                            'mass_comm'         => $data->mass_comm,
-                            'mathematics'       => $data->mathematics,
-                            'medical'           => $data->medical,
-                            'natural_science'   => $data->natural_science,
-                            'other_disciplines' => $data->other_disciplines ?? 0,
-                            'religion'          => $data->religion,
-                            'service_trades'    => $data->service_trades,
-                            'social_sciences'   => $data->social_sciences,
-                        ],
-                        'created_at'    => $data->created_at,
-                        'updated_at'    => $data->updated_at,
-                        'is_aggregated' => false,
-                    ]
-                ], 200);
-            }
-
-            // Handle specific province
+            // Fetch the record for the given year, province, and institution type
             $data = DisciplineEnrollment::where('academic_year', $academicYear)
                 ->where('province', $province)
                 ->where('institution_type', $institutionType)
@@ -227,7 +159,7 @@ class DisciplineEnrollmentController extends Controller
                     'success' => true,
                     'exists' => false,
                     'data' => null
-                ], 404);
+                ], 200);
             }
             
             return response()->json([
@@ -421,9 +353,8 @@ class DisciplineEnrollmentController extends Controller
 
         if ($province) {
             if ($this->isAllProvinces($province)) {
-                // For Davao Region: only return years that have a Total row
-                $query->where('province', 'Davao Region')
-                      ->where('institution_type', 'Total');
+                // For Davao Region: return all years for Davao Region rows
+                $query->where('province', 'Davao Region');
             } else {
                 // Specific province: filter by that province
                 $query->where('province', $province);
@@ -547,12 +478,8 @@ class DisciplineEnrollmentController extends Controller
                 ], 400);
             }
             
-            $query = DisciplineEnrollment::where('academic_year', $year);
-            
-            // Only filter by province if it's a specific one
-            if (!$this->isAllProvinces($province)) {
-                $query->where('province', $province);
-            }
+            $query = DisciplineEnrollment::where('academic_year', $year)
+                ->where('province', $province); // Always filter by exact province
             
             $enrollmentData = $query->get();
             
@@ -608,17 +535,12 @@ class DisciplineEnrollmentController extends Controller
                         $aggregated[$displayName]['public'] += $count;
                     } elseif ($institutionType === 'Private') {
                         $aggregated[$displayName]['private'] += $count;
-                    } elseif ($institutionType === 'Total') {
-                        // Davao Region stores combined total — put it in 'total' bucket
-                        $aggregated[$displayName]['total'] += $count;
                     }
                 }
             }
             
             uasort($aggregated, function ($a, $b) {
-                $aSum = ($a['public'] + $a['private']) ?: $a['total'];
-                $bSum = ($b['public'] + $b['private']) ?: $b['total'];
-                return $bSum - $aSum;
+                return ($b['public'] + $b['private']) - ($a['public'] + $a['private']);
             });
             
             $disciplines = [];
@@ -626,25 +548,14 @@ class DisciplineEnrollmentController extends Controller
             $privateSchools = [];
             $totalPublic = 0;
             $totalPrivate = 0;
-            $isDavaoTotal = false;
             
             foreach ($aggregated as $discipline => $data) {
-                $hasPrivatePublic = $data['public'] > 0 || $data['private'] > 0;
-                $hasTotal = $data['total'] > 0;
-
-                if ($hasPrivatePublic) {
+                if ($data['public'] > 0 || $data['private'] > 0) {
                     $disciplines[] = $discipline;
                     $publicSchools[] = $data['public'];
                     $privateSchools[] = $data['private'];
                     $totalPublic += $data['public'];
                     $totalPrivate += $data['private'];
-                } elseif ($hasTotal) {
-                    // Davao Region / Total — treat the whole value as combined
-                    $isDavaoTotal = true;
-                    $disciplines[] = $discipline;
-                    $publicSchools[] = $data['total']; // shown as single bar
-                    $privateSchools[] = 0;
-                    $totalPublic += $data['total'];
                 }
             }
             
@@ -654,7 +565,6 @@ class DisciplineEnrollmentController extends Controller
                 'disciplines' => $disciplines,
                 'publicSchools' => $publicSchools,
                 'privateSchools' => $privateSchools,
-                'is_davao_total' => $isDavaoTotal ?? false,
                 'totals' => [
                     'public' => $totalPublic,
                     'private' => $totalPrivate,
@@ -678,10 +588,10 @@ class DisciplineEnrollmentController extends Controller
         $validator = Validator::make($request->all(), [
             'record1_year' => 'required|string',
             'record1_province' => 'required|string',
-            'record1_type' => 'required|in:Private,Public,Total',
+            'record1_type' => 'required|in:Private,Public',
             'record2_year' => 'required|string',
             'record2_province' => 'required|string',
-            'record2_type' => 'required|in:Private,Public,Total',
+            'record2_type' => 'required|in:Private,Public',
         ]);
 
         if ($validator->fails()) {

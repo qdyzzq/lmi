@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logoIcon/dole_logo.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -248,30 +249,82 @@
         </main>
     </div>
 
-<!-- Confirmation Modal -->
-<div id="confirmModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
-    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4 transform transition-all">
-        <div class="text-center">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
-                <svg class="h-10 w-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+<!-- ─── Confirm Modal: Summary + Diff ──────────────────────────────────── -->
+<div id="confirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background-color: rgba(0,0,0,0.25); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 max-h-[90vh] flex flex-col">
+
+        <!-- Header -->
+        <div class="px-7 pt-6 pb-5 border-b border-slate-100 shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-[16px] font-bold text-slate-800 leading-tight">Review Before Posting</h3>
+                    <p class="text-[11.5px] text-slate-500 mt-0.5">Verify all values are correct before posting to the database.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="overflow-y-auto px-7 py-5 flex-1">
+
+            <!-- Reporting Period -->
+            <div class="flex items-center gap-3 bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-200 rounded-xl px-4 py-3 mb-5">
+                <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
+                <div>
+                    <p class="text-[10.5px] font-700 uppercase tracking-wide text-blue-400 leading-none mb-0.5">Reporting Period</p>
+                    <p class="text-[14px] font-bold text-blue-800" id="summaryPeriod">—</p>
+                </div>
             </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">Confirm Data Posting</h3>
-            <p class="text-slate-600 mb-6">
-                Are you sure you want to post this verified data to the database? This action cannot be undone.
-            </p>
-            <div class="flex gap-3">
-                <button id="cancelBtn" class="flex-1 px-6 py-3 border-2 border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-100 transition">
-                    Cancel
-                </button>
-                <button id="confirmBtn" class="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition">
-                    Yes, Post Data
-                </button>
+
+            <!-- Edit summary badge — only shown when there are edits -->
+            <div id="editBadge" class="hidden mb-4 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5">
+                <svg class="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                <p class="text-[12.5px] font-semibold text-amber-800" id="editBadgeText">— fields edited</p>
             </div>
+
+            <!-- Column headers (only shown when there are edits) -->
+            <div id="comparisonHeader" class="hidden grid grid-cols-[1fr_auto_auto] gap-2 px-3 mb-1">
+                <span class="text-[10.5px] font-700 uppercase tracking-widest text-slate-400">Field</span>
+                <span class="text-[10.5px] font-700 uppercase tracking-widest text-slate-400 text-right w-28">Admin Submitted</span>
+                <span class="text-[10.5px] font-700 uppercase tracking-widest text-slate-400 text-right w-28">Verified Value</span>
+            </div>
+
+            <!-- Summary rows -->
+            <p id="summaryOnlyHeader" class="text-[11px] font-700 uppercase tracking-widest text-slate-400 mb-3">Labor Market Indicators</p>
+            <div class="space-y-2" id="summaryRows"></div>
+
+            <!-- Warning note -->
+            <div class="mt-5 flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
+                <svg class="w-4 h-4 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <p class="text-[12px] text-red-700 leading-snug">This action will <strong>post data permanently</strong> to the database and cannot be undone.</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-7 py-5 border-t border-slate-100 flex gap-3 shrink-0">
+            <button id="cancelBtn" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition text-sm">
+                Cancel
+            </button>
+            <button id="confirmBtn" class="flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition text-sm flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Yes, Post Data
+            </button>
         </div>
     </div>
 </div>
+
 
 <!-- Success Modal -->
 <div id="successModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
@@ -563,10 +616,9 @@ window.postVerifiedData = function(buttonElement) {
     buttonElement.disabled = true;
     buttonElement.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Checking...';
 
-    // Use the FINAL database check route, not the pending check
     fetch('{{ route("statistician.labor-market.check.post") }}', {
         method: 'POST',
-        headers: {  
+        headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': csrfToken,
             'Accept': 'application/json'
@@ -574,41 +626,215 @@ window.postVerifiedData = function(buttonElement) {
         body: JSON.stringify({ year: year, month: month })
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
         return response.json();
     })
     .then(result => {
-        console.log('Check result:', result); // Debug log
-        
-        // Check if duplicate exists in FINAL database
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = '<svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Approve';
+
         if (result.exists === true) {
-            // DUPLICATE: Show error modal
             document.getElementById('errorMessage').textContent = result.message || 'Data for this period already exists in the database.';
             document.getElementById('errorModal').classList.remove('hidden');
-            buttonElement.disabled = false;
-            buttonElement.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Post to Database';
             window.currentPostButton = null;
         } else if (result.exists === false) {
-            // NO DUPLICATE: Show confirmation modal
-            buttonElement.disabled = false;
-            buttonElement.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Post to Database';
+            populateConfirmSummary(card);
             document.getElementById('confirmModal').classList.remove('hidden');
         } else {
-            // Unexpected response format
             throw new Error('Unexpected response format from server');
         }
     })
     .catch(error => {
         console.error('Error during check:', error);
-        document.getElementById('errorMessage').textContent = `Error: ${error.message}. Please check console for details.`;
+        document.getElementById('errorMessage').textContent = `Error: ${error.message}.`;
         document.getElementById('errorModal').classList.remove('hidden');
         buttonElement.disabled = false;
-        buttonElement.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Post to Database';
+        buttonElement.innerHTML = '<svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Approve';
         window.currentPostButton = null;
     });
 };
+
+// ─── Populate the confirm modal with summary / diff ──────────────────────
+window.populateConfirmSummary = function(card) {
+    const monthNames = { 1: 'January', 4: 'April', 7: 'July', 10: 'October' };
+
+    // ── Collect submitted values from the "Submitted Value" td (2nd column) ──
+    const rows = card.querySelectorAll('tbody tr');
+    const submittedMap = {};
+    rows.forEach(row => {
+        const input = row.querySelector('[data-field]');
+        if (!input) return;
+        const f   = input.getAttribute('data-field');
+        const tds = row.querySelectorAll('td');
+        if (tds.length >= 2) {
+            submittedMap[f] = tds[1].textContent.trim().replace(/%$/, '').replace(/,/g, '').trim();
+        }
+    });
+
+    // ── Year & Month: string comparison ──────────────────────────────────────
+    const verifiedYear  = card.querySelector('[data-field="year"]').value.trim();
+    const verifiedMonth = parseInt(card.querySelector('[data-field="month"]').value);
+    const submittedYear = (submittedMap['year']  ?? '').trim();
+    const submittedMonth = parseInt(submittedMap['month'] ?? '');
+
+    const yearChanged  = submittedYear  !== '' && submittedYear  !== verifiedYear;
+    const monthChanged = !isNaN(submittedMonth) && submittedMonth !== verifiedMonth;
+
+    // ── Reporting Period banner ───────────────────────────────────────────────
+    const periodEl = document.getElementById('summaryPeriod');
+    if (yearChanged || monthChanged) {
+        const oldPeriod = `${monthNames[submittedMonth] ?? submittedMonth} ${submittedYear}`;
+        const newPeriod = `${monthNames[verifiedMonth]  ?? verifiedMonth} ${verifiedYear}`;
+        periodEl.innerHTML = `
+            <span class="line-through text-blue-400 font-normal text-[13px]">${oldPeriod}</span>
+            <svg class="inline w-3.5 h-3.5 text-amber-500 mx-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            <span class="text-amber-700">${newPeriod}</span>
+        `;
+    } else {
+        periodEl.textContent = `${monthNames[verifiedMonth] ?? verifiedMonth} ${verifiedYear}`;
+    }
+
+    // ── Numeric field definitions ─────────────────────────────────────────────
+    const fields = [
+        { label: 'Household Population',           field: 'household_population', unit: '',  auto: false },
+        { label: 'Labor Force Participation Rate',  field: 'lfpr',                unit: '%', auto: false },
+        { label: 'Employment Rate',                 field: 'employment_rate',      unit: '%', auto: false },
+        { label: 'Underemployment Rate',            field: 'underemployment_rate', unit: '%', auto: false },
+        { label: 'Unemployment Rate',               field: 'unemployment_rate',    unit: '%', auto: false },
+        { label: 'Labor Force',                     field: 'labor_force',          unit: '',  auto: true  },
+        { label: 'Employed',                        field: 'employed',             unit: '',  auto: true  },
+        { label: 'Underemployed',                   field: 'underemployed',        unit: '',  auto: true  },
+        { label: 'Unemployed',                      field: 'unemployed',           unit: '',  auto: true  },
+    ];
+
+    // ── Count total edits (year + month + numeric fields) ────────────────────
+    let editedCount = (yearChanged ? 1 : 0) + (monthChanged ? 1 : 0);
+    const container = document.getElementById('summaryRows');
+    container.innerHTML = '';
+
+    // ── Year row ─────────────────────────────────────────────────────────────
+    const yearRow = document.createElement('div');
+    if (yearChanged) {
+        yearRow.className = 'grid grid-cols-[1fr_auto_auto] gap-2 items-center px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200';
+        yearRow.innerHTML = `
+            <span class="text-[12.5px] font-medium text-slate-700 flex items-center gap-1.5">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                Year
+            </span>
+            <span class="text-[12px] text-slate-400 line-through text-right w-28">${submittedYear}</span>
+            <span class="text-[13px] font-bold text-amber-700 text-right w-28">${verifiedYear}</span>
+        `;
+    } else {
+        yearRow.className = 'flex justify-between items-center px-3 py-2 rounded-lg bg-slate-50';
+        yearRow.innerHTML = `
+            <span class="text-[12.5px] font-medium text-slate-600">Year</span>
+            <span class="text-[13px] font-bold text-slate-800">${verifiedYear}</span>
+        `;
+    }
+    container.appendChild(yearRow);
+
+    // ── Month row ─────────────────────────────────────────────────────────────
+    const monthRow = document.createElement('div');
+    if (monthChanged) {
+        monthRow.className = 'grid grid-cols-[1fr_auto_auto] gap-2 items-center px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200';
+        monthRow.innerHTML = `
+            <span class="text-[12.5px] font-medium text-slate-700 flex items-center gap-1.5">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                Month
+            </span>
+            <span class="text-[12px] text-slate-400 line-through text-right w-28">${monthNames[submittedMonth] ?? submittedMonth}</span>
+            <span class="text-[13px] font-bold text-amber-700 text-right w-28">${monthNames[verifiedMonth] ?? verifiedMonth}</span>
+        `;
+    } else {
+        monthRow.className = 'flex justify-between items-center px-3 py-2 rounded-lg bg-slate-50';
+        monthRow.innerHTML = `
+            <span class="text-[12.5px] font-medium text-slate-600">Month</span>
+            <span class="text-[13px] font-bold text-slate-800">${monthNames[verifiedMonth] ?? verifiedMonth}</span>
+        `;
+    }
+    container.appendChild(monthRow);
+
+    // ── Divider between period fields and indicators ──────────────────────────
+    const divider = document.createElement('hr');
+    divider.className = 'border-slate-200 my-1';
+    container.appendChild(divider);
+
+    fields.forEach(f => {
+        const inputEl = card.querySelector(`[data-field="${f.field}"]`);
+        if (!inputEl) return;
+
+        const verifiedRaw  = parseFloat(inputEl.value.replace(/,/g, '')) || 0;
+        const submittedRaw = parseFloat(submittedMap[f.field] ?? '');
+        const isEdited     = !isNaN(submittedRaw) && submittedRaw !== verifiedRaw;
+
+        if (isEdited) editedCount++;
+
+        const fmtVerified  = isNaN(verifiedRaw)  ? '—' : (f.unit === '%' ? verifiedRaw + '%'  : verifiedRaw.toLocaleString());
+        const fmtSubmitted = isNaN(submittedRaw) ? '—' : (f.unit === '%' ? submittedRaw + '%' : submittedRaw.toLocaleString());
+
+        // Delta badge
+        let deltaBadge = '';
+        if (isEdited) {
+            const delta = verifiedRaw - submittedRaw;
+            const sign  = delta > 0 ? '+' : '';
+            const color = delta > 0 ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200';
+            const deltaFmt = f.unit === '%'
+                ? sign + delta.toFixed(2) + '%'
+                : sign + delta.toLocaleString();
+            deltaBadge = `<span class="text-[11px] font-semibold px-1.5 py-0.5 rounded border ${color} ml-1">${deltaFmt}</span>`;
+        }
+
+        const row = document.createElement('div');
+
+        if (isEdited) {
+            // Comparison layout: 3-col grid — label | submitted (strikethrough) | verified + delta
+            row.className = 'grid grid-cols-[1fr_auto_auto] gap-2 items-center px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200';
+            row.innerHTML = `
+                <span class="text-[12.5px] font-medium text-slate-700 flex items-center gap-1.5">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                    ${f.auto ? '<span class="text-[10px] font-semibold text-teal-600 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded">auto</span>' : ''}
+                    ${f.label}
+                </span>
+                <span class="text-[12px] text-slate-400 line-through text-right w-28">${fmtSubmitted}</span>
+                <span class="text-[13px] font-bold text-amber-700 text-right w-28 flex items-center justify-end gap-1">
+                    ${fmtVerified}${deltaBadge}
+                </span>
+            `;
+        } else {
+            // Simple row — no difference
+            row.className = 'flex justify-between items-center px-3 py-2 rounded-lg ' + (f.auto ? 'bg-emerald-50' : 'bg-slate-50');
+            row.innerHTML = `
+                <span class="text-[12.5px] font-medium text-slate-600 flex items-center gap-1.5">
+                    ${f.auto ? '<span class="text-[10px] font-semibold text-teal-600 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded">auto</span>' : ''}
+                    ${f.label}
+                </span>
+                <span class="text-[13px] font-bold ${f.auto ? 'text-teal-700' : 'text-slate-800'}">${fmtVerified}</span>
+            `;
+        }
+
+        container.appendChild(row);
+    });
+
+    // Show/hide edit badge and column headers based on whether anything was changed
+    const editBadge         = document.getElementById('editBadge');
+    const comparisonHeader  = document.getElementById('comparisonHeader');
+    const summaryOnlyHeader = document.getElementById('summaryOnlyHeader');
+
+    if (editedCount > 0) {
+        editBadge.classList.remove('hidden');
+        editBadge.classList.add('flex');
+        document.getElementById('editBadgeText').textContent = `${editedCount} field${editedCount > 1 ? 's' : ''} edited by statistician — highlighted below`;
+        comparisonHeader.classList.remove('hidden');
+        summaryOnlyHeader.classList.add('hidden');
+    } else {
+        editBadge.classList.add('hidden');
+        editBadge.classList.remove('flex');
+        comparisonHeader.classList.add('hidden');
+        summaryOnlyHeader.classList.remove('hidden');
+    }
+};
+
+
 
 </script>
 

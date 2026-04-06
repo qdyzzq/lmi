@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    @vite('resources/css/app.css')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="icon" type="image/png" href="{{ asset('images/logoIcon/dole_logo.png') }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-
-    <title>LMI</title>
+    <title>Labor Market Data</title>
     <style>
         [x-cloak] { display: none !important; }
         .custom-scrollbar::-webkit-scrollbar {
@@ -70,6 +68,125 @@
 .table-scroll-hint { display: none; }
 @media (max-width: 767px) { .table-scroll-hint { display: flex; } }
 
+/* ── Matrix: hide table on mobile, show cards ── */
+.matrix-table-view  { display: block; }
+.matrix-cards-view  { display: none; }
+@media (max-width: 767px) {
+    .matrix-table-view  { display: none; }
+    .matrix-cards-view  { display: block; }
+}
+
+/* ── Matrix mobile card styles ── */
+.matrix-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    transition: box-shadow 0.15s;
+}
+.matrix-card.is-open {
+    border-color: #94a3b8;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.matrix-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.matrix-card-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.3;
+}
+.matrix-card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem 0.75rem;
+}
+.matrix-card-field-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.15rem;
+}
+.matrix-card-field-value {
+    font-size: 0.8rem;
+    color: #374151;
+    margin: 0;
+    line-height: 1.4;
+}
+.matrix-card-expand-btn {
+    margin-top: 0.75rem;
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #2563eb;
+    background: #eff6ff;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    transition: background 0.12s;
+}
+.matrix-card-expand-btn:hover { background: #dbeafe; }
+.matrix-card-expanded {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f1f5f9;
+    display: none;
+}
+.matrix-card-expanded.open { display: block; }
+.matrix-skill-tag {
+    display: inline-block;
+    padding: 0.3rem 0.65rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0.2rem 0.2rem 0 0;
+}
+
+/* ── Skills cloud scroll indicator ── */
+.skills-scroll-wrapper {
+    position: relative;
+}
+.skills-scroll-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.95));
+    pointer-events: none;
+    border-radius: 0 0 0.5rem 0.5rem;
+    transition: opacity 0.2s;
+}
+.skills-scroll-wrapper.at-bottom::after {
+    opacity: 0;
+}
+.skills-scroll-hint {
+    display: none;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    color: #9ca3af;
+    margin-top: 0.4rem;
+    justify-content: center;
+}
+
 /* ── LMI Matrix table: horizontal scroll on mobile (keep original grid) ── */
 
 /* ── Pagination: hide page numbers on mobile, show Prev/Next only ── */
@@ -83,6 +200,465 @@
     .cta-buttons { flex-direction: column; width: 100%; }
     .cta-buttons button { width: 100%; text-align: center; }
 }
+
+/* ── Survey form: mobile input fixes ── */
+/* "Other (please specify)" textarea */
+.other-specify-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    resize: none;
+    overflow-y: auto;
+    max-height: 120px;
+    min-height: 44px;
+    font-family: inherit;
+    color: #111827;
+    background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.other-specify-textarea:focus {
+    outline: none;
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+.other-specify-textarea.focus-teal:focus {
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+}
+.other-specify-textarea.focus-blue:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+/* Validation error state */
+.other-specify-textarea.border-red-500 {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+/* Additional Insights textarea: prevent runaway scroll */
+textarea[name="specific_inputs"] {
+    max-height: 180px;
+    overflow-y: auto;
+    resize: vertical;
+}
+
+/* Tag skill input row: stacked on mobile, side-by-side on sm+ */
+.skill-input-row {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+}
+.skill-input-row input {
+    width: 100%;
+}
+.skill-input-row button {
+    width: 100%;
+    justify-content: center;
+}
+@media (min-width: 480px) {
+    .skill-input-row {
+        flex-direction: row !important;
+    }
+    .skill-input-row button {
+        width: auto;
+    }
+}
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        /* ── Trigger button ── */
+        #matrixFilterTrigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.85rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 0.55rem;
+            background: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            font-family: inherit;
+            line-height: 1.4;
+            max-width: 260px;
+            overflow: hidden;
+        }
+        #matrixFilterTrigger #mfpTriggerText {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+        #matrixFilterTrigger:hover { border-color: #93c5fd; color: #2563eb; }
+        #matrixFilterTrigger.mft-active {
+            border-color: #2563eb;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+        #matrixFilterTrigger .mft-arrow {
+            font-size: 0.6rem;
+            opacity: 0.55;
+            transition: transform 0.18s;
+            margin-left: 0.1rem;
+        }
+        #matrixFilterTrigger.mft-open .mft-arrow { transform: rotate(180deg); }
+
+        /* ── Dropdown panel ── */
+        #matrixFilterPanel {
+            position: absolute;
+            top: calc(100% + 0.35rem);
+            right: 0;
+            z-index: 200;
+            width: 300px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.875rem;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.05);
+            padding: 1rem;
+            padding-bottom: 1.25rem;
+            display: none;
+            overflow: visible;
+        }
+        /* On mobile, anchor left instead of right so it doesn't overflow off-screen */
+        @media (max-width: 639px) {
+            #matrixFilterPanel {
+                right: auto;
+                left: 0;
+                width: calc(100vw - 3rem);
+                max-width: 320px;
+                padding-bottom: 1.5rem;
+            }
+        }
+        #matrixFilterPanel.mfp-open {
+            display: block;
+            animation: mfpDrop 0.14s ease;
+        }
+        @keyframes mfpDrop {
+            from { opacity: 0; transform: translateY(-5px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Section ── */
+        .mfp-section { margin-bottom: 0.8rem; }
+        .mfp-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+        }
+        .mfp-section-title {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+        .mfp-section-hint {
+            font-size: 0.65rem;
+            color: #d1d5db;
+            font-weight: 400;
+        }
+
+        /* ── Chips ── */
+        .mfp-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .mfp-chip {
+            padding: 0.28rem 0.65rem;
+            border-radius: 0.4rem;
+            border: 1.5px solid #e5e7eb;
+            background: #f9fafb;
+            color: #374151;
+            font-size: 0.775rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.12s;
+            user-select: none;
+            font-family: inherit;
+            line-height: 1.4;
+        }
+        .mfp-chip:hover:not(.mfp-disabled) {
+            border-color: #93c5fd;
+            color: #1d4ed8;
+            background: #eff6ff;
+        }
+        .mfp-chip.mfp-selected {
+            background: #1e293b;
+            border-color: #1e293b;
+            color: white;
+            font-weight: 600;
+        }
+        .mfp-chip.mfp-disabled {
+            opacity: 0.28;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .mfp-chip.mfp-placeholder {
+            width: 100%;
+            text-align: center;
+            color: #9ca3af;
+            font-style: italic;
+            font-size: 0.75rem;
+            border-style: dashed;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        /* ── Range / Exact mode toggle ── */
+        .mfp-mode-toggle {
+            display: inline-flex;
+            background: #f3f4f6;
+            border-radius: 0.4rem;
+            padding: 0.18rem;
+            gap: 0.18rem;
+            margin-bottom: 0.45rem;
+        }
+        .mfp-mode-btn {
+            padding: 0.22rem 0.65rem;
+            border-radius: 0.28rem;
+            border: none;
+            background: transparent;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.14s;
+            font-family: inherit;
+            line-height: 1.4;
+        }
+        .mfp-mode-btn.mfp-mode-active {
+            background: white;
+            color: #1d4ed8;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+        }
+        .mfp-mode-hint {
+            font-size: 0.67rem;
+            color: #9ca3af;
+            margin-bottom: 0.45rem;
+            line-height: 1.4;
+        }
+        .mfp-mode-hint strong { color: #6b7280; font-weight: 600; }
+
+        /* ── Divider ── */
+        .mfp-divider { height: 1px; background: #f3f4f6; margin: 0.75rem 0; }
+
+        /* ── Footer ── */
+        .mfp-footer {
+            display: flex;
+            gap: 0.45rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f3f4f6;
+            margin-top: 0.75rem;
+        }
+        .mfp-btn-apply {
+            flex: 1;
+            padding: 0.48rem 0.9rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 0.45rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+        }
+        .mfp-btn-apply:hover { background: #1d4ed8; }
+        .mfp-btn-reset {
+            padding: 0.48rem 0.8rem;
+            background: #fef2f2;
+            color: #ef4444;
+            border: 1.5px solid #fecaca;
+            border-radius: 0.45rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+        .mfp-btn-reset:hover { background: #fee2e2; }
+
+        /* ── HTF (Hard-to-Fill) Flat Dropdown Panel — scoped with htf- prefix ── */
+        #htfFilterTrigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.75rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background: white;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            font-family: inherit;
+            line-height: 1.4;
+            max-width: 240px;
+            overflow: hidden;
+        }
+        #htfFilterTrigger #htfTriggerText {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+        #htfFilterTrigger:hover { border-color: #93c5fd; color: #2563eb; }
+        #htfFilterTrigger.htf-active {
+            border-color: #2563eb;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+        #htfFilterTrigger .htf-arrow {
+            font-size: 0.6rem;
+            opacity: 0.5;
+            transition: transform 0.18s;
+        }
+        #htfFilterTrigger.htf-open .htf-arrow { transform: rotate(180deg); }
+
+        #htfFilterPanel {
+            position: absolute;
+            top: calc(100% + 0.35rem);
+            left: 0;
+            z-index: 60;
+            width: 260px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.05);
+            padding: 0.875rem;
+            padding-bottom: 1.1rem;
+            display: none;
+            overflow: visible;
+        }
+        @media (max-width: 639px) {
+            #htfFilterPanel {
+                left: 0;
+                right: auto;
+                width: calc(100vw - 3rem);
+                max-width: 300px;
+                padding-bottom: 1.5rem;
+            }
+        }
+        #htfFilterPanel.htf-panel-open {
+            display: block;
+            animation: htfDrop 0.14s ease;
+        }
+        @keyframes htfDrop {
+            from { opacity: 0; transform: translateY(-5px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .htfp-section { margin-bottom: 0.7rem; }
+        .htfp-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.35rem;
+        }
+        .htfp-section-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+        .htfp-section-hint {
+            font-size: 0.62rem;
+            color: #d1d5db;
+        }
+
+        .htfp-chips { display: flex; flex-wrap: wrap; gap: 0.28rem; }
+        .htfp-chip {
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.4rem;
+            border: 1.5px solid #e5e7eb;
+            background: #f9fafb;
+            color: #374151;
+            font-size: 0.72rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.12s;
+            user-select: none;
+            font-family: inherit;
+        }
+        .htfp-chip:hover:not(.htfp-disabled) {
+            border-color: #93c5fd;
+            color: #1d4ed8;
+            background: #eff6ff;
+        }
+        .htfp-chip.htfp-selected {
+            background: #1e293b;
+            border-color: #1e293b;
+            color: white;
+            font-weight: 600;
+        }
+        .htfp-chip.htfp-disabled {
+            opacity: 0.28;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .htfp-chip.htfp-placeholder {
+            width: 100%;
+            text-align: center;
+            color: #9ca3af;
+            font-style: italic;
+            font-size: 0.72rem;
+            border-style: dashed;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .htfp-divider { height: 1px; background: #f3f4f6; margin: 0.65rem 0; }
+
+        .htfp-footer {
+            display: flex;
+            gap: 0.4rem;
+            padding-top: 0.65rem;
+            border-top: 1px solid #f3f4f6;
+            margin-top: 0.65rem;
+        }
+        .htfp-btn-apply {
+            flex: 1;
+            padding: 0.42rem 0.75rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 0.4rem;
+            font-size: 0.775rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+        .htfp-btn-apply:hover { background: #1d4ed8; }
+        .htfp-btn-reset {
+            padding: 0.42rem 0.7rem;
+            background: #fef2f2;
+            color: #ef4444;
+            border: 1.5px solid #fecaca;
+            border-radius: 0.4rem;
+            font-size: 0.775rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+        .htfp-btn-reset:hover { background: #fee2e2; }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen">
@@ -93,10 +669,8 @@
         mobileMenuOpen: false
     }">
         
-        <!-- NAVBAR at top -->
         @include('partials.navbar')
         
-        <!-- Hero Image Section -->
         <div class="relative w-full h-[500px] md:h-[700px] lg:h-[900px] overflow-hidden">
             <div class="absolute inset-0">
                 <img src="{{ asset('images/navbar-bg.jpg') }}" alt="Job Market Background"
@@ -104,57 +678,43 @@
                 <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-100"></div>
             </div>
             
-            <!-- Hero Content -->
             <div class="relative z-10 h-full flex items-center justify-center px-4">
-                <div class="text-center text-white">
-                    <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-lg">
-                        Davao Regional Labor Demand
-                    </h1>
-                    <p class="text-base md:text-xl lg:text-2xl text-slate-100 drop-shadow-md">
-                        Regional Labor Market Intelligence & Trends
-                    </p>
-                </div>
-            </div>
-            
-            <!-- Scroll Indicator -->
-            <div class="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-20 scroll-indicator">
-                <a href="#job-market-section"
-                   class="flex flex-col items-center cursor-pointer group"
-                   @click.prevent="() => {
-                       const element = document.getElementById('job-market-section');
-                       if (element) {
-                           element.scrollIntoView({ 
-                               behavior: 'smooth', 
-                               block: 'start' 
-                           });
-                       }
-                   }">
-                    <svg class="w-8 h-8 text-white group-hover:text-blue-300 transition-colors" 
-                         fill="none" 
-                         stroke="currentColor" 
-                         viewBox="0 0 24 24">
-                        <path stroke-linecap="round" 
-                              stroke-linejoin="round" 
-                              stroke-width="2"
-                              d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                    </svg>
-                    <p class="text-white text-sm mt-2 font-medium group-hover:text-blue-300 transition-colors">
-                        Scroll to explore
-                    </p>
-                </a>
+            <div class="text-center text-white pointer-events-none">
+                <h1 class="text-white font-black leading-tight tracking-tight"
+                    style="font-size: clamp(1.25rem, 4vw, 3.5rem); text-shadow: 0 2px 16px rgba(0,0,0,1), 0 0 40px rgba(0,0,0,0.7);">
+                    Davao Regional Labor Demand
+                </h1>
+                <p class="text-slate-200 font-medium mt-2"
+                    style="font-size: clamp(0.75rem, 1.5vw, 1.125rem); text-shadow: 0 1px 8px rgba(0,0,0,1);">
+                    Regional Labor Market Intelligence & Trends
+                </p>
             </div>
         </div>
+            
+            <div class="absolute bottom-6 sm:bottom-16 md:bottom-24 lg:bottom-32 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
+            <a href="#job-market-section"
+            class="flex flex-col items-center cursor-pointer group"
+            onclick="event.preventDefault(); document.getElementById('job-market-section').scrollIntoView({ behavior: 'smooth', block: 'start' });">
+                <svg class="w-8 h-8 text-white group-hover:text-blue-300 transition-colors" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" 
+                        stroke-linejoin="round" 
+                        stroke-width="2"
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                </svg>
+                <p class="text-white text-sm mt-2 font-medium group-hover:text-blue-300 transition-colors">
+                    Scroll to explore
+                </p>
+            </a>
+        </div>
+        </div>
         
-        <!-- MAIN CONTENT with top margin to account for hero -->
         <div class="flex-1 flex flex-col overflow-y-auto mt-10 relative z-30">
             <div x-show="activeView === 'job-market-view'" x-transition>
                 <div class="max-w-7xl mx-auto px-4 md:px-6 space-y-6" id="job-market-section">
                         
-                        
-
-                           
-                           
-                       
                         <div class="bg-slate-700 rounded-xl p-6 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-lg">
                             <div class="flex items-start gap-4">
                                 <div class="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">🤝</div>
@@ -171,14 +731,9 @@
                             </div>
                         </div>
 
-                        
-                        <!-- High Volume Jobs Section - Original Design with Year Comparison -->
-<!-- Two Column Layout: Chart Left, Hard-to-Fill Right -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
     
-    <!-- LEFT SIDE: High Volume Jobs Chart (Takes 2 columns) -->
     <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <!-- Header -->
         <div class="flex flex-wrap justify-between items-start gap-3 p-4 sm:p-6 pb-4 border-b border-gray-100">
             <div>
                 <h3 class="font-bold text-gray-800">Top 10 High-Volume Job Titles</h3>
@@ -191,7 +746,6 @@
                 @endif
             </div>
             <div class="flex items-center gap-3">
-                <!-- Year Selector -->
                 @if(isset($available_years) && count($available_years) > 0)
                     <select 
                         id="yearSelector" 
@@ -206,7 +760,6 @@
                     </select>
                 @endif
                 
-                <!-- Expand Chart Button -->
                 <button 
                     onclick="expandChart()" 
                     class="p-2 hover:bg-gray-100 rounded-lg transition"
@@ -217,12 +770,10 @@
                     </svg>
                 </button>
                 
-                <!-- Info Icon -->
                 <span class="text-gray-300 cursor-help" title="Job titles with highest demand">ⓘ</span>
             </div>
         </div>
 
-        <!-- Chart Container -->
         <div class="p-4 sm:p-6" id="chartContainer">
             <div class="chart-responsive">
                 <canvas id="highVolumeHorizontalChart"></canvas>
@@ -236,7 +787,6 @@
 
     </div>
 
-    <!-- RIGHT SIDE: Hard-to-Fill Roles (Takes 1 column) -->
      <div class="lg:col-span-1 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="p-6 pb-4">
     <div class="flex justify-between mb-3">
@@ -246,10 +796,75 @@
         </div>
         <span class="text-gray-300 cursor-help" title="Click to expand details">ⓘ</span>
     </div>
-    
-    {{-- Quarter Banner Inside Hard-to-Fill Section --}}
-    @if(isset($quarter_info))
-    <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-md">
+    <div class="mb-3">
+        <div class="flex items-center gap-2 flex-wrap">
+
+            <div class="relative" id="htfFilterWrapper">
+
+                <button id="htfFilterTrigger" type="button" onclick="htfPanelToggle()">
+                    <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4h18M7 12h10M11 20h2"/>
+                    </svg>
+                    <span id="htfTriggerText">Filter by Period</span>
+                    <span class="htf-arrow">▾</span>
+                </button>
+
+                <div id="htfFilterPanel">
+<div class="htfp-section">
+                        <div class="htfp-section-head">
+                            <span class="htfp-section-title">Year</span>
+                            <span class="htfp-section-hint" id="htfpYearHint">select From & To</span>
+                        </div>
+                        <div class="mfp-mode-toggle">
+                            <button type="button" class="mfp-mode-btn mfp-mode-active" id="htfModeRange" onclick="htfSetMode('range')">Range</button>
+                            <button type="button" class="mfp-mode-btn" id="htfModeExact" onclick="htfSetMode('exact')">Exact</button>
+                        </div>
+                        <p class="mfp-mode-hint" id="htfModeHint">Select <strong>From</strong> &amp; <strong>To</strong> year — all years &amp; months in between will be included</p>
+                        <div class="htfp-chips" id="htfpYearChips">
+                            <span class="htfp-chip htfp-placeholder">No archived data</span>
+                        </div>
+                    </div>
+
+                    <div class="htfp-divider"></div>
+<div class="htfp-section">
+                        <div class="htfp-section-head">
+                            <span class="htfp-section-title">Month</span>
+                            <span class="htfp-section-hint" id="htfpMonthHint">optional</span>
+                        </div>
+                        <div class="htfp-chips" id="htfpMonthChips">
+                            <span class="htfp-chip htfp-placeholder">Select a year to continue</span>
+                        </div>
+                    </div>
+
+                    <div class="htfp-footer">
+                        <button class="htfp-btn-apply" type="button" onclick="htfPanelApply()">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Apply
+                        </button>
+                        <button class="htfp-btn-reset" type="button" onclick="htfPanelReset()">Reset</button>
+                    </div>
+                </div>
+            </div>
+<svg id="htfSpinner" class="w-4 h-4 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24" style="display:none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+
+        </div>
+<p id="htfArchiveBadge"
+           class="mt-2 text-xs text-amber-700 font-medium items-center gap-1"
+           style="display:none">
+            <svg class="w-3 h-3 inline-block flex-shrink-0 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+            </svg>
+            <span id="htfArchiveLabel"></span>
+        </p>
+    </div>
+@if(isset($quarter_info))
+    <div id="htfBanner" class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-md">
         <div class="flex items-center">
             <svg class="h-4 w-4 text-blue-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -264,7 +879,7 @@
 </div>
         
         @if(isset($groupedRoles) && count($groupedRoles) > 0)
-            <div class="max-h-96 overflow-y-auto px-6 pb-6">
+            <div id="htfRolesList" class="max-h-96 overflow-y-auto px-6 pb-6">
                 <div class="space-y-3">
                     @foreach($groupedRoles as $normalizedTitle => $roleGroup)
                         @foreach($roleGroup as $item)
@@ -274,11 +889,9 @@
                                 $index = $item['index'];
                             @endphp
                             
-                            <!-- Clickable Role Card -->
                             <div class="role-card border border-slate-200 rounded-lg overflow-hidden hover:border-blue-400 transition cursor-pointer"
                                  onclick="toggleRoleDetails({{ $submission->id }}, {{ $index }})">
                                 
-                                <!-- Summary (Always Visible) -->
                                 <div class="p-3 bg-white hover:bg-slate-50 transition">
                                     <div class="flex items-start justify-between">
                                         <div class="flex-1">
@@ -286,24 +899,20 @@
                                             <p class="text-xs text-gray-400 mt-1">Vacancy Duration: {{ $role->vacancy_duration }}</p>
                                         </div>
                                         
-                                        <!-- Expand Icon -->
                                         <svg class="expand-icon w-4 h-4 text-slate-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                         </svg>
                                     </div>
                                 </div>
 
-                                <!-- Expandable Details -->
                                 <div class="role-details hidden" id="role-details-{{ $submission->id }}-{{ $index }}">
                                     <div class="border-t border-slate-200 bg-slate-50 p-4">
                                         <div class="space-y-3 text-sm">
-                                            <!-- Classification -->
                                             <div>
                                                 <span class="font-medium text-slate-600">Classification:</span>
                                                 <p class="text-slate-800">{{ $role->job_classification }}</p>
                                             </div>
 
-                                            <!-- Difficulty Reasons -->
                                             @php
                                                 $reasons = $role->difficulty_reasons;
                                                 if (is_string($reasons)) {
@@ -333,7 +942,6 @@
                                                 </div>
                                             @endif
 
-                                            <!-- Technical Skills -->
                                             @php
                                                 $techSkills = $role->technical_skills_missing;
                                                 if (is_string($techSkills)) {
@@ -357,7 +965,6 @@
                                                 </div>
                                             @endif
 
-                                            <!-- Soft Skills -->
                                             @php
                                                 $softSkills = $role->soft_skills_missing;
                                                 if (is_string($softSkills)) {
@@ -381,7 +988,6 @@
                                                 </div>
                                             @endif
 
-                                            <!-- Company Info -->
                                             <div class="pt-2 border-t">
                                                 <p class="text-xs text-slate-500">
                                                     <strong>Sector:</strong> {{ $submission->industry_sector }}
@@ -396,7 +1002,6 @@
                 </div>
             </div>
         @elseif($approvedSubmissions && $approvedSubmissions->count() > 0)
-            <!-- Fallback: Display ungrouped if groupedRoles not available -->
             <div class="max-h-96 overflow-y-auto px-6 pb-6">
                 <div class="space-y-3">
                     @foreach($approvedSubmissions as $submission)
@@ -418,7 +1023,6 @@
                                 </div>
 
                                 <div class="role-details hidden" id="role-details-{{ $submission->id }}-{{ $index }}">
-                                    <!-- Same detail structure as above -->
                                 </div>
                             </div>
                         @endforeach
@@ -426,7 +1030,6 @@
                 </div>
             </div>
         @else
-            <!-- Fallback to static data if no approved submissions -->
             <div class="px-6 pb-6">
                 <div class="space-y-5">
                     @foreach($hard_to_fill as $job)
@@ -449,7 +1052,6 @@
     </div>
 </div>
 
-<!-- Fullscreen Modal -->
 <div id="chartModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 sm:p-4" onclick="closeChart()">
     <div class="bg-white rounded-xl shadow-2xl w-full h-full sm:w-11/12 sm:h-5/6 p-4 sm:p-6 relative flex flex-col" onclick="event.stopPropagation()">
         <div class="flex justify-between items-start gap-2 mb-3 sm:mb-4 flex-shrink-0">
@@ -468,14 +1070,11 @@
         </div>
     </div>
 </div>              
-                        <!-- Critical Skill Gaps Per Sector -->
 <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
     <h3 class="font-bold text-lg mb-4">Critical Skill Gaps Per Sector</h3>
     
-    <!-- Sector Filter Tabs -->
     <div class="mb-8 pb-5 border-b border-gray-100">
         <div class="flex items-center gap-2">
-            <!-- Left Arrow -->
             <button id="filter-left"
                     class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -483,7 +1082,6 @@
                 </svg>
             </button>
 
-            <!-- Scrollable Filters -->
             <div id="sector-filter-scroll" class="flex gap-2 overflow-x-auto flex-1" style="scrollbar-width:none; -webkit-overflow-scrolling:touch;">
                 <style>#sector-filter-scroll::-webkit-scrollbar { display: none; }</style>
 
@@ -501,7 +1099,6 @@
                 @endforeach
             </div>
 
-            <!-- Right Arrow -->
             <button id="filter-right"
                     class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -513,14 +1110,13 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
     
-        <!-- Missing Technical Skills -->
         <div class="md:border-r border-gray-200 md:pr-6">
         <h4 class="text-xs font-bold text-gray-400 mb-4 uppercase bg-white pb-2">
             🔍 In demand Technical Skills 
         </h4>
+        <div class="skills-scroll-wrapper" id="tech-skills-scroll-wrapper">
         <div class="flex flex-wrap gap-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar" 
-             id="tech-skills-container"
-             style="overflow-y: scroll;">  <!-- Force scrollbar to always show for testing -->
+             id="tech-skills-container">
             @foreach($tech_skills as $skill)
                     <div class="skill-tag tech-skill bg-blue-100 text-gray-800 font-semibold px-3 py-2 rounded-lg text-sm h-fit flex flex-col gap-0.5" 
                          data-sector="{{ $skill['sector'] }}">
@@ -535,14 +1131,18 @@
                 @endforeach
             </div>
         </div>
-        <!-- Missing Soft Skills -->
+        <p class="skills-scroll-hint" id="tech-scroll-hint">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            Scroll to see more
+        </p>
+        </div>
     <div class="md:pl-6">
         <h4 class="text-xs font-bold text-gray-400 mb-4 uppercase bg-white pb-2">
             🚫 In demand Soft Skills 
         </h4>
+        <div class="skills-scroll-wrapper" id="soft-skills-scroll-wrapper">
         <div class="flex flex-wrap gap-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar" 
-             id="soft-skills-container"
-             style="overflow-y: scroll;">  <!-- Force scrollbar to always show for testing -->
+             id="soft-skills-container">
             @foreach($soft_skills as $skill)
                     <div class="skill-tag soft-skill bg-red-100 text-gray-800 font-semibold px-3 py-2 rounded-lg text-sm h-fit flex flex-col gap-0.5" 
                          data-sector="{{ $skill['sector'] }}">
@@ -557,26 +1157,39 @@
                 @endforeach
             </div>
         </div>
+        <p class="skills-scroll-hint" id="soft-scroll-hint">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            Scroll to see more
+        </p>
+        </div>
 
     </div>
 </div>
-                 <!-- LMI Matrix - Improved Design with Laravel Blade -->
-<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden" x-data="{ 
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm" x-data="{ 
     openItem: null,
     currentPage: 1, 
     itemsPerPage: 10,
+    matrixFilterActive: false,
+    matrixShowAll: false,
+    tableData: [],
+    init() {
+        // Seed tableData from the global once Alpine boots
+        this.tableData = (window.matrixResultsData || []).slice();
+    },
     get sortedData() {
         const impactOrder = { 'High': 1, 'Medium': 2, 'Low': 3 };
-        return (window.matrixResultsData || []).sort((a, b) => {
+        return (this.tableData || []).slice().sort((a, b) => {
             const impactA = impactOrder[a.impact] || 2; // Default to Medium if no impact
             const impactB = impactOrder[b.impact] || 2;
             return impactA - impactB;
         });
     },
-    get totalPages() { 
+    get totalPages() {
+        if (this.matrixShowAll) return 1;
         return Math.ceil((this.sortedData?.length || 0) / this.itemsPerPage); 
     },
     get paginatedData() {
+        if (this.matrixShowAll) return this.sortedData;
         const start = (this.currentPage - 1) * this.itemsPerPage;
         const end = start + this.itemsPerPage;
         return this.sortedData.slice(start, end);
@@ -597,23 +1210,168 @@
         this.currentPage = page;
         this.openItem = null;
     }
-}">
-    <div class="p-6 border-b flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
+}"
+@matrix-filter-update="
+    tableData          = $event.detail.tableData;
+    matrixFilterActive = $event.detail.filterActive;
+    matrixShowAll      = $event.detail.showAll;
+    currentPage        = 1;
+    openItem           = null;
+"
+>
+    <div class="p-4 sm:p-6 border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-gradient-to-r from-gray-50 to-white overflow-visible rounded-t-2xl">
     <h3 class="font-bold text-gray-900 flex items-center gap-3 text-lg">
-        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="w-6 h-6 text-gray-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M10 4v16M3 4h18a1 1 0 011 1v14a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1z"/>
         </svg>
         <span>Critical Skills Requirements</span>
     </h3>
-    <button id="exportLMIMatrixBtn" class="text-emerald-600 border border-emerald-200 bg-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-50 transition-all shadow-sm hover:shadow">
-    Export Analysis
-    </button>
+    <div class="flex flex-wrap items-center gap-2">
+<div class="relative" id="matrixFilterWrapper">
+<button id="matrixFilterTrigger" type="button" onclick="mfpToggle()">
+                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4h18M7 12h10M11 20h2"/>
+                </svg>
+                <span id="mfpTriggerText">Filter by Period</span>
+                <span class="mft-arrow">▾</span>
+            </button>
+<div id="matrixFilterPanel">
+<div class="mfp-section">
+                    <div class="mfp-section-head">
+                        <span class="mfp-section-title">Year</span>
+                        <span class="mfp-section-hint" id="mfpYearHint">select From & To</span>
+                    </div>
+                    <div class="mfp-mode-toggle">
+                        <button type="button" class="mfp-mode-btn mfp-mode-active" id="mfpModeRange" onclick="mfpSetMode('range')">Range</button>
+                        <button type="button" class="mfp-mode-btn" id="mfpModeExact" onclick="mfpSetMode('exact')">Exact</button>
+                    </div>
+                    <p class="mfp-mode-hint" id="mfpModeHint">Select <strong>From</strong> &amp; <strong>To</strong> year — all years &amp; months in between will be included</p>
+                    <div class="mfp-chips" id="mfpYearChips">
+</div>
+                </div>
+
+                <div class="mfp-divider"></div>
+<div class="mfp-section">
+                    <div class="mfp-section-head">
+                        <span class="mfp-section-title">Month</span>
+                        <span class="mfp-section-hint" id="mfpMonthHint">select a year first</span>
+                    </div>
+                    <div class="mfp-chips" id="mfpMonthChips">
+                        <span class="mfp-chip mfp-placeholder">Select a year to see months</span>
+                    </div>
+                </div>
+<div class="mfp-footer">
+                    <button class="mfp-btn-apply" type="button" onclick="mfpApply()">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Apply Filter
+                    </button>
+                    <button class="mfp-btn-reset" type="button" onclick="mfpReset()">Reset</button>
+                </div>
+            </div>
+        </div>
+<svg id="matrixSpinner" class="w-5 h-5 text-blue-400 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24" style="display:none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+        </svg>
+
+        <button id="exportLMIMatrixBtn" class="text-emerald-600 border border-emerald-200 bg-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-50 transition-all shadow-sm hover:shadow whitespace-nowrap">
+            Export Analysis
+        </button>
+    </div>
 </div>
 
-
-
 @if(count($matrix_results) > 0)
-    <!-- Mobile scroll hint -->
+    <div class="overflow-hidden rounded-b-2xl">
+
+    {{-- ── MOBILE CARD VIEW (shown on < 768px) ── --}}
+    <div class="matrix-cards-view px-4 py-4 bg-gray-50 space-y-3" id="matrixCardsContainer">
+        <template x-for="(result, index) in paginatedData" :key="'card-'+index">
+            <div class="matrix-card" :class="openItem === index ? 'is-open' : ''">
+<div class="matrix-card-header">
+                    <p class="matrix-card-title" x-text="result.role"></p>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0"
+                        :class="{
+                            'bg-red-50 text-red-700 border border-red-200': result.impact === 'High',
+                            'bg-green-50 text-green-700 border border-green-200': result.impact === 'Low',
+                            'bg-amber-50 text-amber-700 border border-amber-200': result.impact === 'Medium' || !result.impact
+                        }"
+                        x-text="result.impact || 'Medium'">
+                    </span>
+                </div>
+<div class="matrix-card-grid">
+                    <div>
+                        <p class="matrix-card-field-label">Sector</p>
+                        <p class="matrix-card-field-value" x-text="result.sector"></p>
+                    </div>
+                    <div>
+                        <p class="matrix-card-field-label">Salary Range</p>
+                        <p class="matrix-card-field-value"
+                            x-text="(result.salary_range && result.salary_range !== 'Not specified') ? result.salary_range : '—'">
+                        </p>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <p class="matrix-card-field-label">Missing Skills</p>
+                        <p class="matrix-card-field-value">
+                            <template x-if="result.has_technical_checkbox || result.has_soft_checkbox">
+                                <span>
+                                    <template x-if="result.has_technical_checkbox">
+                                        <span x-text="(result.hard_skills && result.hard_skills.length > 0) ? result.hard_skills.length + ' Technical Skill' + (result.hard_skills.length > 1 ? 's' : '') : 'Technical Skills'"></span>
+                                    </template>
+                                    <template x-if="result.has_technical_checkbox && result.has_soft_checkbox">
+                                        <span> · </span>
+                                    </template>
+                                    <template x-if="result.has_soft_checkbox">
+                                        <span x-text="(result.soft_skills && result.soft_skills.length > 0) ? result.soft_skills.length + ' Soft Skill' + (result.soft_skills.length > 1 ? 's' : '') : 'Soft Skills'"></span>
+                                    </template>
+                                </span>
+                            </template>
+                            <template x-if="!result.has_technical_checkbox && !result.has_soft_checkbox">
+                                <span class="text-gray-400 italic">None specified</span>
+                            </template>
+                        </p>
+                    </div>
+                </div>
+<template x-if="(result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0)">
+                    <button class="matrix-card-expand-btn"
+                        @click="openItem = openItem === index ? null : index">
+                        <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="openItem === index ? 'rotate-180' : ''"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                        <span x-text="openItem === index ? 'Hide details' : 'View skill details'"></span>
+                    </button>
+                </template>
+<div class="matrix-card-expanded" :class="openItem === index ? 'open' : ''">
+                    <template x-if="result.hard_skills && result.hard_skills.length > 0">
+                        <div class="mb-3">
+                            <p class="matrix-card-field-label mb-1">Missing Technical Skills</p>
+                            <div>
+                                <template x-for="skill in result.hard_skills" :key="skill.name || skill">
+                                    <span class="matrix-skill-tag" x-text="skill.name || skill"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                    <template x-if="result.soft_skills && result.soft_skills.length > 0">
+                        <div>
+                            <p class="matrix-card-field-label mb-1">Missing Soft Skills</p>
+                            <div>
+                                <template x-for="skill in result.soft_skills" :key="skill.name || skill">
+                                    <span class="matrix-skill-tag" x-text="skill.name || skill"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+            </div>
+        </template>
+    </div>
+
+    {{-- ── DESKTOP TABLE VIEW (hidden on < 768px) ── --}}
+    <div class="matrix-table-view">
     <div class="table-scroll-hint items-center gap-2 px-4 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-600 font-medium">
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
@@ -621,14 +1379,13 @@
         Scroll horizontally to see all columns
     </div>
     <div class="overflow-x-auto">
-    <div class="min-w-[700px]">
-    <!-- Sticky Table Header Row - Improved proportions with Salary Range -->
+    <div class="min-w-[860px]">
     <div class="sticky top-0 z-20 bg-slate-800 border-b border-gray-700 shadow-md">
-        <div class="grid grid-cols-12 gap-4 px-4 sm:px-8 py-4 items-center lmi-row-grid">
-            <div class="col-span-2 flex items-center justify-center">
+        <div class="grid grid-cols-12 gap-3 px-4 sm:px-8 py-4 items-center lmi-row-grid">
+            <div class="col-span-3 flex items-center justify-start">
                 <span class="text-s font-small font-bold text-white uppercase tracking-wider">Job Title / Role</span>
             </div>
-            <div class="col-span-3 flex items-center justify-center">
+            <div class="col-span-2 flex items-center justify-start">
                 <span class="text-s font-small font-bold text-white uppercase tracking-wider">Sector</span>
             </div>
             <div class="col-span-3 flex items-center justify-center">
@@ -638,38 +1395,31 @@
                 <span class="text-s font-small font-bold text-white uppercase tracking-wider">Salary Range</span>
             </div>
             <div class="col-span-2 flex items-center justify-center">
-                <span class="text-s font-small font-bold text-white uppercase tracking-wider text-center leading-tight">Job Gap Impact<br>to Industry</span>
+                <span class="text-s font-small font-bold text-white uppercase tracking-wider text-center leading-tight">Impact</span>
             </div>
         </div>
     </div>
 
-    <!-- Scrollable Content Area -->
-    <div class="max-h-[600px] overflow-y-auto bg-gray-50">
-        <!-- Accordion Items -->
+    <div id="matrixScrollArea" class="max-h-[600px] overflow-y-auto bg-gray-50">
         <div class="divide-y divide-gray-200">
             <template x-for="(result, index) in paginatedData" :key="index">
                 <div class="bg-white hover:bg-gray-50 transition-all duration-200 border-l-4" 
                      :class="openItem === index ? 'border-l-gray-500 shadow-md' : 'border-l-transparent'">
-                    <!-- Accordion Header (Collapsed View) -->
 <div 
     @click="(result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0) ? (openItem = openItem === index ? null : index) : null"
-    class="grid grid-cols-12 gap-4 px-4 sm:px-8 py-4 sm:py-6 items-center lmi-row-grid" :class="((result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0)) ? 'cursor-pointer' : 'cursor-default'">
+    class="grid grid-cols-12 gap-3 px-4 sm:px-8 py-4 sm:py-6 items-center lmi-row-grid" :class="((result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0)) ? 'cursor-pointer' : 'cursor-default'">
     
-    <!-- LEFT-ALIGNED: Job Title (2 cols) -->
-    <div class="col-span-2 flex items-center justify-start">
+    <div class="col-span-3 flex items-center justify-start">
         <h4 class="font-bold text-gray-900 text-base" x-text="result.role"></h4>
     </div>
 
-    <!-- LEFT-ALIGNED: Sector (3 cols) -->
-    <div class="col-span-3 flex items-center justify-start">
+    <div class="col-span-2 flex items-center justify-start">
         <p class="text-xs font-bold text-gray-700 uppercase tracking-wide leading-relaxed" x-text="result.sector"></p>
     </div>
 
-  <!-- CENTER-ALIGNED: Skills Preview (3 cols) -->
 <div class="col-span-3 flex items-center justify-center">
     <div class="flex flex-col gap-1" style="min-width: 140px;">
 
-        <!-- Technical row — always rendered, hidden if not applicable -->
         <div class="flex items-center gap-2" x-show="result.has_technical_checkbox">
             <span class="text-gray-400 font-medium text-xs">•</span>
             <span class="text-sm text-gray-700">
@@ -682,7 +1432,6 @@
             </span>
         </div>
 
-        <!-- Soft row — always rendered, hidden if not applicable -->
         <div class="flex items-center gap-2" x-show="result.has_soft_checkbox">
             <span class="text-gray-400 font-medium text-xs">•</span>
             <span class="text-sm text-gray-700">
@@ -695,19 +1444,16 @@
             </span>
         </div>
 
-        <!-- No skills -->
         <template x-if="!result.has_technical_checkbox && !result.has_soft_checkbox">
             <span class="text-xs text-gray-400 italic">No skills specified</span>
         </template>
 
-        <!-- Click to view -->
         <span class="text-xs text-gray-400 italic mt-0.5"
               x-show="openItem !== index && ((result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0))">
             Click to view details
         </span>
     </div>
 </div>
-    <!-- CENTER-ALIGNED: Salary Range (2 cols) -->
     <div class="col-span-2 flex items-center justify-center">
         <div class="flex flex-col">
             <template x-if="result.salary_range && result.salary_range !== 'Not specified'">
@@ -719,11 +1465,9 @@
         </div>
     </div>
 
-    <!-- CENTER-ALIGNED: Impact Badge + Chevron (2 cols) -->
-    <div class="col-span-2 flex items-center justify-center relative">
-        <!-- Badge centered -->
+    <div class="col-span-2 flex items-center justify-center gap-1">
         <span 
-            class="px-4 py-2 rounded-lg text-sm font-bold min-w-[80px] text-center shadow-sm"
+            class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-center shadow-sm whitespace-nowrap"
             :class="{
                 'bg-red-50 text-red-700 border border-red-200': result.impact === 'High',
                 'bg-green-50 text-green-700 border border-green-200': result.impact === 'Low',
@@ -731,9 +1475,8 @@
             }"
             x-text="result.impact || 'Medium'">
         </span>
-        <!-- Chevron positioned absolutely to the right so it doesn't shift the badge -->
         <svg 
-            class="w-5 h-5 transition-all duration-300 flex-shrink-0 absolute right-2"
+            class="w-3.5 h-3.5 flex-shrink-0 transition-all duration-300"
             :class="[
                 openItem === index ? 'rotate-180 text-gray-600' : 'text-gray-400',
                 ((result.hard_skills && result.hard_skills.length > 0) || (result.soft_skills && result.soft_skills.length > 0)) ? 'opacity-100' : 'opacity-0'
@@ -745,7 +1488,6 @@
         </svg>
     </div>
 </div>
-                    <!-- Accordion Content (Expanded View) - Formal black styling -->
                     <div 
                         x-show="openItem === index"
                         x-transition:enter="transition ease-out duration-300"
@@ -759,7 +1501,6 @@
                         
                         <div class="px-8 py-8">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <!-- Technical Skills -->
                                 <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                                     <div class="flex items-center gap-2 mb-4">
                                         <span class="text-sm font-bold text-gray-900 uppercase tracking-wide">Missing Technical Skills</span>
@@ -782,7 +1523,6 @@
                                     </template>
                                 </div>
 
-                                <!-- Soft Skills -->
                                 <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                                     <div class="flex items-center gap-2 mb-4">
                                         <div>
@@ -809,7 +1549,6 @@
                                 </div>
                             </div>
 
-                            <!-- Salary Range Details in Expanded View (Optional) -->
                             <template x-if="result.salary_min && result.salary_max">
                                 <div class="mt-6 bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                                     <div class="flex items-center justify-between">
@@ -835,20 +1574,25 @@
         </div>
     </div>
 
-    <!-- Pagination Controls -->
+    </div><!-- end min-w -->
+    </div><!-- end overflow-x-auto -->
+    </div><!-- end matrix-table-view -->
+
+    {{-- ── SHARED PAGINATION (works for both cards and table) ── --}}
     <div class="px-4 sm:px-8 py-4 sm:py-5 border-t bg-white flex flex-wrap items-center justify-between gap-3 shadow-inner pagination-controls">
         <div class="flex items-center gap-2 text-sm text-gray-600">
             <span>Showing</span>
-            <span class="font-bold text-gray-900" x-text="(currentPage - 1) * itemsPerPage + 1"></span>
+            <span class="font-bold text-gray-900" x-text="matrixShowAll ? 1 : (currentPage - 1) * itemsPerPage + 1"></span>
             <span>to</span>
-            <span class="font-bold text-gray-900" x-text="Math.min(currentPage * itemsPerPage, (window.matrixResultsData?.length || 0))"></span>
+            <span class="font-bold text-gray-900" x-text="matrixShowAll ? (sortedData?.length || 0) : Math.min(currentPage * itemsPerPage, (sortedData?.length || 0))"></span>
             <span>of</span>
             <span class="font-bold text-gray-900" x-text="(sortedData?.length || 0)"></span>
             <span>results</span>
+            <span id="matrixFilterBadge"
+                  class="ml-2 hidden px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">
+            </span>
         </div>
-
-        <div class="flex items-center gap-2">
-            <!-- Previous Button -->
+        <div class="flex items-center gap-2" x-show="!matrixShowAll">
             <button 
                 @click="prevPage()"
                 :disabled="currentPage === 1"
@@ -856,8 +1600,6 @@
                 class="px-5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 transition-all">
                 Previous
             </button>
-
-            <!-- Page Numbers -->
             <div class="flex gap-1.5 pagination-page-numbers">
                 <template x-for="page in totalPages" :key="page">
                     <button 
@@ -868,8 +1610,6 @@
                     </button>
                 </template>
             </div>
-
-            <!-- Next Button -->
             <button 
                 @click="nextPage()"
                 :disabled="currentPage === totalPages"
@@ -880,23 +1620,21 @@
         </div>
     </div>
 </div>
-    </div><!-- end min-w -->
-    </div><!-- end overflow-x-auto -->
-</div>
 
-<div class="mt-5 p-4 bg-slate-50 border-t border-slate-200 text-center">
-                        <p class="text-xs text-slate-500">
-                            Source: Tab1-Employment-Davao-Region-with-JUL2025.xlsx (Rates) | Module 2 Sources: PhilJobNet, PSA ISLE, Industry Surveys.
-                        </p>
-                    </div>
+    </div><!-- end overflow-hidden rounded-b-2xl -->
 @else
-    <!-- Empty State -->
     <div class="p-12 text-center bg-white">
         <div class="text-6xl mb-4 opacity-20">📊</div>
         <p class="text-slate-500 font-medium">No competency gap data available yet.</p>
         <p class="text-slate-400 text-sm mt-2">Data will appear once submissions are approved.</p>
     </div>
 @endif
+</div>
+<div class="mt-4 px-4 py-3 bg-white border border-gray-100 rounded-xl text-center">
+    <p class="text-xs text-slate-400 italic">
+        Source: Tab1-Employment-Davao-Region-with-JUL2025.xlsx (Rates) | Module 2 Sources: PhilJobNet, PSA ISLE, Industry Surveys.
+    </p>
+</div>
 
 <div id="lmi-matrix-modal" class="fixed inset-0 z-[9999] flex items-center justify-center p-0 sm:px-4 hidden">
     <div id="modal-backdrop" class="absolute inset-0 backdrop-blur-md bg-white/30 pointer-events-none"></div>
@@ -916,7 +1654,6 @@
             </button>
         </div>
 
-        <!-- ► STEP INDICATOR ◄ -->
         <div class="bg-teal-600 px-3 sm:px-5 py-3 sm:py-4 sticky top-[52px] sm:top-[68px] z-10">
             <div class="flex items-center justify-between max-w-3xl mx-auto">
                 <div class="flex flex-col items-center">
@@ -940,11 +1677,9 @@
                 </div>
             </div>
         </div>
-        <!-- ► END STEP INDICATOR ◄ -->
 
-        <div class="overflow-y-auto h-[calc(100vh-120px)] sm:h-[calc(98vh-140px)]">
+        <div class="overflow-y-auto h-[calc(100vh-120px)] sm:h-[calc(98vh-140px)] pb-24">
     <div class="p-4 sm:p-8">
-        <!-- ► ONLY SHOW IN STEP 1 ◄ -->
         <div id="intro-section">
             <h4 class="text-l font-bold pb-2">INDUSTRY SKILLS NEED SURVEY</h4>
             <p class="text-gray-600 text-sm leading-relaxed mb-8 pb-6 border-b border-gray-200">
@@ -956,16 +1691,11 @@
             </p>
         </div>
 
-            <!-- ════════════════════════════════════════════════════════
-                 SINGLE FORM — all 4 steps live inside here
-                 ════════════════════════════════════════════════════════ -->
-            <form action="{{ route('lmi.submit') }}" method="POST" class="space-y-5" id="lmi-form">
+<form action="{{ route('lmi.submit') }}" method="POST" class="space-y-5" id="lmi-form">
             @csrf
             <input type="hidden" name="test_form_start" value="FORM_STARTED">
 
-
-            <!-- ─── STEP 1: COMPANY PROFILE ─────────────────────── -->
-            <div class="lmi-step" data-step="0">
+<div class="lmi-step" data-step="0">
 
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mt-8">
                     <div class="flex items-center gap-3 mb-4">
@@ -980,7 +1710,6 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
 
-                        <!-- LEFT COLUMN: Company Name + Designation + Email -->
                         <div class="flex flex-col gap-5">
                             <div>
                                 <label class="block text-gray-800 text-sm font-semibold mb-2">Company Name:<span class="text-red-500">*</span></label>
@@ -1000,7 +1729,6 @@
                             </div>
                         </div>
 
-                        <!-- RIGHT COLUMN: Name of Respondent + Contact Number -->
                         <div class="flex flex-col gap-5">
                             <div>
                                 <label class="block text-gray-800 text-sm font-semibold mb-2">Name of Respondent:<span class="text-red-500">*</span></label>
@@ -1012,7 +1740,6 @@
                                     Contact Number:<span class="text-red-500">*</span>
                                 </label>
 
-                                <!-- Segmented Control Toggle -->
                                 <div class="inline-flex bg-gray-100 rounded-lg p-1 mb-3">
                                     <button type="button" id="toggle-mobile"
                                     onclick="switchContactType('mobile')"
@@ -1032,10 +1759,8 @@
                                 </button>
                                 </div>
 
-                                <!-- Mobile Input -->
                                 <div id="mobile-input-wrapper" class="relative">
                                     <div class="flex gap-2">
-                                        <!-- Country Code Selector -->
                                         <div class="relative">
                                             <button type="button" id="country-code-btn"
                                                 class="flex items-center gap-1.5 px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all whitespace-nowrap">
@@ -1045,7 +1770,6 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                                 </svg>
                                             </button>
-                                            <!-- Country Dropdown -->
                                             <div id="country-dropdown" class="hidden absolute z-50 left-0 top-full mt-1 w-72 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
                                                 <div class="p-2 border-b border-gray-100">
                                                     <input type="text" id="country-search" placeholder="Search country..."
@@ -1054,7 +1778,6 @@
                                                 <div id="country-list" class="max-h-52 overflow-y-auto"></div>
                                             </div>
                                         </div>
-                                        <!-- Number Input -->
                                         <input type="tel" id="mobile-input"
                                             placeholder="912 345 6789" required
                                             inputmode="numeric"
@@ -1063,7 +1786,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Telephone Input -->
                                 <div id="telephone-input-wrapper" class="relative hidden">
                                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pr-3 border-r border-gray-300 pointer-events-none">
                                         <span class="text-lg">☎️</span>
@@ -1075,7 +1797,6 @@
                                         autocomplete="off"
                                         class="w-full pl-20 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent focus:bg-white transition-all"
                                         disabled/>
-                                    <!-- Area code suggestions dropdown -->
                                     <div id="area-code-suggestions"
                                         class="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-50 hidden overflow-hidden">
                                         <div class="px-3 py-2 bg-gray-50 border-b border-gray-100">
@@ -1086,10 +1807,8 @@
                                 </div>
 
                                 <input type="hidden" name="contact_type" id="contact_type_input" value="mobile">
-                                <!-- Single hidden field that carries the actual contact number on submit -->
                                 <input type="hidden" name="contact_number" id="contact_number_carrier">
 
-                                <!-- Hint -->
                                 <p class="text-xs text-gray-400 mt-1.5 flex items-center gap-1" id="contact-hint">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -1101,7 +1820,6 @@
 
                     </div>
 
-                    <!-- Industry Sector Dropdown -->
                     <div class="relative mt-4">
                         <label class="block text-gray-800 text-sm font-semibold mb-2">Industry Sector:<span class="text-red-500">*</span></label>
                         <button type="button" id="industry-dropdown-btn"
@@ -1131,7 +1849,6 @@
                         <input type="hidden" id="industry-selector-input" name="industrySelector" required>
                     </div>
 
-                    <!-- Company Size Dropdown -->
                     <div class="relative mt-4">
                         <label class="block text-gray-800 text-sm font-semibold mb-2">Company Size:<span class="text-red-500">*</span></label>
                         <button type="button" id="company-size-btn"
@@ -1151,16 +1868,11 @@
                     </div>
                 </div>
 
-                <!-- NAV -->
                 <div class="flex justify-end mt-6 gap-2">
                     <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 sm:px-8 py-2.5 rounded-lg transition shadow-md w-full sm:w-auto">Next </button>
                 </div>
             </div>
-            <!-- ─── END STEP 1 ──────────────────────────────────── -->
-
-
-            <!-- ─── STEP 2: HARD-TO-FILL ROLES ──────────────────── -->
-            <div class="lmi-step" data-step="1" style="display:none;">
+<div class="lmi-step" data-step="1" style="display:none;">
 
                 <div class="bg-teal-50 border border-teal-200 rounded-lg p-6 mt-10 overflow-hidden">
                     <div class="flex items-center gap-3 mb-3">
@@ -1178,13 +1890,11 @@
 
                     <div id="jobTitlesContainer" class="space-y-6">
                         <div class="bg-white rounded-lg p-4 border border-gray-200 job-entry">
-                            <!-- 8 -->
                             <div class="mb-4">
                                 <label class="block text-gray-800 text-sm font-semibold mb-2"> Job Title: <span class="text-gray-700 text-sm font-medium">(Please list only one job title)</span><span class="text-red-500">*</span></label>
                                 <input type="text" name="job_title[]" placeholder="e.g. Senior Java Developer" required
                                     class="job-title-input w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
                             </div>
-                            <!-- 9 -->
                             <div class="mb-4">
                                 <label class="block text-gray-800 text-sm font-semibold mb-2"> Standard Job Classifications / Families: <span class="text-red-500">*</span></label>
                                 <div class="relative">
@@ -1215,8 +1925,7 @@
                                 </div>
                             </div>
                             
-                            <!-- 10 - Salary Range -->
-                            <div class="mb-4">
+<div class="mb-4">
                                 <label class="block text-gray-800 text-sm font-semibold mb-2"> Salary Range: <span class="text-red-500">*</span></label>
                                 <div class="relative">
                                     <button type="button" class="salary-range-btn w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none bg-white text-gray-600 shadow-sm text-left flex items-center justify-between">
@@ -1238,7 +1947,6 @@
                                     <input type="hidden" class="salary-range-input" name="salary_range[]">
                                 </div>
                                 
-                                <!-- Below 30k input field (shown when "Below ₱30,000" is selected) -->
                                 <div class="below-30k-input-container mt-3 hidden">
                                 <label class="block text-gray-600 text-xs font-medium mb-2">Please specify the exact salary amount:</label>
                                 <div class="relative">
@@ -1251,7 +1959,6 @@
                                 </div>
                             </div>
                             </div>
-                            <!-- 11 -->
                             <div class="mb-4">
                                 <label class="block text-gray-800 text-sm font-semibold mb-2">Duration that the Vacancy is Open: <span class="text-red-500">*</span></label>
                                 <div class="relative">
@@ -1270,7 +1977,6 @@
                                     <input type="hidden" class="duration-input" name="vacancy_duration[]" required>
                                 </div>
                             </div>
-                            <!-- 12 -->
                             <div class="mb-4">
                                 <label class="block text-gray-800 text-sm font-semibold mb-2">
                                     Reasons For Difficulty (Role-Level) <span class="italic text-gray-500">(Check all that apply)</span>
@@ -1288,9 +1994,10 @@
                                         <div class="technical-details mt-3 hidden">
                                             <label class="block text-gray-600 text-xs font-medium mb-1">What specific technical tools, software, or machinery knowledge is missing?</label>
                                             <div class="technical-tags-container flex flex-wrap gap-2 mb-2"></div>
-                                            <div class="flex gap-2">
+                                            <div class="flex gap-2 skill-input-row">
                                                 <input type="text" class="technical-skill-input flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                                    placeholder="Type a skill and press Enter (e.g. Python, SQL, AutoCAD...)"/>
+                                                    placeholder="Type a skill and press Enter (e.g. Python, SQL, AutoCAD...)"
+                                                    enterkeyhint="done" inputmode="text"/>
                                                 <button type="button" class="add-technical-skill px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-medium text-sm transition-colors shadow-sm">Enter</button>
                                             </div>
                                             <p class="text-xs text-gray-500 mt-1">Press Enter or comma to add each skill</p>
@@ -1309,9 +2016,10 @@
                                         <div class="soft-details mt-3 hidden">
                                             <label class="block text-gray-600 text-xs font-medium mb-1">What attitude or behavioral traits cause you to reject applicants?</label>
                                             <div class="soft-tags-container flex flex-wrap gap-2 mb-2"></div>
-                                            <div class="flex gap-2">
+                                            <div class="flex gap-2 skill-input-row">
                                                 <input type="text" class="soft-skill-input flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                                    placeholder="Type a trait and press Enter (e.g. Poor communication, Unprofessional...)"/>
+                                                    placeholder="Type a trait and press Enter (e.g. Poor communication, Unprofessional...)"
+                                                    enterkeyhint="done" inputmode="text"/>
                                                 <button type="button" class="add-soft-skill px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-medium text-sm transition-colors shadow-sm">Enter</button>
                                             </div>
                                             <p class="text-xs text-gray-500 mt-1">Press Enter or comma to add each trait</p>
@@ -1320,7 +2028,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- 13 -->
                             <div class="mb-4 mt-6 pt-4 border-t border-gray-200">
                                 <label class="block text-gray-800 text-sm font-semibold mb-3">
                                     How much does the difficulty finding qualified applicants for this role impact your business operations? <span class="text-red-500">*</span>
@@ -1361,18 +2068,12 @@
                     </button>
                 </div>
 
-
-                <!-- NAV -->
                 <div class="flex flex-col-reverse sm:flex-row justify-between mt-6 gap-3">
                     <button type="button" class="btn-prev bg-white hover:bg-gray-50 text-gray-700 font-semibold px-5 sm:px-8 py-2.5 rounded-lg transition border border-gray-300 shadow-sm w-full sm:w-auto"> Previous</button>
                     <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 sm:px-8 py-2.5 rounded-lg transition shadow-md w-full sm:w-auto">Next </button>
                 </div>
             </div>
-            <!-- ─── END STEP 2 ──────────────────────────────────── -->
-
-
-            <!-- ─── STEP 3: DIAGNOSIS OF MISMATCH ───────────────── -->
-            <div class="lmi-step" data-step="2" style="display:none;">
+<div class="lmi-step" data-step="2" style="display:none;">
 
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mt-10">
                     <div class="flex items-center gap-3 mb-3">
@@ -1389,7 +2090,6 @@
                     </p>
 
                     <div class="space-y-6">
-                        <!-- 13 -->
                         <div class="bg-white rounded-lg p-5 border border-gray-200">
                             <label class="block text-gray-800 text-sm font-semibold mb-3">
                                 Reason Qualified Applicants Are Rejected (Applicant-Level) <span class="text-gray-500 italic text-xs">(Check all that apply)</span>
@@ -1429,13 +2129,13 @@
                                         <div class="ml-3 flex-1"><div class="font-semibold text-gray-900">Other (please specify)</div></div>
                                     </label>
                                     <div class="other-rejection-input px-3 pb-3 ml-7 hidden">
-                                        <input type="text" name="rejection_reasons_other" placeholder="Please specify other reasons..."
-                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"/>
+                                        <textarea name="rejection_reasons_other" placeholder="Please specify other reasons..."
+                                            rows="2" enterkeyhint="done"
+                                            class="other-specify-textarea"></textarea>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- 14 -->
                         <div class="bg-white rounded-lg p-5 border border-gray-200">
                             <label class="block text-gray-800 text-sm font-semibold mb-3">
                                 How often do you coordinate with Universities/Colleges to discuss your skills requirements? <span class="text-gray-500 italic text-xs">(Select ONE)</span>
@@ -1472,8 +2172,9 @@
                                         <div class="ml-3 flex-1"><div class="font-semibold text-gray-900">Other (please specify)</div></div>
                                     </label>
                                     <div class="other-coordination-input px-3 pb-3 ml-7 hidden">
-                                        <input type="text" name="coordination_frequency_other" placeholder="Please specify..."
-                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"/>
+                                        <textarea name="coordination_frequency_other" placeholder="Please specify..."
+                                            rows="2" enterkeyhint="done"
+                                            class="other-specify-textarea"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -1481,17 +2182,12 @@
                     </div>
                 </div>
 
-                <!-- NAV -->
                 <div class="flex flex-col-reverse sm:flex-row justify-between mt-6 gap-3">
                     <button type="button" class="btn-prev bg-white hover:bg-gray-50 text-gray-700 font-semibold px-5 sm:px-8 py-2.5 rounded-lg transition border border-gray-300 shadow-sm w-full sm:w-auto"> Previous</button>
                     <button type="button" class="btn-next bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 sm:px-8 py-2.5 rounded-lg transition shadow-md w-full sm:w-auto">Next </button>
                 </div>
             </div>
-            <!-- ─── END STEP 3 ──────────────────────────────────── -->
-
-
-            <!-- ─── STEP 4: ENGAGEMENT & NEXT STEPS ─────────────── -->
-            <div class="lmi-step" data-step="3" style="display:none;">
+<div class="lmi-step" data-step="3" style="display:none;">
 
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mt-8">
                     <div class="flex items-center gap-3 mb-3">
@@ -1506,7 +2202,6 @@
                     <p class="text-gray-600 text-xs font-medium mb-4">Help us understand what features would be most valuable to you.</p>
 
                     <div class="space-y-5">
-                        <!-- 20 -->
                         <div>
                             <label class="block text-gray-800 text-sm font-semibold mb-3">
                                 If DOLE provides a Regional LMI Dashboard, what features would be most useful for you? <span class="text-gray-500 text-xs">(Select top 2)</span>
@@ -1530,25 +2225,25 @@
                                         <div class="ml-3 flex-1"><div class="font-semibold text-gray-900">Other (please specify)</div></div>
                                     </label>
                                     <div class="lmi-other-input px-3 pb-3 ml-7 hidden">
-                                        <input type="text" name="lmi_features_other" placeholder="Please specify..."
-                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"/>
+                                        <textarea name="lmi_features_other" placeholder="Please specify..."
+                                            rows="2" enterkeyhint="done"
+                                            class="other-specify-textarea focus-blue"></textarea>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- Additional -->
-                        <div>
+<div>
                             <label class="block text-gray-800 text-sm font-semibold mb-2">
                                 Additional Insights or Suggestions: <span class="text-gray-500 text-xs">(Optional)</span>
                             </label>
                             <textarea name="specific_inputs" rows="4" placeholder="Please share any additional insights or suggestions..."
-                                class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"></textarea>
+                                class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+                                style="max-height:180px; overflow-y:auto;"></textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- Consent -->
-                <div class="mt-6 mb-2">
+<div class="mt-6 mb-2">
                     <label class="flex items-start cursor-pointer">
                         <input type="checkbox" name="consent" value="1" required class="consent-checkbox mt-1 w-4 h-4 text-teal-600">
                         <span class="ml-3 text-l text-gray-700">
@@ -1557,7 +2252,6 @@
                     </label>
                 </div>
 
-                <!-- NAV -->
                 <div class="flex flex-col-reverse sm:flex-row justify-between mt-6 gap-3">
                     <button type="button" class="btn-prev bg-white hover:bg-gray-50 text-gray-700 font-semibold px-5 sm:px-8 py-2.5 rounded-lg transition border border-gray-300 shadow-sm w-full sm:w-auto"> Previous</button>
                     <button type="submit" class="btn-submit-lmi bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-5 sm:px-8 rounded-lg transition shadow-lg w-full sm:w-auto">
@@ -1565,17 +2259,12 @@
                     </button>
                 </div>
             </div>
-            <!-- ─── END STEP 4 ──────────────────────────────────── -->
-
-            </form>
+</form>
         </div>
         </div>
     </div>
 </div>
 
-<!-- ► paste lmi-steps-final.js in your script stack here ◄ -->
-
-<!-- Confirmation Modal -->
 <div id="confirmation-modal" class="fixed inset-0 flex items-center justify-center px-4 hidden" style="z-index: 9999;">
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md relative p-6 z-10">
@@ -1604,7 +2293,6 @@
 </div>
 </div>
 
-<!-- Success Modal -->
 <div id="success-modal" class="fixed inset-0 flex items-center justify-center px-4 hidden" style="z-index: 9999;">
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md relative p-6 z-10">
@@ -1629,7 +2317,7 @@
 </div>
 </div>
 </div>
- <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+ <script>
 // Toggle role details function
 function toggleRoleDetails(submissionId, index) {
     const details = document.getElementById(`role-details-${submissionId}-${index}`);
@@ -1979,8 +2667,6 @@ confirmSubmitBtn.addEventListener('click', async () => {
     try {
         // Log what we're sending (for debugging)
 
-
-        
         // Submit via AJAX
         const response = await fetch(lmiForm.action, {
             method: 'POST',
@@ -1991,12 +2677,9 @@ confirmSubmitBtn.addEventListener('click', async () => {
             }
         });
         
-
-        
         // Try to get the response text for debugging
         const responseText = await response.text();
 
-        
         if (response.ok) {
             // Show success modal
             showSuccessModal();
@@ -2120,6 +2803,42 @@ function resetFormDropdowns() {
             entry.remove();
         }
     });
+
+    // FIX 1: Reset salary range dropdown for every job entry
+    document.querySelectorAll('.job-entry').forEach(entry => {
+        const salaryText = entry.querySelector('.salary-range-text');
+        const salaryInput = entry.querySelector('.salary-range-input');
+        const salaryBtn = entry.querySelector('.salary-range-btn');
+        const salaryArrow = entry.querySelector('.salary-range-arrow');
+        const below30kContainer = entry.querySelector('.below-30k-input-container');
+        const below30kInput = entry.querySelector('.below-30k-salary-input');
+        if (salaryText) {
+            salaryText.textContent = 'Select salary range';
+            salaryText.classList.add('text-gray-400');
+            salaryText.classList.remove('text-gray-700');
+        }
+        if (salaryInput) salaryInput.value = '';
+        if (salaryBtn) salaryBtn.classList.remove('border-red-500');
+        if (salaryArrow) salaryArrow.classList.remove('rotate-180');
+        if (below30kContainer) below30kContainer.classList.add('hidden');
+        if (below30kInput) { below30kInput.value = ''; below30kInput.required = false; }
+    });
+
+    // FIX 2 (part of): Reset lmi-feature checkboxes: uncheck, re-enable, restore opacity/cursor
+    document.querySelectorAll('.lmi-feature-checkbox').forEach(cb => {
+        cb.checked = false;
+        cb.disabled = false;
+        const wrapper = cb.closest('label') || cb.closest('.lmi-other-option');
+        if (wrapper) { wrapper.style.opacity = ''; wrapper.style.cursor = ''; }
+    });
+
+    // Hide the "Other" text input if visible
+    const lmiOtherInput = document.querySelector('.lmi-other-input');
+    if (lmiOtherInput) {
+        lmiOtherInput.classList.add('hidden');
+        const otherTextField = lmiOtherInput.querySelector('textarea[name="lmi_features_other"]');
+        if (otherTextField) otherTextField.value = '';
+    }
 }
 
 // Make sure these elements exist before adding event listeners
@@ -2160,7 +2879,6 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
-
 
     // Dropdown functionality
     function createDropdown(buttonId, menuId, selectedTextId, hiddenInputId, optionsSelector, arrowId = null) {
@@ -2365,10 +3083,17 @@ document.addEventListener('keydown', (e) => {
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ',') {
                 e.preventDefault();
+                // ← NEW: check if autocomplete has a highlighted item
+                const autocompleteDropdown = input.parentElement
+                    ? input.parentElement.querySelector('.autocomplete-suggestions')
+                    : null;
+                const hasHighlighted = autocompleteDropdown
+                    && !autocompleteDropdown.classList.contains('hidden')
+                    && autocompleteDropdown.querySelector('.bg-teal-100');
+                if (hasHighlighted) return; // ← let autocomplete handle it
                 addTag();
             }
         });
-        
         return { tags, updateTags, addTag, reset };
     }
 
@@ -2386,6 +3111,23 @@ document.addEventListener('keydown', (e) => {
                 targetElement.classList.add('hidden');
                 wrapper?.classList.remove('border-teal-500', 'bg-teal-50');
                 wrapper?.classList.add('border-gray-200');
+
+                // FIX 2: Clear all tags when the skill checkbox is unchecked
+                const tagsContainer = targetElement.querySelector('.technical-tags-container, .soft-tags-container');
+                if (tagsContainer) {
+                    if (tagsContainer._tagSystem) {
+                        tagsContainer._tagSystem.reset();
+                    } else {
+                        tagsContainer.innerHTML = '';
+                    }
+                }
+                // Also clear the hidden input that holds the JSON array
+                const hiddenInput = targetElement.querySelector('.technical-skills-input, .soft-skills-input');
+                if (hiddenInput) hiddenInput.value = '';
+
+                // Also clear the text input field
+                const textInput = targetElement.querySelector('.technical-skill-input, .soft-skill-input');
+                if (textInput) textInput.value = '';
             }
         });
     }
@@ -2593,7 +3335,6 @@ addJobTitleBtn.addEventListener('click', () => {
     newJobEntry.className = 'bg-white rounded-lg p-4 border border-gray-200 job-entry relative';
     
     newJobEntry.innerHTML = `
-        <!-- Remove Button -->
         <button type="button" 
                 class="remove-job-btn absolute top-4 right-4 text-red-500 hover:text-red-700 font-medium text-sm flex items-center gap-1 transition">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2602,12 +3343,10 @@ addJobTitleBtn.addEventListener('click', () => {
             Remove
         </button>
 
-        <!-- Job Entry Number -->
         <div class="mb-4 pb-2 border-b border-gray-200">
             <h4 class="text-sm font-bold text-teal-700">Job Entry #${jobCount + 1}</h4>
         </div>
 
-        <!-- 8. Job Title -->
         <div class="mb-4">
             <label class="block text-gray-800 text-sm font-semibold mb-2">
                 Job Title: <span class="text-red-500">*</span>
@@ -2621,7 +3360,6 @@ addJobTitleBtn.addEventListener('click', () => {
             />
         </div>
 
-        <!-- 9. Standard Job Classifications -->
         <div class="mb-4">
             <label class="block text-gray-800 text-sm font-semibold mb-2">
                 Standard Job Classifications / Families: <span class="text-red-500">*</span>
@@ -2701,7 +3439,6 @@ addJobTitleBtn.addEventListener('click', () => {
             </div>
         </div>
 
-        <!-- 10. Salary Range -->
         <div class="mb-4">
             <label class="block text-gray-800 text-sm font-semibold mb-2">Salary Range: <span class="text-red-500">*</span></label>
             <div class="relative">
@@ -2722,7 +3459,6 @@ addJobTitleBtn.addEventListener('click', () => {
                 <input type="hidden" class="salary-range-input" name="salary_range[]" >
             </div>
             
-            <!-- Below 30k input field -->
             <div class="below-30k-input-container mt-3 hidden">
                 <label class="block text-gray-600 text-xs font-medium mb-2">Please specify the exact salary amount:</label>
                 <div class="relative">
@@ -2735,7 +3471,6 @@ addJobTitleBtn.addEventListener('click', () => {
             </div>
         </div>
 
-        <!-- 11. Duration -->
         <div class="mb-4">
             <label class="block text-gray-800 text-sm font-semibold mb-2">
                 Duration that the Vacancy is Open: <span class="text-red-500">*</span>
@@ -2771,14 +3506,12 @@ addJobTitleBtn.addEventListener('click', () => {
             </div>
         </div>
 
-        <!-- 12. Reasons For Difficulty -->
         <div class="mb-4">
             <label class="block text-gray-800 text-sm font-semibold mb-2">
                  Reasons For Difficulty (Role-Level) <span class="italic text-gray-500">(Check all that apply)</span>
             </label>
             <div class="difficulty-reasons space-y-3">
                 
-                <!-- Technical Skills -->
                 <div class="technical-skills-label p-3 border rounded-lg transition-all border-gray-200">
                     <label class="flex items-start cursor-pointer">
                         <input type="checkbox" 
@@ -2790,7 +3523,6 @@ addJobTitleBtn.addEventListener('click', () => {
                             <div class="text-xs text-gray-500 mt-1">Applicants do not have the required tools, software, or technical knowledge</div>
                         </div>
                     </label>
-                    <!-- Technical Skills Input -->
                     <div class="technical-details mt-3 hidden">
                         <label class="block text-gray-600 text-xs font-medium mb-1">
                             What specific technical tools, software, or machinery knowledge is missing?
@@ -2798,10 +3530,11 @@ addJobTitleBtn.addEventListener('click', () => {
                         
                         <div class="technical-tags-container flex flex-wrap gap-2 mb-2"></div>
                         
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 skill-input-row">
                             <input type="text" 
                                 class="technical-skill-input flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                placeholder="Type a skill and press Enter..."/>
+                                placeholder="Type a skill and press Enter..."
+                                enterkeyhint="done" inputmode="text"/>
                             <button type="button" 
                                     class="add-technical-skill px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-medium text-sm transition-colors shadow-sm">Enter</button>
                         </div>
@@ -2809,7 +3542,6 @@ addJobTitleBtn.addEventListener('click', () => {
                     </div>
                 </div>
 
-                <!-- Soft Skills -->
                 <div class="soft-skills-label p-3 border rounded-lg transition-all border-gray-200">
                     <label class="flex items-start cursor-pointer">
                         <input type="checkbox" 
@@ -2821,7 +3553,6 @@ addJobTitleBtn.addEventListener('click', () => {
                             <div class="text-xs text-gray-500 mt-1">Applicants cannot communicate effectively, work in teams, or demonstrate professionalism</div>
                         </div>
                     </label>
-                    <!-- Soft Skills Input -->
                     <div class="soft-details mt-3 hidden">
                         <label class="block text-gray-600 text-xs font-medium mb-1">
                             What attitude or behavioral traits cause you to reject applicants?
@@ -2829,10 +3560,11 @@ addJobTitleBtn.addEventListener('click', () => {
                         
                         <div class="soft-tags-container flex flex-wrap gap-2 mb-2"></div>
                         
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 skill-input-row">
                             <input type="text" 
                                 class="soft-skill-input flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                                placeholder="Type a trait and press Enter..."/>
+                                placeholder="Type a trait and press Enter..."
+                                enterkeyhint="done" inputmode="text"/>
                             <button type="button" 
                                     class="add-soft-skill px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded font-medium text-sm transition-colors shadow-sm">Enter</button>
                         </div>
@@ -2842,7 +3574,6 @@ addJobTitleBtn.addEventListener('click', () => {
             </div>
         </div>
 
-        <!-- 13. Impact Level -->
         <div class="mb-4 mt-6 pt-4 border-t border-gray-200">
             <label class="block text-gray-800 text-sm font-semibold mb-3">
                  How much does the difficulty finding qualified applicants for this role impact your business operations? 
@@ -3027,11 +3758,25 @@ addJobTitleBtn.addEventListener('click', () => {
     
 <script>
 function filterSkills(sector) {
-    // Update active tab styling
+    const scrollContainer = document.getElementById('sector-filter-scroll');
+
+    // Update active tab styling + scroll active tab into view
     document.querySelectorAll('.sector-tab').forEach(tab => {
         if (tab.getAttribute('data-sector') === sector) {
             tab.classList.add('bg-gray-900', 'text-white', 'shadow-sm');
             tab.classList.remove('border', 'border-gray-200', 'text-gray-500', 'bg-white', 'hover:border-gray-900', 'hover:text-gray-900');
+
+            // Scroll the active tab into view within the scroll container
+            if (scrollContainer) {
+                const contRect = scrollContainer.getBoundingClientRect();
+                const tabRect  = tab.getBoundingClientRect();
+                // Current scroll + tab center - container center
+                const targetScroll = scrollContainer.scrollLeft
+                    + (tabRect.left - contRect.left)
+                    - (contRect.width / 2)
+                    + (tabRect.width / 2);
+                scrollContainer.scrollTo({ left: targetScroll, behavior: 'smooth' });
+            }
         } else {
             tab.classList.remove('bg-gray-900', 'text-white', 'shadow-sm');
             tab.classList.add('border', 'border-gray-200', 'text-gray-500', 'bg-white', 'hover:border-gray-900', 'hover:text-gray-900');
@@ -3043,6 +3788,12 @@ function filterSkills(sector) {
         const tagSector = tag.getAttribute('data-sector');
         tag.style.display = (sector === 'All' || tagSector === sector) ? 'flex' : 'none';
     });
+
+    // Re-check scroll hint visibility after filtering
+    setTimeout(() => {
+        if (typeof window._techScrollUpdate === 'function') window._techScrollUpdate();
+        if (typeof window._softScrollUpdate === 'function') window._softScrollUpdate();
+    }, 50);
 }
 
 // Arrow buttons + mouse wheel scroll for filter bar
@@ -3063,6 +3814,36 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }, { passive: false });
     }
+});
+
+// Skills cloud scroll indicators
+document.addEventListener('DOMContentLoaded', function () {
+    function initScrollHint(containerId, wrapperId, hintId) {
+        const container = document.getElementById(containerId);
+        const wrapper   = document.getElementById(wrapperId);
+        const hint      = document.getElementById(hintId);
+        if (!container || !wrapper || !hint) return;
+
+        function update() {
+            const scrollable = container.scrollHeight > container.clientHeight + 4;
+            hint.style.display = scrollable ? 'flex' : 'none';
+            if (!scrollable) { wrapper.classList.add('at-bottom'); return; }
+            const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 8;
+            wrapper.classList.toggle('at-bottom', atBottom);
+            hint.style.opacity = atBottom ? '0' : '1';
+        }
+
+        container.addEventListener('scroll', update);
+        // Re-check after images/fonts settle
+        setTimeout(update, 300);
+        update();
+
+        // Expose so external code (e.g. filterSkills) can trigger a re-check
+        return update;
+    }
+
+    window._techScrollUpdate = initScrollHint('tech-skills-container', 'tech-skills-scroll-wrapper', 'tech-scroll-hint');
+    window._softScrollUpdate = initScrollHint('soft-skills-container', 'soft-skills-scroll-wrapper', 'soft-scroll-hint');
 });
 </script>
 <script>
@@ -3297,153 +4078,172 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function exportDashboardToCSV() {
-    const csvData = [];
     const timestamp = new Date().toLocaleString();
-    
-    // Header
-    csvData.push(['Davao Employment Dashboard Analysis']);
-    csvData.push(['Generated on', timestamp]);
-    csvData.push(['']); // Empty row
-    
+    const dateStr   = new Date().toISOString().split('T')[0];
+
+    // ── Collect all section data ─────────────────────────────────────────────
+
     // Section 1: High-Volume Job Titles
-    csvData.push(['HIGH-VOLUME JOB TITLES']);
-    csvData.push(['Rank', 'Job Title', 'Count']);
-    
-    // Get data from the chart
+    const jobRows = [];
     if (window.jobsChart && window.jobsChart.data) {
-        const labels = window.jobsChart.data.labels;
-        const data = window.jobsChart.data.datasets[0].data;
-        
-        labels.forEach((label, index) => {
-            csvData.push([index + 1, label, data[index]]);
+        window.jobsChart.data.labels.forEach((label, i) => {
+            jobRows.push([i + 1, label, window.jobsChart.data.datasets[0].data[i]]);
         });
     }
-    
-    csvData.push(['']); // Empty row
-    
+
     // Section 2: Hard-to-Fill Roles
-    csvData.push(['HARD-TO-FILL ROLES']);
-    csvData.push(['Job Title', 'Classification', 'Vacancy Duration', 'Difficulty Reasons', 'Technical Skills', 'Soft Skills']);
-    
-    const roleCards = document.querySelectorAll('.role-card');
-    roleCards.forEach((card) => {
-        const title = card.querySelector('.font-bold')?.textContent?.trim() || '';
-        const duration = card.querySelector('.text-xs.text-gray-400')?.textContent?.trim() || '';
-        
-        // Get details from the expandable section
-        const detailsDiv = card.querySelector('.role-details');
-        let classification = '';
-        let reasons = '';
-        let techSkills = '';
-        let softSkills = '';
-        
-        if (detailsDiv) {
-            // Classification
-            const classificationElements = detailsDiv.querySelectorAll('div > p.text-slate-800');
-            if (classificationElements.length > 0) {
-                classification = classificationElements[0].textContent.trim();
-            }
-            
-            // Difficulty Reasons
-            const reasonsList = detailsDiv.querySelector('ul.list-disc');
-            if (reasonsList) {
-                const reasonItems = reasonsList.querySelectorAll('li');
-                reasons = Array.from(reasonItems).map(li => li.textContent.trim()).join('; ');
-            }
-            
-            // Technical Skills
-            const techSkillsContainer = Array.from(detailsDiv.querySelectorAll('span.font-medium.text-slate-600'))
-                .find(span => span.textContent.includes('Technical Skills'));
-            if (techSkillsContainer) {
-                const skillTags = techSkillsContainer.parentElement.querySelectorAll('span.bg-blue-100');
-                techSkills = Array.from(skillTags).map(tag => tag.textContent.trim()).join('; ');
-            }
-            
-            // Soft Skills
-            const softSkillsContainer = Array.from(detailsDiv.querySelectorAll('span.font-medium.text-slate-600'))
-                .find(span => span.textContent.includes('Soft Skills'));
-            if (softSkillsContainer) {
-                const skillTags = softSkillsContainer.parentElement.querySelectorAll('span.bg-purple-100');
-                softSkills = Array.from(skillTags).map(tag => tag.textContent.trim()).join('; ');
-            }
+    const roleRows = [];
+    document.querySelectorAll('.role-card').forEach(card => {
+        const title      = card.querySelector('.font-bold')?.textContent?.trim() || '';
+        const duration   = card.querySelector('.text-xs.text-gray-400')?.textContent?.trim() || '';
+        const details    = card.querySelector('.role-details');
+        let classification = '', reasons = '', techSkills = '', softSkills = '';
+        if (details) {
+            const classEls = details.querySelectorAll('div > p.text-slate-800');
+            if (classEls.length) classification = classEls[0].textContent.trim();
+            const ul = details.querySelector('ul.list-disc');
+            if (ul) reasons = Array.from(ul.querySelectorAll('li')).map(li => li.textContent.trim()).join('; ');
+            const techSpan = Array.from(details.querySelectorAll('span.font-medium.text-slate-600')).find(s => s.textContent.includes('Technical Skills'));
+            if (techSpan) techSkills = Array.from(techSpan.parentElement.querySelectorAll('span.bg-blue-100')).map(t => t.textContent.trim()).join('; ');
+            const softSpan = Array.from(details.querySelectorAll('span.font-medium.text-slate-600')).find(s => s.textContent.includes('Soft Skills'));
+            if (softSpan) softSkills = Array.from(softSpan.parentElement.querySelectorAll('span.bg-purple-100')).map(t => t.textContent.trim()).join('; ');
         }
-        
-        csvData.push([
-            escapeCSV(title),
-            escapeCSV(classification),
-            escapeCSV(duration),
-            escapeCSV(reasons),
-            escapeCSV(techSkills),
-            escapeCSV(softSkills)
-        ]);
+        roleRows.push([title, classification, duration, reasons, techSkills, softSkills]);
     });
-    
-    csvData.push(['']); // Empty row
-    
+
     // Section 3: Critical Skill Gaps
-    csvData.push(['CRITICAL SKILL GAPS']);
-    csvData.push(['Rank', 'Skill', 'Frequency']);
-    
+    const skillRows = [];
     if (window.skillGapsChart && window.skillGapsChart.data) {
-        const labels = window.skillGapsChart.data.labels;
-        const data = window.skillGapsChart.data.datasets[0].data;
-        
-        labels.forEach((label, index) => {
-            csvData.push([index + 1, label, data[index]]);
+        window.skillGapsChart.data.labels.forEach((label, i) => {
+            skillRows.push([i + 1, label, window.skillGapsChart.data.datasets[0].data[i]]);
         });
     }
-    
-    csvData.push(['']); // Empty row
-    
+
     // Section 4: Employment Trends
-    csvData.push(['EMPLOYMENT TRENDS (Last 6 Months)']);
-    csvData.push(['Month', 'Job Postings']);
-    
+    const trendRows = [];
     if (window.trendsChart && window.trendsChart.data) {
-        const labels = window.trendsChart.data.labels;
-        const data = window.trendsChart.data.datasets[0].data;
-        
-        labels.forEach((label, index) => {
-            csvData.push([label, data[index]]);
+        window.trendsChart.data.labels.forEach((label, i) => {
+            trendRows.push([label, window.trendsChart.data.datasets[0].data[i]]);
         });
     }
-    
-    // Convert to CSV string
-    const csvString = csvData.map(row => row.join(',')).join('\n');
-    
-    // Create and download file
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    const filename = `davao-employment-analysis-${new Date().toISOString().split('T')[0]}.csv`;
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Show success message
-    alert('Analysis exported successfully as ' + filename);
+
+    // ── Build worksheet rows ─────────────────────────────────────────────────
+    const sheetRows = [
+        // Title
+        ['Davao Employment Dashboard Analysis'],
+        ['Generated on', timestamp],
+        [],
+        // Section 1
+        ['HIGH-VOLUME JOB TITLES'],
+        ['Rank', 'Job Title', 'Count'],
+        ...jobRows,
+        [],
+        // Section 2
+        ['HARD-TO-FILL ROLES'],
+        ['Job Title', 'Classification', 'Vacancy Duration', 'Difficulty Reasons', 'Technical Skills', 'Soft Skills'],
+        ...roleRows,
+        [],
+        // Section 3
+        ['CRITICAL SKILL GAPS'],
+        ['Rank', 'Skill', 'Frequency'],
+        ...skillRows,
+        [],
+        // Section 4
+        ['EMPLOYMENT TRENDS (Last 6 Months)'],
+        ['Month', 'Job Postings'],
+        ...trendRows,
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(sheetRows);
+
+    // ── Styles ───────────────────────────────────────────────────────────────
+    const border     = { style: 'thin', color: { rgb: 'C5D0DE' } };
+    const cellBorder = { top: border, bottom: border, left: border, right: border };
+    const cenAlign   = { horizontal: 'center', vertical: 'center' };
+    const leftAlign  = { horizontal: 'left',   vertical: 'center' };
+    const numAlign   = { horizontal: 'right',  vertical: 'center' };
+
+    // Section header rows (detect by known labels)
+    const sectionTitles  = new Set(['HIGH-VOLUME JOB TITLES', 'HARD-TO-FILL ROLES', 'CRITICAL SKILL GAPS', 'EMPLOYMENT TRENDS (Last 6 Months)']);
+    const columnHeaders  = new Set(['Rank', 'Job Title', 'Count', 'Classification', 'Vacancy Duration', 'Difficulty Reasons', 'Technical Skills', 'Soft Skills', 'Skill', 'Frequency', 'Month', 'Job Postings']);
+
+    // Determine max columns for merges
+    const maxCols = sheetRows.reduce((m, r) => Math.max(m, r.length), 0);
+
+    // Merge title row + section title rows across all columns
+    ws['!merges'] = [];
+
+    // Auto column widths
+    const colWidths = Array(maxCols).fill(10);
+    sheetRows.forEach(row => {
+        row.forEach((cell, ci) => {
+            const len = String(cell ?? '').length;
+            if (len + 4 > colWidths[ci]) colWidths[ci] = len + 4;
+        });
+    });
+    ws['!cols'] = colWidths.map(w => ({ wch: w }));
+
+    // Apply cell styles row by row
+    sheetRows.forEach((row, r) => {
+        const firstCell = String(row[0] ?? '');
+        const isTitle        = r === 0;
+        const isGenerated    = r === 1;
+        const isSectionTitle = sectionTitles.has(firstCell);
+        const isColHeader    = row.length > 0 && columnHeaders.has(firstCell);
+
+        if (isSectionTitle || isTitle) {
+            ws['!merges'].push({ s: { r, c: 0 }, e: { r, c: maxCols - 1 } });
+        }
+
+        row.forEach((_, c) => {
+            const addr = XLSX.utils.encode_cell({ r, c });
+            if (!ws[addr]) return;
+
+            if (isTitle) {
+                ws[addr].s = {
+                    fill:      { patternType: 'solid', fgColor: { rgb: '0D2137' } },
+                    font:      { bold: true, color: { rgb: 'FFFFFF' }, sz: 14, name: 'Calibri' },
+                    alignment: cenAlign,
+                };
+            } else if (isGenerated) {
+                ws[addr].s = {
+                    font:      { italic: true, color: { rgb: '64748B' }, sz: 10, name: 'Calibri' },
+                    alignment: leftAlign,
+                };
+            } else if (isSectionTitle) {
+                ws[addr].s = {
+                    fill:      { patternType: 'solid', fgColor: { rgb: '1E3A5F' } },
+                    font:      { bold: true, color: { rgb: 'FFFFFF' }, sz: 12, name: 'Calibri' },
+                    alignment: leftAlign,
+                };
+            } else if (isColHeader) {
+                ws[addr].s = {
+                    fill:      { patternType: 'solid', fgColor: { rgb: '334155' } },
+                    font:      { bold: true, color: { rgb: 'FFFFFF' }, sz: 10, name: 'Calibri' },
+                    alignment: cenAlign,
+                    border:    cellBorder,
+                };
+            } else if (row.length > 0) {
+                // Data row — alternate shading
+                const isNum = typeof row[c] === 'number';
+                ws[addr].s = {
+                    fill:      { patternType: 'solid', fgColor: { rgb: r % 2 === 0 ? 'F1F5F9' : 'FFFFFF' } },
+                    font:      { sz: 10, name: 'Calibri' },
+                    alignment: isNum ? numAlign : leftAlign,
+                    border:    cellBorder,
+                };
+            }
+        });
+    });
+
+    // ── Export ───────────────────────────────────────────────────────────────
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Dashboard Analysis');
+    XLSX.writeFile(wb, `davao-employment-analysis-${dateStr}.xlsx`, { bookType: 'xlsx', cellStyles: true });
+
+    console.log('Export complete: davao-employment-analysis-' + dateStr + '.xlsx');
 }
 
-// Helper function to escape CSV values
-function escapeCSV(value) {
-    if (value === null || value === undefined) {
-        return '';
-    }
-    
-    const stringValue = String(value);
-    
-    // If value contains comma, quote, or newline, wrap in quotes and escape quotes
-    if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
-        return '"' + stringValue.replace(/"/g, '""') + '"';
-    }
-    
-    return stringValue;
-}
     </script>
     <script>
         // Helper function to format salary range with peso sign and thousand separators
@@ -3498,86 +4298,152 @@ function escapeCSV(value) {
             ...result,
             salary_range: formatSalaryRange(result.salary_range)
         }));
+        // ↓ INSERTED: keep a pristine copy so the Clear filter can restore original data
+        window.matrixResultsDataOriginal = window.matrixResultsData.slice();
+        // ↑ END INSERTED
 
 function exportLMIMatrixToCSV() {
-    const csvData = [];
     const timestamp = new Date().toLocaleString();
-    
-    // Header
-    csvData.push(['LMI Granularity Matrix - Competency Gap Analysis']);
-    csvData.push(['Generated on', timestamp]);
-    csvData.push(['']); // Empty row
-    
-    // Column Headers
-    csvData.push(['Job Title / Role', 'Sector', 'Gap Impact', 'Missing Technical Skills', 'Missing Soft Skills']);
-    
-    // Process all matrix results
-    if (matrixResultsData && matrixResultsData.length > 0) {
-        matrixResultsData.forEach((result) => {
-            const role = result.role || '';
-            const sector = result.sector || '';
-            const impact = result.impact || 'Medium';
-            
-            // Process Technical Skills
-            let technicalSkills = '';
-            if (result.hard_skills && Array.isArray(result.hard_skills) && result.hard_skills.length > 0) {
-                technicalSkills = result.hard_skills.map(skill => {
-                    return typeof skill === 'object' ? (skill.name || '') : skill;
-                }).filter(s => s).join('; ');
-            }
-            
-            // Process Soft Skills
-            let softSkills = '';
-            if (result.soft_skills && Array.isArray(result.soft_skills) && result.soft_skills.length > 0) {
-                softSkills = result.soft_skills.map(skill => {
-                    return typeof skill === 'object' ? (skill.name || '') : skill;
-                }).filter(s => s).join('; ');
-            }
-            
-            csvData.push([
-                escapeCSVValue(role),
-                escapeCSVValue(sector),
-                escapeCSVValue(impact),
-                escapeCSVValue(technicalSkills),
-                escapeCSVValue(softSkills)
-            ]);
+    const dateStr   = new Date().toISOString().split('T')[0];
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    const mkCell = (v, s) => ({ t: 's', v: String(v ?? ''), s });
+    const border      = { style: 'thin', color: { rgb: 'C5D0DE' } };
+    const bAll        = { top: border, bottom: border, left: border, right: border };
+    const FONT        = (opts = {}) => ({ sz: opts.sz || 10, name: 'Calibri', bold: !!opts.bold, color: { rgb: opts.color || '1A1A1A' }, italic: !!opts.italic });
+    const FILL        = rgb  => ({ patternType: 'solid', fgColor: { rgb } });
+    const AL          = (h, v, wrap) => ({ horizontal: h, vertical: v, wrapText: !!wrap });
+    const impactFill  = { 'High': 'FEE2E2', 'Medium': 'FFF9C4', 'Low': 'DCFCE7' };
+
+    // ── Get current page data (same sort as Alpine) ───────────────────────────
+    const impactOrder = { 'High': 1, 'Medium': 2, 'Low': 3 };
+    const sorted = (window.matrixResultsData || []).slice().sort((a, b) =>
+        (impactOrder[a.impact] || 2) - (impactOrder[b.impact] || 2)
+    );
+    const paginationSpans = document.querySelectorAll('.pagination-controls span.font-bold');
+    const startItem    = parseInt(paginationSpans[0]?.textContent) || 1;
+    const itemsPerPage = 10;
+    const currentPage  = Math.ceil(startItem / itemsPerPage);
+    const pageData     = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const totalPages   = Math.ceil(sorted.length / itemsPerPage);
+
+    // ── Parse each row into skill arrays + plain text ─────────────────────────
+    const parseSkills = arr =>
+        (arr || []).map(s => typeof s === 'object' ? (s.name || '') : String(s || '')).filter(Boolean);
+
+    const rows = pageData.map(result => ({
+        role:   result.role   || '',
+        sector: result.sector || '',
+        impact: result.impact || 'Medium',
+        tech:   parseSkills(result.hard_skills),   // array of strings
+        soft:   parseSkills(result.soft_skills),   // array of strings
+    }));
+
+    // ── Auto-fit column widths based on actual content ────────────────────────
+    const colHeaders = ['Job Title / Role', 'Sector', 'Gap Impact', 'Missing Technical Skills', 'Missing Soft Skills'];
+    const colW = [
+        Math.min(Math.max(colHeaders[0].length, ...rows.map(r => r.role.length))   + 3, 45),
+        Math.min(Math.max(colHeaders[1].length, ...rows.map(r => r.sector.length)) + 3, 40),
+        14,
+        Math.min(Math.max(colHeaders[3].length, ...rows.flatMap(r => r.tech.map(s => s.length))) + 3, 52),
+        Math.min(Math.max(colHeaders[4].length, ...rows.flatMap(r => r.soft.map(s => s.length))) + 3, 52),
+    ];
+
+    // ── Build worksheet manually — cell by cell ───────────────────────────────
+    // This is the ONLY reliable way to get real \n line-breaks in Excel via SheetJS CE.
+    // aoa_to_sheet silently strips newlines; we must set t:'s' on each cell ourselves.
+    const ws = {};
+    const C = (r, c) => XLSX.utils.encode_cell({ r, c });
+    const NC = 5; // number of columns
+
+    // Row 0 — Title
+    ws[C(0,0)] = mkCell('LMI Granularity Matrix - Competency Gap Analysis', {
+        fill: FILL('064E3B'), font: FONT({ bold: true, color: 'FFFFFF', sz: 13 }),
+        alignment: AL('center','center')
+    });
+    for (let c = 1; c < NC; c++) ws[C(0,c)] = mkCell('', { fill: FILL('064E3B'), alignment: AL('center','center') });
+
+    // Row 1 — Generated on
+    ws[C(1,0)] = mkCell(`Generated on: ${timestamp}`, {
+        font: FONT({ italic: true, color: '64748B' }), alignment: AL('left','center')
+    });
+    for (let c = 1; c < NC; c++) ws[C(1,c)] = mkCell('', { font: FONT({ color: '64748B' }) });
+
+    // Row 2 — Page info
+    ws[C(2,0)] = mkCell(`Showing page ${currentPage} of ${totalPages}  (${pageData.length} of ${sorted.length} total roles)`, {
+        font: FONT({ italic: true, color: '64748B' }), alignment: AL('left','center')
+    });
+    for (let c = 1; c < NC; c++) ws[C(2,c)] = mkCell('', { font: FONT({ color: '64748B' }) });
+
+    // Row 3 — Spacer (empty)
+    for (let c = 0; c < NC; c++) ws[C(3,c)] = mkCell('', {});
+
+    // Row 4 — Column headers
+    colHeaders.forEach((h, c) => {
+        ws[C(4,c)] = mkCell(h, {
+            fill: FILL('065F46'), font: FONT({ bold: true, color: 'FFFFFF' }),
+            alignment: AL('center','center'), border: bAll
         });
-        
-        // Add summary statistics
-        csvData.push(['']); // Empty row
-        csvData.push(['SUMMARY STATISTICS']);
-        csvData.push(['Total Roles Analyzed', matrixResultsData.length]);
-        
-        // Count high/medium/low impact
-        const highImpact = matrixResultsData.filter(r => r.impact === 'High').length;
-        const mediumImpact = matrixResultsData.filter(r => r.impact === 'Medium' || !r.impact).length;
-        const lowImpact = matrixResultsData.filter(r => r.impact === 'Low').length;
-        
-        csvData.push(['High Impact Gaps', highImpact]);
-        csvData.push(['Medium Impact Gaps', mediumImpact]);
-        csvData.push(['Low Impact Gaps', lowImpact]);
-    } else {
-        csvData.push(['No data available']);
-    }
-    
-    // Convert to CSV string
-    const csvString = csvData.map(row => row.join(',')).join('\n');
-    
-    // Create and download file
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    const filename = `lmi-competency-gap-analysis-${new Date().toISOString().split('T')[0]}.csv`;
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-  
+    });
+
+    // Rows 5+ — Data rows
+    const rowHeights = [
+        { hpt: 30 }, // title
+        { hpt: 18 }, // generated on
+        { hpt: 18 }, // page info
+        { hpt:  5 }, // spacer
+        { hpt: 22 }, // col headers
+    ];
+
+    rows.forEach((row, di) => {
+        const r      = 5 + di;
+        const bg     = di % 2 === 0 ? 'F8FAFC' : 'FFFFFF';
+        const iBg    = impactFill[row.impact] || 'FFF9C4';
+        const lines  = Math.max(row.tech.length, row.soft.length, 1);
+
+        // Col 0 — Job Title
+        ws[C(r,0)] = mkCell(row.role, {
+            fill: FILL(bg), font: FONT({ bold: true }), alignment: AL('left','top'), border: bAll
+        });
+        // Col 1 — Sector
+        ws[C(r,1)] = mkCell(row.sector, {
+            fill: FILL(bg), font: FONT(), alignment: AL('left','top'), border: bAll
+        });
+        // Col 2 — Gap Impact (colour-coded)
+        ws[C(r,2)] = mkCell(row.impact, {
+            fill: FILL(iBg), font: FONT({ bold: true }), alignment: AL('center','center'), border: bAll
+        });
+        // Col 3 — Technical Skills  ← explicit t:'s' + real \n
+        ws[C(r,3)] = {
+            t: 's',
+            v: row.tech.join('\n'),
+            s: { fill: FILL(bg), font: FONT(), alignment: AL('left','top', true), border: bAll }
+        };
+        // Col 4 — Soft Skills  ← explicit t:'s' + real \n
+        ws[C(r,4)] = {
+            t: 's',
+            v: row.soft.join('\n'),
+            s: { fill: FILL(bg), font: FONT(), alignment: AL('left','top', true), border: bAll }
+        };
+
+        // Row height: 15pt per skill line + 8pt padding
+        rowHeights.push({ hpt: lines * 15 + 8 });
+    });
+
+    // ── Sheet metadata ────────────────────────────────────────────────────────
+    ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 4 + rows.length, c: NC - 1 } });
+    ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: NC - 1 } }, // title
+        { s: { r: 1, c: 0 }, e: { r: 1, c: NC - 1 } }, // generated on
+        { s: { r: 2, c: 0 }, e: { r: 2, c: NC - 1 } }, // page info
+    ];
+    ws['!cols'] = colW.map(wch => ({ wch }));
+    ws['!rows'] = rowHeights;
+
+    // ── Export ────────────────────────────────────────────────────────────────
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Competency Gap Analysis');
+    XLSX.writeFile(wb, `lmi-competency-gap-analysis-page${currentPage}-${dateStr}.xlsx`, { bookType: 'xlsx', cellStyles: true });
 }
 
 // Helper function to escape CSV values
@@ -3803,6 +4669,61 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 }
+
+                // FIX 3: At least one skill must be checked, and if checked must have >=1 tag
+                // NOTE: hidden input stores tags as comma-separated string e.g. "Python, SQL"
+                // so we check .trim().length > 0, NOT JSON.parse
+                const techCheckbox = jobEntry.querySelector('.technical-checkbox');
+                const techSkillsLabel = jobEntry.querySelector('.technical-skills-label');
+                const techSkillInput = jobEntry.querySelector('.technical-skill-input');
+
+                const softCheckbox = jobEntry.querySelector('.soft-checkbox');
+                const softSkillsLabel = jobEntry.querySelector('.soft-skills-label');
+                const softSkillInput = jobEntry.querySelector('.soft-skill-input');
+
+                const eitherChecked = (techCheckbox && techCheckbox.checked) || (softCheckbox && softCheckbox.checked);
+
+                if (!eitherChecked) {
+                    // Condition 1: neither checked - highlight both, block next
+                    valid = false;
+                    if (techSkillsLabel) techSkillsLabel.classList.add('border-red-500');
+                    if (softSkillsLabel) softSkillsLabel.classList.add('border-red-500');
+                } else {
+                    // Condition 2 & 3: at least one is checked
+                    if (techCheckbox && techCheckbox.checked) {
+                        const techHidden = jobEntry.querySelector('.technical-skills-input');
+                        const hasTechTags = techHidden && techHidden.value.trim().length > 0;
+                        if (!hasTechTags) {
+                            valid = false;
+                            if (techSkillsLabel) techSkillsLabel.classList.add('border-red-500');
+                            if (techSkillInput) techSkillInput.classList.add('border-red-500');
+                        } else {
+                            if (techSkillsLabel) techSkillsLabel.classList.remove('border-red-500');
+                            if (techSkillInput) techSkillInput.classList.remove('border-red-500');
+                        }
+                    } else {
+                        // Unchecked - always clear any lingering red border
+                        if (techSkillsLabel) techSkillsLabel.classList.remove('border-red-500');
+                        if (techSkillInput) techSkillInput.classList.remove('border-red-500');
+                    }
+
+                    if (softCheckbox && softCheckbox.checked) {
+                        const softHidden = jobEntry.querySelector('.soft-skills-input');
+                        const hasSoftTags = softHidden && softHidden.value.trim().length > 0;
+                        if (!hasSoftTags) {
+                            valid = false;
+                            if (softSkillsLabel) softSkillsLabel.classList.add('border-red-500');
+                            if (softSkillInput) softSkillInput.classList.add('border-red-500');
+                        } else {
+                            if (softSkillsLabel) softSkillsLabel.classList.remove('border-red-500');
+                            if (softSkillInput) softSkillInput.classList.remove('border-red-500');
+                        }
+                    } else {
+                        // Unchecked - always clear any lingering red border
+                        if (softSkillsLabel) softSkillsLabel.classList.remove('border-red-500');
+                        if (softSkillInput) softSkillInput.classList.remove('border-red-500');
+                    }
+                }
             });
         }
 
@@ -3838,7 +4759,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Always check: if "Other" rejection is checked, text must be filled
             const otherRejectionCb = step.querySelector('.other-rejection-checkbox');
-            const otherRejectionText = step.querySelector('input[name="rejection_reasons_other"]');
+            const otherRejectionText = step.querySelector('textarea[name="rejection_reasons_other"]');
             if (otherRejectionCb && otherRejectionCb.checked) {
                 if (otherRejectionText && !otherRejectionText.value.trim()) {
                     valid = false;
@@ -3853,7 +4774,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Always check: if "Other" coordination is selected, text must be filled
             const otherCoordCb = step.querySelector('.other-coordination-radio');
-            const otherCoordText = step.querySelector('input[name="coordination_frequency_other"]');
+            const otherCoordText = step.querySelector('textarea[name="coordination_frequency_other"]');
             if (otherCoordCb && otherCoordCb.checked) {
                 if (otherCoordText && !otherCoordText.value.trim()) {
                     valid = false;
@@ -3890,7 +4811,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // If "Other" LMI feature is checked, its text must be filled
             const lmiOtherCb = step.querySelector('.lmi-other-checkbox');
-            const otherText = step.querySelector('input[name="lmi_features_other"]');
+            const otherText = step.querySelector('textarea[name="lmi_features_other"]');
             if (lmiOtherCb && lmiOtherCb.checked) {
                 if (otherText && !otherText.value.trim()) {
                     valid = false;
@@ -3929,9 +4850,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
         
-
-    
-  
     // ─── INIT ───────────────────────────────────────────────
     showStep(0);
 });
@@ -4341,5 +5259,783 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
-</body>
+<script>
+(function () {
+    const MONTH_SHORT = ['','Jan','Feb','Mar','Apr','May','Jun',
+                         'Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    const htfArchiveOptions = @json($archive_options ?? []);
+
+    // Pending = inside open panel, not yet applied
+    let htfPendingYears  = [];
+    let htfPendingMonths = []; // empty = all months
+    let htfPendingMode  = 'range'; // 'range' | 'exact'
+
+    // Applied = last committed values
+    let htfAppliedYears  = [];
+    let htfAppliedMonths = []; // empty = all months
+    let htfAppliedMode   = 'range';
+
+    /* ════════════════════════════
+       BOOT
+    ════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', function () {
+        buildHtfYearChips();
+
+        document.addEventListener('click', function (e) {
+            const wrapper = document.getElementById('htfFilterWrapper');
+            if (wrapper && !wrapper.contains(e.target)) htfPanelClose();
+        });
+    });
+
+    /* ════════════════════════════
+       BUILD YEAR CHIPS
+    ════════════════════════════ */
+    function buildHtfYearChips() {
+        const container = document.getElementById('htfpYearChips');
+        const yearHint  = document.getElementById('htfpYearHint');
+        if (!container) return;
+        container.innerHTML = '';
+
+        // Update year hint based on mode
+        if (yearHint) {
+            yearHint.textContent = htfPendingMode === 'range'
+                ? 'select From & To'
+                : 'pick any years';
+        }
+
+        const years = [...new Set(htfArchiveOptions.map(o => String(o.year)))]
+            .sort((a, b) => Number(b) - Number(a));
+
+        if (!years.length) {
+            container.innerHTML = '<span class="htfp-chip htfp-placeholder">No archived data</span>';
+            return;
+        }
+
+        years.forEach(yr => {
+            const btn = document.createElement('button');
+            btn.type        = 'button';
+            btn.className   = 'htfp-chip' + (htfPendingYears.includes(yr) ? ' htfp-selected' : '');
+            btn.textContent = yr;
+            btn.dataset.val = yr;
+            btn.onclick     = () => htfToggleYear(btn, yr);
+            container.appendChild(btn);
+        });
+    }
+
+    /* ════════════════════════════
+       BUILD MONTH CHIPS
+    ════════════════════════════ */
+    function buildHtfMonthChips() {
+        const container = document.getElementById('htfpMonthChips');
+        const hint      = document.getElementById('htfpMonthHint');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (!htfPendingYears.length) {
+            if (hint) hint.textContent = 'select a year first';
+            container.innerHTML = '<span class="htfp-chip htfp-placeholder">Select a year to continue</span>';
+            return;
+        }
+
+        // Update hint based on mode
+        if (hint) {
+            hint.textContent = htfPendingMode === 'range'
+                ? 'select From & To month (optional)'
+                : 'pick any specific months';
+        }
+
+        // In Range mode expand to all years between the two selected
+        let yearsForMonths;
+        if (htfPendingMode === 'range' && htfPendingYears.length === 2) {
+            const minY = Math.min(...htfPendingYears.map(Number));
+            const maxY = Math.max(...htfPendingYears.map(Number));
+            yearsForMonths = [];
+            for (let y = minY; y <= maxY; y++) yearsForMonths.push(String(y));
+        } else {
+            yearsForMonths = htfPendingYears.slice();
+        }
+
+        const availableMonths = [...new Set(
+            htfArchiveOptions
+                .filter(o => yearsForMonths.includes(String(o.year)))
+                .map(o => o.month)
+        )].sort((a, b) => a - b);
+
+        if (!availableMonths.length) {
+            container.innerHTML = '<span class="htfp-chip htfp-placeholder">No months available</span>';
+            return;
+        }
+
+        availableMonths.forEach(m => {
+            const btn = document.createElement('button');
+            btn.type        = 'button';
+            btn.className   = 'htfp-chip' + (htfPendingMonths.includes(String(m)) ? ' htfp-selected' : '');
+            btn.textContent = MONTH_SHORT[m];
+            btn.dataset.val = String(m);
+            btn.onclick     = () => htfToggleMonth(btn, String(m));
+            container.appendChild(btn);
+        });
+    }
+
+    /* ════════════════════════════
+       TOGGLE HELPERS
+    ════════════════════════════ */
+    function htfToggleYear(btn, yr) {
+        if (htfPendingYears.includes(yr)) {
+            htfPendingYears = htfPendingYears.filter(y => y !== yr);
+            btn.classList.remove('htfp-selected');
+        } else {
+            // Range mode: max 2 (From → To). Exact mode: unlimited picks.
+            if (htfPendingMode === 'range' && htfPendingYears.length >= 2) {
+                const evicted = htfPendingYears.shift();
+                document.querySelector(`#htfpYearChips [data-val="${evicted}"]`)
+                    ?.classList.remove('htfp-selected');
+            }
+            htfPendingYears.push(yr);
+            btn.classList.add('htfp-selected');
+        }
+        htfPendingMonths = [];
+        buildHtfMonthChips();
+    }
+
+    function htfToggleMonth(btn, m) {
+        if (htfPendingMonths.includes(m)) {
+            htfPendingMonths = htfPendingMonths.filter(x => x !== m);
+            btn.classList.remove('htfp-selected');
+        } else {
+            // Range mode: max 2 (From → To). Exact mode: unlimited picks.
+            if (htfPendingMode === 'range' && htfPendingMonths.length >= 2) {
+                const evicted = htfPendingMonths.shift();
+                document.querySelector(`#htfpMonthChips [data-val="${evicted}"]`)
+                    ?.classList.remove('htfp-selected');
+            }
+            htfPendingMonths.push(m);
+            btn.classList.add('htfp-selected');
+        }
+    }
+
+    /* ════════════════════════════
+       MODE TOGGLE (Range vs Exact)
+    ════════════════════════════ */
+    window.htfSetMode = function (mode) {
+        htfPendingMode = mode;
+        document.getElementById('htfModeRange')?.classList.toggle('mfp-mode-active', mode === 'range');
+        document.getElementById('htfModeExact')?.classList.toggle('mfp-mode-active', mode === 'exact');
+        const hint = document.getElementById('htfModeHint');
+        if (hint) {
+            hint.innerHTML = mode === 'range'
+                ? 'Select <strong>From</strong> &amp; <strong>To</strong> year — all years &amp; months in between will be included'
+                : 'Select up to <strong>2 specific years</strong> — then pick <strong>any months</strong> you want';
+        }
+        htfPendingYears  = [];
+        htfPendingMonths = [];
+        buildHtfYearChips();
+        buildHtfMonthChips();
+    };
+
+    /* ════════════════════════════
+       PANEL OPEN / CLOSE
+    ════════════════════════════ */
+    window.htfPanelToggle = function () {
+        const panel = document.getElementById('htfFilterPanel');
+        if (panel.classList.contains('htf-panel-open')) {
+            htfPanelClose();
+        } else {
+            // Sync pending to applied state when reopening
+            htfPendingYears  = htfAppliedYears.slice();
+            htfPendingMonths = htfAppliedMonths.slice();
+            htfPendingMode   = htfAppliedMode;
+            document.getElementById('htfModeRange')?.classList.toggle('mfp-mode-active', htfPendingMode === 'range');
+            document.getElementById('htfModeExact')?.classList.toggle('mfp-mode-active', htfPendingMode === 'exact');
+            const htfModeHintEl = document.getElementById('htfModeHint');
+            if (htfModeHintEl) {
+                htfModeHintEl.innerHTML = htfPendingMode === 'range'
+                    ? 'Select <strong>From</strong> &amp; <strong>To</strong> year — all years &amp; months in between will be included'
+                    : 'Select up to <strong>2 specific years</strong> — then pick <strong>any months</strong> you want';
+            }
+            buildHtfYearChips();
+            buildHtfMonthChips();
+            panel.classList.add('htf-panel-open');
+            document.getElementById('htfFilterTrigger').classList.add('htf-open');
+        }
+    };
+
+    function htfPanelClose() {
+        document.getElementById('htfFilterPanel')?.classList.remove('htf-panel-open');
+        document.getElementById('htfFilterTrigger')?.classList.remove('htf-open');
+    }
+
+    /* ════════════════════════════
+       APPLY
+    ════════════════════════════ */
+    window.htfPanelApply = function () {
+        if (!htfPendingYears.length) return;
+        htfAppliedYears  = htfPendingYears.slice();
+        htfAppliedMonths = htfPendingMonths.slice();
+        htfAppliedMode   = htfPendingMode;
+        htfPanelClose();
+        htfUpdateTriggerLabel();
+        updateHardToFill(htfAppliedYears, htfAppliedMonths, htfAppliedMode);
+    };
+
+    /* ════════════════════════════
+       RESET
+    ════════════════════════════ */
+    window.htfPanelReset = function () {
+        htfPendingYears  = [];
+        htfPendingMonths = [];
+        htfAppliedYears  = [];
+        htfAppliedMonths = [];
+        htfPendingMode   = 'range';
+        htfAppliedMode   = 'range';
+        htfPanelClose();
+        htfUpdateTriggerLabel();
+        updateHardToFill([], [], 'range');
+    };
+
+    /* ════════════════════════════
+       TRIGGER LABEL
+    ════════════════════════════ */
+    function htfUpdateTriggerLabel() {
+        const trigger = document.getElementById('htfFilterTrigger');
+        const text    = document.getElementById('htfTriggerText');
+        if (!text) return;
+        if (htfAppliedYears.length) {
+            let yLabel;
+            if (htfAppliedMode === 'range' && htfAppliedYears.length === 2) {
+                const mn = Math.min(...htfAppliedYears.map(Number));
+                const mx = Math.max(...htfAppliedYears.map(Number));
+                yLabel = mn === mx ? String(mn) : `${mn} – ${mx}`;
+            } else {
+                yLabel = htfAppliedYears.join(' & ');
+            }
+            const mLabel = htfAppliedMonths.length === 0
+                ? 'All Months'
+                : (htfAppliedMode === 'range' && htfAppliedMonths.length === 2)
+                    ? (() => {
+                        const mn = Math.min(...htfAppliedMonths.map(Number));
+                        const mx = Math.max(...htfAppliedMonths.map(Number));
+                        return mn === mx ? MONTH_SHORT[mn] : `${MONTH_SHORT[mn]} – ${MONTH_SHORT[mx]}`;
+                    })()
+                    : htfAppliedMonths.map(m => MONTH_SHORT[Number(m)]).join(' & ');
+            text.textContent = `${yLabel} — ${mLabel}`;
+            trigger.classList.add('htf-active');
+        } else {
+            text.textContent = 'Filter by Period';
+            trigger.classList.remove('htf-active');
+        }
+    }
+
+    /* ════════════════════════════
+       CORE FETCH (unchanged logic)
+    ════════════════════════════ */
+    async function updateHardToFill(years, months, mode) {
+        const spinner   = document.getElementById('htfSpinner');
+        const badge     = document.getElementById('htfArchiveBadge');
+        const label     = document.getElementById('htfArchiveLabel');
+        const banner    = document.getElementById('htfBanner');
+        const rolesList = document.getElementById('htfRolesList');
+
+        spinner.style.display = 'inline-block';
+
+        try {
+            const params = new URLSearchParams();
+            if (years && years.length) {
+                // Range mode: expand [2025, 2028] → 2025,2026,2027,2028
+                let yearsToSend;
+                if (mode === 'range' && years.length === 2) {
+                    const minY = Math.min(...years.map(Number));
+                    const maxY = Math.max(...years.map(Number));
+                    yearsToSend = [];
+                    for (let y = minY; y <= maxY; y++) yearsToSend.push(String(y));
+                } else {
+                    yearsToSend = years.slice();
+                }
+                yearsToSend.forEach(y => params.append('archive_years[]', y));
+
+                // Range mode: expand [3, 10] → 3,4,5,6,7,8,9,10
+                // Exact mode: send the specific months as-is
+                if (months && months.length) {
+                    let monthsToSend;
+                    if (mode === 'range' && months.length === 2) {
+                        const minM = Math.min(...months.map(Number));
+                        const maxM = Math.max(...months.map(Number));
+                        monthsToSend = [];
+                        for (let m = minM; m <= maxM; m++) monthsToSend.push(String(m));
+                    } else {
+                        monthsToSend = months.slice();
+                    }
+                    monthsToSend.forEach(m => params.append('archive_months[]', m));
+                }
+            }
+
+            const res  = await fetch(`/api/job-market/hard-to-fill-data?${params.toString()}`);
+            const json = await res.json();
+
+            // Update banner
+            if (banner) {
+                banner.className = `bg-blue-50 border-l-4 ${json.is_archive ? 'border-amber-400' : 'border-blue-500'} p-3 rounded-md`;
+                banner.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="h-4 w-4 ${json.is_archive ? 'text-amber-500' : 'text-blue-500'} mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <div>
+                            <p class="text-xs font-semibold ${json.is_archive ? 'text-amber-900' : 'text-blue-900'}">${json.is_archive ? 'Archived Quarter' : 'Last 90 Days'}</p>
+                            <p class="text-xs ${json.is_archive ? 'text-amber-700' : 'text-blue-700'}">${json.quarter_text}</p>
+                        </div>
+                    </div>`;
+            }
+
+            // Update roles list
+            if (rolesList) {
+                if (json.roles.length === 0) {
+                    rolesList.innerHTML = '<p class="text-center text-gray-400 text-sm py-8">No roles found for this period.</p>';
+                } else {
+                    rolesList.innerHTML = '<div class="space-y-3">' +
+                        json.roles.map(role => `
+                            <div class="role-card border border-slate-200 rounded-lg overflow-hidden hover:border-blue-400 transition cursor-pointer"
+                                 onclick="toggleRoleDetails(${role.submission_id}, ${role.index})">
+                                <div class="p-3 bg-white hover:bg-slate-50 transition">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <p class="font-bold text-sm text-slate-800">${role.job_title}</p>
+                                            <p class="text-xs text-gray-400 mt-1">Vacancy Duration: ${role.vacancy_duration}</p>
+                                        </div>
+                                        <svg class="expand-icon w-4 h-4 text-slate-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="role-details hidden" id="role-details-${role.submission_id}-${role.index}">
+                                    <div class="border-t border-slate-200 bg-slate-50 p-4">
+                                        <div class="space-y-3 text-sm">
+                                            <div>
+                                                <span class="font-medium text-slate-600">Classification:</span>
+                                                <p class="text-slate-800">${role.classification}</p>
+                                            </div>
+                                            ${role.difficulty_reasons.length ? `
+                                            <div>
+                                                <span class="font-medium text-slate-600">Difficulty Reasons:</span>
+                                                <ul class="list-disc list-inside mt-1 text-slate-700 text-xs">
+                                                    ${role.difficulty_reasons.map(r => `<li>${r}</li>`).join('')}
+                                                </ul>
+                                            </div>` : ''}
+                                            ${role.tech_skills.length ? `
+                                            <div>
+                                                <span class="font-medium text-slate-600">Technical Skills Missing:</span>
+                                                <div class="flex flex-wrap gap-1 mt-1">
+                                                    ${role.tech_skills.map(s => `<span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">${s}</span>`).join('')}
+                                                </div>
+                                            </div>` : ''}
+                                            ${role.soft_skills.length ? `
+                                            <div>
+                                                <span class="font-medium text-slate-600">Soft Skills Missing:</span>
+                                                <div class="flex flex-wrap gap-1 mt-1">
+                                                    ${role.soft_skills.map(s => `<span class="px-2 py-0.5 bg-pink-100 text-pink-700 rounded text-xs">${s}</span>`).join('')}
+                                                </div>
+                                            </div>` : ''}
+                                            <div class="pt-2 border-t">
+                                                <p class="text-xs text-slate-500"><strong>Sector:</strong> ${role.sector}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`
+                        ).join('') + '</div>';
+                }
+            }
+
+            // Badge
+            const isArchive = json.is_archive;
+            badge.style.display = isArchive ? 'flex' : 'none';
+            if (label) label.textContent = isArchive ? `Viewing archived: ${json.archive_label}` : '';
+
+        } catch (e) {
+            console.error('Hard-to-fill update failed:', e);
+        }
+
+        spinner.style.display = 'none';
+    }
+})();
+</script>
+
+<script>
+(function () {
+    const MONTH_SHORT = ['','Jan','Feb','Mar','Apr','May','Jun',
+                         'Jul','Aug','Sep','Oct','Nov','Dec'];
+    const MONTH_FULL  = ['','January','February','March','April','May','June',
+                         'July','August','September','October','November','December'];
+
+    // Server-rendered fallback; overwritten by fresh API fetch on boot
+    let matrixDateOptions = @json($matrix_date_options ?? []);
+
+    // Pending selections (inside open panel, not yet applied)
+    let pendingYears  = [];
+    let pendingMonths = [];
+    let pendingMode   = 'range'; // 'range' | 'exact'
+
+    // Last applied selections (used for trigger label after Apply)
+    let appliedYears  = [];
+    let appliedMonths = [];
+    let appliedMode   = 'range';
+
+    /* ════════════════════════════════════════
+       BOOT
+    ════════════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', async function () {
+
+        // Fetch fresh date options
+        try {
+            const res  = await fetch('/api/job-market/matrix-date-options');
+            const json = await res.json();
+            if (json.options && json.options.length) matrixDateOptions = json.options;
+        } catch (e) {
+            console.warn('Matrix date options fetch failed, using server fallback.');
+        }
+
+        buildYearChips();
+
+        // Close panel when clicking outside wrapper
+        document.addEventListener('click', function (e) {
+            const wrapper = document.getElementById('matrixFilterWrapper');
+            if (wrapper && !wrapper.contains(e.target)) mfpClose();
+        });
+    });
+
+    /* ════════════════════════════════════════
+       BUILD YEAR CHIPS
+    ════════════════════════════════════════ */
+    function buildYearChips() {
+        const container = document.getElementById('mfpYearChips');
+        const yearHint  = document.getElementById('mfpYearHint');
+        if (!container) return;
+        container.innerHTML = '';
+
+        // Update year hint based on mode
+        if (yearHint) {
+            yearHint.textContent = pendingMode === 'range'
+                ? 'select From & To'
+                : 'pick any years';
+        }
+
+        const years = [...new Set(matrixDateOptions.map(o => String(o.year)))]
+            .sort((a, b) => Number(b) - Number(a));
+
+        if (!years.length) {
+            container.innerHTML = '<span class="mfp-chip mfp-disabled mfp-placeholder">No data available</span>';
+            return;
+        }
+
+        years.forEach(yr => {
+            const btn = document.createElement('button');
+            btn.type        = 'button';
+            btn.className   = 'mfp-chip' + (pendingYears.includes(yr) ? ' mfp-selected' : '');
+            btn.textContent = yr;
+            btn.dataset.val = yr;
+            btn.onclick     = () => toggleYear(btn, yr);
+            container.appendChild(btn);
+        });
+    }
+
+    /* ════════════════════════════════════════
+       BUILD MONTH CHIPS
+    ════════════════════════════════════════ */
+    function buildMonthChips() {
+        const container = document.getElementById('mfpMonthChips');
+        const hint      = document.getElementById('mfpMonthHint');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (!pendingYears.length) {
+            if (hint) hint.textContent = 'select a year first';
+            container.innerHTML = '<span class="mfp-chip mfp-placeholder">Select a year to see months</span>';
+            return;
+        }
+
+        // In Range mode, expand pendingYears to cover all years in between
+        // e.g. [2025, 2028] → [2025, 2026, 2027, 2028] so months from middle years show up
+        let yearsForMonths;
+        if (pendingMode === 'range' && pendingYears.length === 2) {
+            const minY = Math.min(...pendingYears.map(Number));
+            const maxY = Math.max(...pendingYears.map(Number));
+            yearsForMonths = [];
+            for (let y = minY; y <= maxY; y++) yearsForMonths.push(String(y));
+        } else {
+            yearsForMonths = pendingYears.slice();
+        }
+
+        // Months available for the full year range
+        const available = new Set(
+            matrixDateOptions
+                .filter(o => yearsForMonths.includes(String(o.year)))
+                .map(o => o.month)
+        );
+
+        if (hint) hint.textContent = pendingMode === 'range'
+            ? 'select From & To month (optional)'
+            : 'pick any specific months';
+
+        // Always show all 12 slots; disable those with no data
+        for (let m = 1; m <= 12; m++) {
+            const btn = document.createElement('button');
+            btn.type        = 'button';
+            btn.dataset.val = String(m);
+
+            if (available.has(m)) {
+                btn.className   = 'mfp-chip' + (pendingMonths.includes(String(m)) ? ' mfp-selected' : '');
+                btn.textContent = MONTH_SHORT[m];
+                btn.onclick     = () => toggleMonth(btn, String(m));
+            } else {
+                btn.className   = 'mfp-chip mfp-disabled';
+                btn.textContent = MONTH_SHORT[m];
+            }
+            container.appendChild(btn);
+        }
+    }
+
+    /* ════════════════════════════════════════
+       TOGGLE HELPERS
+    ════════════════════════════════════════ */
+    function toggleYear(btn, yr) {
+        if (pendingYears.includes(yr)) {
+            pendingYears = pendingYears.filter(y => y !== yr);
+            btn.classList.remove('mfp-selected');
+        } else {
+            // Range mode: max 2 (From → To). Exact mode: unlimited picks.
+            if (pendingMode === 'range' && pendingYears.length >= 2) {
+                const evicted = pendingYears.shift();
+                document.querySelector(`#mfpYearChips [data-val="${evicted}"]`)
+                    ?.classList.remove('mfp-selected');
+            }
+            pendingYears.push(yr);
+            btn.classList.add('mfp-selected');
+        }
+        // Reset months when year selection changes
+        pendingMonths = [];
+        buildMonthChips();
+    }
+
+    function toggleMonth(btn, m) {
+        if (pendingMonths.includes(m)) {
+            pendingMonths = pendingMonths.filter(x => x !== m);
+            btn.classList.remove('mfp-selected');
+        } else {
+            // Range mode: max 2 (From → To). Exact mode: unlimited picks.
+            if (pendingMode === 'range' && pendingMonths.length >= 2) {
+                const evicted = pendingMonths.shift();
+                document.querySelector(`#mfpMonthChips [data-val="${evicted}"]`)
+                    ?.classList.remove('mfp-selected');
+            }
+            pendingMonths.push(m);
+            btn.classList.add('mfp-selected');
+        }
+    }
+
+    /* ════════════════════════════════════════
+       MODE TOGGLE (Range vs Exact)
+    ════════════════════════════════════════ */
+    window.mfpSetMode = function (mode) {
+        pendingMode = mode;
+        document.getElementById('mfpModeRange')?.classList.toggle('mfp-mode-active', mode === 'range');
+        document.getElementById('mfpModeExact')?.classList.toggle('mfp-mode-active', mode === 'exact');
+        const hint = document.getElementById('mfpModeHint');
+        if (hint) {
+            hint.innerHTML = mode === 'range'
+                ? 'Select <strong>From</strong> &amp; <strong>To</strong> year — all years &amp; months in between will be included'
+                : 'Select up to <strong>2 specific years</strong> — then pick <strong>any months</strong> you want';
+        }
+        // Clear year/month selections when switching so the user starts fresh
+        pendingYears  = [];
+        pendingMonths = [];
+        buildYearChips();
+        buildMonthChips();
+    };
+    window.mfpToggle = function () {
+        const panel = document.getElementById('matrixFilterPanel');
+        if (panel.classList.contains('mfp-open')) {
+            mfpClose();
+        } else {
+            // Sync pending selections from last applied state when reopening
+            pendingYears  = appliedYears.slice();
+            pendingMonths = appliedMonths.slice();
+            pendingMode   = appliedMode;
+            document.getElementById('mfpModeRange')?.classList.toggle('mfp-mode-active', pendingMode === 'range');
+            document.getElementById('mfpModeExact')?.classList.toggle('mfp-mode-active', pendingMode === 'exact');
+            const modeHint = document.getElementById('mfpModeHint');
+            if (modeHint) {
+                modeHint.innerHTML = pendingMode === 'range'
+                    ? 'Select <strong>From</strong> &amp; <strong>To</strong> year — all years &amp; months in between will be included'
+                    : 'Select up to <strong>2 specific years</strong> — then pick <strong>any months</strong> you want';
+            }
+            buildYearChips();
+            buildMonthChips();
+            panel.classList.add('mfp-open');
+            document.getElementById('matrixFilterTrigger').classList.add('mft-open');
+        }
+    };
+
+    function mfpClose() {
+        document.getElementById('matrixFilterPanel')?.classList.remove('mfp-open');
+        document.getElementById('matrixFilterTrigger')?.classList.remove('mft-open');
+    }
+
+    /* ════════════════════════════════════════
+       APPLY
+    ════════════════════════════════════════ */
+    window.mfpApply = async function () {
+        if (!pendingYears.length) {
+            mfpReset();
+            return;
+        }
+        appliedYears  = pendingYears.slice();
+        appliedMonths = pendingMonths.slice();
+        appliedMode   = pendingMode;
+        mfpClose();
+        updateTriggerLabel();
+        await matrixFetch(appliedYears, appliedMonths);
+    };
+
+    /* ════════════════════════════════════════
+       RESET
+    ════════════════════════════════════════ */
+    window.mfpReset = function () {
+        pendingYears  = [];
+        pendingMonths = [];
+        appliedYears  = [];
+        appliedMonths = [];
+        pendingMode   = 'range';
+        appliedMode   = 'range';
+        mfpClose();
+        updateTriggerLabel();
+        window.matrixResultsData = window.matrixResultsDataOriginal.slice();
+        matrixApplyToAlpine(false, false, '', window.matrixResultsDataOriginal.slice());
+    };
+
+    /* ════════════════════════════════════════
+       TRIGGER LABEL
+    ════════════════════════════════════════ */
+    function updateTriggerLabel() {
+        const trigger = document.getElementById('matrixFilterTrigger');
+        const text    = document.getElementById('mfpTriggerText');
+        if (!text) return;
+
+        if (!appliedYears.length) {
+            text.textContent = 'Filter by Period';
+            trigger.classList.remove('mft-active');
+        } else {
+            const yLabel = (appliedMode === 'range' && appliedYears.length === 2)
+                ? (() => { const mn = Math.min(...appliedYears.map(Number)), mx = Math.max(...appliedYears.map(Number)); return mn === mx ? String(mn) : `${mn} – ${mx}`; })()
+                : appliedYears.join(' & ');
+            const mLabel = appliedMonths.length === 0
+                ? 'All Months'
+                : (appliedMode === 'range' && appliedMonths.length === 2)
+                    ? (() => {
+                        const mn = Math.min(...appliedMonths.map(Number)), mx = Math.max(...appliedMonths.map(Number));
+                        return mn === mx ? MONTH_SHORT[mn] : `${MONTH_SHORT[mn]} – ${MONTH_SHORT[mx]}`;
+                    })()
+                    : appliedMonths.map(m => MONTH_SHORT[Number(m)]).join(' & ');
+            text.textContent = `${yLabel} — ${mLabel}`;
+            trigger.classList.add('mft-active');
+        }
+    }
+
+    /* ════════════════════════════════════════
+       CORE FETCH
+    ════════════════════════════════════════ */
+    async function matrixFetch(years, months) {
+        const spinner = document.getElementById('matrixSpinner');
+        if (spinner) spinner.style.display = 'inline-block';
+
+        try {
+            const params = new URLSearchParams();
+
+            // Range mode: expand e.g. [2026, 2028] → [2026, 2027, 2028]
+            // Exact mode: send only the selected years as-is
+            let yearsToFetch;
+            if (appliedMode === 'range' && years.length === 2) {
+                const minY = Math.min(...years.map(Number));
+                const maxY = Math.max(...years.map(Number));
+                yearsToFetch = [];
+                for (let y = minY; y <= maxY; y++) yearsToFetch.push(String(y));
+            } else {
+                yearsToFetch = years.slice();
+            }
+            yearsToFetch.forEach(y => params.append('years[]', y));
+
+            // Range mode: expand months e.g. [3, 10] → [3,4,5,6,7,8,9,10]
+            // Exact mode: send the selected months as-is
+            let monthsToFetch;
+            if (appliedMode === 'range' && months.length === 2) {
+                const minM = Math.min(...months.map(Number));
+                const maxM = Math.max(...months.map(Number));
+                monthsToFetch = [];
+                for (let m = minM; m <= maxM; m++) monthsToFetch.push(String(m));
+            } else {
+                monthsToFetch = months.slice();
+            }
+            monthsToFetch.forEach(m => params.append('months[]', m));
+
+            const res  = await fetch(`/api/job-market/matrix-data?${params}`);
+            const json = await res.json();
+
+            const formatted = (json.results || []).map(r => ({
+                ...r,
+                salary_range: typeof formatSalaryRange === 'function'
+                    ? formatSalaryRange(r.salary_range)
+                    : r.salary_range,
+            }));
+
+            window.matrixResultsData = formatted;
+
+            const yLabel = (appliedMode === 'range' && years.length === 2)
+                ? (() => { const mn = Math.min(...years.map(Number)), mx = Math.max(...years.map(Number)); return mn === mx ? String(mn) : `${mn} – ${mx}`; })()
+                : years.join(' & ');
+            // Range mode badge: "Jan – Dec", Exact mode: "Jan & Dec"
+            const mLabel = months.length === 0
+                ? 'All Months'
+                : (appliedMode === 'range' && months.length === 2)
+                    ? (() => {
+                        const mn = Math.min(...months.map(Number)), mx = Math.max(...months.map(Number));
+                        return mn === mx ? MONTH_FULL[mn] : `${MONTH_FULL[mn]} – ${MONTH_FULL[mx]}`;
+                    })()
+                    : months.map(m => MONTH_FULL[Number(m)]).join(' & ');
+
+            matrixApplyToAlpine(true, true, `${yLabel} — ${mLabel}`, formatted);
+
+        } catch (e) {
+            console.error('Matrix filter fetch failed:', e);
+        }
+
+        if (spinner) spinner.style.display = 'none';
+    }
+
+    /* ════════════════════════════════════════
+       PUSH INTO ALPINE
+    ════════════════════════════════════════ */
+    function matrixApplyToAlpine(filterActive, showAll, badgeText, data) {
+        const scrollArea = document.getElementById('matrixScrollArea');
+        if (scrollArea) scrollArea.style.maxHeight = showAll ? '85vh' : '600px';
+
+        const badge = document.getElementById('matrixFilterBadge');
+        if (badge) {
+            badge.textContent = badgeText ? `Filtered: ${badgeText}` : '';
+            badge.classList.toggle('hidden', !badgeText);
+        }
+
+        const alpineRoot = document.querySelector('#matrixScrollArea')?.closest('[x-data]');
+        if (alpineRoot) {
+            alpineRoot.dispatchEvent(new CustomEvent('matrix-filter-update', {
+                bubbles: false,
+                detail: { tableData: data, filterActive, showAll }
+            }));
+        }
+
+        if (filterActive && scrollArea) {
+            setTimeout(() => scrollArea.scrollTo({ top: 0, behavior: 'smooth' }), 120);
+        }
+    }
+})();
+</script>
 </html>

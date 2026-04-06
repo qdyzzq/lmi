@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logoIcon/dole_logo.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.8/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -350,11 +351,15 @@
                                 class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition disabled:opacity-40">
                                 Reset
                             </button>
-                            <button @click="confirmBeforeSave()" :disabled="!isUnlocked || saving || hasValidationErrors()"
-                                class="text-xs px-4 py-1.5 rounded-lg font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed"
-                                :class="isUnlocked && !hasValidationErrors() ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'">
-                                <span x-text="saving ? 'Saving...' : '<svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Save & Publish'"></span>
-                            </button>
+                            <button @click="confirmBeforeSave()" 
+                            :disabled="!isUnlocked || saving || hasValidationErrors()"
+                            class="text-xs px-4 py-1.5 rounded-lg font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed"
+                            :class="isUnlocked && !hasValidationErrors() ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'">
+                            <span x-html="saving 
+                                ? 'Saving...' 
+                                : '<svg class=\'w-3.5 h-3.5 inline-block\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4\'/></svg> Save &amp; Publish'">
+                            </span>
+                        </button>
                         </div>
                     </div>
 
@@ -603,82 +608,46 @@
                         <div class="flex items-center gap-2 mb-3">
                             <span x-html="iconFor(key)"></span>
                             <p class="font-semibold text-slate-800 text-sm" x-text="labelFor(key)"></p>
-                            <!-- Badge: 3-way, edited, unchanged -->
-                            <template x-if="originalSubmittedTemplates[key] && currentlyPublishedTemplates[key] && originalSubmittedTemplates[key] !== templates[key]">
-                                <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">3-Way Diff</span>
-                            </template>
-                            <template x-if="originalSubmittedTemplates[key] && originalSubmittedTemplates[key] !== templates[key] && !(currentlyPublishedTemplates[key])">
-                                <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">Modified</span>
+                            <!-- Badge: edited or unchanged -->
+                            <template x-if="originalSubmittedTemplates[key] && originalSubmittedTemplates[key] !== templates[key]">
+                                <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">✏ Edited</span>
                             </template>
                             <template x-if="!originalSubmittedTemplates[key] || originalSubmittedTemplates[key] === templates[key]">
                                 <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">No changes</span>
                             </template>
                         </div>
 
-                        <!-- Scenario 1a: Draft loaded + live exists + statistician edited → 3 columns -->
-                        <template x-if="originalSubmittedTemplates[key] && currentlyPublishedTemplates[key] && originalSubmittedTemplates[key] !== templates[key]">
+                        <!-- Edited: show Admin Submitted + Your Edit side by side -->
+                        <template x-if="originalSubmittedTemplates[key] && originalSubmittedTemplates[key] !== templates[key]">
                             <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <div class="h-px flex-1 bg-slate-200"></div>
-                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">3-Way Comparison</p>
-                                    <div class="h-px flex-1 bg-slate-200"></div>
-                                </div>
-                                <div class="grid grid-cols-3 gap-3">
-                                    <div>
-                                        <p class="text-xs font-bold text-green-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 mr-1"></span> Currently Live</p>
-                                        <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-xs font-mono text-green-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="currentlyPublishedTemplates[key]"></div>
-                                    </div>
+                                <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <p class="text-xs font-bold text-amber-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 mr-1"></span> Admin Submitted</p>
                                         <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs font-mono text-amber-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="originalSubmittedTemplates[key]"></div>
                                     </div>
                                     <div>
-                                        <p class="text-xs font-bold text-blue-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 mr-1"></span> Your Edit</p>
+                                        <p class="text-xs font-bold text-blue-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 mr-1"></span> Your Edit <span class="text-slate-400 font-normal">(will be published)</span></p>
                                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs font-mono text-blue-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="templates[key]"></div>
                                     </div>
                                 </div>
                                 <div class="mt-2 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 flex items-center gap-2">
                                     <span class="text-orange-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></span>
-                                    <p class="text-xs font-semibold text-orange-700">You've edited the admin draft — this will overwrite the currently live version.</p>
+                                    <p class="text-xs font-semibold text-orange-700">You've edited the admin draft — your version will be published.</p>
                                 </div>
                             </div>
                         </template>
 
-                        <!-- Scenario 1b: Draft loaded + live exists + NO changes → 2 columns (no redundant "Your Edit") -->
-                        <template x-if="originalSubmittedTemplates[key] && currentlyPublishedTemplates[key] && originalSubmittedTemplates[key] === templates[key]">
+                        <!-- Not edited: show Admin Submitted only -->
+                        <template x-if="originalSubmittedTemplates[key] && originalSubmittedTemplates[key] === templates[key]">
                             <div>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <p class="text-xs font-bold text-green-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 mr-1"></span> Currently Live</p>
-                                        <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-xs font-mono text-green-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="currentlyPublishedTemplates[key]"></div>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-bold text-amber-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 mr-1"></span> Admin Submitted <span class="text-slate-400 font-normal">(unchanged)</span></p>
-                                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs font-mono text-amber-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="originalSubmittedTemplates[key]"></div>
-                                    </div>
-                                </div>
-                                <div class="mt-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-center gap-2">
-                                    <span class="text-green-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
-                                    <p class="text-xs font-semibold text-green-700">Publishing admin's submission as-is — this will overwrite the currently live version.</p>
-                                </div>
-                            </div>
-                        </template>
-
-                        <!-- Scenario 2: Draft loaded + nothing published yet → 2 columns -->
-                        <template x-if="originalSubmittedTemplates[key] && !currentlyPublishedTemplates[key]">
-                            <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <p class="text-xs font-bold text-amber-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 mr-1"></span> Admin Submitted</p>
+                                    <p class="text-xs font-bold text-amber-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 mr-1"></span> Admin Submitted <span class="text-slate-400 font-normal">(will be published as-is)</span></p>
                                     <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs font-mono text-amber-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="originalSubmittedTemplates[key]"></div>
                                 </div>
-                                <div>
-                                    <p class="text-xs font-bold text-blue-700 mb-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 mr-1"></span> Your Edited Version</p>
-                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs font-mono text-blue-900 leading-relaxed whitespace-pre-wrap min-h-16" x-text="templates[key]"></div>
-                                </div>
                             </div>
                         </template>
 
-                        <!-- Scenario 3: No draft, single preview -->
+                        <!-- No draft at all: single preview -->
                         <template x-if="!originalSubmittedTemplates[key]">
                             <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-mono text-slate-700 leading-relaxed whitespace-pre-wrap" x-text="templates[key]"></div>
                         </template>
@@ -689,8 +658,15 @@
             </div><!-- end p-6 -->
             <div class="p-6 border-t border-gray-200 bg-gray-50 flex gap-3 sticky bottom-0">
                 <button @click="showSaveModal = false" class="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition">Cancel</button>
-                <button @click="confirmSave()" :disabled="saving" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg transition disabled:opacity-50">
-                    <span x-text="saving ? 'Saving...' : '<svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg> Save All Templates'"></span>
+                <button @click="confirmSave()" :disabled="saving" 
+                    class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg transition disabled:opacity-50">
+                    <span x-show="saving">Saving...</span>
+                    <span x-show="!saving" class="flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                        </svg>
+                        Save All Templates
+                    </span>
                 </button>
             </div>
         </div>

@@ -2,9 +2,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logoIcon/dole_logo.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.8/dist/cdn.min.js"></script>
     <title>LMI</title>
     <style>
         /* ---------- EDIT BUTTON IN HEADER ---------- */
@@ -193,6 +194,46 @@
         }
         .year-edited-banner.visible { display: flex; }
         .year-edited-banner svg { flex-shrink: 0; width: 20px; height: 20px; }
+
+        /* ---------- DELETE ROW BUTTON ---------- */
+        .btn-delete-row {
+            width: 30px;
+            height: 30px;
+            background: #fff0f0;
+            border: 1.5px solid #fecaca;
+            border-radius: 6px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #ef4444;
+            transition: background 0.15s, border-color 0.15s;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+        .btn-delete-row:hover { background: #fef2f2; border-color: #f87171; }
+        .edit-mode .btn-delete-row { display: flex; }
+
+        /* ---------- ADD ROW BUTTON ---------- */
+        .btn-add-row {
+            display: none;
+            width: 100%;
+            padding: 10px;
+            background: #f0fdf4;
+            border: 1.5px dashed #86efac;
+            border-radius: 10px;
+            color: #16a34a;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 12px;
+        }
+        .btn-add-row:hover { background: #dcfce7; border-color: #4ade80; }
+        .btn-add-row.visible { display: flex; }
     </style>
 </head>
 <body class="bg-slate-100 flex h-screen overflow-hidden" >
@@ -231,12 +272,20 @@
                                         <p class="text-sm opacity-75 mt-0.5">{{ $jobs->first()->created_at->format('M d, Y h:i A') }}</p>
                                     </div>
                                     <!-- EDIT TOGGLE BUTTON -->
-                                    <button class="btn-edit-mode" id="editBtn-{{ $year }}" onclick="toggleEditMode({{ $year }})">
-                                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M11.5 1.5l3 3L5.5 13H2.5v-3L11.5 1.5z"/>
-                                        </svg>
-                                        <span id="editBtnText-{{ $year }}">Edit</span>
-                                    </button>
+                                    <div class="flex items-center gap-2">
+                                        <button class="btn-edit-mode" id="cancelEditBtn-{{ $year }}" onclick="cancelEditMode({{ $year }})" style="display:none; background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.4);">
+                                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
+                                                <path d="M3 3l10 10M13 3L3 13"/>
+                                            </svg>
+                                            <span>Cancel</span>
+                                        </button>
+                                        <button class="btn-edit-mode" id="editBtn-{{ $year }}" onclick="toggleEditMode({{ $year }})">
+                                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M11.5 1.5l3 3L5.5 13H2.5v-3L11.5 1.5z"/>
+                                            </svg>
+                                            <span id="editBtnText-{{ $year }}">Edit</span>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- EDITED BANNER -->
@@ -255,9 +304,10 @@
                                             <tr>
                                                 <th class="text-left py-5 px-6 font-semibold text-gray-700 text-lg">Job Title</th>
                                                 <th class="text-right py-5 px-6 font-semibold text-gray-700 text-lg">Count</th>
+                                                <th class="w-12"></th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody id="tbody-{{ $year }}">
                                             @foreach($jobs->sortByDesc('count') as $job)
                                                 <tr class="border-b border-gray-100 editable-row" id="row-{{ $job->id }}">
                                                     <!-- TITLE CELL -->
@@ -285,7 +335,7 @@
                                                             <span class="edited-badge" id="count-badge-{{ $job->id }}">edited</span>
                                                         </div>
                                                         <div style="display:none;" id="count-edit-{{ $job->id }}" class="inline-actions justify-end">
-                                                            <input type="number" min="0" class="inline-input" id="count-input-{{ $job->id }}" value="{{ $job->count }}" style="width:160px;" onkeydown="handleKeydown(event, '{{ $job->id }}', 'count')">
+                                                            <input type="text" inputmode="numeric" class="inline-input" id="count-input-{{ $job->id }}" value="{{ number_format($job->count) }}" style="width:160px;" onkeydown="handleKeydown(event, '{{ $job->id }}', 'count')" oninput="formatCountInput(this)" onfocus="stripCommas(this)" onblur="reformatOnBlur(this)">
                                                             <button class="btn-save-inline" onclick="saveEdit('{{ $job->id }}', 'count')" title="Save">
                                                                 <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l3.5 3.5L12 4"/></svg>
                                                             </button>
@@ -294,21 +344,38 @@
                                                             </button>
                                                         </div>
                                                     </td>
+                                                    <!-- DELETE CELL -->
+                                                    <td class="py-5 px-2">
+                                                        <button class="btn-delete-row" onclick="deleteRow('{{ $job->id }}', {{ $year }})" title="Remove">
+                                                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                                            </svg>
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
                                         <tfoot class="border-t-2 border-gray-200 bg-gray-50">
                                             <tr>
                                                 <td class="py-5 px-6 font-bold text-lg">Total Entries</td>
-                                                <td class="py-5 px-6 text-right font-bold text-lg">{{ $jobs->count() }} jobs</td>
+                                                <td class="py-5 px-6 text-right font-bold text-lg" id="totalCount-{{ $year }}">{{ $jobs->count() }} jobs</td>
+                                                <td></td>
                                             </tr>
                                         </tfoot>
                                     </table>
+
+                                    <!-- Add Job Title button (only visible in edit mode) -->
+                                    <button class="btn-add-row" id="addRowBtn-{{ $year }}" onclick="addNewRow({{ $year }})">
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                                        </svg>
+                                        Add Job Title
+                                    </button>
                                 </div>
 
                                 <!-- FOOTER: Approve + Reject bottom-right -->
                                 <div class="card-footer">
-                                    <button class="btn-approve" onclick="showApproveModal({{ $year }})">
+                                    <button class="btn-approve" onclick="openApproveSummaryModal({{ $year }})">
                                         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8.5l3.5 3.5 7.5-7.5"/></svg>
                                         Approve
                                     </button>
@@ -325,37 +392,75 @@
         </div>
     </div>
 
-    <!-- APPROVE CONFIRMATION MODAL -->
-    <div id="approveConfirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
-        <!-- Blur Backdrop -->
-        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeApproveConfirmModal()"></div>
-        
-        <!-- Modal Content -->
-        <div class="relative bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all">
-            <div class="flex flex-col items-center text-center">
-                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    <!-- APPROVE SUMMARY MODAL -->
+    <div id="approveSummaryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeApproveSummaryModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4" style="max-height: 90vh; overflow-y: auto;">
+
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                    <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-2">Confirm Approval</h3>
-                <p class="text-sm text-slate-600 mb-6">
-                    Are you sure you want to approve all job titles for year <strong id="approveYear"></strong>? This action will move the data to the main database.
-                </p>
-                <div class="flex gap-3 w-full">
-                    <button 
-                        onclick="closeApproveConfirmModal()"
-                        class="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition font-medium"
-                    >
-                        Cancel
-                    </button>
-                    <button 
-                        onclick="confirmApprove()"
-                        class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
-                    >
-                        Yes, Approve
-                    </button>
+                <h3 class="text-xl font-bold text-gray-900 mb-1">Review Before Approving</h3>
+                <p class="text-sm text-gray-500">Please review the submission summary below before finalizing your approval.</p>
+            </div>
+
+            <!-- Summary preview -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 text-left">
+                <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-3">Submission Preview</p>
+
+                <!-- Meta -->
+                <div class="flex flex-wrap gap-3 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold text-slate-500">Year:</span>
+                        <span id="summaryModalYear" class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full"></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold text-slate-500">Submitted by:</span>
+                        <span id="summaryModalSubmitter" class="bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-1 rounded-full"></span>
+                    </div>
                 </div>
+
+                <!-- Jobs table -->
+                <div class="rounded-lg overflow-hidden border border-slate-200" style="max-height: 300px; overflow-y: auto;">
+                    <table class="w-full text-sm">
+                        <thead class="sticky top-0">
+                            <tr class="bg-slate-100">
+                                <th class="text-left px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">#</th>
+                                <th class="text-left px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Job Title</th>
+                                <th class="text-right px-3 py-2 text-[11px] font-semibold text-green-700 uppercase tracking-wide bg-green-50">Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryModalTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Stats strip -->
+                <div class="flex gap-3 mt-3">
+                    <div class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-center">
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Total Job Titles</p>
+                        <p id="summaryModalCount" class="text-lg font-bold text-slate-800"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-3">
+                <button 
+                    onclick="closeApproveSummaryModal()"
+                    class="flex-1 px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium border border-gray-300 rounded-lg transition"
+                >
+                    Cancel
+                </button>
+                <button 
+                    onclick="confirmApprove()"
+                    class="flex-1 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition"
+                >
+                    Confirm Approval
+                </button>
             </div>
         </div>
     </div>
@@ -554,20 +659,257 @@
         }
 
         // -------- TOGGLE EDIT MODE (highlights all rows) --------
+        // Snapshot: { jobId: { title, count } } taken when edit mode opens
+        const snapshots = {};
+
         function toggleEditMode(year) {
-            const card    = document.getElementById(`card-${year}`);
-            const btn     = document.getElementById(`editBtn-${year}`);
-            const btnText = document.getElementById(`editBtnText-${year}`);
-            const rows    = card.querySelectorAll('.editable-row');
+            const card      = document.getElementById(`card-${year}`);
+            const btn       = document.getElementById(`editBtn-${year}`);
+            const btnText   = document.getElementById(`editBtnText-${year}`);
+            const cancelBtn = document.getElementById(`cancelEditBtn-${year}`);
+            const addBtn    = document.getElementById(`addRowBtn-${year}`);
+
+            // If turning OFF edit mode, auto-save any unsaved new rows first
+            if (editModeActive[year]) {
+                const pendingNewRows = card.querySelectorAll('[id^="row-new-"]');
+                pendingNewRows.forEach(row => {
+                    const tempId = row.id.replace('row-', '');
+                    const titleInput = document.getElementById(`title-input-${tempId}`);
+                    const countInput = document.getElementById(`count-input-${tempId}`);
+                    if (titleInput && countInput && titleInput.value.trim() && countInput.value) {
+                        saveNewRow(tempId, year);
+                    } else if (row.parentNode) {
+                        row.remove();
+                    }
+                });
+                // Clear snapshot when done
+                delete snapshots[year];
+            } else {
+                // Turning ON — take a snapshot of current state
+                snapshots[year] = {};
+                card.querySelectorAll('.editable-row').forEach(row => {
+                    const id = row.id.replace('row-', '');
+                    const titleEl = document.getElementById(`title-text-${id}`);
+                    const countEl = document.getElementById(`count-text-${id}`);
+                    if (titleEl && countEl) {
+                        snapshots[year][id] = {
+                            title: titleEl.textContent.trim(),
+                            count: countEl.textContent.trim()
+                        };
+                    }
+                });
+            }
 
             editModeActive[year] = !editModeActive[year];
 
-            rows.forEach(row => {
-                row.classList.toggle('edit-mode', editModeActive[year]);
-            });
+            const rows = card.querySelectorAll('.editable-row');
+            rows.forEach(row => row.classList.toggle('edit-mode', editModeActive[year]));
 
             btn.classList.toggle('active', editModeActive[year]);
             btnText.textContent = editModeActive[year] ? 'Done' : 'Edit';
+            addBtn.classList.toggle('visible', editModeActive[year]);
+            cancelBtn.style.display = editModeActive[year] ? 'inline-flex' : 'none';
+        }
+
+        // -------- CANCEL EDIT MODE — revert all changes --------
+        function cancelEditMode(year) {
+            const card      = document.getElementById(`card-${year}`);
+            const btn       = document.getElementById(`editBtn-${year}`);
+            const btnText   = document.getElementById(`editBtnText-${year}`);
+            const cancelBtn = document.getElementById(`cancelEditBtn-${year}`);
+            const addBtn    = document.getElementById(`addRowBtn-${year}`);
+            const tbody     = document.getElementById(`tbody-${year}`);
+
+            const snap = snapshots[year] || {};
+
+            // Remove any newly added rows (they have tempIds starting with "new-")
+            tbody.querySelectorAll('[id^="row-new-"]').forEach(r => r.remove());
+
+            // Restore deleted rows and revert edits using snapshot
+            card.querySelectorAll('.editable-row').forEach(row => {
+                const id = row.id.replace('row-', '');
+                if (snap[id]) {
+                    // Restore title
+                    const titleEl = document.getElementById(`title-text-${id}`);
+                    if (titleEl) titleEl.textContent = snap[id].title;
+                    const titleInput = document.getElementById(`title-input-${id}`);
+                    if (titleInput) titleInput.value = snap[id].title;
+                    const titleBadge = document.getElementById(`title-badge-${id}`);
+                    if (titleBadge) titleBadge.style.display = 'none';
+
+                    // Restore count
+                    const countEl = document.getElementById(`count-text-${id}`);
+                    if (countEl) countEl.textContent = snap[id].count;
+                    const countInput = document.getElementById(`count-input-${id}`);
+                    if (countInput) countInput.value = snap[id].count.replace(/,/g, '');
+                    const countBadge = document.getElementById(`count-badge-${id}`);
+                    if (countBadge) countBadge.style.display = 'none';
+
+                    // Close any open inline editors
+                    const titleDisplay = document.getElementById(`title-display-${id}`);
+                    const titleEdit    = document.getElementById(`title-edit-${id}`);
+                    if (titleDisplay) titleDisplay.style.display = '';
+                    if (titleEdit)    titleEdit.style.display    = 'none';
+                    const countDisplay = document.getElementById(`count-display-${id}`);
+                    const countEdit    = document.getElementById(`count-edit-${id}`);
+                    if (countDisplay) countDisplay.style.display = '';
+                    if (countEdit)    countEdit.style.display    = 'none';
+                }
+                row.classList.remove('edit-mode');
+            });
+
+            // Clear edits tracking
+            Object.keys(edits).forEach(k => delete edits[k]);
+
+            // Hide the edited banner
+            document.getElementById(`banner-${year}`).classList.remove('visible');
+
+            // Update total count
+            updateTotalCount(year);
+
+            // Reset button state
+            editModeActive[year] = false;
+            btn.classList.remove('active');
+            btnText.textContent = 'Edit';
+            addBtn.classList.remove('visible');
+            cancelBtn.style.display = 'none';
+
+            delete snapshots[year];
+        }
+
+        // -------- DELETE ROW --------
+        function deleteRow(jobId, year) {
+            const row = document.getElementById(`row-${jobId}`);
+            if (!row) return;
+            row.remove();
+
+            // Track deletion (mark as deleted in edits)
+            if (!edits[jobId]) edits[jobId] = {};
+            edits[jobId]._delete = true;
+
+            updateTotalCount(year);
+            document.getElementById(`banner-${year}`).classList.add('visible');
+        }
+
+        // -------- ADD NEW ROW --------
+        let newRowCounter = 0;
+        function addNewRow(year) {
+            newRowCounter++;
+            const tempId = `new-${year}-${newRowCounter}`;
+            const tbody  = document.getElementById(`tbody-${year}`);
+
+            const tr = document.createElement('tr');
+            tr.className = 'border-b border-gray-100 editable-row edit-mode';
+            tr.id = `row-${tempId}`;
+            tr.innerHTML = `
+                <td class="py-4 px-6 text-lg">
+                    <div class="inline-actions" id="title-edit-${tempId}" style="display:flex;">
+                        <input type="text" class="inline-input" id="title-input-${tempId}"
+                               placeholder="e.g. Customer Service Rep"
+                               onkeydown="handleNewRowKeydown(event, '${tempId}', ${year})">
+                        <button class="btn-save-inline" onclick="saveNewRow('${tempId}', ${year})" title="Save">
+                            <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l3.5 3.5L12 4"/></svg>
+                        </button>
+                        <button class="btn-cancel-inline" onclick="cancelNewRow('${tempId}')" title="Cancel">
+                            <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>
+                        </button>
+                    </div>
+                </td>
+                <td class="py-4 px-6 text-right text-lg">
+                    <div class="inline-actions justify-end" id="count-edit-${tempId}" style="display:flex;">
+                        <input type="text" inputmode="numeric" class="inline-input" id="count-input-${tempId}"
+                               placeholder="e.g. 1,000" style="width:160px;"
+                               onkeydown="handleNewRowKeydown(event, '${tempId}', ${year})"
+                               oninput="formatCountInput(this)" onfocus="stripCommas(this)" onblur="reformatOnBlur(this)">
+                    </div>
+                </td>
+                <td class="py-4 px-2">
+                    <button class="btn-delete-row" style="display:flex;" onclick="cancelNewRow('${tempId}')" title="Remove">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            document.getElementById(`title-input-${tempId}`).focus();
+        }
+
+        function saveNewRow(tempId, year) {
+            const titleInput = document.getElementById(`title-input-${tempId}`);
+            const countInput = document.getElementById(`count-input-${tempId}`);
+
+            const title = titleInput.value.trim();
+            const count = parseInt(countInput.value.replace(/,/g, ''));
+
+            if (!title) { titleInput.classList.add('error'); titleInput.focus(); return; }
+            if (!countInput.value || isNaN(count) || count < 0) { countInput.classList.add('error'); countInput.focus(); return; }
+
+            // Replace the editing row with a proper display row
+            const row = document.getElementById(`row-${tempId}`);
+            row.innerHTML = `
+                <td class="py-5 px-6 text-lg">
+                    <div class="cell-editable edit-mode" id="title-display-${tempId}" onclick="startEdit('${tempId}', 'title')">
+                        <span id="title-text-${tempId}">${title}</span>
+                        <span class="edit-hint">click to edit</span>
+                        <span class="edited-badge" id="title-badge-${tempId}" style="display:inline-block;">new</span>
+                    </div>
+                    <div style="display:none;" id="title-edit-${tempId}" class="inline-actions">
+                        <input type="text" class="inline-input" id="title-input-${tempId}" value="${title}" onkeydown="handleKeydown(event, '${tempId}', 'title')">
+                        <button class="btn-save-inline" onclick="saveEdit('${tempId}', 'title')" title="Save">
+                            <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l3.5 3.5L12 4"/></svg>
+                        </button>
+                        <button class="btn-cancel-inline" onclick="cancelEdit('${tempId}', 'title')" title="Cancel">
+                            <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>
+                        </button>
+                    </div>
+                </td>
+                <td class="py-5 px-6 text-right text-lg">
+                    <div class="cell-editable flex justify-end items-center gap-2 edit-mode" id="count-display-${tempId}" onclick="startEdit('${tempId}', 'count')">
+                        <span class="edit-hint">click to edit</span>
+                        <span id="count-text-${tempId}" class="font-medium">${count.toLocaleString()}</span>
+                        <span class="edited-badge" id="count-badge-${tempId}">edited</span>
+                    </div>
+                    <div style="display:none;" id="count-edit-${tempId}" class="inline-actions justify-end">
+                        <input type="text" inputmode="numeric" class="inline-input" id="count-input-${tempId}" value="${count.toLocaleString()}" style="width:160px;" onkeydown="handleKeydown(event, '${tempId}', 'count')" oninput="formatCountInput(this)" onfocus="stripCommas(this)" onblur="reformatOnBlur(this)">
+                        <button class="btn-save-inline" onclick="saveEdit('${tempId}', 'count')" title="Save">
+                            <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l3.5 3.5L12 4"/></svg>
+                        </button>
+                        <button class="btn-cancel-inline" onclick="cancelEdit('${tempId}', 'count')" title="Cancel">
+                            <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>
+                        </button>
+                    </div>
+                </td>
+                <td class="py-5 px-2">
+                    <button class="btn-delete-row" onclick="deleteRow('${tempId}', ${year})" title="Remove">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </td>
+            `;
+
+            // Track as new entry
+            edits[tempId] = { _new: true, title, count };
+            updateTotalCount(year);
+            document.getElementById(`banner-${year}`).classList.add('visible');
+        }
+
+        function cancelNewRow(tempId) {
+            const row = document.getElementById(`row-${tempId}`);
+            if (row) row.remove();
+        }
+
+        function handleNewRowKeydown(event, tempId, year) {
+            if (event.key === 'Enter')  { event.preventDefault(); saveNewRow(tempId, year); }
+            if (event.key === 'Escape') { cancelNewRow(tempId); }
+        }
+
+        function updateTotalCount(year) {
+            const tbody = document.getElementById(`tbody-${year}`);
+            const count = tbody ? tbody.querySelectorAll('.editable-row').length : 0;
+            const el = document.getElementById(`totalCount-${year}`);
+            if (el) el.textContent = `${count} job${count !== 1 ? 's' : ''}`;
         }
 
         // -------- INLINE EDIT --------
@@ -593,7 +935,8 @@
             const input   = document.getElementById(`${field}-input-${jobId}`);
             const textEl  = document.getElementById(`${field}-text-${jobId}`);
 
-            input.value = textEl.textContent.replace(/,/g, '');
+            // Restore value — keep commas for display in the input when not focused
+            input.value = textEl.textContent.trim();
             input.classList.remove('error');
             display.style.display = '';
             editBox.style.display = 'none';
@@ -606,7 +949,7 @@
             const textEl  = document.getElementById(`${field}-text-${jobId}`);
             const badge   = document.getElementById(`${field}-badge-${jobId}`);
 
-            let newValue = input.value.trim();
+            let newValue = input.value.trim().replace(/,/g, ''); // strip commas before parsing
 
             // Validation
             if (field === 'title' && newValue === '') {
@@ -652,19 +995,66 @@
         }
 
         // -------- APPROVE MODALS --------
-        function showApproveModal(year) {
+
+        // Step 1 – Summary modal shown immediately when Approve is clicked
+        function openApproveSummaryModal(year) {
             selectedYear = year;
-            document.getElementById('approveYear').textContent = year;
-            document.getElementById('approveConfirmModal').classList.remove('hidden');
+
+            const card = document.getElementById(`card-${selectedYear}`);
+
+            // Year
+            document.getElementById('summaryModalYear').textContent = selectedYear;
+
+            // Submitter — grab from the card header paragraph
+            const submitterEl = card.querySelector('p.text-base.opacity-90');
+            const submitterText = submitterEl
+                ? submitterEl.textContent.replace('Submitted by:', '').trim()
+                : 'Unknown';
+            document.getElementById('summaryModalSubmitter').textContent = submitterText;
+
+            // Build table from live DOM (reflects any inline edits)
+            const tbody = document.getElementById('summaryModalTableBody');
+            tbody.innerHTML = '';
+            let total = 0;
+            const jobData = [];
+
+            card.querySelectorAll('.editable-row').forEach(row => {
+                const titleEl = row.querySelector('[id^="title-text-"]');
+                const countEl = row.querySelector('[id^="count-text-"]');
+                if (titleEl && countEl) {
+                    const title = titleEl.textContent.trim();
+                    const count = parseInt(countEl.textContent.replace(/,/g, '')) || 0;
+                    jobData.push({ title, count });
+                }
+            });
+
+            // Sort by count descending
+            jobData.sort((a, b) => b.count - a.count);
+
+            jobData.forEach((job, i) => {
+                total += job.count;
+                const tr = document.createElement('tr');
+                tr.className = i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60';
+                tr.innerHTML = `
+                    <td class="px-3 py-2 text-xs text-slate-400 font-semibold">${i + 1}</td>
+                    <td class="px-3 py-2 text-xs text-slate-700">${job.title}</td>
+                    <td class="px-3 py-2 text-xs font-bold text-green-700 text-right bg-green-50">${job.count.toLocaleString()}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('summaryModalCount').textContent = jobData.length;
+
+            document.getElementById('approveSummaryModal').classList.remove('hidden');
         }
 
-        function closeApproveConfirmModal() {
-    document.getElementById('approveConfirmModal').classList.add('hidden');
-    // Don't reset selectedYear yet, we need it for confirmApprove
-}
+        function closeApproveSummaryModal() {
+            document.getElementById('approveSummaryModal').classList.add('hidden');
+        }
 
+        // Step 2 – API call, then show success modal
         async function confirmApprove() {
-            closeApproveConfirmModal();
+            closeApproveSummaryModal();
 
             try {
                 const response = await fetch(`/statistician/job-titles/${selectedYear}/approve`, {
@@ -676,7 +1066,7 @@
                     body: JSON.stringify({ edits: edits })
                 });
                 const result = await response.json();
-                
+
                 if (result.success) {
                     document.getElementById('approveSuccessModal').classList.remove('hidden');
                 } else {
@@ -691,10 +1081,10 @@
         }
 
         function closeApproveSuccessModal() {
-    document.getElementById('approveSuccessModal').classList.add('hidden');
-    selectedYear = null; // Reset here instead
-    location.reload();
-}
+            document.getElementById('approveSuccessModal').classList.add('hidden');
+            selectedYear = null;
+            location.reload();
+        }
 
         // -------- REJECT MODALS --------
         function showRejectModal(year) {
@@ -743,6 +1133,19 @@
         // -------- ERROR MODAL --------
         function closeErrorModal() {
             document.getElementById('errorModal').classList.add('hidden');
+        }
+
+        // -------- COMMA FORMATTING FOR COUNT INPUTS --------
+        function formatCountInput(el) {
+            const raw = el.value.replace(/[^0-9]/g, '');
+            el.value = raw === '' ? '' : parseInt(raw).toLocaleString();
+        }
+        function stripCommas(el) {
+            el.value = el.value.replace(/,/g, '');
+        }
+        function reformatOnBlur(el) {
+            const raw = parseInt(el.value.replace(/[^0-9]/g, ''));
+            el.value = isNaN(raw) ? '' : raw.toLocaleString();
         }
     </script>
 

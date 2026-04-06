@@ -2,10 +2,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logoIcon/dole_logo.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>LMI Submissions - Admin Review</title>
     @vite('resources/css/app.css')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.8/dist/cdn.min.js"></script>
 </head>
 <body class="bg-slate-100 flex h-screen overflow-hidden" >
     @include('partials.sidebar')
@@ -359,21 +360,21 @@
                                 data-original="{{ $submission->industry_sector }}"
                                 data-label="Industry Sector"
                                 class="editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" disabled>
-                            <option value="Accommodation & Food Service" {{ $submission->industry_sector == 'Accommodation & Food Service' ? 'selected' : '' }}>Accommodation & Food Service (Hotels, Resorts, Restaurants, Fast Food Chains, Catering Services)</option>
-                            <option value="Administrative & Support Services" {{ $submission->industry_sector == 'Administrative & Support Services' ? 'selected' : '' }}>Administrative & Support Services (Security Agencies, Manpower/Recruitment Agencies, Call Centers, Travel Agencies, Janitorial Services)</option>
+                            <option value="Accommodation & Food Service (Hotels, Resorts, Restaurants, Fast Food Chains, Catering Services)" {{ $submission->industry_sector == 'Accommodation & Food Service (Hotels, Resorts, Restaurants, Fast Food Chains, Catering Services)' ? 'selected' : '' }}>Accommodation & Food Service (Hotels, Resorts, Restaurants, Fast Food Chains, Catering Services)</option>
+                            <option value="Administrative & Support Services (Security Agencies, Manpower/Recruitment Agencies, Call Centers, Travel Agencies, Janitorial Services)" {{ $submission->industry_sector == 'Administrative & Support Services (Security Agencies, Manpower/Recruitment Agencies, Call Centers, Travel Agencies, Janitorial Services)' ? 'selected' : '' }}>Administrative & Support Services (Security Agencies, Manpower/Recruitment Agencies, Call Centers, Travel Agencies, Janitorial Services)</option>
                             <option value="Agriculture, Forestry, Fishing & Mining" {{ $submission->industry_sector == 'Agriculture, Forestry, Fishing & Mining' ? 'selected' : '' }}>Agriculture, Forestry, Fishing & Mining</option>
                             <option value="Construction" {{ $submission->industry_sector == 'Construction' ? 'selected' : '' }}>Construction</option>
-                            <option value="Education" {{ $submission->industry_sector == 'Education' ? 'selected' : '' }}>Education (Private Schools, Colleges, Universities, Training Centers)</option>
-                            <option value="Electricity, Gas, Water & Waste Management" {{ $submission->industry_sector == 'Electricity, Gas, Water & Waste Management' ? 'selected' : '' }}>Electricity, Gas, Water & Waste Management (Power Plants, Electric Co-ops, Water Districts, Garbage/Recycling Firms)</option>
-                            <option value="Financial & Insurance Activities" {{ $submission->industry_sector == 'Financial & Insurance Activities' ? 'selected' : '' }}>Financial & Insurance Activities (Banks, Pawnshops, Lending Investors, Insurance Companies)</option>
-                            <option value="Human Health & Social Work" {{ $submission->industry_sector == 'Human Health & Social Work' ? 'selected' : '' }}>Human Health & Social Work (Hospital, Medical Clinics, Diagnostic Labs, Nursing Homes)</option>
-                            <option value="Information & Communication" {{ $submission->industry_sector == 'Information & Communication' ? 'selected' : '' }}>Information & Communication (Software Companies, ISPs, Telecoms, TV/Radio Stations, Non-Voice Tech BPO)</option>
+                            <option value="Education (Private Schools, Colleges, Universities, Training Centers)" {{ $submission->industry_sector == 'Education (Private Schools, Colleges, Universities, Training Centers)' ? 'selected' : '' }}>Education (Private Schools, Colleges, Universities, Training Centers)</option>
+                            <option value="Electricity, Gas, Water & Waste Management (Power Plants, Electric Co-ops, Water Districts, Garbage/Recycling Firms)" {{ $submission->industry_sector == 'Electricity, Gas, Water & Waste Management (Power Plants, Electric Co-ops, Water Districts, Garbage/Recycling Firms)' ? 'selected' : '' }}>Electricity, Gas, Water & Waste Management (Power Plants, Electric Co-ops, Water Districts, Garbage/Recycling Firms)</option>
+                            <option value="Financial & Insurance Activities (Banks, Pawnshops, Lending Investors, Insurance Companies)" {{ $submission->industry_sector == 'Financial & Insurance Activities (Banks, Pawnshops, Lending Investors, Insurance Companies)' ? 'selected' : '' }}>Financial & Insurance Activities (Banks, Pawnshops, Lending Investors, Insurance Companies)</option>
+                            <option value="Human Health & Social Work (Hospital, Medical Clinics, Diagnostic Labs, Nursing Homes)" {{ $submission->industry_sector == 'Human Health & Social Work (Hospital, Medical Clinics, Diagnostic Labs, Nursing Homes)' ? 'selected' : '' }}>Human Health & Social Work (Hospital, Medical Clinics, Diagnostic Labs, Nursing Homes)</option>
+                            <option value="Information & Communication (Software Companies, ISPs, Telecoms, TV/Radio Stations, Non-Voice Tech BPO)" {{ $submission->industry_sector == 'Information & Communication (Software Companies, ISPs, Telecoms, TV/Radio Stations, Non-Voice Tech BPO)' ? 'selected' : '' }}>Information & Communication (Software Companies, ISPs, Telecoms, TV/Radio Stations, Non-Voice Tech BPO)</option>
                             <option value="Manufacturing" {{ $submission->industry_sector == 'Manufacturing' ? 'selected' : '' }}>Manufacturing</option>
-                            <option value="Other Service Activities" {{ $submission->industry_sector == 'Other Service Activities' ? 'selected' : '' }}>Other Service Activities (Repairs Shops, Beauty Salons, Spas, Laundry Shops, Funeral)</option>
-                            <option value="Professional, Scientific & Technical Services" {{ $submission->industry_sector == 'Professional, Scientific & Technical Services' ? 'selected' : '' }}>Professional, Scientific & Technical Services (Law Firms, Accounting/Auditing Firms, Engineering/Architectural Firms, Advertising Agencies)</option>
-                            <option value="Real Estate Activities" {{ $submission->industry_sector == 'Real Estate Activities' ? 'selected' : '' }}>Real Estate Activities (Real Estate Developers, Lessor of Apartment/Office Space)</option>
-                            <option value="Transportation, Storage & Logistics" {{ $submission->industry_sector == 'Transportation, Storage & Logistics' ? 'selected' : '' }}>Transportation, Storage & Logistics (Trucking/Hauling Services, Warehousing, Shipping Lines, Courier Services)</option>
-                            <option value="Wholesale & Retail Trade" {{ $submission->industry_sector == 'Wholesale & Retail Trade' ? 'selected' : '' }}>Wholesale & Retail Trade (Trading Companies, Malls, Hardware Stores, Car Dealers, Online Shops, etc.)</option>
+                            <option value="Other Service Activities (Repairs Shops, Beauty Salons, Spas, Laundry Shops, Funeral)" {{ $submission->industry_sector == 'Other Service Activities (Repairs Shops, Beauty Salons, Spas, Laundry Shops, Funeral)' ? 'selected' : '' }}>Other Service Activities (Repairs Shops, Beauty Salons, Spas, Laundry Shops, Funeral)</option>
+                            <option value="Professional, Scientific & Technical Services (Law Firms, Accounting/Auditing Firms, Engineering/Architectural Firms, Advertising Agencies)" {{ $submission->industry_sector == 'Professional, Scientific & Technical Services (Law Firms, Accounting/Auditing Firms, Engineering/Architectural Firms, Advertising Agencies)' ? 'selected' : '' }}>Professional, Scientific & Technical Services (Law Firms, Accounting/Auditing Firms, Engineering/Architectural Firms, Advertising Agencies)</option>
+                            <option value="Real Estate Activities (Real Estate Developers, Lessor of Apartment/Office Space)" {{ $submission->industry_sector == 'Real Estate Activities (Real Estate Developers, Lessor of Apartment/Office Space)' ? 'selected' : '' }}>Real Estate Activities (Real Estate Developers, Lessor of Apartment/Office Space)</option>
+                            <option value="Transportation, Storage & Logistics (Trucking/Hauling Services, Warehousing, Shipping Lines, Courier Services)" {{ $submission->industry_sector == 'Transportation, Storage & Logistics (Trucking/Hauling Services, Warehousing, Shipping Lines, Courier Services)' ? 'selected' : '' }}>Transportation, Storage & Logistics (Trucking/Hauling Services, Warehousing, Shipping Lines, Courier Services)</option>
+                            <option value="Wholesale & Retail Trade (Trading Companies, Malls, Hardware Stores, Car Dealers, Online Shops, etc.)" {{ $submission->industry_sector == 'Wholesale & Retail Trade (Trading Companies, Malls, Hardware Stores, Car Dealers, Online Shops, etc.)' ? 'selected' : '' }}>Wholesale & Retail Trade (Trading Companies, Malls, Hardware Stores, Car Dealers, Online Shops, etc.)</option>
                         </select>
                     </td>
                 </tr>
@@ -395,12 +396,30 @@
         </table>
         
     </form>
+
+    @if($submission->status === 'pending')
+    <div id="tab-review-bar-company-{{ $submission->id }}"
+         class="tab-review-bar flex items-center justify-between px-6 py-3 border-t border-slate-100 bg-slate-50">
+        <span class="text-xs text-slate-500 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Confirm you have reviewed this tab.
+        </span>
+        <button type="button"
+                id="tab-review-btn-company-{{ $submission->id }}"
+                onclick="markTabReviewed('company', {{ $submission->id }})"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all
+                       bg-white border-slate-300 text-slate-600 hover:border-teal-500 hover:text-teal-700 hover:bg-teal-50">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Mark as Reviewed
+        </button>
+    </div>
+    @endif
 </div>
 
  <!-- Hard-to-Fill Roles Tab (Continues from previous) -->
 <div class="tab-content" id="roles-{{ $submission->id }}">
     <div class="roles-tab-scroll">
-    <form id="form-roles-{{ $submission->id }}" action="{{ route('admin.lmi-submissions.update-roles', $submission->id) }}" method="POST">
+    <form id="form-roles-{{ $submission->id }}" action="{{ route('admin.lmi-submissions.update-roles', $submission->id) }}" method="POST" onsubmit="return handleFormSubmit(event, this, 'roles')">
         @csrf
         @method('PUT')
         
@@ -552,7 +571,8 @@
                                                     <input type="hidden"
                                                            class="technical-skills-input-{{ $index }}"
                                                            name="roles[{{ $index }}][technical_skills_missing]"
-                                                           value="{{ implode(', ', array_filter(array_map('trim', $techSkills))) }}">
+                                                           value="{{ implode(', ', array_filter(array_map('trim', $techSkills))) }}"
+                                                           data-original="{{ implode(', ', array_filter(array_map('trim', $techSkills))) }}">
                                                 </div>
                                             </div>
                                         </label>
@@ -593,7 +613,8 @@
                                                     <input type="hidden"
                                                            class="soft-skills-input-{{ $index }}"
                                                            name="roles[{{ $index }}][soft_skills_missing]"
-                                                           value="{{ implode(', ', array_filter(array_map('trim', $softSkills))) }}">
+                                                           value="{{ implode(', ', array_filter(array_map('trim', $softSkills))) }}"
+                                                           data-original="{{ implode(', ', array_filter(array_map('trim', $softSkills))) }}">
                                                 </div>
                                             </div>
                                         </label>
@@ -628,6 +649,24 @@
         
     </form>
     </div><!-- end .roles-tab-scroll -->
+
+    @if($submission->status === 'pending')
+    <div id="tab-review-bar-roles-{{ $submission->id }}"
+         class="tab-review-bar flex items-center justify-between px-6 py-3 border-t border-slate-100 bg-slate-50">
+        <span class="text-xs text-slate-500 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Confirm you have reviewed this tab.
+        </span>
+        <button type="button"
+                id="tab-review-btn-roles-{{ $submission->id }}"
+                onclick="markTabReviewed('roles', {{ $submission->id }})"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all
+                       bg-white border-slate-300 text-slate-600 hover:border-teal-500 hover:text-teal-700 hover:bg-teal-50">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Mark as Reviewed
+        </button>
+    </div>
+    @endif
 </div>
 
 <!-- Diagnosis Tab -->
@@ -637,7 +676,7 @@
     @endphp
     
     @if($firstDiagnosis)
-        <form id="form-diagnosis-{{ $submission->id }}" action="{{ route('admin.lmi-submissions.update-diagnosis', $submission->id) }}" method="POST">
+        <form id="form-diagnosis-{{ $submission->id }}" action="{{ route('admin.lmi-submissions.update-diagnosis', $submission->id) }}" method="POST" onsubmit="return handleFormSubmit(event, this, 'diagnosis')">
             @csrf
             @method('PUT')
             
@@ -711,12 +750,30 @@
             No diagnosis data available
         </div>
     @endif
+
+    @if($submission->status === 'pending')
+    <div id="tab-review-bar-impact-{{ $submission->id }}"
+         class="tab-review-bar flex items-center justify-between px-6 py-3 border-t border-slate-100 bg-slate-50">
+        <span class="text-xs text-slate-500 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Confirm you have reviewed this tab.
+        </span>
+        <button type="button"
+                id="tab-review-btn-impact-{{ $submission->id }}"
+                onclick="markTabReviewed('impact', {{ $submission->id }})"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all
+                       bg-white border-slate-300 text-slate-600 hover:border-teal-500 hover:text-teal-700 hover:bg-teal-50">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Mark as Reviewed
+        </button>
+    </div>
+    @endif
 </div>
 
 <!-- Engagement Tab -->
 <div class="tab-content" id="engagement-{{ $submission->id }}">
     @if($submission->engagement)
-        <form id="form-engagement-{{ $submission->id }}" action="{{ route('admin.lmi-submissions.update-engagement', $submission->id) }}" method="POST">
+        <form id="form-engagement-{{ $submission->id }}" action="{{ route('admin.lmi-submissions.update-engagement', $submission->id) }}" method="POST" onsubmit="return handleFormSubmit(event, this, 'engagement')">
             @csrf
             @method('PUT')
             
@@ -796,25 +853,50 @@
             No engagement data available
         </div>
     @endif
+
+    @if($submission->status === 'pending')
+    <div id="tab-review-bar-engagement-{{ $submission->id }}"
+         class="tab-review-bar flex items-center justify-between px-6 py-3 border-t border-slate-100 bg-slate-50">
+        <span class="text-xs text-slate-500 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Confirm you have reviewed this tab.
+        </span>
+        <button type="button"
+                id="tab-review-btn-engagement-{{ $submission->id }}"
+                onclick="markTabReviewed('engagement', {{ $submission->id }})"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all
+                       bg-white border-slate-300 text-slate-600 hover:border-teal-500 hover:text-teal-700 hover:bg-teal-50">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Mark as Reviewed
+        </button>
+    </div>
+    @endif
 </div>
 
                 </div><!-- end .tab-scroll-body -->
 
                 <!-- Action Buttons (only for pending submissions) -->
                 @if($submission->status === 'pending')
-                    <div class="px-6 py-4 bg-gradient-to-r from-slate-50 to-blue-50/30 border-t border-slate-200 flex justify-end gap-3">
-                        <button 
-                            type="button"
-                            onclick="showRejectModal({{ $submission->id }}, '{{ $submission->company_name }}')"
-                            class="px-5 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 font-semibold flex items-center gap-2 shadow-sm hover:shadow-md transition-all text-sm">
-                            <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> Reject
-                        </button>
-                        <button 
-                            type="button"
-                            onclick="showApproveModal({{ $submission->id }}, '{{ $submission->company_name }}')"
-                            class="px-5 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 font-semibold flex items-center gap-2 shadow-sm hover:shadow-md transition-all text-sm">
-                            <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Approve
-                        </button>
+                    <div class="px-6 py-4 bg-gradient-to-r from-slate-50 to-blue-50/30 border-t border-slate-200 flex items-center justify-between gap-3">
+                        <!-- Checklist progress hint -->
+                        <div id="checklist-progress-{{ $submission->id }}" class="flex items-center gap-2 text-xs text-slate-500">
+                            <svg class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                            <span id="checklist-progress-text-{{ $submission->id }}">Review all tabs before approving</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <button
+                                type="button"
+                                onclick="showRejectModal({{ $submission->id }}, '{{ $submission->company_name }}')"
+                                class="px-5 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 font-semibold flex items-center gap-2 shadow-sm hover:shadow-md transition-all text-sm">
+                                <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> Reject
+                            </button>
+                            <button
+                                type="button"
+                                onclick="openChecklistModal({{ $submission->id }}, '{{ $submission->company_name }}')"
+                                class="px-5 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 font-semibold flex items-center gap-2 shadow-sm hover:shadow-md transition-all text-sm">
+                                <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Approve
+                            </button>
+                        </div>
                     </div>
                 @elseif($submission->status === 'rejected')
                     <div class="px-6 py-4 bg-gradient-to-r from-slate-50 to-orange-50/30 border-t border-slate-200 flex justify-end gap-3">
@@ -879,6 +961,131 @@
 </main>
     </div>
 
+<!-- ═══════════════════════════════════════════════════
+     REVIEW CHECKLIST MODAL
+     Opens when Approve is clicked. Shows read-only status
+     of each tab. Approve is locked until all 4 are reviewed.
+     ═══════════════════════════════════════════════════ -->
+<div id="checklistModal" class="hidden fixed inset-0 backdrop-blur-sm bg-black/40 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden" style="animation:slideIn .25s ease-out">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-amber-500 to-orange-500 p-5 flex items-center gap-4">
+            <div class="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-white leading-tight">Tab Review Checklist</h3>
+                <p class="text-amber-100 text-xs mt-0.5">All tabs must be reviewed before you can approve.</p>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="p-5 space-y-3">
+
+            <!-- Company being approved -->
+            <div id="cl-company-banner" class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16M3 21h18M9 21V9m6 12V9m-3-6v3"/></svg>
+                </div>
+                <div>
+                    <p class="text-xs text-green-600 font-semibold uppercase tracking-wide leading-tight">Company</p>
+                    <p class="text-sm font-bold text-green-900 leading-tight" id="cl-company-name"></p>
+                </div>
+            </div>
+
+            <!-- Warning: not all done -->
+            <div id="cl-warning" class="hidden bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-2">
+                <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <p class="text-xs text-red-700 font-medium">Some tabs are not yet reviewed. Use the <strong>"Mark as Reviewed"</strong> button at the bottom of each tab first.</p>
+            </div>
+
+            <!-- All done -->
+            <div id="cl-alldone" class="hidden bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex items-start gap-2">
+                <svg class="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <p class="text-xs text-green-700 font-medium">All tabs reviewed — you may now approve this submission.</p>
+            </div>
+
+            <!-- Status rows (read-only) -->
+            <ul class="space-y-2">
+                <li id="cl-row-company"  class="cl-row flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" data-tab="company">
+                    <span id="cl-dot-company"  class="cl-dot w-6 h-6 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-xs font-bold flex-shrink-0">✕</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-slate-800">Company Profile</p>
+                        <p class="text-xs text-slate-500">Company info, contact, industry sector</p>
+                    </div>
+                    <span id="cl-label-company"  class="text-xs font-semibold text-slate-400 whitespace-nowrap">Not reviewed</span>
+                </li>
+                <li id="cl-row-roles"    class="cl-row flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" data-tab="roles">
+                    <span id="cl-dot-roles"    class="cl-dot w-6 h-6 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-xs font-bold flex-shrink-0">✕</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-slate-800">Hard-to-Fill Roles</p>
+                        <p class="text-xs text-slate-500">Job entries, salary, difficulty reasons</p>
+                    </div>
+                    <span id="cl-label-roles"    class="text-xs font-semibold text-slate-400 whitespace-nowrap">Not reviewed</span>
+                </li>
+                <li id="cl-row-impact"   class="cl-row flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" data-tab="impact">
+                    <span id="cl-dot-impact"   class="cl-dot w-6 h-6 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-xs font-bold flex-shrink-0">✕</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-slate-800">Diagnosis of Mismatch</p>
+                        <p class="text-xs text-slate-500">Skills gap, mismatch factors, impact</p>
+                    </div>
+                    <span id="cl-label-impact"   class="text-xs font-semibold text-slate-400 whitespace-nowrap">Not reviewed</span>
+                </li>
+                <li id="cl-row-engagement" class="cl-row flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" data-tab="engagement">
+                    <span id="cl-dot-engagement" class="cl-dot w-6 h-6 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-xs font-bold flex-shrink-0">✕</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-slate-800">Engagement & Next Steps</p>
+                        <p class="text-xs text-slate-500">Recommendations, inputs, follow-up</p>
+                    </div>
+                    <span id="cl-label-engagement" class="text-xs font-semibold text-slate-400 whitespace-nowrap">Not reviewed</span>
+                </li>
+            </ul>
+
+            <!-- Progress bar -->
+            <div class="pt-1">
+                <div class="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>Progress</span>
+                    <span id="cl-count">0 / 4 reviewed</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2">
+                    <div id="cl-bar" class="h-2 rounded-full transition-all duration-400 bg-amber-400" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-slate-50 border-t border-slate-200 px-5 py-4 flex gap-3 justify-end">
+            <button type="button" onclick="closeChecklistModal()"
+                    class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl transition-all text-sm">
+                Cancel
+            </button>
+            <button type="button" id="cl-approve-btn"
+                    onclick="proceedToApprove()"
+                    disabled
+                    class="px-5 py-2.5 font-semibold rounded-xl transition-all text-sm flex items-center gap-2 bg-slate-200 text-slate-400 cursor-not-allowed">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Approve Submission
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ── Tab review bars ── */
+.tab-review-bar { transition: background .2s, border-color .2s; }
+.tab-review-bar.is-reviewed {
+    background: #f0fdf4;
+    border-top-color: #bbf7d0;
+}
+/* ── Checklist rows ── */
+.cl-row { transition: background .2s, border-color .2s; }
+.cl-row.is-done { background:#f0fdf4; border-color:#86efac; }
+.cl-dot.is-done  { background:#22c55e; color:#fff; }
+</style>
+
 <!-- Approve Confirmation Modal -->
 <div id="approveModal" class="hidden fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-[slideIn_0.3s_ease-out]">
@@ -892,9 +1099,9 @@
         </div>
         
         <div class="p-6">
-            <div class="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
-                <p class="text-sm text-green-700 font-medium mb-1">Company</p>
-                <p class="text-lg font-bold text-green-900" id="approveCompanyName"></p>
+            <div class="mb-4 bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm">
+                <p class="text-xs text-green-600 font-semibold uppercase tracking-wide mb-1">Company</p>
+                <p class="text-xl font-bold text-green-900" id="approveCompanyName"></p>
             </div>
             
             <p class="text-gray-600 mb-6 text-center">
@@ -1422,13 +1629,50 @@ function toggleEdit(button) {
     const editControls = form.querySelector('.contact-edit-controls');
     if (viewDisplay)  viewDisplay.classList.add('hidden');
     if (editControls) editControls.classList.remove('hidden');
+
+    // Strip dial code from mobile input NOW (field was disabled at DOMContentLoaded
+    // so the pre-populate script could not read/modify its value then).
+    form.querySelectorAll('.admin-mobile-field').forEach(mobileInput => {
+        const wrapper = mobileInput.closest('[id^="admin-mobile-wrapper-"]');
+        if (wrapper && wrapper.classList.contains('hidden')) return; // inactive type
+        const subId    = mobileInput.id.replace('admin-mobile-input-', '');
+        const rawValue = mobileInput.value.trim();
+        const sortedCountries = [...ADMIN_COUNTRIES].sort((a, b) => b.dial.length - a.dial.length);
+        const matched = sortedCountries.find(c => rawValue.startsWith(c.dial));
+        if (matched) {
+            const bareDigits = rawValue.slice(matched.dial.length);
+            mobileInput.value = bareDigits;
+            mobileInput.dataset.original = bareDigits;
+            // Update the dial code span & flag to match
+            const dialSpan = document.getElementById('admin-country-dial-' + subId);
+            const flagSpan = document.getElementById('admin-country-flag-' + subId);
+            if (dialSpan) dialSpan.textContent = matched.dial;
+            if (flagSpan) flagSpan.textContent = matched.flag;
+            adminSelectedCountry[subId] = matched;
+        } else {
+            // No dial code found — value is already bare digits, just sync data-original
+            mobileInput.dataset.original = rawValue;
+        }
+    });
 }
 
 function cancelEdit(button) {
     const card = _getCard(button);
     const form = _getForm(button, 'form-company-');
+    // Restore all fields to their data-original values so the next edit
+    // session starts clean. form.reset() is NOT used because it restores
+    // to the HTML value attribute, which may differ from data-original
+    // (e.g. mobile field was already stripped to bare digits).
+    form.querySelectorAll('[data-original]').forEach(f => {
+        if (f.type === 'checkbox' || f.type === 'radio') return;
+        f.value = f.dataset.original ?? f.defaultValue;
+    });
+
+    // Restore checkboxes and radios to their original checked state
+    form.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(cb => {
+        cb.checked = cb.defaultChecked;
+    });
     form.querySelectorAll('.editable-field').forEach(f => f.disabled = true);
-    form.reset();
     card.querySelector('.edit-btn').classList.remove('hidden');
     card.querySelector('.save-btn').classList.add('hidden');
     card.querySelector('.cancel-btn').classList.add('hidden');
@@ -1590,10 +1834,81 @@ function toggleRolesEdit(button) {
 function cancelRolesEdit(button) {
     const card = _getCard(button);
     const form = _getForm(button, 'form-roles-');
+
+    // 1. Restore plain text/select fields from data-original
+    form.querySelectorAll('[data-original]').forEach(f => {
+        if (f.type === 'checkbox' || f.type === 'radio') return; // handled below
+        f.value = f.dataset.original ?? f.defaultValue;
+    });
+
+    // 2. Restore checkboxes & radios to their original checked state
+    form.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(cb => {
+        cb.checked = cb.defaultChecked;
+    });
+
+    // 3. Re-render skill tag chips from data-original on the hidden inputs,
+    //    and show/hide the details section to match the restored checkbox state.
+    const allClasses = [...form.querySelectorAll('[class]')].flatMap(el => [...el.classList]);
+    const indices = new Set(
+        allClasses.map(c => c.match(/^technical-tags-container-(\d+)$/))
+                  .filter(Boolean).map(m => m[1])
+    );
+
+    indices.forEach(i => {
+        // Technical
+        const techHidden    = form.querySelector(`.technical-skills-input-${i}`);
+        const techContainer = form.querySelector(`.technical-tags-container-${i}`);
+        const techCheckbox  = form.querySelector(`.technical-checkbox-${i}`);
+        const techDetails   = form.querySelector(`.technical-details-${i}`);
+        const techLabel     = form.querySelector(`.technical-skills-label-${i}`);
+        if (techHidden && techContainer) {
+            const originalSkills = (techHidden.dataset.original || '').split(',').map(s => s.trim()).filter(Boolean);
+            techContainer.innerHTML = originalSkills.map(skill => `
+                <span class="inline-flex items-center gap-1 px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm" data-tag="${skill}">
+                    <span>${skill}</span>
+                    <button type="button" class="remove-tag hover:bg-teal-200 rounded-full p-0.5">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </span>`).join('');
+        }
+        if (techDetails && techCheckbox) {
+            techCheckbox.checked ? techDetails.classList.remove('hidden') : techDetails.classList.add('hidden');
+        }
+        if (techLabel && techCheckbox) {
+            techCheckbox.checked
+                ? (techLabel.classList.add('border-teal-500','bg-teal-50'), techLabel.classList.remove('border-gray-200','hover:bg-gray-50'))
+                : (techLabel.classList.remove('border-teal-500','bg-teal-50'), techLabel.classList.add('border-gray-200','hover:bg-gray-50'));
+        }
+
+        // Soft
+        const softHidden    = form.querySelector(`.soft-skills-input-${i}`);
+        const softContainer = form.querySelector(`.soft-tags-container-${i}`);
+        const softCheckbox  = form.querySelector(`.soft-checkbox-${i}`);
+        const softDetails   = form.querySelector(`.soft-details-${i}`);
+        const softLabel     = form.querySelector(`.soft-skills-label-${i}`);
+        if (softHidden && softContainer) {
+            const originalSkills = (softHidden.dataset.original || '').split(',').map(s => s.trim()).filter(Boolean);
+            softContainer.innerHTML = originalSkills.map(skill => `
+                <span class="inline-flex items-center gap-1 px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm" data-tag="${skill}">
+                    <span>${skill}</span>
+                    <button type="button" class="remove-tag hover:bg-teal-200 rounded-full p-0.5">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </span>`).join('');
+        }
+        if (softDetails && softCheckbox) {
+            softCheckbox.checked ? softDetails.classList.remove('hidden') : softDetails.classList.add('hidden');
+        }
+        if (softLabel && softCheckbox) {
+            softCheckbox.checked
+                ? (softLabel.classList.add('border-teal-500','bg-teal-50'), softLabel.classList.remove('border-gray-200','hover:bg-gray-50'))
+                : (softLabel.classList.remove('border-teal-500','bg-teal-50'), softLabel.classList.add('border-gray-200','hover:bg-gray-50'));
+        }
+    });
+
     form.querySelectorAll('.role-editable-field').forEach(f => f.disabled = true);
     form.querySelectorAll('[class*="technical-skill-input-"], [class*="soft-skill-input-"]').forEach(el => el.disabled = true);
     form.querySelectorAll('[class*="add-technical-skill-"], [class*="add-soft-skill-"]').forEach(el => el.disabled = true);
-    form.reset();
 
     card.querySelector('.edit-roles-btn').classList.remove('hidden');
     card.querySelector('.save-roles-btn').classList.add('hidden');
@@ -1613,8 +1928,20 @@ function toggleDiagnosisEdit(button) {
 function cancelDiagnosisEdit(button) {
     const card = _getCard(button);
     const form = _getForm(button, 'form-diagnosis-');
+    // Restore all fields to their data-original values so the next edit
+    // session starts clean. form.reset() is NOT used because it restores
+    // to the HTML value attribute, which may differ from data-original
+    // (e.g. mobile field was already stripped to bare digits).
+    form.querySelectorAll('[data-original]').forEach(f => {
+        if (f.type === 'checkbox' || f.type === 'radio') return;
+        f.value = f.dataset.original ?? f.defaultValue;
+    });
+
+    // Restore checkboxes and radios to their original checked state
+    form.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(cb => {
+        cb.checked = cb.defaultChecked;
+    });
     form.querySelectorAll('.diagnosis-editable-field').forEach(f => f.disabled = true);
-    form.reset();
     card.querySelector('.edit-diagnosis-btn').classList.remove('hidden');
     card.querySelector('.save-diagnosis-btn').classList.add('hidden');
     card.querySelector('.cancel-diagnosis-btn').classList.add('hidden');
@@ -1641,9 +1968,22 @@ function toggleEngagementEdit(button) {
 function cancelEngagementEdit(button) {
     const card = _getCard(button);
     const form = _getForm(button, 'form-engagement-');
-    form.querySelectorAll('.engagement-editable-field').forEach(f => f.disabled = true);
-    form.reset();
+    // Restore all fields to their data-original values so the next edit
+    // session starts clean. form.reset() is NOT used because it restores
+    // to the HTML value attribute, which may differ from data-original
+    // (e.g. mobile field was already stripped to bare digits).
+    form.querySelectorAll('[data-original]').forEach(f => {
+        if (f.type === 'checkbox' || f.type === 'radio') return;
+        f.value = f.dataset.original ?? f.defaultValue;
+    });
 
+    // Restore checkboxes and radios to their original checked state
+    form.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(cb => {
+        cb.checked = cb.defaultChecked;
+    });
+    form.querySelectorAll('.engagement-editable-field').forEach(f => f.disabled = true);
+
+    // Re-evaluate other input visibility after checkbox restore
     const otherCheckbox = form.querySelector('.admin-lmi-other-checkbox');
     const otherInput = form.querySelector('.admin-lmi-other-input');
     if (otherCheckbox && otherInput) {
@@ -1669,15 +2009,46 @@ function handleFormSubmit(event, form, formType) {
     const fields = form.querySelectorAll('[data-original]');
     
     fields.forEach(field => {
+        // SKIP fields inside a hidden wrapper — the mobile/telephone inputs both
+        // carry data-original but only one wrapper is visible at a time.
+        // We check the wrapper instead of field.disabled because toggleEdit()
+        // re-enables ALL editable-fields including the inactive contact type.
+        const contactWrapper = field.closest('[id^="admin-mobile-wrapper-"], [id^="admin-telephone-wrapper-"]');
+        if (contactWrapper && contactWrapper.classList.contains('hidden')) return;
+
         const originalValue = field.getAttribute('data-original');
-        const currentValue = field.value;
-        const label = field.getAttribute('data-label');
-        
+        const label         = field.getAttribute('data-label');
+
+        // FIX 1: Contact Number (mobile)
+        // data-original now stores bare digits (dial code stripped server-side in Blade).
+        // field.value also holds bare digits (DOMContentLoaded pre-populate strips it).
+        // Comparison is digits vs digits — no stripping needed here.
+        // displayNew reassembles dial + bare so the modal shows the full number.
+        let currentValue = field.value;
+        let displayNew   = field.value;
+
+        if (field.classList.contains('admin-mobile-field')) {
+            const subId    = field.id.replace('admin-mobile-input-', '');
+            const dialSpan = document.getElementById('admin-country-dial-' + subId);
+            const dial     = dialSpan ? dialSpan.textContent.trim() : '+63';
+            const bare     = field.value.trim();
+            currentValue   = bare; // stays as bare digits for comparison against data-original
+            displayNew     = bare ? dial + bare : ''; // full number shown in the modal
+        }
+
+        // FIX 2: Industry Sector / any <select>
+        // field.value is the stored option value. Use the visible option text
+        // in the modal so users see the full label instead of the short key.
+        if (field.tagName === 'SELECT') {
+            displayNew = field.options[field.selectedIndex]?.text ?? currentValue;
+        }
+
         if (originalValue !== currentValue) {
             detectedChanges.push({
                 label: label,
-                old: originalValue,
-                new: currentValue
+                old:   originalValue,
+                new:   displayNew,
+                value: currentValue
             });
         }
     });
@@ -1751,12 +2122,34 @@ function closeEditChangesModal() {
 
 function confirmEditChanges() {
     if (!currentForm) return;
+
+    // Capture form reference BEFORE closeEditChangesModal()
+    // because that function sets currentForm = null.
+    const form = currentForm;
     closeEditChangesModal();
 
-    const form = currentForm;
     const url    = form.action;
     const method = (form.querySelector('input[name="_method"]')?.value || form.method).toUpperCase();
     const fd     = new FormData(form);
+
+    // FIX 3: Explicitly set the assembled contact number in FormData.
+    // The form has TWO inputs named "contact_number" (mobile + telephone),
+    // so modifying the DOM value is not enough — FormData picks up both and
+    // the server receives the last (empty) one. fd.set() replaces both entries
+    // with the single correct full number, only for the company form.
+    if (form.id && form.id.startsWith('form-company-')) {
+        const mobileWrapper = form.querySelector('[id^="admin-mobile-wrapper-"]');
+        if (mobileWrapper && !mobileWrapper.classList.contains('hidden')) {
+            const mobileInput = mobileWrapper.querySelector('.admin-mobile-field');
+            if (mobileInput) {
+                const subId    = mobileInput.id.replace('admin-mobile-input-', '');
+                const dialSpan = document.getElementById('admin-country-dial-' + subId);
+                const dial     = dialSpan ? dialSpan.textContent.trim() : '+63';
+                const bare     = mobileInput.value.trim();
+                if (bare) fd.set('contact_number', dial + bare);
+            }
+        }
+    }
 
     // Show a saving indicator
     const saveBtn = form.closest('.admin-review-card')?.querySelector('.save-btn, .save-roles-btn, .save-diagnosis-btn, .save-engagement-btn');
@@ -1802,6 +2195,156 @@ function confirmEditChanges() {
         showToast('Network error. Please check your connection.', 'error');
     });
 }
+
+// ═══════════════════════════════════════════════════════
+// TAB REVIEW CHECKLIST SYSTEM
+// ═══════════════════════════════════════════════════════
+const _CL_TABS = ['company','roles','impact','engagement'];
+const _clReviewed = { company:false, roles:false, impact:false, engagement:false };
+let _clSubId   = null;
+let _clCompany = null;
+
+/**
+ * Called from the "Mark as Reviewed" button at the bottom of each tab.
+ * Clicking again will toggle it back to unreviewed.
+ */
+function markTabReviewed(tabKey, submissionId) {
+    const isCurrentlyReviewed = _clReviewed[tabKey];
+    _clReviewed[tabKey] = !isCurrentlyReviewed;
+    if (!_clSubId) _clSubId = submissionId;
+
+    const bar = document.getElementById('tab-review-bar-' + tabKey + '-' + submissionId);
+    const btn = document.getElementById('tab-review-btn-' + tabKey + '-' + submissionId);
+
+    if (_clReviewed[tabKey]) {
+        // Mark as reviewed
+        if (bar) bar.classList.add('is-reviewed');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Reviewed — click to undo`;
+            btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all bg-green-100 border-green-400 text-green-700 hover:bg-red-50 hover:border-red-300 hover:text-red-600';
+        }
+        showToast('Tab marked as reviewed.', 'success');
+    } else {
+        // Unmark
+        if (bar) bar.classList.remove('is-reviewed');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Mark as Reviewed`;
+            btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all bg-white border-slate-300 text-slate-600 hover:border-teal-500 hover:text-teal-700 hover:bg-teal-50';
+        }
+        showToast('Tab unmarked as reviewed.', 'info');
+    }
+
+    // Update footer progress hint
+    _updateProgressHint(submissionId);
+
+    // If checklist modal is open, refresh its state
+    if (!document.getElementById('checklistModal').classList.contains('hidden')) {
+        _renderChecklistModal();
+    }
+}
+
+/** Updates the footer "x / 4 tabs reviewed" hint. */
+function _updateProgressHint(submissionId) {
+    const done = _CL_TABS.filter(t => _clReviewed[t]).length;
+    const el   = document.getElementById('checklist-progress-text-' + submissionId);
+    if (!el) return;
+    if (done === 4) {
+        el.textContent = 'All tabs reviewed — ready to approve';
+        el.classList.add('text-green-600', 'font-semibold');
+        el.classList.remove('text-slate-500');
+        const icon = el.previousElementSibling;
+        if (icon) { icon.classList.remove('text-amber-500'); icon.classList.add('text-green-500'); }
+    } else {
+        el.textContent = done + ' / 4 tabs reviewed';
+    }
+}
+
+/**
+ * Opens the checklist modal when Approve is clicked.
+ */
+function openChecklistModal(submissionId, companyName) {
+    _clSubId   = submissionId;
+    _clCompany = companyName;
+
+    // Set company name in the checklist modal banner
+    const clName = document.getElementById('cl-company-name');
+    if (clName) clName.textContent = companyName;
+
+    // Sync state from DOM (in case tabs were already marked)
+    _CL_TABS.forEach(tab => {
+        const bar = document.getElementById('tab-review-bar-' + tab + '-' + submissionId);
+        if (bar && bar.classList.contains('is-reviewed')) _clReviewed[tab] = true;
+        else _clReviewed[tab] = false;
+    });
+
+    _renderChecklistModal();
+    document.getElementById('checklistModal').classList.remove('hidden');
+}
+
+/** Re-renders all checklist rows + progress bar + button state. */
+function _renderChecklistModal() {
+    let doneCount = 0;
+    _CL_TABS.forEach(tab => {
+        const done  = _clReviewed[tab];
+        const row   = document.getElementById('cl-row-' + tab);
+        const dot   = document.getElementById('cl-dot-' + tab);
+        const label = document.getElementById('cl-label-' + tab);
+        if (done) {
+            doneCount++;
+            row?.classList.add('is-done');
+            if (dot)   { dot.textContent = '✓'; dot.classList.add('is-done'); }
+            if (label) { label.textContent = 'Reviewed ✓'; label.className = 'text-xs font-semibold text-green-600 whitespace-nowrap'; }
+        } else {
+            row?.classList.remove('is-done');
+            if (dot)   { dot.textContent = '✕'; dot.classList.remove('is-done'); }
+            if (label) { label.textContent = 'Not reviewed'; label.className = 'text-xs font-semibold text-slate-400 whitespace-nowrap'; }
+        }
+    });
+
+    const pct  = Math.round(doneCount / 4 * 100);
+    const bar  = document.getElementById('cl-bar');
+    const cnt  = document.getElementById('cl-count');
+    const approveBtn = document.getElementById('cl-approve-btn');
+    const allDone    = doneCount === 4;
+
+    if (bar) {
+        bar.style.width = pct + '%';
+        bar.className   = 'h-2 rounded-full transition-all duration-400 ' + (allDone ? 'bg-green-500' : 'bg-amber-400');
+    }
+    if (cnt) cnt.textContent = doneCount + ' / 4 reviewed';
+
+    document.getElementById('cl-warning')?.classList.toggle('hidden', allDone);
+    document.getElementById('cl-alldone')?.classList.toggle('hidden', !allDone);
+
+    if (approveBtn) {
+        approveBtn.disabled = !allDone;
+        if (allDone) {
+            approveBtn.className = 'px-5 py-2.5 font-semibold rounded-xl transition-all text-sm flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg';
+        } else {
+            approveBtn.className = 'px-5 py-2.5 font-semibold rounded-xl transition-all text-sm flex items-center gap-2 bg-slate-200 text-slate-400 cursor-not-allowed';
+        }
+    }
+}
+
+function closeChecklistModal() {
+    document.getElementById('checklistModal').classList.add('hidden');
+}
+
+/**
+ * Called when "Approve Submission" is clicked inside the checklist modal
+ * (only possible when all 4 tabs are reviewed). Directly submits the approval.
+ */
+function proceedToApprove() {
+    if (!_CL_TABS.every(t => _clReviewed[t])) return;
+    closeChecklistModal();
+    // Directly submit — no second modal needed, company name already shown in checklist
+    const form = document.getElementById('approveForm');
+    form.action = `/admin/lmi-submissions/${_clSubId}/approve`;
+    form.submit();
+}
+// ═══════════════════════════════════════════════════════
 
 function showApproveModal(submissionId, companyName) {
     currentSubmissionId = submissionId;
@@ -1962,21 +2505,42 @@ function closeSuccessModal() {
 // Intercept pagination link clicks so we swap just the card+pagination
 // without a full page reload — no more scroll jump to the bottom.
 
+// Use a module-level flag so the listener is only ever attached ONCE,
+// and an AbortController so rapid clicks cancel the previous in-flight request.
+let _paginationListenerAttached = false;
+let _paginationAbortController  = null;
+
 function initAjaxPagination() {
+    // Guard: only attach the delegated listener once, even after innerHTML swaps
+    if (_paginationListenerAttached) return;
+
     const container = document.getElementById('submission-ajax-container');
     if (!container) return;
 
-    // Use event delegation — works after content is swapped too
-    container.addEventListener('click', function (e) {
+    // Use event delegation on the document so it survives innerHTML swaps
+    document.addEventListener('click', function (e) {
+        const container = document.getElementById('submission-ajax-container');
+        if (!container) return;
+
         const link = e.target.closest('a[href]');
         if (!link || !container.contains(link)) return;
+
         e.preventDefault();
         loadSubmissionPage(link.href);
     });
+
+    _paginationListenerAttached = true;
 }
 
 function loadSubmissionPage(url) {
     const container = document.getElementById('submission-ajax-container');
+    if (!container) return;
+
+    // Cancel any previous in-flight request before starting a new one
+    if (_paginationAbortController) {
+        _paginationAbortController.abort();
+    }
+    _paginationAbortController = new AbortController();
 
     // Subtle fade while loading
     container.style.transition = 'opacity 0.15s';
@@ -1984,6 +2548,7 @@ function loadSubmissionPage(url) {
     container.style.pointerEvents = 'none';
 
     fetch(url, {
+        signal: _paginationAbortController.signal,
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
@@ -2017,10 +2582,10 @@ function loadSubmissionPage(url) {
         // Update browser URL bar
         window.history.pushState({}, '', url);
 
-        // Re-attach listener on newly swapped content
-        initAjaxPagination();
+        // NOTE: do NOT call initAjaxPagination() here — listener lives on document now
     })
     .catch(err => {
+        if (err.name === 'AbortError') return; // Intentionally cancelled — do nothing
         console.error('AJAX pagination failed:', err);
         container.style.opacity = '1';
         container.style.pointerEvents = '';
@@ -2413,7 +2978,11 @@ document.addEventListener('DOMContentLoaded', () => {
             dialEl.textContent = matched.dial;
             document.getElementById('admin-country-flag-' + id).textContent = matched.flag;
             // Strip dial code from display value so input only shows digits
-            mobileInput.value = rawNumber.slice(matched.dial.length);
+            const bareDigits = rawNumber.slice(matched.dial.length);
+            mobileInput.value = bareDigits;
+            // Sync data-original to bare digits so change detection is
+            // digits vs digits and never fires a false positive.
+            mobileInput.dataset.original = bareDigits;
             // Apply correct maxlength
             mobileInput.maxLength = matched.maxDigits;
             // Update view mode display to show flag + number

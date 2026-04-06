@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logoIcon/dole_logo.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.8/dist/cdn.min.js"></script>
     <title>LMI - Discipline Enrollment Form</title>
 </head>
 <body class="bg-slate-100 flex h-screen overflow-hidden">
@@ -135,17 +136,6 @@
                                     >
                                     <span class="ml-3 text-base font-medium text-gray-700">Public</span>
                                 </label>
-                            </div>
-                            <!-- Hidden "Total" badge shown when Davao Region is selected -->
-                            <div id="institutionTypeTotalBadge" class="hidden h-12 flex items-center">
-                                <span class="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-800 font-semibold rounded-lg text-sm border border-purple-300">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                    </svg>
-                                    Total (Private + Public)
-                                </span>
-                                <!-- Hidden input to carry the "Total" value on submit -->
-                                <input type="hidden" name="institution_type_total" value="Total">
                             </div>
                         </div>
                     </div>
@@ -822,29 +812,11 @@
         });
 
         function handleProvinceChange(province) {
-            const isDavaoRegion = province === 'Davao Region';
-            const radiosWrapper = document.getElementById('institutionTypeRadios');
-            const totalBadge = document.getElementById('institutionTypeTotalBadge');
+            // All provinces use Private / Public — reset selection when province changes.
+            document.querySelectorAll('input[name="institution_type"]').forEach(r => r.checked = false);
             const lockBannerText = document.getElementById('lockBannerText');
-
-            if (isDavaoRegion) {
-                // Hide Private/Public radios, show "Total" badge
-                radiosWrapper.classList.add('hidden');
-                totalBadge.classList.remove('hidden');
-                // Uncheck any selected radio so it doesn't interfere
-                document.querySelectorAll('input[name="institution_type"]').forEach(r => r.checked = false);
-                // Update lock banner
-                if (lockBannerText) {
-                    lockBannerText.innerHTML = 'Select a <strong>Province</strong> above, enter the academic year, then click <strong>Check Year</strong> to unlock the enrollment fields. <em>(Davao Region records total enrollment across all institution types.)</em>';
-                }
-            } else {
-                // Show Private/Public radios, hide "Total" badge
-                radiosWrapper.classList.remove('hidden');
-                totalBadge.classList.add('hidden');
-                // Restore lock banner
-                if (lockBannerText) {
-                    lockBannerText.innerHTML = 'Select a <strong>Province</strong> and <strong>Institution Type</strong> above, enter the academic year, then click <strong>Check Year</strong> to unlock the enrollment fields.';
-                }
+            if (lockBannerText) {
+                lockBannerText.innerHTML = 'Select a <strong>Province</strong> and <strong>Institution Type</strong> above, enter the academic year, then click <strong>Check Year</strong> to unlock the enrollment fields.';
             }
         }
 
@@ -864,19 +836,16 @@
             }
 
             const province = document.getElementById('province').value;
-            const isDavaoRegion = province === 'Davao Region';
-            const institutionTypeChecked = document.querySelector('input[name="institution_type"]:checked');
-            const institutionType = isDavaoRegion ? { value: 'Total' } : institutionTypeChecked;
+            const institutionType = document.querySelector('input[name="institution_type"]:checked');
 
             if (!province || !institutionType) {
                 showToast('Please select a Province and Institution Type before checking the year.', 'error');
-                // Visually highlight the missing fields
                 const provinceEl = document.getElementById('province');
                 if (!province) {
                     provinceEl.classList.add('border-red-500', 'ring-2', 'ring-red-300');
                     provinceEl.addEventListener('change', () => provinceEl.classList.remove('border-red-500', 'ring-2', 'ring-red-300'), { once: true });
                 }
-                if (!institutionType && !isDavaoRegion) {
+                if (!institutionType) {
                     document.querySelectorAll('input[name="institution_type"]').forEach(r => {
                         r.closest('label').classList.add('text-red-600');
                         r.addEventListener('change', () => {
@@ -891,21 +860,37 @@
                 const response = await fetch(`/api/discipline-enrollment/check/${year}?province=${encodeURIComponent(province)}&institution_type=${encodeURIComponent(institutionType.value)}`);
                 
                 if (!response.ok) {
-                    if (response.status === 404) {
-                        // No existing data - load as new
-                        loadNewYear(year, province, institutionType.value);
-                        return;
-                    }
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const data = await response.json();
 
+                if (!data.exists) {
+                    // No existing data - load as new
+                    loadNewYear(year, province, institutionType.value);
+                    return;
+                }
+
                 if (data.exists && data.data) {
+                    // Check if all discipline values are 0 (empty/cleared record)
+                    const isEmpty = Object.values(data.data.disciplines ?? data.data).every(v => !parseInt(v));
+
                     // Check if changing year to an existing year
                     if (isChangingYear) {
+                        // If the target year's data is all zeros, allow the change as new
+                        if (isEmpty) {
+                            confirmChangeYear();
+                            isChangingYear = false;
+                            return;
+                        }
                         showYearCollisionModal(year, province, institutionType.value);
                         isChangingYear = false;
+                        return;
+                    }
+
+                    // If all values are 0, treat as new data entry
+                    if (isEmpty) {
+                        loadNewYear(year, province, institutionType.value);
                         return;
                     }
                     
@@ -939,6 +924,7 @@
             document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
             isChangingYear = false;
             unlockForm();
+            lockSelections();
         }
 
         function showExistingDataModal(year, province, institutionType) {
@@ -973,7 +959,52 @@
             closeExistingDataModal();
             isChangingYear = false;
             unlockForm();
+            lockSelections();
         }
+
+        // ─── Selection Lock / Unlock (Province + Institution Type) ────────────
+        // Locks Province + Institution Type once Check Year succeeds.
+        function lockSelections() {
+            const province = document.getElementById('province');
+            const radios = document.querySelectorAll('input[name="institution_type"]');
+            const wrapper = document.getElementById('institutionTypeWrapper');
+
+            if (province) {
+                province.disabled = true;
+                province.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            radios.forEach(r => {
+                r.disabled = true;
+                r.closest('label').classList.add('opacity-50', 'cursor-not-allowed');
+            });
+            if (wrapper && !document.getElementById('selectionLockHint')) {
+                const label = wrapper.querySelector('label');
+                if (label) {
+                    const span = document.createElement('span');
+                    span.id = 'selectionLockHint';
+                    span.className = 'ml-2 inline-flex items-center gap-1 text-xs font-normal text-amber-600';
+                    span.innerHTML = `<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Locked — Cancel to change`;
+                    label.appendChild(span);
+                }
+            }
+        }
+
+        function unlockSelections() {
+            const province = document.getElementById('province');
+            const radios = document.querySelectorAll('input[name="institution_type"]');
+
+            if (province) {
+                province.disabled = false;
+                province.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            radios.forEach(r => {
+                r.disabled = false;
+                r.closest('label').classList.remove('opacity-50', 'cursor-not-allowed');
+            });
+            const hint = document.getElementById('selectionLockHint');
+            if (hint) hint.remove();
+        }
+
 
         // ─── Form Lock / Unlock ─────────────────────────────────────────────────
         function unlockForm() {
@@ -1032,6 +1063,7 @@
             hideStatusNotification();
             existingData = null;
             toggleYearDisplay(false);
+            unlockSelections();
             lockForm();
             
             setTimeout(() => {
@@ -1057,6 +1089,7 @@
             document.getElementById('displayYear').textContent = '----';
             hideStatusNotification();
             toggleYearDisplay(false);
+            unlockSelections();
 
             // Reset province dropdown
             document.getElementById('province').value = '';
@@ -1296,7 +1329,13 @@
             pendingData = null;
         }
 
-        function showSuccessModal() {
+        function showSuccessModal(isUpdate = false) {
+            const message = document.querySelector('#successModal p.text-gray-600');
+            if (message) {
+                message.textContent = isUpdate
+                    ? 'Enrollment data has been updated successfully.'
+                    : 'Enrollment data has been submitted successfully.';
+            }
             document.getElementById('successModal').classList.remove('hidden');
         }
 
@@ -1369,8 +1408,10 @@
                 const result = await response.json();
 
                 if (response.ok && result.success) {
+                    const wasUpdate = !!existingData;
                     oldYear = null;
-                    showSuccessModal();
+                    unlockSelections();
+                    showSuccessModal(wasUpdate);
                 } else {
                     showToast('Error: ' + (result.message || 'An error occurred while saving the data.'), 'error');
                 }
@@ -1391,20 +1432,16 @@
             }
 
             const province = document.getElementById('province').value;
-            const isDavaoRegion = province === 'Davao Region';
-            const institutionType = isDavaoRegion
-                ? { value: 'Total' }
-                : document.querySelector('input[name="institution_type"]:checked');
+            const institutionType = document.querySelector('input[name="institution_type"]:checked');
 
             if (!province || !institutionType) {
                 showToast('Please select a Province and Institution Type before checking the year.', 'error');
-                // Visually highlight the missing fields
                 if (!province) {
                     const provinceEl = document.getElementById('province');
                     provinceEl.classList.add('border-red-500', 'ring-2', 'ring-red-300');
                     provinceEl.addEventListener('change', () => provinceEl.classList.remove('border-red-500', 'ring-2', 'ring-red-300'), { once: true });
                 }
-                if (!institutionType && !isDavaoRegion) {
+                if (!institutionType) {
                     document.querySelectorAll('input[name="institution_type"]').forEach(r => {
                         r.closest('label').classList.add('text-red-600');
                         r.addEventListener('change', () => {

@@ -159,17 +159,21 @@ class GraduationRateController extends Controller
     }
 
     /**
-     * Get all graduation rates
+     * Get all graduation rates — recalculates base_enrollees + projected_graduates
+     * live so stale saved values (e.g. from old Total rows) are never returned.
      */
     public function getAllGraduationRates()
     {
         try {
             $rates = GraduationRate::orderBy('graduate_year', 'desc')->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $rates
-            ]);
+            foreach ($rates as $rate) {
+                $liveEnrollees             = $this->getTotalEnrollees($rate->enrollment_year);
+                $rate->base_enrollees      = $liveEnrollees;
+                $rate->projected_graduates = round($liveEnrollees * ($rate->graduation_rate / 100));
+            }
+
+            return response()->json($rates);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -228,23 +232,27 @@ class GraduationRateController extends Controller
 
     /**
      * Get total enrollees for a given academic year.
-     * Prefers the Davao Region / Total row (region-wide figure).
-     * Falls back to summing all specific-province rows if no Total row exists.
+     * Sums Private + Public rows for Davao Region.
+     * Falls back to summing all other province rows if no Davao Region data exists.
      */
-    private function getTotalEnrollees(string $year): int
+    private function getTotalEnrollees(?string $year): int
     {
-        $regionRow = DisciplineEnrollment::where('academic_year', $year)
-            ->where('province', 'Davao Region')
-            ->where('institution_type', 'Total')
-            ->first();
+        if (!$year) return 0;
 
-        if ($regionRow) {
-            return (int) $regionRow->grand_total;
+        // Sum Private + Public for Davao Region
+        $regionTotal = (int) DisciplineEnrollment::where('academic_year', $year)
+            ->where('province', 'Davao Region')
+            ->whereIn('institution_type', ['Private', 'Public'])
+            ->sum('grand_total');
+
+        if ($regionTotal > 0) {
+            return $regionTotal;
         }
 
-        // Fallback: sum individual province rows (exclude Davao Region to avoid double-count)
+        // Fallback: sum all specific-province rows (exclude Davao Region to avoid double-count)
         return (int) DisciplineEnrollment::where('academic_year', $year)
             ->where('province', '!=', 'Davao Region')
+            ->whereIn('institution_type', ['Private', 'Public'])
             ->sum('grand_total');
     }
 }

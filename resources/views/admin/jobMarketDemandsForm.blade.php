@@ -2,9 +2,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logoIcon/dole_logo.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.8/dist/cdn.min.js"></script>
     <title>LMI</title>
     <style>
         #mainContent input:not([readonly]),
@@ -320,37 +321,74 @@
         </main>
     </div>
 
-    <!-- Confirmation Modal with Blur Backdrop -->
+    <!-- Confirmation Modal with Data Summary -->
     <div id="confirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
         <!-- Blur Backdrop -->
         <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="document.getElementById('confirmModal').classList.add('hidden')"></div>
         
         <!-- Modal Content -->
-        <div class="relative bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all">
-            <div class="flex flex-col items-center text-center">
-                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-                    <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col">
+            <!-- Sticky Header -->
+            <div class="px-7 pt-7 pb-5 border-b border-slate-100 shrink-0">
+                <div class="flex items-center gap-3 mb-1">
+                    <div class="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-[16px] font-bold text-slate-800 leading-tight">Review Before Submitting</h3>
+                        <p class="text-[11.5px] text-slate-500 mt-0.5">Please verify the data below before sending to the pending queue.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scrollable Body -->
+            <div class="overflow-y-auto px-7 py-5 flex-1">
+
+                <!-- Reporting Period Banner -->
+                <div class="flex items-center gap-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl px-4 py-3 mb-5">
+                    <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
+                    <div>
+                        <p class="text-[11px] font-700 text-blue-500 uppercase tracking-wide leading-none mb-0.5">Reporting Period</p>
+                        <p class="text-[14px] font-bold text-blue-800" id="summaryPeriod">—</p>
+                    </div>
                 </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-2">Confirm Submission</h3>
-                <p class="text-sm text-slate-600 mb-6">
-                    Are you sure you want to submit this data to the pending queue? The statistician will review and verify it before posting to the database.
-                </p>
-                <div class="flex gap-3 w-full">
-                    <button 
-                        id="cancelBtn"
-                        class="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition font-medium"
-                    >
-                        Cancel
-                    </button>
-                    <button 
-                        id="confirmBtn"
-                        class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-                    >
-                        Yes, Submit
-                    </button>
+
+                <!-- Summary Table -->
+                <p class="text-[11px] font-700 uppercase tracking-widest text-slate-400 mb-3">Labor Market Indicators</p>
+                <div class="space-y-2" id="summaryRows">
+                    <!-- rows injected by JS -->
                 </div>
+
+                <!-- Info note -->
+                <div class="mt-5 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+                    <svg class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <p class="text-[12px] text-amber-800 leading-snug">This data will be sent to the <strong>pending queue</strong>. A statistician will review and verify it before posting to the database.</p>
+                </div>
+            </div>
+
+            <!-- Sticky Footer -->
+            <div class="px-7 py-5 border-t border-slate-100 flex gap-3 shrink-0">
+                <button 
+                    id="cancelBtn"
+                    class="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition font-semibold text-sm"
+                >
+                    Cancel
+                </button>
+                <button 
+                    id="confirmBtn"
+                    class="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-sm flex items-center justify-center gap-2"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Yes, Submit
+                </button>
             </div>
         </div>
     </div>
@@ -703,6 +741,7 @@
                     document.getElementById('errorMessage').textContent = result.message;
                     document.getElementById('errorModal').classList.remove('hidden');
                 } else {
+                    populateConfirmSummary();
                     document.getElementById('confirmModal').classList.remove('hidden');
                 }
             })
@@ -794,6 +833,47 @@
             document.getElementById('errorModal').classList.add('hidden');
         });
     });
+
+    // ─── Populate Confirm Summary Modal ─────────────────────────────────────
+    function populateConfirmSummary() {
+        const monthNames = { 1: 'January', 4: 'April', 7: 'July', 10: 'October' };
+        const year  = document.getElementById('year').value;
+        const month = document.getElementById('month').value;
+        const monthLabel = monthNames[parseInt(month)] || '—';
+
+        document.getElementById('summaryPeriod').textContent = `${monthLabel} ${year}`;
+
+        const fields = [
+            { label: 'Household Population',          id: 'householdPopulation', unit: '',  auto: false },
+            { label: 'Labor Force Participation Rate', id: 'lfpr',                unit: '%', auto: false },
+            { label: 'Employment Rate',                id: 'employmentrate',      unit: '%', auto: false },
+            { label: 'Underemployment Rate',           id: 'underemploymentrate', unit: '%', auto: false },
+            { label: 'Unemployment Rate',              id: 'unemploymentrate',    unit: '%', auto: false },
+            { label: 'Labor Force',                    id: 'laborForce',          unit: '',  auto: true  },
+            { label: 'Employed',                       id: 'employed',            unit: '',  auto: true  },
+            { label: 'Underemployed',                  id: 'underemployed',       unit: '',  auto: true  },
+            { label: 'Unemployed',                     id: 'unemployed',          unit: '',  auto: true  },
+        ];
+
+        const container = document.getElementById('summaryRows');
+        container.innerHTML = '';
+
+        fields.forEach(f => {
+            const raw = document.getElementById(f.id).value;
+            const display = raw !== '' ? (parseFloat(raw).toLocaleString() + (f.unit ? ' ' + f.unit : '')) : '—';
+
+            const row = document.createElement('div');
+            row.className = 'flex justify-between items-center px-3 py-2 rounded-lg ' + (f.auto ? 'bg-emerald-50' : 'bg-slate-50');
+            row.innerHTML = `
+                <span class="text-[12.5px] font-medium text-slate-600 flex items-center gap-1.5">
+                    ${f.auto ? '<span class="text-[10px] font-semibold text-teal-600 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded">auto</span>' : ''}
+                    ${f.label}
+                </span>
+                <span class="text-[13px] font-bold ${raw !== '' ? (f.auto ? 'text-teal-700' : 'text-slate-800') : 'text-slate-300'}">${display}</span>
+            `;
+            container.appendChild(row);
+        });
+    }
 
     // Global scope — accessible by onclick attributes in HTML
     function closeResetModal() {

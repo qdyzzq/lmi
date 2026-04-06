@@ -4,11 +4,12 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/png" href="{{ asset('images/logoIcon/dole_logo.png') }}">
         @vite('resources/css/app.css')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-        <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-        <title>LMI - Education Pipeline Dashboard</title>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.8/dist/cdn.min.js"></script>
+        <title>Labor Supply Data</title>
         <style>
             /* Custom scrollbar for better UX */
             .custom-scrollbar::-webkit-scrollbar {
@@ -92,7 +93,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 1rem;
+                gap: 2.5rem;
                 flex-wrap: wrap;
             }
             @media (max-width: 767px) {
@@ -107,6 +108,50 @@
                 .pie-canvas-wrap canvas {
                     width: min(240px, 75vw) !important;
                     height: min(240px, 75vw) !important;
+                }
+            }
+
+            /* ── Mobile mini legend below pie chart ── */
+            .pie-mini-legend {
+                display: none;
+            }
+            @media (max-width: 767px) {
+                .pie-mini-legend {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 0.5rem 0.75rem;
+                    padding: 0.75rem 0.5rem 0.25rem;
+                    width: 100%;
+                }
+                .pie-mini-legend-item {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 0.4rem;
+                }
+                .pie-mini-legend-dot {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    flex-shrink: 0;
+                    margin-top: 3px;
+                }
+                .pie-mini-legend-name {
+                    font-size: 0.72rem;
+                    color: #475569;
+                    font-weight: 500;
+                    line-height: 1.3;
+                }
+                .pie-mini-legend-pct {
+                    font-size: 0.7rem;
+                    color: #94a3b8;
+                    font-weight: 600;
+                }
+                .pie-mini-legend-more {
+                    grid-column: 1 / -1;
+                    text-align: center;
+                    font-size: 0.7rem;
+                    color: #94a3b8;
+                    padding-top: 0.35rem;
                 }
             }
 
@@ -137,8 +182,8 @@
                     flex-shrink: 0;
                 }
                 .pie-modal-canvas canvas {
-                    width: min(200px, 60vw) !important;
-                    height: min(200px, 60vw) !important;
+                    width: min(300px, 80vw) !important;
+                    height: min(300px, 80vw) !important;
                 }
             }
             @media (min-width: 768px) {
@@ -162,6 +207,47 @@
                 .trend-modal-legend { display: none !important; }
             }
 
+            /* ── Enrollment Trend: mobile = inline bar table, desktop = canvas chart ── */
+            .enrollment-trend-mobile { display: none; }
+            .enrollment-trend-desktop { display: block; }
+            @media (max-width: 767px) {
+                .enrollment-trend-mobile  { display: block; }
+                .enrollment-trend-desktop { display: none; }
+            }
+
+            /* ── Mobile trend bar: slide-in from left animation ── */
+            @keyframes slideInBar {
+                from { width: 0 !important; opacity: 0.4; }
+                to   { opacity: 1; }
+            }
+            .trend-bar-animate {
+                animation: slideInBar 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+            }
+            /* Row fade-up entrance */
+            @keyframes fadeUpRow {
+                from { opacity: 0; transform: translateY(6px); }
+                to   { opacity: 1; transform: translateY(0); }
+            }
+            .trend-row-animate {
+                animation: fadeUpRow 0.4s ease both;
+            }
+
+            /* ── Discipline Enrollment: mobile = inline bar table, desktop = canvas ── */
+            .discipline-enrollment-mobile  { display: none; }
+            .discipline-enrollment-desktop { display: block; }
+            @media (max-width: 767px) {
+                .discipline-enrollment-mobile  { display: block; }
+                .discipline-enrollment-desktop { display: none; }
+            }
+
+            /* ── Licensure: mobile = inline list, desktop = canvas chart ── */
+            .licensure-mobile  { display: none; }
+            .licensure-desktop { display: block; }
+            @media (max-width: 767px) {
+                .licensure-mobile  { display: block; }
+                .licensure-desktop { display: none; }
+            }
+
         </style>
     </head>
 
@@ -169,27 +255,29 @@
         @include('partials.navbar')
         
         <!-- Hero Image Section -->
-        <div class="relative w-full h-[500px] md:h-[700px] lg:h-[900px] overflow-hidden">
+        <div class="relative w-full h-[380px] sm:h-[420px] md:h-[700px] lg:h-[900px] overflow-hidden">
             <div class="absolute inset-0">
-                <img src="{{ asset('images/navbar-bg-1.jpg') }}" alt="Education Pipeline Background"
+                <img src="{{ asset('images/ARD.jpg') }}" alt="Assistant Regional Director"
                     class="w-full h-full object-cover object-top">
                 <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-100"></div>
             </div>
             
             <!-- Hero Content -->
-            <div class="relative z-10 h-full flex items-center justify-center px-4">
-                <div class="text-center text-white">
-                    <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-lg hero-title-supply">
-                        Education to Employment Pipeline
-                    </h1>
-                    <p class="text-base md:text-xl lg:text-2xl text-slate-100 drop-shadow-md">
-                        Regional Labor Market Intelligence & Trends
-                    </p>
-                </div>
+            <div class="relative z-10 h-full flex items-center justify-center px-4 pb-16 sm:pb-0">
+            <div class="text-center text-white pointer-events-none">
+                <h1 class="text-white font-black leading-tight tracking-tight hero-title-supply"
+                    style="font-size: clamp(1.25rem, 4vw, 3.5rem); text-shadow: 0 2px 16px rgba(0,0,0,1), 0 0 40px rgba(0,0,0,0.7);">
+                    Education to Employment Pipeline
+                </h1>
+                <p class="text-slate-200 font-medium mt-2"
+                    style="font-size: clamp(0.75rem, 1.5vw, 1.125rem); text-shadow: 0 1px 8px rgba(0,0,0,1);">
+                    Regional Labor Market Intelligence & Trends
+                </p>
             </div>
+        </div>
             
             <!-- Scroll Indicator -->
-            <div class="absolute bottom-8 sm:bottom-16 left-1/2 transform -translate-x-1/2 z-20 scroll-indicator animate-bounce">
+            <div class="absolute bottom-4 sm:bottom-16 left-1/2 transform -translate-x-1/2 z-20 scroll-indicator animate-bounce">
                 <a href="#kpi-section"
                    class="flex flex-col items-center cursor-pointer group"
                    @click.prevent="() => {
@@ -201,7 +289,7 @@
                            });
                        }
                    }">
-                    <svg class="w-8 h-8 text-white group-hover:text-blue-300 transition-colors" 
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white group-hover:text-blue-300 transition-colors" 
                          fill="none" 
                          stroke="currentColor" 
                          viewBox="0 0 24 24">
@@ -210,7 +298,7 @@
                               stroke-width="2"
                               d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                     </svg>
-                    <p class="text-white text-sm mt-2 font-medium group-hover:text-blue-300 transition-colors">
+                    <p class="text-white text-xs sm:text-sm mt-1 sm:mt-2 font-medium group-hover:text-blue-300 transition-colors">
                         Scroll to explore
                     </p>
                 </a>
@@ -219,8 +307,8 @@
 
         <!-- Main Content -->
         <div class="w-full mt-10 relative z-30">
-            <div class="p-5">
-                <div class="max-w-screen-xl mx-auto px-4 space-y-6">
+            <div class="px-2 py-3 sm:p-5">
+                <div class="max-w-screen-xl mx-auto px-0 sm:px-4 space-y-6">
                     <!-- Dashboard Overview Header -->
                    
 
@@ -374,7 +462,7 @@
                         <!-- Panel Filter Bar -->
                         <div class="flex flex-wrap items-center justify-end px-4 sm:px-6 py-3 bg-white border-b border-slate-200 gap-2 sm:gap-3">
                                 <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
-                                    <span class="text-slate-400">📍</span>
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                     <span class="text-xs text-slate-500 font-medium hidden sm:inline">Province:</span>
                                     <select 
                                         x-model="selectedEnrollmentProvince" 
@@ -386,7 +474,7 @@
                                     </select>
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
-                                    <span class="text-slate-400">📅</span>
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                     <span class="text-xs text-slate-500 font-medium hidden sm:inline">Year:</span>
                                     <select 
                                         x-model="selectedEnrollmentYear" 
@@ -412,7 +500,7 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-bold text-slate-800">EXECUTIVE ANALYSIS: SUPPLY SIDE</h3>
+                                    <h3 class="text-lg font-bold text-slate-800">EXECUTIVE ANALYSIS</h3>
                                 </div>
                             </div>
                             
@@ -423,14 +511,15 @@
 
                             <!-- Dynamic Analysis Text — card scrolls, text has full width -->
                             <div x-show="!loadingExecutiveAnalysis" 
-                                 class="flex-1 text-sm text-slate-700 prose prose-sm max-w-none"
+                                 class="flex-1 text-sm text-slate-700 prose prose-sm max-w-none overflow-y-auto"
+                                 style="max-height: 320px;"
                                  x-html="executiveAnalysisText">
                             </div>
                         </div>
                         </div>
 
                         <!-- Discipline Market Share Pie Chart -->
-                        <div class="w-full bg-white rounded-2xl shadow-xl border border-slate-200 p-6 relative overflow-hidden">
+                        <div class="w-full bg-slate-50 rounded-2xl shadow-xl border border-slate-200 p-6 relative overflow-hidden">
                             <div x-show="loadingPieChart" class="absolute inset-0 bg-white/75 flex items-center justify-center z-10 rounded-2xl backdrop-blur-sm">
                                 <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-500"></div>
                             </div>
@@ -466,25 +555,18 @@
                                         if (entries.length === 0) return [];
                                         return entries
                                             .sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]))
-                                            .slice(0, Math.ceil(entries.length / 2));
+                                            .slice(0, Math.ceil(entries.length / 2))
+                                            .map((e, i) => [...e, i]);
                                     })()" :key="item[0]">
-                                        <div class="flex items-center gap-2 min-w-0">
-                                            <div class="w-3 h-3 rounded-full flex-shrink-0" 
+                                        <div class="flex items-start gap-2 min-w-0">
+                                            <div class="w-3 h-3 rounded-full flex-shrink-0 mt-1" 
                                                  :style="`background-color: ${(() => {
-                                                    const colorPalette = [
-                                                        'rgb(37, 99, 235)', 'rgb(220, 38, 38)', 'rgb(22, 163, 74)',
-                                                        'rgb(234, 179, 8)', 'rgb(249, 115, 22)', 'rgb(124, 58, 237)',
-                                                        'rgb(20, 184, 166)', 'rgb(236, 72, 153)', 'rgb(6, 182, 212)',
-                                                        'rgb(132, 204, 22)', 'rgb(96, 165, 250)', 'rgb(248, 113, 113)',
-                                                        'rgb(74, 222, 128)', 'rgb(250, 204, 21)', 'rgb(251, 146, 60)',
-                                                        'rgb(167, 139, 250)', 'rgb(45, 212, 191)', 'rgb(244, 114, 182)',
-                                                        'rgb(34, 211, 238)', 'rgb(163, 230, 53)'
-                                                    ];
-                                                    const sorted = Object.entries(disciplineShares).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
-                                                    const actualIndex = sorted.findIndex(entry => entry[0] === item[0]);
-                                                    return colorPalette[actualIndex % colorPalette.length];
+                                                    return getDeepBlueForDiscipline(item[0]);
                                                  })()}`"></div>
-                                            <div class="text-slate-700 font-medium text-sm truncate" x-text="formatDisciplineName(item[0]) + ' ' + parseFloat(item[1]).toFixed(1) + '%'"></div>
+                                            <div class="min-w-0">
+                                                <div class="text-slate-700 font-medium text-sm leading-snug" x-text="formatDisciplineName(item[0])"></div>
+                                                <div class="text-slate-500 text-xs font-semibold" x-text="parseFloat(item[1]).toFixed(1) + '%'"></div>
+                                            </div>
                                         </div>
                                     </template>
                                 </div>
@@ -499,34 +581,49 @@
                                     <template x-for="(item, index) in (() => {
                                         const entries = Object.entries(disciplineShares || {});
                                         if (entries.length === 0) return [];
+                                        const half = Math.ceil(entries.length / 2);
                                         return entries
                                             .sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]))
-                                            .slice(Math.ceil(entries.length / 2));
+                                            .slice(half)
+                                            .map((e, i) => [...e, half + i]);
                                     })()" :key="item[0]">
-                                        <div class="flex items-center gap-2 min-w-0">
-                                            <div class="w-3 h-3 rounded-full flex-shrink-0" 
+                                        <div class="flex items-start gap-2 min-w-0">
+                                            <div class="w-3 h-3 rounded-full flex-shrink-0 mt-1" 
                                                  :style="`background-color: ${(() => {
-                                                    const colorPalette = [
-                                                        'rgb(37, 99, 235)', 'rgb(220, 38, 38)', 'rgb(22, 163, 74)',
-                                                        'rgb(234, 179, 8)', 'rgb(249, 115, 22)', 'rgb(124, 58, 237)',
-                                                        'rgb(20, 184, 166)', 'rgb(236, 72, 153)', 'rgb(6, 182, 212)',
-                                                        'rgb(132, 204, 22)', 'rgb(96, 165, 250)', 'rgb(248, 113, 113)',
-                                                        'rgb(74, 222, 128)', 'rgb(250, 204, 21)', 'rgb(251, 146, 60)',
-                                                        'rgb(167, 139, 250)', 'rgb(45, 212, 191)', 'rgb(244, 114, 182)',
-                                                        'rgb(34, 211, 238)', 'rgb(163, 230, 53)'
-                                                    ];
-                                                    const sorted = Object.entries(disciplineShares).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
-                                                    const actualIndex = sorted.findIndex(entry => entry[0] === item[0]);
-                                                    return colorPalette[actualIndex % colorPalette.length];
+                                                    return getDeepBlueForDiscipline(item[0]);
                                                  })()}`"></div>
-                                            <div class="text-slate-700 font-medium text-sm truncate" x-text="formatDisciplineName(item[0]) + ' ' + parseFloat(item[1]).toFixed(1) + '%'"></div>
+                                            <div class="min-w-0">
+                                                <div class="text-slate-700 font-medium text-sm leading-snug" x-text="formatDisciplineName(item[0])"></div>
+                                                <div class="text-slate-500 text-xs font-semibold" x-text="parseFloat(item[1]).toFixed(1) + '%'"></div>
+                                            </div>
                                         </div>
                                     </template>
                                 </div>
                             </div>
                         </div><!-- end pie chart card -->
-                        <!-- Mobile: tap hint for pie chart -->
-                        <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">Tap chart segments for details · Tap Expand for full legend</p>
+
+                        <!-- Mobile mini legend: top 5 disciplines -->
+                        <div class="pie-mini-legend">
+                            <template x-for="(item, index) in (() => {
+                                const entries = Object.entries(disciplineShares || {});
+                                return entries
+                                    .sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]))
+                                    .slice(0, 6)
+                                    .map((e, i) => [...e, i]);
+                            })()" :key="item[0]">
+                                <div class="pie-mini-legend-item">
+                                    <div class="pie-mini-legend-dot"
+                                         :style="`background-color: ${getDeepBlueForDiscipline(item[0])}`"></div>
+                                    <div>
+                                        <div class="pie-mini-legend-name" x-text="formatDisciplineName(item[0])"></div>
+                                        <div class="pie-mini-legend-pct" x-text="parseFloat(item[1]).toFixed(1) + '%'"></div>
+                                    </div>
+                                </div>
+                            </template>
+                            <div class="pie-mini-legend-more">
+                                Click <strong>Expand for more</strong>
+                            </div>
+                        </div>
 
                         <!-- Pie Chart Modal -->
                         <template x-teleport="body">
@@ -559,18 +656,18 @@
                                         <!-- MOBILE: chart fixed, legend scrollable below — hidden on sm+ -->
                                         <div class="flex flex-col w-full h-full sm:hidden">
                                             <div class="flex-shrink-0 flex justify-center items-center py-3 border-b border-slate-100">
-                                                <canvas id="disciplineMarketShareChartModalMobile" width="220" height="220" style="width:220px;height:220px;display:block;"></canvas>
+                                                <canvas id="disciplineMarketShareChartModalMobile" width="300" height="300" style="width:300px;height:300px;display:block;"></canvas>
                                             </div>
                                             <div class="flex-1 min-h-0 overflow-y-auto px-4 py-3 custom-scrollbar">
                                                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">All Disciplines</p>
                                                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 0.75rem;">
                                                     <template x-for="(item) in (() => {
                                                         const e = Object.entries(disciplineShares || {});
-                                                        return e.sort((a,b) => parseFloat(b[1]) - parseFloat(a[1]));
+                                                        return e.sort((a,b) => parseFloat(b[1]) - parseFloat(a[1])).map((x,i)=>[...x,i]);
                                                     })()" :key="'mob-'+item[0]">
                                                         <div class="flex items-start gap-1.5 min-w-0">
                                                             <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-0.5"
-                                                                :style="`background-color:${(()=>{const cp=['rgb(37,99,235)','rgb(220,38,38)','rgb(22,163,74)','rgb(234,179,8)','rgb(249,115,22)','rgb(124,58,237)','rgb(20,184,166)','rgb(236,72,153)','rgb(6,182,212)','rgb(132,204,22)','rgb(96,165,250)','rgb(248,113,113)','rgb(74,222,128)','rgb(250,204,21)','rgb(251,146,60)','rgb(167,139,250)','rgb(45,212,191)','rgb(244,114,182)','rgb(34,211,238)','rgb(163,230,53)'];const s=Object.entries(disciplineShares).sort((a,b)=>parseFloat(b[1])-parseFloat(a[1]));return cp[s.findIndex(e=>e[0]===item[0])%cp.length];})()} `">
+                                                                :style="`background-color:${getDeepBlueForDiscipline(item[0])}`">
                                                             </div>
                                                             <div class="min-w-0">
                                                                 <p class="text-xs font-medium text-slate-700 leading-tight" x-text="formatDisciplineName(item[0])"></p>
@@ -584,17 +681,17 @@
 
                                         <!-- DESKTOP: left legend | pie | right legend — hidden on mobile -->
                                         <div class="hidden sm:flex flex-1 items-center justify-center gap-6 p-8 overflow-y-auto custom-scrollbar">
-                                            <div class="w-56 shrink-0 space-y-3">
+                                            <div class="w-72 shrink-0 space-y-3">
                                                 <template x-for="(item) in (() => {
                                                     const e = Object.entries(disciplineShares || {});
-                                                    return e.sort((a,b)=>parseFloat(b[1])-parseFloat(a[1])).slice(0, Math.ceil(e.length/2));
+                                                    return e.sort((a,b)=>parseFloat(b[1])-parseFloat(a[1])).slice(0, Math.ceil(e.length/2)).map((x,i)=>[...x,i]);
                                                 })()" :key="'dl-'+item[0]">
-                                                    <div class="flex items-center gap-2 min-w-0">
-                                                        <div class="w-3 h-3 rounded-full flex-shrink-0"
-                                                            :style="`background-color:${(()=>{const cp=['rgb(37,99,235)','rgb(220,38,38)','rgb(22,163,74)','rgb(234,179,8)','rgb(249,115,22)','rgb(124,58,237)','rgb(20,184,166)','rgb(236,72,153)','rgb(6,182,212)','rgb(132,204,22)','rgb(96,165,250)','rgb(248,113,113)','rgb(74,222,128)','rgb(250,204,21)','rgb(251,146,60)','rgb(167,139,250)','rgb(45,212,191)','rgb(244,114,182)','rgb(34,211,238)','rgb(163,230,53)'];const s=Object.entries(disciplineShares).sort((a,b)=>parseFloat(b[1])-parseFloat(a[1]));return cp[s.findIndex(e=>e[0]===item[0])%cp.length];})()} `">
+                                                    <div class="flex items-start gap-2 min-w-0">
+                                                        <div class="w-3 h-3 rounded-full flex-shrink-0 mt-0.5"
+                                                            :style="`background-color:${getDeepBlueForDiscipline(item[0])}`">
                                                         </div>
                                                         <div class="min-w-0">
-                                                            <p class="text-xs font-semibold text-slate-800 leading-tight" x-text="formatDisciplineName(item[0])"></p>
+                                                            <p class="text-xs font-semibold text-slate-800 leading-snug" x-text="formatDisciplineName(item[0])"></p>
                                                             <p class="text-xs text-slate-400" x-text="parseFloat(item[1]).toFixed(1)+'%'"></p>
                                                         </div>
                                                     </div>
@@ -606,11 +703,12 @@
                                             <div class="w-56 shrink-0 space-y-3">
                                                 <template x-for="(item) in (() => {
                                                     const e = Object.entries(disciplineShares || {});
-                                                    return e.sort((a,b)=>parseFloat(b[1])-parseFloat(a[1])).slice(Math.ceil(e.length/2));
+                                                    const half = Math.ceil(e.length/2);
+                                                    return e.sort((a,b)=>parseFloat(b[1])-parseFloat(a[1])).slice(half).map((x,i)=>[...x,half+i]);
                                                 })()" :key="'dr-'+item[0]">
                                                     <div class="flex items-center gap-2 min-w-0">
                                                         <div class="w-3 h-3 rounded-full flex-shrink-0"
-                                                            :style="`background-color:${(()=>{const cp=['rgb(37,99,235)','rgb(220,38,38)','rgb(22,163,74)','rgb(234,179,8)','rgb(249,115,22)','rgb(124,58,237)','rgb(20,184,166)','rgb(236,72,153)','rgb(6,182,212)','rgb(132,204,22)','rgb(96,165,250)','rgb(248,113,113)','rgb(74,222,128)','rgb(250,204,21)','rgb(251,146,60)','rgb(167,139,250)','rgb(45,212,191)','rgb(244,114,182)','rgb(34,211,238)','rgb(163,230,53)'];const s=Object.entries(disciplineShares).sort((a,b)=>parseFloat(b[1])-parseFloat(a[1]));return cp[s.findIndex(e=>e[0]===item[0])%cp.length];})()} `">
+                                                            :style="`background-color:${getDeepBlueForDiscipline(item[0])}`">
                                                         </div>
                                                         <div class="min-w-0">
                                                             <p class="text-xs font-semibold text-slate-800 leading-tight" x-text="formatDisciplineName(item[0])"></p>
@@ -630,6 +728,13 @@
 
                         </div><!-- end Collapsible Content -->
                     </div><!-- end Enrollment Overview Panel -->
+
+                    <!-- ─── Section Divider ─────────────────────────────────── -->
+                    <div class="relative flex items-center gap-4 my-2">
+                        <div class="flex-1 h-px bg-slate-300"></div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest px-2 whitespace-nowrap">Data Charts</span>
+                        <div class="flex-1 h-px bg-slate-300"></div>
+                    </div>
 
                     <!-- Enrollment Trend in Davao Region Chart - COLLAPSIBLE -->
                     <div class="bg-white rounded-2xl shadow-lg overflow-hidden mt-6" x-data="{ enrollmentTrendExpanded: false }">
@@ -679,13 +784,13 @@
                                 <!-- Left: dynamic label -->
                                 <p class="text-xs text-slate-500 w-full sm:w-auto">
                                     Student enrollment public and private - <span x-text="selectedTrendYear" class="font-semibold text-blue-600"></span>
-                                    <span x-show="selectedTrendProvince !== 'Davao Region'" class="text-slate-400"> • </span>
-                                    <span x-show="selectedTrendProvince !== 'Davao Region'" x-text="selectedTrendProvince" class="font-semibold text-green-600"></span>
+                                    <span class="text-slate-400"> • </span>
+                                    <span x-text="selectedTrendProvince" class="font-semibold text-green-600"></span>
                                 </p>
                                 <!-- Right: filters + expand grouped together -->
                                 <div class="flex flex-wrap items-center gap-2">
                                     <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
-                                        <span class="text-slate-400">📍</span>
+                                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                         <span class="text-xs text-slate-500 font-medium hidden sm:inline">Province:</span>
                                         <select 
                                             x-model="selectedTrendProvince"
@@ -697,7 +802,7 @@
                                         </select>
                                     </div>
                                     <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
-                                        <span class="text-slate-400">📅</span>
+                                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                         <span class="text-xs text-slate-500 font-medium hidden sm:inline">Year:</span>
                                         <select 
                                             x-model="selectedTrendYear"
@@ -725,19 +830,68 @@
                                 <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-3 border border-blue-200">
                                     <p class="text-xs font-semibold text-blue-700 mb-1">Total Public Schools</p>
                                     <p class="text-2xl font-bold text-blue-900" 
-                                       x-text="enrollmentTrendTotals.public ? enrollmentTrendTotals.public.toLocaleString() : 'Loading...'">
+                                       x-text="enrollmentTrendTotals.public ? enrollmentTrendTotals.public.toLocaleString() : 'No Data Available'">
                                     </p>
                                 </div>
                                 <div class="bg-gradient-to-br from-sky-50 to-indigo-50 rounded-lg p-3 border border-sky-200">
                                     <p class="text-xs font-semibold text-sky-700 mb-1">Total Private Schools</p>
                                     <p class="text-2xl font-bold text-sky-900"
-                                       x-text="enrollmentTrendTotals.private ? enrollmentTrendTotals.private.toLocaleString() : 'Loading...'">
+                                       x-text="enrollmentTrendTotals.private ? enrollmentTrendTotals.private.toLocaleString() : 'No Data Available'">
                                     </p>
                                 </div>
                             </div>
 
-                            <!-- Chart Container -->
-                            <div class="p-6">
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <!-- MOBILE VIEW: Inline stacked bar table (≤ 767px)      -->
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <div class="enrollment-trend-mobile px-4 pb-6 pt-2">
+                                <div x-show="loadingEnrollmentTrend" class="flex items-center justify-center py-10">
+                                    <div class="animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-slate-500"></div>
+                                </div>
+                                <div x-show="!loadingEnrollmentTrend && trendTableData.length === 0" class="text-center py-8 text-slate-400 text-sm italic">
+                                    No enrollment data available for this selection.
+                                </div>
+                                <div x-show="!loadingEnrollmentTrend && trendTableData.length > 0" class="space-y-0">
+                                    <!-- Legend -->
+                                    <div class="flex items-center gap-4 mb-3">
+                                        <div class="flex items-center gap-1.5">
+                                            <div class="w-3 h-3 rounded-sm bg-blue-600"></div>
+                                            <span class="text-xs font-semibold text-slate-600">Public</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <div class="w-3 h-3 rounded-sm bg-sky-300"></div>
+                                            <span class="text-xs font-semibold text-slate-600">Private</span>
+                                        </div>
+                                    </div>
+                                    <!-- Rows -->
+                                    <template x-for="(row, rowIndex) in trendTableData" :key="row.label">
+                                        <div class="py-2 border-b border-slate-100 last:border-0 trend-row-animate"
+                                             :style="`animation-delay: ${rowIndex * 50}ms`">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <span class="text-xs font-semibold text-slate-700 truncate pr-2" x-text="row.label" style="max-width: 55%;"></span>
+                                                <span class="text-xs text-slate-500 font-medium flex-shrink-0">
+                                                    <span class="text-blue-700 font-bold" x-text="row.publicFormatted"></span>
+                                                    <span class="text-slate-300 mx-1">·</span>
+                                                    <span class="text-sky-600 font-bold" x-text="row.privateFormatted"></span>
+                                                </span>
+                                            </div>
+                                            <!-- Stacked bar -->
+                                            <div class="flex h-5 rounded overflow-hidden w-full bg-slate-100">
+                                                <div class="h-full bg-blue-600 trend-bar-animate"
+                                                     :style="`width: ${row.publicPct}%; animation-delay: ${rowIndex * 50 + 80}ms`"></div>
+                                                <div class="h-full bg-sky-300 trend-bar-animate"
+                                                     :style="`width: ${row.privatePct}%; animation-delay: ${rowIndex * 50 + 160}ms`"></div>
+                                            </div>
+                                            <div class="text-[10px] text-slate-400 mt-0.5 text-right" x-text="'Total: ' + row.totalFormatted"></div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <!-- DESKTOP VIEW: Chart.js canvas chart (≥ 768px)         -->
+                            <!-- ═══════════════════════════════════════════════════════ -->
+                            <div class="enrollment-trend-desktop p-6">
                                 <div class="relative w-full border-2 border-slate-200 rounded-lg p-3 bg-white"
                                      :style="`height: ${Math.max(500, trendDataCount * 55)}px`">
                                     <div x-show="loadingEnrollmentTrend" class="absolute inset-0 bg-white/75 flex items-center justify-center z-10 rounded-lg backdrop-blur-sm">
@@ -864,7 +1018,7 @@
                                         <div class="flex flex-wrap items-center gap-2">
                                             <!-- Province Selector -->
                                             <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
-                                                <span class="text-slate-400">📍</span>
+                                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                                 <span class="text-xs text-slate-500 font-medium hidden sm:inline">Province:</span>
                                                 <select
                                                     x-model="selectedEnrollmentProvince"
@@ -878,7 +1032,7 @@
                                             </div>
                                             <!-- Year Selector -->
                                             <div x-show="availableEnrollmentYears.length > 0" class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
-                                                <span class="text-slate-400">📅</span>
+                                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                                 <span class="text-xs text-slate-500 font-medium hidden sm:inline">Year:</span>
                                                 <select 
                                                     x-model="selectedEnrollmentYear"
@@ -926,9 +1080,45 @@
                                         <p class="text-sm text-slate-500">No disciplines found for <span x-text="selectedEnrollmentYear"></span></p>
                                     </div>
 
-                                    <!-- Chart -->
-                                    <div x-show="enrollmentData.length > 0" 
-                                        class="relative w-full border-2 border-slate-200 rounded-lg p-3 bg-white"
+                                    <!-- ══════════════════════════════════════════════════════ -->
+                                    <!-- MOBILE VIEW: Inline bar table (≤ 767px)              -->
+                                    <!-- ══════════════════════════════════════════════════════ -->
+                                    <div x-show="enrollmentData.length > 0" class="discipline-enrollment-mobile space-y-0">
+                                        <div x-show="loadingDisciplineEnrollment" class="flex items-center justify-center py-10">
+                                            <div class="animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-slate-500"></div>
+                                        </div>
+                                        <template x-if="!loadingDisciplineEnrollment && enrollmentData.length > 0">
+                                            <div>
+                                                <template x-for="(row, rowIndex) in [...enrollmentData].sort((a,b) => b.count - a.count)" :key="row.discipline">
+                                                    <div class="py-2 border-b border-slate-100 last:border-0 trend-row-animate"
+                                                         :style="`animation-delay: ${rowIndex * 40}ms`">
+                                                        <div class="flex items-center justify-between mb-1">
+                                                            <span class="text-xs font-semibold text-slate-700 truncate pr-2"
+                                                                  x-text="row.discipline"
+                                                                  style="max-width: 60%;"></span>
+                                                            <span class="text-xs font-bold text-blue-700 flex-shrink-0"
+                                                                  x-text="row.count.toLocaleString()"></span>
+                                                        </div>
+                                                        <!-- Single blue gradient bar -->
+                                                        <div class="h-5 rounded overflow-hidden w-full bg-slate-100">
+                                                            <div class="h-full trend-bar-animate"
+                                                                 :style="`
+                                                                    width: ${getTotalEnrollment() > 0 ? (row.count / [...enrollmentData].sort((a,b) => b.count - a.count)[0].count * 100) : 0}%;
+                                                                    background: linear-gradient(to right, rgb(30,58,138), rgb(96,165,250));
+                                                                    animation-delay: ${rowIndex * 40 + 80}ms
+                                                                 `"></div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- ══════════════════════════════════════════════════════ -->
+                                    <!-- DESKTOP VIEW: Chart.js canvas (≥ 768px)              -->
+                                    <!-- ══════════════════════════════════════════════════════ -->
+                                    <div x-show="enrollmentData.length > 0"
+                                        class="discipline-enrollment-desktop relative w-full border-2 border-slate-200 rounded-lg p-3 bg-white"
                                         :style="`height: ${getEnrollmentChartHeight()}px`">
                                         <div x-show="loadingDisciplineEnrollment" class="absolute inset-0 bg-white/75 flex items-center justify-center z-10 rounded-lg backdrop-blur-sm">
                                             <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-500"></div>
@@ -1122,9 +1312,72 @@
                                     <p class="text-sm text-slate-500">No professions found for <span x-text="selectedSector"></span> in <span x-text="selectedYear"></span></p>
                                 </div>
 
-                                <!-- Normal Chart -->
+                                <!-- ══════════════════════════════════════════════════════ -->
+                                <!-- MOBILE VIEW: Inline list (≤ 767px)                   -->
+                                <!-- ══════════════════════════════════════════════════════ -->
+                                <div x-show="getFilteredData().length > 0" class="licensure-mobile space-y-0">
+                                    <div x-show="loadingLicensure" class="flex items-center justify-center py-10">
+                                        <div class="animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-slate-500"></div>
+                                    </div>
+                                    <template x-if="!loadingLicensure && getFilteredData().length > 0">
+                                        <div>
+                                            <template x-for="(item, rowIndex) in [...getFilteredData()].sort((a,b) => b.passing_rate - a.passing_rate)" :key="item.profession">
+                                                <div class="py-2.5 border-b border-slate-100 last:border-0 trend-row-animate"
+                                                     :style="`animation-delay: ${rowIndex * 40}ms`">
+                                                    <!-- Profession name + passing rate -->
+                                                    <div class="flex items-start justify-between gap-2 mb-1">
+                                                        <span class="text-xs font-semibold text-slate-800 leading-snug"
+                                                              x-text="item.profession"
+                                                              style="max-width: 65%;"></span>
+                                                        <span class="text-xs font-black text-slate-700 flex-shrink-0"
+                                                              x-text="item.passing_rate.toFixed(2) + '%'"></span>
+                                                    </div>
+                                                    <!-- Passers · Takers -->
+                                                    <div class="text-[10px] text-slate-400 mb-1.5">
+                                                        Passers: <span class="font-bold text-slate-600"
+                                                                        x-text="item.passers ? item.passers.toLocaleString() : '—'"></span>
+                                                        <span class="mx-1 text-slate-300">·</span>
+                                                        Takers: <span class="font-bold text-slate-600"
+                                                                       x-text="item.takers ? item.takers.toLocaleString() : '—'"></span>
+                                                    </div>
+                                                    <!-- Bar color matches desktop: sector-specific or default slate, interpolated by rank -->
+                                                    <div class="h-4 rounded overflow-hidden w-full bg-slate-100">
+                                                        <div class="h-full trend-bar-animate"
+                                                             :style="(() => {
+                                                                const total = getFilteredData().length;
+                                                                const factor = total > 1 ? rowIndex / (total - 1) : 0;
+                                                                let sR, sG, sB, eR, eG, eB;
+                                                                const hex = sectorColors[selectedSector];
+                                                                if (selectedSector !== 'all' && hex) {
+                                                                    const h = hex.replace('#','');
+                                                                    const br = parseInt(h.substring(0,2),16);
+                                                                    const bg = parseInt(h.substring(2,4),16);
+                                                                    const bb = parseInt(h.substring(4,6),16);
+                                                                    sR = Math.round(br * 0.5); sG = Math.round(bg * 0.5); sB = Math.round(bb * 0.5);
+                                                                    eR = Math.min(255, Math.round(br + (255-br)*0.6));
+                                                                    eG = Math.min(255, Math.round(bg + (255-bg)*0.6));
+                                                                    eB = Math.min(255, Math.round(bb + (255-bb)*0.6));
+                                                                } else {
+                                                                    sR=30;  sG=41;  sB=59;
+                                                                    eR=241; eG=245; eB=249;
+                                                                }
+                                                                const r = Math.round(sR + (eR-sR) * factor);
+                                                                const g = Math.round(sG + (eG-sG) * factor);
+                                                                const b = Math.round(sB + (eB-sB) * factor);
+                                                                return `width: ${item.passing_rate}%; background: rgb(${r},${g},${b}); animation-delay: ${rowIndex * 40 + 80}ms`;
+                                                             })()"></div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- ══════════════════════════════════════════════════════ -->
+                                <!-- DESKTOP VIEW: Chart.js canvas (≥ 768px)              -->
+                                <!-- ══════════════════════════════════════════════════════ -->
                                 <div x-show="getFilteredData().length > 0"
-                                    class="relative w-full border-2 border-slate-200 rounded-lg p-3 bg-white"
+                                    class="licensure-desktop relative w-full border-2 border-slate-200 rounded-lg p-3 bg-white"
                                     :style="`height: ${getChartHeight()}px`">
                                     <div x-show="loadingLicensure" class="absolute inset-0 bg-white/75 flex items-center justify-center z-10 rounded-lg backdrop-blur-sm">
                                         <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-500"></div>
@@ -1201,6 +1454,101 @@
         </div>
 
         <script>
+    // ── Fixed discipline-to-color map ──────────────────────────────────────────
+    // Colors are permanently assigned by discipline name so they never shift
+    // when percentages change between filters/years.
+    // ── Fixed discipline colors — keyed by every possible API format ─────────
+    // Colors from the reference chart image. Never changes by rank or value.
+    function getDeepBlueByRank(rank, total) {
+        const stops = [
+            { r: 15,  g: 23,  b: 83  },
+            { r: 23,  g: 37,  b: 115 },
+            { r: 30,  g: 58,  b: 138 },
+            { r: 29,  g: 78,  b: 216 },
+            { r: 37,  g: 99,  b: 235 },
+            { r: 59,  g: 130, b: 246 },
+            { r: 96,  g: 165, b: 250 },
+            { r: 147, g: 197, b: 253 },
+            { r: 186, g: 220, b: 254 },
+            { r: 219, g: 238, b: 255 },
+        ];
+        const factor = total > 1 ? rank / (total - 1) : 0;
+        const pos = factor * (stops.length - 1);
+        const lo  = Math.floor(pos);
+        const hi  = Math.min(lo + 1, stops.length - 1);
+        const t   = pos - lo;
+        const r   = Math.round(stops[lo].r + (stops[hi].r - stops[lo].r) * t);
+        const g   = Math.round(stops[lo].g + (stops[hi].g - stops[lo].g) * t);
+        const b   = Math.round(stops[lo].b + (stops[hi].b - stops[lo].b) * t);
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    // Fixed Deep Blue shade per discipline — never changes regardless of value
+    const DISCIPLINE_DEEP_BLUE = {
+        'business':           'rgb(15,23,83)',
+        'education':          'rgb(20,34,102)',
+        'medical':            'rgb(25,48,122)',
+        'criminal_justice':   'rgb(29,64,140)',
+        'engineering':        'rgb(30,78,160)',
+        'it':                 'rgb(32,92,185)',
+        'social_sciences':    'rgb(35,105,200)',
+        'service_trades':     'rgb(37,99,235)',
+        'agriculture':        'rgb(50,115,240)',
+        'maritime':           'rgb(59,130,246)',
+        'architecture':       'rgb(80,148,248)',
+        'natural_science':    'rgb(96,165,250)',
+        'humanities':         'rgb(120,182,251)',
+        'mass_comm':          'rgb(140,195,252)',
+        'arts':               'rgb(155,206,253)',
+        'religion':           'rgb(168,214,253)',
+        'mathematics':        'rgb(180,220,254)',
+        'law':                'rgb(190,226,254)',
+        'home_economics':     'rgb(200,232,255)',
+        'general':            'rgb(210,237,255)',
+        'other_disciplines':  'rgb(219,238,255)',
+        'Business Administration':          'rgb(15,23,83)',
+        'Education Science':                'rgb(20,34,102)',
+        'Medical and Allied':               'rgb(25,48,122)',
+        'Criminal Justice Education':       'rgb(29,64,140)',
+        'Engineering and Technology':       'rgb(30,78,160)',
+        'IT-Related Disciplines':           'rgb(32,92,185)',
+        'Social and Behavioral Sciences':   'rgb(35,105,200)',
+        'Social and Behavioral Science':    'rgb(35,105,200)',
+        'Service Trades':                   'rgb(37,99,235)',
+        'Agriculture, Forestry, Fisheries': 'rgb(50,115,240)',
+        'Maritime':                         'rgb(59,130,246)',
+        'Architecture and Town Planning':   'rgb(80,148,248)',
+        'Natural Science':                  'rgb(96,165,250)',
+        'Humanities':                       'rgb(120,182,251)',
+        'Mass Communication':               'rgb(140,195,252)',
+        'Fine and Applied Arts':            'rgb(155,206,253)',
+        'Religion and Theology':            'rgb(168,214,253)',
+        'Mathematics':                      'rgb(180,220,254)',
+        'Law and Jurisprudence':            'rgb(190,226,254)',
+        'Home Economics':                   'rgb(200,232,255)',
+        'General Programs':                 'rgb(210,237,255)',
+        'Other Disciplines':                'rgb(219,238,255)',
+        'Business & Admin':   'rgb(15,23,83)',
+        'Medical & Allied':   'rgb(25,48,122)',
+        'Criminal Justice':   'rgb(29,64,140)',
+        'Engineering & Tech': 'rgb(30,78,160)',
+        'IT & Related':       'rgb(32,92,185)',
+        'Social Sciences':    'rgb(35,105,200)',
+        'Agri & Forestry':    'rgb(50,115,240)',
+        'Fine Arts':          'rgb(155,206,253)',
+        'Religion':           'rgb(168,214,253)',
+        'Mass Comm':          'rgb(140,195,252)',
+        'Education':          'rgb(20,34,102)',
+        'Law':                'rgb(190,226,254)',
+    };
+    function getDeepBlueForDiscipline(key) {
+        return DISCIPLINE_DEEP_BLUE[key]
+            || DISCIPLINE_DEEP_BLUE[(key||'').toLowerCase()]
+            || 'rgb(219,238,255)';
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+
     document.addEventListener('alpine:init', () => {
         Alpine.data('licensureChartData', () => ({
             selectedSector: 'all',
@@ -1228,10 +1576,10 @@
             // New charts variables
             disciplineMarketShareChart: null,
             enrollmentTrendChart: null,
-            selectedProvince: 'Davao City',
+            selectedProvince: 'Davao Region',
             selectedTrendYear: '',
             availableTrendYears: [], // Will be loaded from API
-            selectedTrendProvince: 'Davao City',
+            selectedTrendProvince: 'Davao Region',
             availableTrendProvinces: [], // Will be loaded from API
             
             // Enrollment Trend totals for stats display
@@ -1241,12 +1589,13 @@
                 combined: 0
             },
             trendDataCount: 0,
+            trendTableData: [], // Populated by buildEnrollmentTrendChart() — used by mobile inline bar table
             
             // NEW: Enrollment Overview Data (for top cards and pie chart)
             totalEnrollees: 0,
             disciplineShares: {}, // Will be populated dynamically with all individual disciplines
             
-            // 🆕 Executive Analysis
+            // Executive Analysis
             executiveAnalysisText: 'Loading analysis...',
             loadingExecutiveAnalysis: false,
             
@@ -1373,54 +1722,46 @@
             // NEW: Load Graduation Rate Data for current year
             async loadGraduationRateData() {
                 this.loadingGraduationRate = true;
-                
+
                 try {
-                    // Get current academic year (adjust this logic based on your needs)
-                    // For example: if it's currently 2026, the graduate year would be 2025-2026
-                    const currentDate = new Date();
-                    const currentYear = currentDate.getFullYear();
-                    const currentMonth = currentDate.getMonth() + 1; // 1-12
-                    
-                    // If we're past June (month 6), use next year for second part
-                    // e.g., July 2025 = 2025-2026, March 2025 = 2024-2025
-                    let graduateYear;
-                    if (currentMonth >= 7) {
-                        graduateYear = `${currentYear}-${currentYear + 1}`;
+                    // Fetch all saved graduation rate records and pick the most recent
+                    // one that has actual projected_graduates data.
+                    // This avoids showing 0 when the current year's cohort enrollment
+                    // (4 years back) hasn't been entered yet.
+                    const allResponse = await fetch('/api/graduation-rate/');
+                    if (!allResponse.ok) throw new Error(`HTTP ${allResponse.status}`);
+                    const allRecords = await allResponse.json();
+
+                    // Sort descending by graduate_year so newest is first
+                    const sorted = Array.isArray(allRecords)
+                        ? [...allRecords].sort((a, b) => (b.graduate_year ?? '').localeCompare(a.graduate_year ?? ''))
+                        : [];
+
+                    // Walk through records and pick the first one with real data
+                    const validRecord = sorted.find(r =>
+                        r.projected_graduates > 0 &&
+                        r.enrollment_year &&
+                        r.graduation_rate
+                    );
+
+                    if (validRecord) {
+                        this.graduationRateData = validRecord;
                     } else {
-                        graduateYear = `${currentYear - 1}-${currentYear}`;
-                    }
-                    
-                    // removed debug log
-                    
-                    const response = await fetch(`/api/graduation-rate/${encodeURIComponent(graduateYear)}`);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    
-                    const result = await response.json();
-                    
-                    if (result.success && result.data) {
-                        this.graduationRateData = result.data;
-                        // removed debug log
-                    } else {
-                        // removed warning
+                        // No valid record found — show empty state
                         this.graduationRateData = {
-                            graduate_year: graduateYear,
+                            graduate_year: null,
                             enrollment_year: null,
-                            graduation_rate: 60,
+                            graduation_rate: null,
                             base_enrollees: 0,
                             projected_graduates: 0,
                             is_default: true
                         };
                     }
                 } catch (error) {
-                    // removed error
-                    // Set default empty data
                     this.graduationRateData = {
                         graduate_year: null,
                         enrollment_year: null,
-                        graduation_rate: 60,
+                        graduation_rate: null,
                         base_enrollees: 0,
                         projected_graduates: 0,
                         is_default: true
@@ -1440,28 +1781,29 @@
                     if (!years || years.length === 0) return;
 
                     // Walk through years newest-first, find the latest year where
-                    // BOTH conditions are true:
-                    //   1. The year exists in the years list (API has data for it)
-                    //   2. Davao Region / Total row actually exists for that year
+                    // Davao Region has Private OR Public data (now uses Private+Public split)
                     let resolvedYear = null;
                     let resolvedTotal = 0;
 
                     for (const year of years) {
-                        const result = await fetch(
-                            `/api/discipline-enrollment/check/${encodeURIComponent(year)}?province=Davao+Region&institution_type=Total`
-                        );
-                        if (result.ok) {
-                            const raw = await result.json();
-                            // API returns disciplines nested under raw.data.disciplines
-                            if (raw.exists && raw.data && raw.data.disciplines) {
-                                const total = Object.values(raw.data.disciplines)
-                                    .reduce((sum, val) => sum + (parseInt(val) || 0), 0);
-                                if (total > 0) {
-                                    resolvedYear  = year;
-                                    resolvedTotal = total;
-                                    break; // Found the most recent valid year — stop
+                        const [privateResult, publicResult] = await Promise.allSettled([
+                            fetch(`/api/discipline-enrollment/check/${encodeURIComponent(year)}?province=Davao+Region&institution_type=Private`),
+                            fetch(`/api/discipline-enrollment/check/${encodeURIComponent(year)}?province=Davao+Region&institution_type=Public`)
+                        ]);
+                        let yearTotal = 0;
+                        for (const res of [privateResult, publicResult]) {
+                            if (res.status === 'fulfilled' && res.value.ok) {
+                                const raw = await res.value.json();
+                                if (raw.exists && raw.data && raw.data.disciplines) {
+                                    yearTotal += Object.values(raw.data.disciplines)
+                                        .reduce((sum, val) => sum + (parseInt(val) || 0), 0);
                                 }
                             }
+                        }
+                        if (yearTotal > 0) {
+                            resolvedYear  = year;
+                            resolvedTotal = yearTotal;
+                            break; // Found the most recent valid year — stop
                         }
                     }
 
@@ -1539,58 +1881,9 @@
             },
 
             // Helper function to generate consistent colors for disciplines
+            // Delegates to the global fixed color map so colors never change by rank/value
             getDisciplineColor(discipline) {
-                // Color palette inspired by portfolio chart - gradient from red through yellow, green, to blue/purple
-                const colors = [
-                    // Reds (hot)
-                    'rgb(220, 38, 38)',    // Red
-                    'rgb(239, 68, 68)',    // Light Red
-                    'rgb(248, 113, 113)',  // Lighter Red
-                    
-                    // Oranges
-                    'rgb(234, 88, 12)',    // Dark Orange
-                    'rgb(249, 115, 22)',   // Orange
-                    'rgb(251, 146, 60)',   // Light Orange
-                    'rgb(253, 186, 116)',  // Lighter Orange
-                    
-                    // Yellows
-                    'rgb(245, 158, 11)',   // Amber
-                    'rgb(251, 191, 36)',   // Yellow
-                    'rgb(253, 224, 71)',   // Light Yellow
-                    
-                    // Lime/Yellow-Green
-                    'rgb(132, 204, 22)',   // Lime
-                    'rgb(163, 230, 53)',   // Light Lime
-                    
-                    // Greens
-                    'rgb(22, 163, 74)',    // Dark Green
-                    'rgb(34, 197, 94)',    // Green
-                    'rgb(74, 222, 128)',   // Light Green
-                    'rgb(134, 239, 172)',  // Lighter Green
-                    
-                    // Teals/Cyan
-                    'rgb(20, 184, 166)',   // Teal
-                    'rgb(45, 212, 191)',   // Light Teal
-                    
-                    // Blues
-                    'rgb(37, 99, 235)',    // Blue
-                    'rgb(59, 130, 246)',   // Light Blue
-                    'rgb(96, 165, 250)',   // Lighter Blue
-                    'rgb(147, 197, 253)',  // Very Light Blue
-                    
-                    // Purples/Violets (cool)
-                    'rgb(124, 58, 237)',   // Violet
-                    'rgb(139, 92, 246)',   // Purple
-                    'rgb(168, 85, 247)',   // Light Purple
-                    'rgb(192, 132, 252)',  // Lighter Purple
-                ];
-                
-                // Use hash of discipline name to get consistent color
-                let hash = 0;
-                for (let i = 0; i < discipline.length; i++) {
-                    hash = discipline.charCodeAt(i) + ((hash << 5) - hash);
-                }
-                return colors[Math.abs(hash) % colors.length];
+                return getDeepBlueForDiscipline(discipline);
             },
 
             async loadData() {
@@ -1720,8 +2013,9 @@
                     const response = await fetch('/api/discipline-enrollment/provinces');
                     const provinces = await response.json();
                     // Always include "Davao Region" as the first option
-                    // Exclude Davao Region from trend — no Private/Public split available
-                    this.availableTrendProvinces = provinces.filter(p => p !== 'Davao Region');
+                    // Davao Region now has Private/Public data — include it in the trend list
+                    const filteredTrend = provinces.filter(p => p !== 'Davao Region');
+                    this.availableTrendProvinces = ['Davao Region', ...filteredTrend];
                     // removed debug log
                 } catch (error) {
                     // removed error
@@ -1739,34 +2033,24 @@
 
 
 
-            // Smart enrollment fetch: uses Total for Davao Region, Private+Public for specific provinces
+            // Smart enrollment fetch: uses Private+Public for all provinces including Davao Region
             async fetchEnrollmentByProvince(year, province) {
-                if (province === 'Davao Region') {
-                    const result = await fetch(`/api/discipline-enrollment/check/${encodeURIComponent(year)}?province=Davao+Region&institution_type=Total`);
-                    let totalData = { disciplines: {} };
-                    if (result.ok) {
-                        const raw = await result.json();
-                        if (raw.exists && raw.data) { totalData = raw.data; }
-                    }
-                    // Return same shape as private+public pair but merged into one
-                    return { privateData: totalData, publicData: { disciplines: {} }, isDavaoTotal: true };
-                } else {
-                    const [privateResult, publicResult] = await Promise.allSettled([
-                        fetch(`/api/discipline-enrollment/check/${encodeURIComponent(year)}?province=${encodeURIComponent(province)}&institution_type=Private`),
-                        fetch(`/api/discipline-enrollment/check/${encodeURIComponent(year)}?province=${encodeURIComponent(province)}&institution_type=Public`)
-                    ]);
-                    let privateData = { disciplines: {} };
-                    let publicData = { disciplines: {} };
-                    if (privateResult.status === 'fulfilled' && privateResult.value.ok) {
-                        const raw = await privateResult.value.json();
-                        if (raw.exists && raw.data) { privateData = raw.data; }
-                    }
-                    if (publicResult.status === 'fulfilled' && publicResult.value.ok) {
-                        const raw = await publicResult.value.json();
-                        if (raw.exists && raw.data) { publicData = raw.data; }
-                    }
-                    return { privateData, publicData, isDavaoTotal: false };
+                // NOTE: Davao Region now has Private/Public data — treat it like any other province
+                const [privateResult, publicResult] = await Promise.allSettled([
+                    fetch(`/api/discipline-enrollment/check/${encodeURIComponent(year)}?province=${encodeURIComponent(province)}&institution_type=Private`),
+                    fetch(`/api/discipline-enrollment/check/${encodeURIComponent(year)}?province=${encodeURIComponent(province)}&institution_type=Public`)
+                ]);
+                let privateData = { disciplines: {} };
+                let publicData = { disciplines: {} };
+                if (privateResult.status === 'fulfilled' && privateResult.value.ok) {
+                    const raw = await privateResult.value.json();
+                    if (raw.exists && raw.data) { privateData = raw.data; }
                 }
+                if (publicResult.status === 'fulfilled' && publicResult.value.ok) {
+                    const raw = await publicResult.value.json();
+                    if (raw.exists && raw.data) { publicData = raw.data; }
+                }
+                return { privateData, publicData, isDavaoTotal: false };
             },
             async loadEnrollmentData() {
                 this.loadingDisciplineEnrollment = true;
@@ -1774,7 +2058,7 @@
                     // Fetch aggregated data based on selected province for both Private and Public
                     const province = this.selectedEnrollmentProvince;
 
-                    // Smart fetch: uses Total for Davao Region, Private+Public for specific provinces
+                    // Smart fetch: uses Private+Public for all provinces including Davao Region
                     const { privateData, publicData } = await this.fetchEnrollmentByProvince(this.selectedEnrollmentYear, province);
 
                     // Combine for total enrollment
@@ -1820,6 +2104,18 @@
                             count: (privateData.disciplines.arts || 0) + (publicData.disciplines.arts || 0),
                             private: privateData.disciplines.arts || 0,
                             public: publicData.disciplines.arts || 0
+                        },
+                        { 
+                            discipline: 'General Programs', 
+                            count: (privateData.disciplines.general || 0) + (publicData.disciplines.general || 0),
+                            private: privateData.disciplines.general || 0,
+                            public: publicData.disciplines.general || 0
+                        },
+                        { 
+                            discipline: 'Home Economics', 
+                            count: (privateData.disciplines.home_economics || 0) + (publicData.disciplines.home_economics || 0),
+                            private: privateData.disciplines.home_economics || 0,
+                            public: publicData.disciplines.home_economics || 0
                         },
                         { 
                             discipline: 'Humanities', 
@@ -1870,6 +2166,12 @@
                             public: publicData.disciplines.natural_science || 0
                         },
                         { 
+                            discipline: 'Other Disciplines', 
+                            count: (privateData.disciplines.other_disciplines || 0) + (publicData.disciplines.other_disciplines || 0),
+                            private: privateData.disciplines.other_disciplines || 0,
+                            public: publicData.disciplines.other_disciplines || 0
+                        },
+                        { 
                             discipline: 'Religion and Theology', 
                             count: (privateData.disciplines.religion || 0) + (publicData.disciplines.religion || 0),
                             private: privateData.disciplines.religion || 0,
@@ -1887,7 +2189,7 @@
                             private: privateData.disciplines.social_sciences || 0,
                             public: publicData.disciplines.social_sciences || 0
                         }
-                    ].filter(item => item.count > 0); // Only show disciplines with enrollment
+                    ]; // Show all 21 disciplines including those with 0 enrollment
                     
                     // removed debug log
                     this.$nextTick(() => this.updateEnrollmentChart());
@@ -1895,7 +2197,7 @@
                     // NEW: Also load enrollment overview data (for top cards and pie chart)
                     await this.loadEnrollmentOverviewData();
                     
-                    // 🆕 Load Executive Analysis
+                    // Load Executive Analysis
                     await this.loadExecutiveAnalysis();
                 } catch (error) {
                     // removed error
@@ -1905,7 +2207,7 @@
                 }
             },
 
-            // 🆕 Load Executive Analysis from database
+            // Load Executive Analysis from database
             async loadExecutiveAnalysis() {
                 this.loadingExecutiveAnalysis = true;
                 
@@ -2008,7 +2310,7 @@
                                 }]
                             },
                             options: {
-                                // ✅ ENHANCED ANIMATION OPTIONS
+                                // ENHANCED ANIMATION OPTIONS
                                 animation: {
                                     duration: 1500,
                                     easing: 'easeOutQuart',
@@ -2254,14 +2556,6 @@
                                         `Total Takers: ${counts[c.dataIndex].toLocaleString()}`
                                     ]
                                 }
-                            },
-                            datalabels: {
-                                anchor: 'end',
-                                align: 'end',
-                                color: '#1e293b',
-                                font: { size: 12, weight: 'bold' },
-                                formatter: (v) => v.toFixed(2) + '%',
-                                padding: { right: 6 }
                             }
                         },
                         scales: {
@@ -2294,7 +2588,45 @@
                             }
                         }
                     },
-                    plugins: [ChartDataLabels]
+                    plugins: [{
+                        id: 'licensureModalValueLabels',
+                        afterDatasetsDraw: function(chart) {
+                            const ctx = chart.ctx;
+                            const meta = chart.getDatasetMeta(0);
+                            if (!meta || !meta.data || meta.data.length === 0) return;
+                            ctx.save();
+                            meta.data.forEach((element, index) => {
+                                const passers = filteredData[index].passers;
+                                const passingRate = filteredData[index].passing_rate;
+                                const base = element.base;
+                                const x = element.x;
+                                const y = element.y;
+                                // Draw passers count centered inside the bar (white with black outline)
+                                if (passers && passers > 0) {
+                                    const passersText = new Intl.NumberFormat('en-US').format(passers);
+                                    const centerX = base + ((x - base) / 2);
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'middle';
+                                    ctx.font = 'bold 13px Arial, sans-serif';
+                                    ctx.strokeStyle = '#000000';
+                                    ctx.lineWidth = 3;
+                                    ctx.strokeText(passersText, centerX, y);
+                                    ctx.fillStyle = '#ffffff';
+                                    ctx.fillText(passersText, centerX, y);
+                                }
+                                // Draw passing rate % outside the bar end (dark text)
+                                if (passingRate) {
+                                    const rateText = passingRate.toFixed(2) + '%';
+                                    ctx.textAlign = 'left';
+                                    ctx.textBaseline = 'middle';
+                                    ctx.font = 'bold 12px Arial, sans-serif';
+                                    ctx.fillStyle = '#1e293b';
+                                    ctx.fillText(rateText, x + 8, y);
+                                }
+                            });
+                            ctx.restore();
+                        }
+                    }]
                 });
             },
 
@@ -2355,7 +2687,38 @@
                                 categoryPercentage: 0.6, barPercentage: 0.7
                             }
                         }
-                    }
+                    },
+                    plugins: [{
+                        id: 'modalValueLabels',
+                        afterDatasetsDraw: function(chart) {
+                            const ctx = chart.ctx;
+                            chart.data.datasets.forEach((dataset, datasetIndex) => {
+                                const meta = chart.getDatasetMeta(datasetIndex);
+                                if (!meta || !meta.data || meta.data.length === 0) return;
+                                ctx.save();
+                                ctx.font = 'bold 12px Arial, sans-serif';
+                                meta.data.forEach((element, index) => {
+                                    const value = dataset.data[index];
+                                    if (value && value > 0) {
+                                        const barWidth = Math.abs(element.x - element.base);
+                                        const valueText = value.toLocaleString();
+                                        if (barWidth > 40) {
+                                            const centerX = element.base + (barWidth / 2);
+                                            const y = element.y;
+                                            ctx.textAlign = 'center';
+                                            ctx.textBaseline = 'middle';
+                                            ctx.strokeStyle = '#000000';
+                                            ctx.lineWidth = 3;
+                                            ctx.strokeText(valueText, centerX, y);
+                                            ctx.fillStyle = '#ffffff';
+                                            ctx.fillText(valueText, centerX, y);
+                                        }
+                                    }
+                                });
+                                ctx.restore();
+                            });
+                        }
+                    }]
                 });
             },
 
@@ -2403,7 +2766,38 @@
                                 categoryPercentage: 0.9, barPercentage: 0.95
                             }
                         }
-                    }
+                    },
+                    plugins: [{
+                        id: 'disciplineModalValueLabels',
+                        afterDatasetsDraw: function(chart) {
+                            const ctx = chart.ctx;
+                            chart.data.datasets.forEach((dataset, datasetIndex) => {
+                                const meta = chart.getDatasetMeta(datasetIndex);
+                                if (!meta || !meta.data || meta.data.length === 0) return;
+                                ctx.save();
+                                ctx.font = 'bold 12px Arial, sans-serif';
+                                meta.data.forEach((element, index) => {
+                                    const value = dataset.data[index];
+                                    if (value && value > 0) {
+                                        const barWidth = Math.abs(element.x - element.base);
+                                        const valueText = value.toLocaleString();
+                                        if (barWidth > 40) {
+                                            const centerX = element.base + (barWidth / 2);
+                                            const y = element.y;
+                                            ctx.textAlign = 'center';
+                                            ctx.textBaseline = 'middle';
+                                            ctx.strokeStyle = '#000000';
+                                            ctx.lineWidth = 3;
+                                            ctx.strokeText(valueText, centerX, y);
+                                            ctx.fillStyle = '#ffffff';
+                                            ctx.fillText(valueText, centerX, y);
+                                        }
+                                    }
+                                });
+                                ctx.restore();
+                            });
+                        }
+                    }]
                 });
             },
 
@@ -2416,37 +2810,14 @@
                 const existing = Chart.getChart(ctx);
                 if (existing) existing.destroy();
 
-                // ── Build labels/data in same iteration order as normal chart ──
-                const labels = [];
-                const data = [];
-                Object.entries(this.disciplineShares).forEach(([discipline, percentage]) => {
-                    labels.push(this.formatDisciplineName(discipline));
-                    data.push(parseFloat(percentage));
-                });
-
-                // ── Same color palette as normal chart ──
-                const colorPalette = [
-                    'rgb(37, 99, 235)', 'rgb(220, 38, 38)', 'rgb(22, 163, 74)',
-                    'rgb(234, 179, 8)',  'rgb(249, 115, 22)', 'rgb(124, 58, 237)',
-                    'rgb(20, 184, 166)', 'rgb(236, 72, 153)', 'rgb(6, 182, 212)',
-                    'rgb(132, 204, 22)', 'rgb(96, 165, 250)', 'rgb(248, 113, 113)',
-                    'rgb(74, 222, 128)', 'rgb(250, 204, 21)', 'rgb(251, 146, 60)',
-                    'rgb(167, 139, 250)','rgb(45, 212, 191)', 'rgb(244, 114, 182)',
-                    'rgb(34, 211, 238)', 'rgb(163, 230, 53)'
-                ];
-
-                // ── Same sort-then-assign logic as normal chart ──
-                const sortedIndices = data
-                    .map((value, index) => ({ value, index }))
-                    .sort((a, b) => b.value - a.value);
-
-                const colors = new Array(data.length);
-                sortedIndices.forEach((item, sortedIndex) => {
-                    colors[item.index] = colorPalette[sortedIndex % colorPalette.length];
-                });
-
-                // ── Top 5 for datalabels (same as normal chart) ──
-                const top5Indices = sortedIndices.slice(0, 5).map(item => item.index);
+                // ── Sort highest → lowest, fixed Deep Blue per discipline ──
+                const sortedEntries = Object.entries(this.disciplineShares)
+                    .sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
+                const rawLabelsModal = sortedEntries.map(e => e[0]);
+                const labels        = sortedEntries.map(e => this.formatDisciplineName(e[0]));
+                const data          = sortedEntries.map(e => parseFloat(e[1]));
+                const colors        = rawLabelsModal.map(d => getDeepBlueForDiscipline(d));
+                const top5Indices   = [0,1,2,3,4].filter(i => i < data.length);
 
                 new Chart(ctx, {
                     type: 'doughnut',
@@ -2564,7 +2935,7 @@
                     return;
                 }
                 
-                // 🔧 IMPROVED: Properly destroy existing chart using Chart.js registry
+                // IMPROVED: Properly destroy existing chart using Chart.js registry
                 const existingChart = Chart.getChart(ctx);
                 if (existingChart) {
                     existingChart.destroy();
@@ -2620,7 +2991,7 @@
                                 }]
                             },
                             options: {
-                                // ✅ ENHANCED ANIMATION OPTIONS - Same as enrollment chart
+                                // ENHANCED ANIMATION OPTIONS - Same as enrollment chart
                                 animation: {
                                     duration: 1500,
                                     easing: 'easeOutQuart',
@@ -2907,6 +3278,22 @@
                     // Update dynamic height via Alpine state
                     this.trendDataCount = cleanLabels.length;
 
+                    // ── Build trendTableData for the mobile inline bar table ──
+                    const maxTotal = Math.max(...cleanLabels.map((_, i) => (cleanPublic[i] || 0) + (cleanPrivate[i] || 0)), 1);
+                    this.trendTableData = cleanLabels.map((label, i) => {
+                        const pub   = cleanPublic[i]  || 0;
+                        const priv  = cleanPrivate[i] || 0;
+                        const total = pub + priv;
+                        return {
+                            label,
+                            publicPct:        Math.round((pub  / maxTotal) * 1000) / 10,
+                            privatePct:       Math.round((priv / maxTotal) * 1000) / 10,
+                            publicFormatted:  pub.toLocaleString(),
+                            privateFormatted: priv.toLocaleString(),
+                            totalFormatted:   total.toLocaleString(),
+                        };
+                    }).sort((a, b) => (b.publicPct + b.privatePct) - (a.publicPct + a.privatePct));
+
                     // Wait one tick so Alpine resizes the container before Chart.js measures it
                     await this.$nextTick();
 
@@ -2937,7 +3324,7 @@
                                 ]
                             },
                             options: {
-                                // ✅ Same animation as Enrollment by Discipline
+                                // Same animation as Enrollment by Discipline
                                 animation: {
                                     duration: 1500,
                                     easing: 'easeOutQuart',
@@ -3011,7 +3398,7 @@
                                             autoSkip: false,
                                             padding: 8
                                         },
-                                        // ✅ Same thickness as Enrollment by Discipline
+                                        // Same thickness as Enrollment by Discipline
                                         categoryPercentage: 0.9,
                                         barPercentage: 0.80,
                                         title: {
@@ -3031,6 +3418,7 @@
                                     chart.data.datasets.forEach((dataset, datasetIndex) => {
                                         const meta = chart.getDatasetMeta(datasetIndex);
                                         if (!meta?.data?.length) return;
+                                        if (meta.hidden) return; // skip hidden datasets
                                         ctx.save();
                                         ctx.font = 'bold 13px Arial, sans-serif';
                                         meta.data.forEach((element, index) => {
@@ -3080,7 +3468,7 @@
                 try {
                     // removed debug log
                     
-                    // Smart fetch: uses Total for Davao Region, Private+Public for specific provinces
+                    // Smart fetch: uses Private+Public for all provinces including Davao Region
                     const province = this.selectedEnrollmentProvince;
                     const { privateData, publicData } = await this.fetchEnrollmentByProvince(this.selectedEnrollmentYear, province);
 
@@ -3168,54 +3556,14 @@
                     existingChart.destroy();
                 }
 
-                // Prepare data for all individual disciplines
-                const labels = [];
-                const data = [];
-                
-                Object.entries(this.disciplineShares).forEach(([discipline, percentage]) => {
-                    labels.push(this.formatDisciplineName(discipline));
-                    data.push(parseFloat(percentage));
-                });
-
-                // Sort by percentage (highest first) to create gradient
-                const sortedIndices = data
-                    .map((value, index) => ({ value, index }))
-                    .sort((a, b) => b.value - a.value);
-                
-                // Generate colors - primary colors first, then shades when primaries run out
-                const colorPalette = [
-                    // Primary colors
-                    'rgb(37, 99, 235)',    // Blue
-                    'rgb(220, 38, 38)',    // Red
-                    'rgb(22, 163, 74)',    // Green
-                    'rgb(234, 179, 8)',    // Yellow
-                    'rgb(249, 115, 22)',   // Orange
-                    'rgb(124, 58, 237)',   // Violet/Purple
-                    'rgb(20, 184, 166)',   // Teal
-                    'rgb(236, 72, 153)',   // Pink
-                    'rgb(6, 182, 212)',    // Cyan
-                    'rgb(132, 204, 22)',   // Lime
-                    // Shades (used when primaries run out)
-                    'rgb(96, 165, 250)',   // Blue-400 (lighter blue)
-                    'rgb(248, 113, 113)',  // Red-400 (lighter red)
-                    'rgb(74, 222, 128)',   // Green-400 (lighter green)
-                    'rgb(250, 204, 21)',   // Yellow-400 (lighter yellow)
-                    'rgb(251, 146, 60)',   // Orange-400 (lighter orange)
-                    'rgb(167, 139, 250)',  // Violet-400 (lighter purple)
-                    'rgb(45, 212, 191)',   // Teal-400 (lighter teal)
-                    'rgb(244, 114, 182)',  // Pink-400 (lighter pink)
-                    'rgb(34, 211, 238)',   // Cyan-400 (lighter cyan)
-                    'rgb(163, 230, 53)',   // Lime-400 (lighter lime)
-                ];
-                
-                // Assign colors based on sorted order
-                const colors = new Array(data.length);
-                sortedIndices.forEach((item, sortedIndex) => {
-                    colors[item.index] = colorPalette[sortedIndex % colorPalette.length];
-                });
-
-                // Identify top 5 for labels
-                const top5Indices = sortedIndices.slice(0, 5).map(item => item.index);
+                // ── Sort highest → lowest, fixed Deep Blue per discipline ──
+                const sortedEntries = Object.entries(this.disciplineShares)
+                    .sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
+                const rawLabels   = sortedEntries.map(e => e[0]);
+                const labels      = sortedEntries.map(e => this.formatDisciplineName(e[0]));
+                const data        = sortedEntries.map(e => parseFloat(e[1]));
+                const colors      = rawLabels.map(d => getDeepBlueForDiscipline(d));
+                const top5Indices = [0,1,2,3,4].filter(i => i < data.length);
 
                 const chartData = {
                     labels: labels,

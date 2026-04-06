@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logoIcon/dole_logo.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
 
@@ -82,45 +83,32 @@
                                     placeholder="e.g. 2024-2025" 
                                     pattern="\d{4}-\d{4}"
                                     required 
+                                    oninput="toggleClearBtn(this.value)"
                                     class="w-48 px-4 py-3 border-2 border-gray-300 rounded-lg text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 >
                                 <button 
                                     type="button"
                                     onclick="checkAndLoadYear()"
-                                    class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+                                    class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2 whitespace-nowrap"
                                 >
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                     </svg>
                                     Check / Edit Year
                                 </button>
-                            </div>
-                            <div id="yearDisplay" class="hidden items-center gap-3">
-                                <span id="displayYear" class="text-2xl font-bold text-purple-600">----</span>
-                                <button 
+                                <button
                                     type="button"
-                                    onclick="changeYear()"
-                                    title="Change to a different year"
-                                    class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2 text-sm"
+                                    id="clearYearBtn"
+                                    onclick="clearYearInput()"
+                                    class="hidden px-4 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2 whitespace-nowrap"
                                 >
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                     </svg>
-                                    Change Year
+                                    Cancel
                                 </button>
                             </div>
-                            <button 
-                                type="button"
-                                id="cancelYearChangeBtn"
-                                onclick="cancelYearChange()"
-                                class="hidden px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2 text-sm"
-                                title="Cancel and go back"
-                            >
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                Cancel
-                            </button>
+
                         </div>
                     </div>
                 </div>
@@ -154,7 +142,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
-                            Save Rate
+                            Save 
                         </button>
                     </div>
 
@@ -341,7 +329,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="p-6">
                 <div class="bg-purple-50 border-l-4 border-purple-500 p-4 mb-4">
                     <div class="flex items-start gap-3">
@@ -354,11 +341,9 @@
                         </div>
                     </div>
                 </div>
-
                 <p class="text-gray-700 mb-6">
                     Data already exists for this academic year. Would you like to <strong>edit the existing data</strong> or <strong>enter a different year</strong>?
                 </p>
-
                 <div class="flex flex-col gap-3">
                     <button
                         onclick="confirmLoadExistingData()"
@@ -379,94 +364,6 @@
                         No, Enter Different Year
                     </button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Confirm Year Change -->
-    <div id="changeYearModal" class="hidden fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full transform transition-all">
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                        </svg>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="text-xl font-bold text-gray-900">Confirm Year Change</h3>
-                        <p class="text-sm text-gray-600 mt-1">Are you sure you want to change the year?</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-6">
-                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 mb-4">
-                    <p class="font-semibold text-amber-900">Current Year: <span id="changeYearCurrent" class="text-amber-700"></span></p>
-                </div>
-
-                <p class="text-gray-700 mb-2">
-                    Changing the year will clear the current graduation rate data. Any unsaved changes will be lost.
-                </p>
-                <p class="text-sm text-gray-600 mb-6">
-                    Make sure you've saved your current work before proceeding.
-                </p>
-
-                <div class="flex gap-3">
-                    <button
-                        onclick="closeChangeYearModal()"
-                        class="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onclick="confirmChangeYear()"
-                        class="flex-1 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
-                    >
-                        Yes, Change Year
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Year Collision (changing TO a year that already has data) -->
-    <div id="yearCollisionModal" class="hidden fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full transform transition-all">
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                        </svg>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="text-xl font-bold text-gray-900">Year Already Has Data</h3>
-                        <p class="text-sm text-gray-600 mt-1">Cannot change to a year with existing data</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-6">
-                <div class="space-y-3 mb-4">
-                    <div class="bg-red-50 border-l-4 border-red-500 p-4">
-                        <p class="font-semibold text-red-900">Target Year: <span id="collisionTargetYear" class="text-red-700"></span></p>
-                    </div>
-                    <div class="bg-purple-50 border-l-4 border-purple-500 p-4">
-                        <p class="font-semibold text-purple-900">Current Year: <span id="collisionCurrentYear" class="text-purple-700"></span></p>
-                    </div>
-                </div>
-
-                <p class="text-gray-700 mb-6">
-                    The year you're trying to switch to already contains graduation rate data. Please choose a different year or edit the existing data directly.
-                </p>
-
-                <button
-                    onclick="closeYearCollisionModal()"
-                    class="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
-                >
-                    Understood, Choose Different Year
-                </button>
             </div>
         </div>
     </div>
@@ -545,7 +442,7 @@
                         onclick="confirmSaveRate()"
                         class="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
                     >
-                        <span id="confirmSaveBtnText">Save</span> Rate
+                        <span id="confirmSaveBtnText">Save</span> 
                     </button>
                 </div>
             </div>
@@ -570,7 +467,7 @@
                     onclick="closeSuccessModal()"
                     class="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
                 >
-                    Continue
+                    Done
                 </button>
             </div>
         </div>
@@ -579,7 +476,6 @@
     <script>
         let currentYear = null;
         let graduationRateData = null;
-        let isChangingYear = false;
         let pendingYearData = null;
         let descriptionQuill = null; // Quill instance for the description editor
 
@@ -705,6 +601,15 @@
         }
 
         // ─── Year Format Validation ─────────────────────────────────────────────
+        function toggleClearBtn(value) {
+            const btn = document.getElementById('clearYearBtn');
+            value.trim() ? btn.classList.remove('hidden') : btn.classList.add('hidden');
+        }
+
+        function clearYearInput() {
+            resetForm();
+        }
+
         async function checkAndLoadYear() {
             const yearInput = document.getElementById('academicYear');
             const year = yearInput.value.trim();
@@ -747,12 +652,7 @@
                 const hasSavedRecord = result.success && result.data && result.data.id;
 
                 if (hasSavedRecord) {
-                    // Real existing data found — show modal, do NOT auto-load
-                    if (isChangingYear) {
-                        showYearCollisionModal(year);
-                        isChangingYear = false;
-                        return;
-                    }
+                    // Existing data — show confirmation modal before loading
                     pendingYearData = { year, data: result.data };
                     showExistingDataModal(year, result.data.graduation_rate);
                 } else {
@@ -762,20 +662,13 @@
             } catch (error) {
                 console.error('Error checking year:', error);
                 showToast('An error occurred while checking the year. Please try again.', 'error');
-                isChangingYear = false;
             }
         }
 
         function loadNewYear(year) {
             currentYear = year;
-            document.getElementById('displayYear').textContent = year;
             graduationRateData = null;
             showStatusNotification(year, false);
-            toggleYearDisplay(true);
-            document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
-            isChangingYear = false;
-            // Only fetch the enrollment context (base enrollees, years) for display
-            // Do NOT call loadGraduationRateData — that would silently overwrite with existing data
             loadEnrollmentContext(year);
         }
 
@@ -789,78 +682,34 @@
         function closeExistingDataModal() {
             document.getElementById('existingDataModal').classList.add('hidden');
             pendingYearData = null;
-            document.getElementById('academicYear').value = '';
-            setTimeout(() => document.getElementById('academicYear').focus(), 100);
+            resetForm();
         }
 
         function confirmLoadExistingData() {
             if (!pendingYearData) return;
             const { year, data } = pendingYearData;
             currentYear = year;
-            document.getElementById('displayYear').textContent = year;
             graduationRateData = data;
-            displayGraduationRateData(data);
             document.getElementById('graduationRateCard').style.display = 'block';
             initDescriptionQuill();
+            displayGraduationRateData(data);
             showStatusNotification(year, true);
-            toggleYearDisplay(true);
-            document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
             document.getElementById('existingDataModal').classList.add('hidden');
             pendingYearData = null;
-            isChangingYear = false;
         }
 
-        // ─── Change Year Modal ──────────────────────────────────────────────────
-        function changeYear() {
-            document.getElementById('changeYearCurrent').textContent = document.getElementById('displayYear').textContent;
-            document.getElementById('changeYearModal').classList.remove('hidden');
-        }
-
-        function closeChangeYearModal() {
-            document.getElementById('changeYearModal').classList.add('hidden');
-        }
-
-        function confirmChangeYear() {
-            document.getElementById('changeYearModal').classList.add('hidden');
-            isChangingYear = true;
-            document.getElementById('academicYear').value = '';
-            document.getElementById('displayYear').textContent = '----';
-            hideStatusNotification();
-            clearMissingEnrollmentWarning();
-            hideFutureYearWarning();
-            currentYear = null;
-            graduationRateData = null;
-            document.getElementById('graduationRateCard').style.display = 'none';
-            toggleYearDisplay(false);
-            setTimeout(() => document.getElementById('academicYear').focus(), 100);
-        }
-
-        // ─── Year Collision Modal ───────────────────────────────────────────────
-        function showYearCollisionModal(targetYear) {
-            document.getElementById('collisionTargetYear').textContent = targetYear;
-            document.getElementById('collisionCurrentYear').textContent = currentYear || '----';
-            document.getElementById('yearCollisionModal').classList.remove('hidden');
-        }
-
-        function closeYearCollisionModal() {
-            document.getElementById('yearCollisionModal').classList.add('hidden');
-            document.getElementById('academicYear').value = '';
-            document.getElementById('academicYear').focus();
-        }
-
-        // ─── Cancel Year Change ─────────────────────────────────────────────────
-        function cancelYearChange() {
-            document.getElementById('academicYear').value = '';
-            document.getElementById('displayYear').textContent = '----';
+        // ─── Reset form after save ──────────────────────────────────────────────
+        function resetForm() {
+            const input = document.getElementById('academicYear');
+            input.value = '';
+            document.getElementById('clearYearBtn').classList.add('hidden');
+            if (descriptionQuill) { descriptionQuill.setContents([]); }
             hideStatusNotification();
             clearMissingEnrollmentWarning();
             hideFutureYearWarning();
             document.getElementById('graduationRateCard').style.display = 'none';
-            toggleYearDisplay(false);
-            isChangingYear = false;
             currentYear = null;
             graduationRateData = null;
-            document.getElementById('cancelYearChangeBtn').classList.add('hidden');
             setTimeout(() => document.getElementById('academicYear').focus(), 100);
         }
 
@@ -896,23 +745,7 @@
             document.getElementById('statusNotification').classList.add('hidden');
         }
 
-        // ─── Toggle Year Display ────────────────────────────────────────────────
-        function toggleYearDisplay(showDisplay) {
-            const inputGroup = document.getElementById('yearInputGroup');
-            const yearDisplay = document.getElementById('yearDisplay');
-
-            if (showDisplay) {
-                inputGroup.classList.add('hidden');
-                yearDisplay.classList.remove('hidden');
-                yearDisplay.classList.add('flex');
-            } else {
-                inputGroup.classList.remove('hidden');
-                yearDisplay.classList.add('hidden');
-                yearDisplay.classList.remove('flex');
-            }
-        }
-
-        // ─── Load & Display Graduation Rate Data (used ONLY after modal confirmation) ─
+        // ─── Load & Display Graduation Rate Data ───────────────────────────────
         async function loadGraduationRateData(graduateYear) {
             try {
                 const response = await fetch(`/api/graduation-rate/${graduateYear}`, {
@@ -929,9 +762,9 @@
 
                 if (result.success && result.data) {
                     graduationRateData = result.data;
-                    displayGraduationRateData(result.data);
                     document.getElementById('graduationRateCard').style.display = 'block';
                     initDescriptionQuill();
+                    displayGraduationRateData(result.data);
                 }
             } catch (error) {
                 console.error('Error loading graduation rate:', error);
@@ -940,37 +773,28 @@
 
         // ─── Future Year Detection ──────────────────────────────────────────────
         function isGraduateYearInFuture(graduateYear) {
-            // graduateYear format: "YYYY-YYYY" e.g. "2026-2027"
-            // Graduates finish at the END year (2027), around mid-year (July)
-            const endYear = parseInt(graduateYear.split('-')[1]);
+            // Lock based on START year — once the academic year has begun, saving is allowed
+            // e.g. "2026-2027" is open as soon as 2026 starts (Jan 1, 2026)
+            const startYear = parseInt(graduateYear.split('-')[0]);
             const now = new Date();
             const currentYear = now.getFullYear();
-            const currentMonth = now.getMonth() + 1; // 1-12
 
-            // The year is "past" only when we've reached July of the END year
-            // e.g. "2026-2027" is available from July 2027 onward
-            if (endYear > currentYear) return true;
-            if (endYear === currentYear && currentMonth < 7) return true;
-            return false;
+            return startYear > currentYear;
         }
 
         function showFutureYearWarning(graduateYear) {
             document.getElementById('futureGraduateYear').textContent = graduateYear;
 
-            // Unlock at July of the END year — that's when graduates actually finish
-            // e.g. "2026-2027" → unlocks July 2027
-            const endYear = graduateYear.split('-')[1];
-            document.getElementById('futureYearUnlockYear').textContent = `July ${endYear}`;
+            const startYear = graduateYear.split('-')[0];
+            document.getElementById('futureYearUnlockYear').textContent = startYear;
 
             document.getElementById('futureYearWarning').classList.remove('hidden');
 
-            // Disable Save Rate button — data integrity: can't save future data
             const saveBtn = document.querySelector('button[onclick="saveGraduationRate()"]');
             if (saveBtn) {
                 saveBtn.disabled = true;
                 saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                const endYear = graduateYear.split('-')[1];
-                saveBtn.title = `Saving locked until July ${endYear} — this academic year has not ended yet`;
+                saveBtn.title = `Saving locked until ${startYear} — this academic year has not started yet`;
             }
         }
 
@@ -1257,6 +1081,7 @@
 
         function closeSuccessModal() {
             document.getElementById('successModal').classList.add('hidden');
+            resetForm();
         }
     </script>
 </body>

@@ -2,9 +2,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logoIcon/dole_logo.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.8/dist/cdn.min.js"></script>
     <title>LMI - Job Titles Form</title>
     <style>
         .jt-card {
@@ -42,7 +43,7 @@
         }
         .jt-entry {
             display: grid;
-            grid-template-columns: 32px 1fr 180px 36px;
+            grid-template-columns: 32px 1fr 180px;
             gap: 10px;
             align-items: end;
             background: #f8fafc;
@@ -145,18 +146,74 @@
 
     <div id="mainContent" class="flex-1 flex flex-col overflow-hidden transition-all duration-300">
         <!-- HEADER -->
-        <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 shadow-sm">
-            <h2 class="text-xl font-bold text-slate-800">Job Titles Form • Admin</h2>
-            <div class="flex items-center gap-4">
-                <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">
-                    <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • 2024
+        <header class="bg-white border-b border-slate-200 shadow-sm">
+            <!-- Top row: title + right controls -->
+            <div class="flex items-center justify-between px-8 h-14">
+                <h2 class="text-xl font-bold text-slate-800">Job Titles Form • Admin</h2>
+                <div class="flex items-center gap-4">
+                    <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">
+                        <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • 2024
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
                 </div>
-                <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
+            </div>
+            <!-- Bottom row: status tab pills -->
+            <div class="flex items-center gap-2 px-8 pb-3">
+                <!-- Submit -->
+                <button
+                    onclick="switchTab('submit')"
+                    id="tab-submit"
+                    class="header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border border-blue-200 bg-blue-50 text-blue-700 transition"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Submit
+                </button>
+                <!-- Pending -->
+                <button
+                    onclick="switchTab('pending')"
+                    id="tab-pending"
+                    class="header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border border-slate-200 bg-white text-slate-500 transition hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Pending
+                    <span id="badge-pending" class="bg-amber-100 text-amber-700 text-[11px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">0</span>
+                </button>
+                <!-- Approved -->
+                <button
+                    onclick="switchTab('approved')"
+                    id="tab-approved"
+                    class="header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border border-emerald-200 bg-emerald-50 text-emerald-700 transition"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Approved
+                    <span id="badge-approved" class="bg-emerald-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">0</span>
+                </button>
+                <!-- Rejected -->
+                <button
+                    onclick="switchTab('rejected')"
+                    id="tab-rejected"
+                    class="header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Rejected
+                    <span id="badge-rejected" class="bg-red-100 text-red-600 text-[11px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">0</span>
+                </button>
             </div>
         </header>
 
         <!-- MAIN CONTENT -->
         <div class="flex-1 overflow-auto p-8">
+
+            <!-- ══ SUBMIT TAB PANEL ══ -->
+            <div id="panel-submit">
             <div class="jt-card max-w-6xl mx-auto bg-white rounded-xl shadow p-8">
 
                 <!-- Card header -->
@@ -186,22 +243,16 @@
                             max="2100"
                             required
                             class="jt-input w-48"
+                            onblur="checkYearOnBlur(this)"
                         >
+                        <p id="yearError" class="text-xs text-red-500 font-semibold mt-1 hidden"></p>
                     </div>
 
                     <!-- Job entries -->
                     <p class="text-[10px] font-700 uppercase tracking-widest text-slate-700 font-bold mb-3">Job Entries</p>
-                    <div id="jobEntries" class="space-y-3 mb-4" style="max-height: 350px; overflow-y: auto; padding-right: 4px;">
+                    <div id="jobEntries" class="space-y-3 mb-8" style="max-height: 500px; overflow-y: auto; padding-right: 4px;">
                         <!-- entries injected here -->
                     </div>
-
-                    <!-- Add button -->
-                    <button type="button" onclick="addJobEntry()" class="jt-add-btn mb-8">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        Add Job Title
-                    </button>
 
                     <!-- Actions -->
                     <div class="border-t border-slate-100 pt-5 flex justify-end gap-3">
@@ -220,6 +271,63 @@
                     </div>
                 </form>
             </div>
+            </div><!-- end #panel-submit -->
+
+        <!-- ══════════════════════════════════════════════════════════
+             APPROVED / REJECTED SUBMISSIONS PANEL
+        ══════════════════════════════════════════════════════════ -->
+        <div id="panel-history" class="max-w-6xl mx-auto mt-6 hidden">
+
+            <!-- Panel body (no tab buttons here — tabs are in the header) -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow p-6" style="position: relative; overflow: hidden;">
+                <!-- top accent bar -->
+                <div id="histAccentBar" class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300"></div>
+
+                <!-- Panel title + Filter row -->
+                <div class="flex items-center justify-between mb-5 mt-1">
+                    <div class="flex items-center gap-2">
+                        <span id="histPanelIcon" class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </span>
+                        <span id="histPanelLabel" class="text-[14px] font-bold text-slate-800">Approved Submissions</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <label class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Filter by Year</label>
+                        <select id="histYearFilter" onchange="loadHistory()" class="jt-input w-36 text-sm">
+                            <option value="">All Years</option>
+                        </select>
+                        <button onclick="loadHistory()" class="flex items-center gap-1.5 text-[12px] font-semibold text-blue-600 hover:text-blue-800 transition">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            Refresh
+                        </button>
+                        <div id="histLoader" class="hidden">
+                            <svg class="w-4 h-4 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 22 6.477 22 12h-4z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Year-grouped content area -->
+                <div id="histGroupedContent">
+                    <div class="text-center py-12 text-slate-400 text-sm">
+                        <svg class="w-8 h-8 mx-auto mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Loading records…
+                    </div>
+                </div>
+
+                <!-- Footer count -->
+                <p id="histFooter" class="text-[11px] text-slate-400 mt-4 text-right"></p>
+            </div>
+        </div>
+
         </div>
     </div>
 
@@ -254,20 +362,15 @@
                             <tr class="bg-slate-100">
                                 <th class="text-left px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">#</th>
                                 <th class="text-left px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Job Title</th>
-                                <th class="text-right px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Count</th>
+                                <th class="text-right px-3 py-2 text-[11px] font-semibold text-blue-700 uppercase tracking-wide bg-blue-50">Count</th>
                             </tr>
                         </thead>
                         <tbody id="confirmSummaryTableBody">
                             <!-- rows injected by JS -->
                         </tbody>
-                        <tfoot>
-                            <tr class="bg-blue-50 border-t border-slate-200">
-                                <td colspan="2" class="px-3 py-2 text-xs font-bold text-blue-700">Total Employment</td>
-                                <td id="confirmSummaryTotal" class="px-3 py-2 text-xs font-bold text-blue-700 text-right"></td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
+
             </div>
 
             <div class="flex gap-3">
@@ -317,19 +420,21 @@
                             <tr class="bg-slate-100">
                                 <th class="text-left px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">#</th>
                                 <th class="text-left px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Job Title</th>
-                                <th class="text-right px-3 py-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Count</th>
+                                <th class="text-right px-3 py-2 text-[11px] font-semibold text-blue-700 uppercase tracking-wide bg-blue-50">Count</th>
                             </tr>
                         </thead>
                         <tbody id="summaryTableBody">
                             <!-- rows injected by JS -->
                         </tbody>
-                        <tfoot>
-                            <tr class="bg-blue-50 border-t border-slate-200">
-                                <td colspan="2" class="px-3 py-2 text-xs font-bold text-blue-700">Total Employment</td>
-                                <td id="summaryTotal" class="px-3 py-2 text-xs font-bold text-blue-700 text-right"></td>
-                            </tr>
-                        </tfoot>
                     </table>
+                </div>
+
+                <!-- Stats strip -->
+                <div class="flex gap-3 mt-3">
+                    <div class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-center">
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Total Job Titles</p>
+                        <p id="successJobTitleCount" class="text-lg font-bold text-slate-800"></p>
+                    </div>
                 </div>
             </div>
 
@@ -496,16 +601,7 @@
                         onblur="refornatOnBlur(this)"
                     >
                 </div>
-                <button
-                    type="button"
-                    onclick="removeJobEntry(${entryCount})"
-                    title="Remove"
-                    class="jt-remove-btn"
-                >
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
+
             `;
 
             jobEntries.appendChild(entryDiv);
@@ -537,7 +633,7 @@
             document.getElementById('jobEntries').innerHTML = '';
             document.getElementById('year').value = '';
             entryCount = 0;
-            addJobEntry();
+            for (let i = 0; i < 10; i++) addJobEntry();
         }
 
         function showConfirmModal(data) {
@@ -549,19 +645,31 @@
             // Populate table rows
             const tbody = document.getElementById('confirmSummaryTableBody');
             tbody.innerHTML = '';
-            let total = 0;
+            let totalEmployment = 0;
             data.jobs.forEach((job, i) => {
-                total += job.count;
+                totalEmployment += Number(job.count) || 0;
                 const row = document.createElement('tr');
                 row.className = i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60';
                 row.innerHTML = `
                     <td class="px-3 py-2 text-xs text-slate-400 font-semibold">${i + 1}</td>
                     <td class="px-3 py-2 text-xs text-slate-700">${job.title}</td>
-                    <td class="px-3 py-2 text-xs text-slate-700 text-right font-medium">${job.count.toLocaleString()}</td>
+                    <td class="px-3 py-2 text-xs font-bold text-blue-700 text-right bg-blue-50">${Number(job.count).toLocaleString()}</td>
                 `;
                 tbody.appendChild(row);
             });
-            document.getElementById('confirmSummaryTotal').textContent = total.toLocaleString();
+
+            // Total Employment footer row
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'border-t-2 border-slate-300 bg-white';
+            totalRow.innerHTML = `
+                <td class="px-3 py-2.5" colspan="2">
+                    <span class="text-xs font-bold text-slate-700">Total Employment</span>
+                </td>
+                <td class="px-3 py-2.5 text-right bg-blue-50">
+                    <span class="text-xs font-bold text-blue-700">${totalEmployment.toLocaleString()}</span>
+                </td>
+            `;
+            tbody.appendChild(totalRow);
 
             document.getElementById('confirmModal').classList.remove('hidden');
         }
@@ -578,32 +686,30 @@
             // Populate table rows
             const tbody = document.getElementById('summaryTableBody');
             tbody.innerHTML = '';
-            let total = 0;
             if (data && data.jobs) {
                 data.jobs.forEach((job, i) => {
-                    total += job.count;
                     const row = document.createElement('tr');
                     row.className = i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60';
                     row.innerHTML = `
                         <td class="px-3 py-2 text-xs text-slate-400 font-semibold">${i + 1}</td>
                         <td class="px-3 py-2 text-xs text-slate-700">${job.title}</td>
-                        <td class="px-3 py-2 text-xs text-slate-700 text-right font-medium">${job.count.toLocaleString()}</td>
+                        <td class="px-3 py-2 text-xs font-bold text-blue-700 text-right bg-blue-50">${job.count.toLocaleString()}</td>
                     `;
                     tbody.appendChild(row);
                 });
             }
-            document.getElementById('summaryTotal').textContent = total.toLocaleString();
+            document.getElementById('successJobTitleCount').textContent = data?.jobs?.length ?? 0;
 
             document.getElementById('successModal').classList.remove('hidden');
         }
 
         function closeSuccessModal() {
             document.getElementById('successModal').classList.add('hidden');
-            // Reset form
             document.getElementById('jobEntries').innerHTML = '';
             document.getElementById('year').value = '';
             entryCount = 0;
-            addJobEntry();
+            for (let i = 0; i < 10; i++) addJobEntry();
+            switchTab('pending');
         }
 
        async function confirmSubmit() {
@@ -632,22 +738,99 @@
         showToast('An error occurred while saving the data.', 'error');
     }
 }
-        document.getElementById('jobTitlesForm').addEventListener('submit', function(e) {
+        document.getElementById('jobTitlesForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const year = document.getElementById('year').value;
+
+            const year = document.getElementById('year').value.trim();
+
+            // ── Year validation ──
+            if (!year || parseInt(year) < 2000 || parseInt(year) > 2100) {
+                showToast('Please enter a valid year (2000–2100).', 'warning');
+                document.getElementById('year').focus();
+                return;
+            }
+
             const titles = document.querySelectorAll('input[name="jobTitle[]"]');
             const counts = document.querySelectorAll('input[name="jobCount[]"]');
-            
-            const jobData = [];
-            
+
+            // ── Validate every row: both fields must be filled ──
+            let hasAtLeastOne = false;
+            let hasIncomplete = false;
+
             for (let i = 0; i < titles.length; i++) {
-                if (titles[i].value && counts[i].value) {
+                const titleVal = titles[i].value.trim();
+                const countVal = counts[i].value.replace(/,/g, '').trim();
+                const bothEmpty = !titleVal && !countVal;
+                const onlyTitle = titleVal && !countVal;
+                const onlyCount = !titleVal && countVal;
+
+                if (bothEmpty) continue; // allow fully-empty rows (they are skipped)
+
+                if (onlyTitle || onlyCount) {
+                    hasIncomplete = true;
+                    // Highlight the incomplete field
+                    if (onlyTitle) {
+                        counts[i].style.borderColor = '#ef4444';
+                        counts[i].style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
+                    } else {
+                        titles[i].style.borderColor = '#ef4444';
+                        titles[i].style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
+                    }
+                } else {
+                    hasAtLeastOne = true;
+                    // Clear any error styling
+                    titles[i].style.borderColor = '';
+                    titles[i].style.boxShadow = '';
+                    counts[i].style.borderColor = '';
+                    counts[i].style.boxShadow = '';
+                }
+            }
+
+            if (hasIncomplete) {
+                showToast('Some rows are incomplete. Please fill in both Job Title and Count, or leave the row fully empty.', 'warning');
+                return;
+            }
+
+            if (!hasAtLeastOne) {
+                showToast('Please fill in at least one job title entry.', 'warning');
+                return;
+            }
+
+            // Build jobData from only filled rows
+            const jobData = [];
+            for (let i = 0; i < titles.length; i++) {
+                const titleVal = titles[i].value.trim();
+                const countVal = counts[i].value.replace(/,/g, '').trim();
+                if (titleVal && countVal) {
                     jobData.push({
-                        title: titles[i].value,
-                        count: parseInt(counts[i].value.replace(/,/g, ''))
+                        title: titleVal,
+                        count: parseInt(countVal)
                     });
                 }
+            }
+
+            // ── Check if this year already has a pending submission ──
+            try {
+                const checkRes = await fetch('{{ route("admin.job-titles.check-year") }}?year=' + parseInt(year), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+                const checkData = await checkRes.json();
+
+                if (checkData.exists) {
+                    showToast(`Year ${year} already has a pending submission. Please wait for it to be reviewed before submitting again.`, 'warning');
+                    const yearInput = document.getElementById('year');
+                    yearInput.style.borderColor = '#ef4444';
+                    yearInput.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
+                    const errorEl = document.getElementById('yearError');
+                    errorEl.textContent = `Year ${year} already has a pending submission.`;
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+            } catch (err) {
+                console.warn('Year check failed:', err);
             }
 
             const dataToSave = {
@@ -675,8 +858,313 @@
             el.value = isNaN(raw) ? '' : raw.toLocaleString();
         }
 
-        // Add initial entry when page loads
-        addJobEntry();
+        // ─── Year duplicate check on blur ────────────────────────────────────────
+        async function checkYearOnBlur(input) {
+            const year = parseInt(input.value);
+            const errorEl = document.getElementById('yearError');
+            if (!year || year < 2000) {
+                input.style.borderColor = '';
+                input.style.boxShadow = '';
+                errorEl.classList.add('hidden');
+                return;
+            }
+            try {
+                const res = await fetch('{{ route("admin.job-titles.check-year") }}?year=' + year, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+                const data = await res.json();
+                if (data.exists) {
+                    input.style.borderColor = '#ef4444';
+                    input.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
+                    errorEl.textContent = `Year ${year} already has a pending submission.`;
+                    errorEl.classList.remove('hidden');
+                } else {
+                    input.style.borderColor = '#22c55e';
+                    input.style.boxShadow = '0 0 0 3px rgba(34,197,94,0.15)';
+                    errorEl.classList.add('hidden');
+                }
+            } catch (err) {
+                input.style.borderColor = '';
+                input.style.boxShadow = '';
+                errorEl.classList.add('hidden');
+            }
+        }
+
+        // Add 10 initial entries when page loads
+        for (let i = 0; i < 10; i++) addJobEntry();
+
+        // ─── Approved / Rejected History Panel ──────────────────────────────────
+        let currentTab = 'pending';
+
+        function switchTab(tab) {
+            currentTab = tab;
+
+            // Show/hide main panels
+            const isSubmit = tab === 'submit';
+            document.getElementById('panel-submit').classList.toggle('hidden', !isSubmit);
+            document.getElementById('panel-history').classList.toggle('hidden', isSubmit);
+
+            // Style the Submit tab pill
+            const submitBtn = document.getElementById('tab-submit');
+            if (isSubmit) {
+                submitBtn.className = 'header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border transition border-blue-200 bg-blue-50 text-blue-700';
+                return; // no history panel work needed
+            } else {
+                submitBtn.className = 'header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border transition border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700';
+            }
+
+            // Tab config: [activeClasses, hoverClasses, badgeActiveClass]
+            const tabConfig = {
+                pending:  {
+                    active:  'border-amber-200 bg-amber-50 text-amber-700',
+                    inactive:'border-slate-200 bg-white text-slate-500 hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700',
+                    badgeOn: 'bg-amber-500 text-white',
+                    badgeOff:'bg-slate-200 text-slate-500',
+                    bar:     'bg-gradient-to-r from-amber-400 to-yellow-400',
+                    panelBg: 'bg-amber-50 hover:bg-amber-100/70',
+                    yearText:'text-amber-800',
+                    countBadge:'bg-amber-100 text-amber-700 border-amber-200',
+                    chevron: 'text-amber-600',
+                    label:   'Pending Submissions',
+                    icon:    `<svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+                    iconBg:  'bg-amber-50',
+                },
+                approved: {
+                    active:  'border-emerald-200 bg-emerald-50 text-emerald-700',
+                    inactive:'border-slate-200 bg-white text-slate-500 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700',
+                    badgeOn: 'bg-emerald-600 text-white',
+                    badgeOff:'bg-slate-200 text-slate-500',
+                    bar:     'bg-gradient-to-r from-emerald-500 to-teal-400',
+                    panelBg: 'bg-emerald-50 hover:bg-emerald-100/70',
+                    yearText:'text-emerald-800',
+                    countBadge:'bg-emerald-100 text-emerald-700 border-emerald-200',
+                    chevron: 'text-emerald-600',
+                    label:   'Approved Submissions',
+                    icon:    `<svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+                    iconBg:  'bg-emerald-50',
+                },
+                rejected: {
+                    active:  'border-red-200 bg-red-50 text-red-600',
+                    inactive:'border-slate-200 bg-white text-slate-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600',
+                    badgeOn: 'bg-red-500 text-white',
+                    badgeOff:'bg-slate-200 text-slate-500',
+                    bar:     'bg-gradient-to-r from-red-500 to-rose-400',
+                    panelBg: 'bg-red-50 hover:bg-red-100/70',
+                    yearText:'text-red-800',
+                    countBadge:'bg-red-100 text-red-600 border-red-200',
+                    chevron: 'text-red-500',
+                    label:   'Rejected Submissions',
+                    icon:    `<svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+                    iconBg:  'bg-red-50',
+                },
+            };
+
+            // Update all pill buttons (badge colors are fixed — never overridden)
+            const badgeClasses = {
+                pending:  { active: 'bg-amber-500 text-white',   inactive: 'bg-amber-100 text-amber-700'   },
+                approved: { active: 'bg-emerald-600 text-white', inactive: 'bg-emerald-100 text-emerald-700' },
+                rejected: { active: 'bg-red-500 text-white',     inactive: 'bg-red-100 text-red-600'       },
+            };
+            ['pending', 'approved', 'rejected'].forEach(t => {
+                const btn   = document.getElementById(`tab-${t}`);
+                const badge = document.getElementById(`badge-${t}`);
+                const cfg   = tabConfig[t];
+                const bc    = badgeClasses[t];
+                btn.className   = `header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border transition ${t === tab ? cfg.active : cfg.inactive}`;
+                badge.className = `text-[11px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center ${t === tab ? bc.active : bc.inactive}`;
+            });
+
+            // Accent bar
+            const cfg = tabConfig[tab];
+            document.getElementById('histAccentBar').className =
+                `absolute top-0 left-0 right-0 h-[3px] transition-all duration-300 ${cfg.bar}`;
+
+            // Panel label + icon
+            document.getElementById('histPanelLabel').textContent = cfg.label;
+            document.getElementById('histPanelIcon').innerHTML    = cfg.icon;
+            document.getElementById('histPanelIcon').className    = `inline-flex items-center justify-center w-7 h-7 rounded-lg ${cfg.iconBg}`;
+
+            loadHistory();
+        }
+
+        async function loadHistory() {
+            const year    = document.getElementById('histYearFilter').value;
+            const loader  = document.getElementById('histLoader');
+            const content = document.getElementById('histGroupedContent');
+
+            loader.classList.remove('hidden');
+            content.innerHTML = `<div class="text-center py-12 text-slate-400 text-sm">Loading…</div>`;
+
+            try {
+                const params = new URLSearchParams({ status: currentTab });
+                if (year) params.append('year', year);
+
+                const res  = await fetch(`{{ route('admin.job-titles.history') }}?${params}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+                const data = await res.json();
+
+                // Update header badges for all three
+                document.getElementById('badge-pending').textContent  = data.counts?.pending  ?? 0;
+                document.getElementById('badge-approved').textContent = data.counts?.approved ?? 0;
+                document.getElementById('badge-rejected').textContent = data.counts?.rejected ?? 0;
+
+                // Repopulate year filter with only years that exist for this status
+                const yearSelect = document.getElementById('histYearFilter');
+                const selectedYear = yearSelect.value;
+                yearSelect.innerHTML = '<option value="">All Years</option>';
+                (data.years ?? []).forEach(y => {
+                    const opt = document.createElement('option');
+                    opt.value = y;
+                    opt.textContent = y;
+                    if (String(y) === selectedYear) opt.selected = true;
+                    yearSelect.appendChild(opt);
+                });
+
+                const records = data.records ?? [];
+
+                if (records.length === 0) {
+                    content.innerHTML = `
+                        <div class="text-center py-14 text-slate-400 text-sm">
+                            <svg class="w-9 h-9 mx-auto mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            No ${currentTab} records${year ? ' for ' + year : ''}.
+                        </div>`;
+                    document.getElementById('histFooter').textContent = '';
+                    return;
+                }
+
+                // Group records by year
+                const grouped = {};
+                records.forEach(r => {
+                    const y = r.year ?? 'Unknown';
+                    if (!grouped[y]) grouped[y] = [];
+                    grouped[y].push(r);
+                });
+
+                // Colour config per tab (mirrors switchTab)
+                const colourMap = {
+                    pending:  { panelBg:'bg-amber-50 hover:bg-amber-100/70',   yearText:'text-amber-800',   countBadge:'bg-amber-100 text-amber-700 border-amber-200',   chevron:'text-amber-600'  },
+                    approved: { panelBg:'bg-emerald-50 hover:bg-emerald-100/70',yearText:'text-emerald-800', countBadge:'bg-emerald-100 text-emerald-700 border-emerald-200',chevron:'text-emerald-600'},
+                    rejected: { panelBg:'bg-red-50 hover:bg-red-100/70',        yearText:'text-red-800',     countBadge:'bg-red-100 text-red-600 border-red-200',           chevron:'text-red-500'    },
+                };
+                const cc = colourMap[currentTab] || colourMap.approved;
+
+                content.innerHTML = '';
+                const years = Object.keys(grouped).sort((a, b) => b - a);
+
+                years.forEach(yr => {
+                    const rows = grouped[yr];
+                    // For pending, show submitted_at; for others, reviewed_at
+                    const dateField = currentTab === 'pending' ? (rows[0]?.created_at ?? rows[0]?.submitted_at) : rows[0]?.reviewed_at;
+                    const dateLabel = currentTab === 'pending' ? 'Submitted' : 'Reviewed';
+                    const displayDate = dateField
+                        ? new Date(dateField).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
+                        : '—';
+
+                    const section = document.createElement('div');
+                    section.className = 'mb-3 rounded-xl border border-slate-200 overflow-hidden';
+
+                    // Year header (clickable to collapse)
+                    const headerEl = document.createElement('div');
+                    headerEl.className = `flex items-center justify-between px-4 py-3 cursor-pointer select-none transition ${cc.panelBg}`;
+                    headerEl.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="text-[13px] font-bold ${cc.yearText}">Year ${yr}</span>
+                            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${cc.countBadge}">
+                                ${rows.length} job title${rows.length !== 1 ? 's' : ''}
+                            </span>
+                            <span class="text-[11px] text-slate-500">${dateLabel}: ${displayDate}</span>
+                        </div>
+                        <svg class="chevron-icon w-4 h-4 transition-transform ${cc.chevron}"
+                             fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                        </svg>`;
+
+                    // Table wrapper (collapsible)
+                    const tableWrap = document.createElement('div');
+                    tableWrap.className = 'year-group-body';
+
+                    let rowsHtml = '';
+                    rows.forEach((row, i) => {
+                        const isApproved = currentTab === 'approved';
+                        rowsHtml += `
+                            <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'} hover:bg-blue-50/30 transition">
+                                <td class="px-4 py-2.5 text-xs text-slate-400 font-semibold">${i + 1}</td>
+                                <td class="px-4 py-2.5 text-[13px] text-slate-800 font-medium">${row.title}</td>
+                                <td class="px-4 py-2.5 text-right bg-blue-50/50">
+                                    <span class="text-[13px] font-bold text-blue-700">${Number(row.count).toLocaleString()}</span>
+                                </td>
+                                ${isApproved ? `<td class="px-4 py-2.5 text-right">
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/></svg>
+                                        Reviewed
+                                    </span>
+                                </td>` : ''}
+                            </tr>`;
+                    });
+
+                    tableWrap.innerHTML = `
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-slate-100 border-t border-slate-200">
+                                    <th class="text-left px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wide w-10">#</th>
+                                    <th class="text-left px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Job Title</th>
+                                    <th class="text-right px-4 py-2.5 text-[11px] font-semibold text-blue-700 uppercase tracking-wide bg-blue-50 w-28">Count</th>
+                                    ${currentTab === 'approved' ? '<th class="text-right px-4 py-2.5 text-[11px] font-semibold text-emerald-600 uppercase tracking-wide w-28">Status</th>' : ''}
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>`;
+
+                    // Toggle on click
+                    headerEl.addEventListener('click', () => {
+                        const isOpen = !tableWrap.classList.contains('hidden');
+                        tableWrap.classList.toggle('hidden', isOpen);
+                        headerEl.querySelector('.chevron-icon').style.transform = isOpen ? 'rotate(-90deg)' : '';
+                    });
+
+                    section.appendChild(headerEl);
+                    section.appendChild(tableWrap);
+                    content.appendChild(section);
+                });
+
+                document.getElementById('histFooter').textContent =
+                    `Showing ${records.length} record${records.length !== 1 ? 's' : ''} across ${years.length} year${years.length !== 1 ? 's' : ''}${year ? ' (filtered: ' + year + ')' : ''}`;
+
+            } catch (err) {
+                console.error(err);
+                content.innerHTML = `<div class="text-center py-10 text-red-400 text-sm">Failed to load records.</div>`;
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        // Load on page ready — default to Submit tab, but fetch badge counts immediately
+        document.addEventListener('DOMContentLoaded', () => {
+            switchTab('submit');
+            // Pre-fetch counts so badges are populated right away
+            fetch(`{{ route('admin.job-titles.history') }}?status=pending`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('badge-pending').textContent  = data.counts?.pending  ?? 0;
+                document.getElementById('badge-approved').textContent = data.counts?.approved ?? 0;
+                document.getElementById('badge-rejected').textContent = data.counts?.rejected ?? 0;
+            })
+            .catch(() => {});
+        });
     </script>
 
     <!-- TOAST NOTIFICATION -->

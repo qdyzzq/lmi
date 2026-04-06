@@ -29,7 +29,7 @@
     class="fixed top-0 left-0 right-0 z-50 border-b border-white/10 transition-all duration-300 ease-in-out rounded-b-xl"
 >
 
-    <div class="max-w-7xl mx-auto px-6 transition-all duration-300" :class="isScrolled ? 'py-2' : 'py-4'">
+    <div class="w-full px-4 transition-all duration-300" :class="isScrolled ? 'py-2' : 'py-3'">
         <div class="flex items-center justify-between gap-4">
 
             <!-- Logo & Brand -->
@@ -49,7 +49,7 @@
 
                 <div class="leading-tight overflow-hidden">
                     <p class="font-bold text-white tracking-tight whitespace-nowrap transition-all duration-300"
-                        :class="isScrolled ? 'text-sm' : 'text-lg'">Labor Market Intelligence</p>
+                        :class="isScrolled ? 'text-sm' : 'text-lg'">Davao Region Labor Market Information</p>
                     <p class="text-slate-300 italic font-light text-xs whitespace-nowrap transition-all duration-300 overflow-hidden"
                         :class="isScrolled ? 'max-h-0 opacity-0' : 'max-h-6 opacity-100'">Bridging Education & Industry
                     </p>
@@ -63,15 +63,15 @@
                 but the static class prevents them from being unsized before Alpine loads.
                 Same fix applied to nav link padding/gap via static defaults + Alpine override.
             --}}
-            <div class="hidden xl:flex items-center gap-2 shrink-0 transition-all duration-300"
-                :class="isScrolled ? 'gap-1' : 'gap-2'">
+            <div class="hidden xl:flex items-center gap-1 min-w-0 flex-1 justify-end transition-all duration-300"
+                :class="isScrolled ? 'gap-0.5' : 'gap-1'">
 
                 <a href="{{ route('home') }}"
-                    class="flex items-center gap-3 px-5 py-3 text-sm whitespace-nowrap rounded-lg font-medium transition-all duration-300
+                    class="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap rounded-lg font-medium transition-all duration-300
                           {{ request()->routeIs('home')
                               ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
                               : 'text-white hover:bg-white/20' }}"
-                    :class="isScrolled ? 'gap-1.5 px-3 py-1.5 text-xs' : 'gap-3 px-5 py-3 text-sm'">
+                    :class="isScrolled ? 'gap-1 px-2 py-1.5 text-xs' : 'gap-1.5 px-3 py-2 text-xs'">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"
                         class="w-5 h-5 shrink-0 transition-all duration-300"
                         :class="isScrolled ? 'w-3.5 h-3.5' : 'w-5 h-5'">
@@ -81,26 +81,26 @@
                 </a>
 
                 <a href="{{ route('Job.Market.Demands') }}"
-                    class="flex items-center gap-3 px-5 py-3 text-sm whitespace-nowrap rounded-lg font-medium transition-all duration-300
+                    class="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap rounded-lg font-medium transition-all duration-300
                           {{ request()->routeIs('Job.Market.Demands')
                               ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
                               : 'text-white hover:bg-white/20' }}"
-                    :class="isScrolled ? 'gap-1.5 px-3 py-1.5 text-xs' : 'gap-3 px-5 py-3 text-sm'">
+                    :class="isScrolled ? 'gap-1 px-2 py-1.5 text-xs' : 'gap-1.5 px-3 py-2 text-xs'">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"
                         class="w-5 h-5 shrink-0 transition-all duration-300"
                         :class="isScrolled ? 'w-3.5 h-3.5' : 'w-5 h-5'">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M16 16l4 4m-2-9a6 6 0 11-12 0 6 6 0 0112 0z" />
                     </svg>
-                    <span>Labor Demand</span>
+                    <span>Labor Demand Data</span>
                 </a>
 
                 <a href="{{ route('Supply.Side') }}"
-                    class="flex items-center gap-3 px-5 py-3 text-sm whitespace-nowrap rounded-lg font-medium transition-all duration-300
+                    class="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap rounded-lg font-medium transition-all duration-300
                           {{ request()->routeIs('Supply.Side')
                               ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
                               : 'text-white hover:bg-white/20' }}"
-                    :class="isScrolled ? 'gap-1.5 px-3 py-1.5 text-xs' : 'gap-3 px-5 py-3 text-sm'">
+                    :class="isScrolled ? 'gap-1 px-2 py-1.5 text-xs' : 'gap-1.5 px-3 py-2 text-xs'">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"
                         class="w-5 h-5 shrink-0 transition-all duration-300"
                         :class="isScrolled ? 'w-3.5 h-3.5' : 'w-5 h-5'">
@@ -111,18 +111,33 @@
                 </a>
 
                 <a href="{{ route('programStories') }}"
-                    class="flex items-center gap-3 px-5 py-3 text-sm whitespace-nowrap rounded-lg font-medium transition-all duration-300
+                    class="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap rounded-lg font-medium transition-all duration-300
                           {{ request()->routeIs('programStories')
                               ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
                               : 'text-white hover:bg-white/20' }}"
-                    :class="isScrolled ? 'gap-1.5 px-3 py-1.5 text-xs' : 'gap-3 px-5 py-3 text-sm'">
+                    :class="isScrolled ? 'gap-1 px-2 py-1.5 text-xs' : 'gap-1.5 px-3 py-2 text-xs'">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"
                         class="w-5 h-5 shrink-0 transition-all duration-300"
                         :class="isScrolled ? 'w-3.5 h-3.5' : 'w-5 h-5'">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    <span>Programs & Stories</span>
+                    <span>Employment Programs</span>
+                </a>
+
+                <a href="{{ route('peso.directory') }}"
+                    class="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap rounded-lg font-medium transition-all duration-300
+                          {{ request()->routeIs('peso.directory')
+                              ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
+                              : 'text-white hover:bg-white/20' }}"
+                    :class="isScrolled ? 'gap-1 px-2 py-1.5 text-xs' : 'gap-1.5 px-3 py-2 text-xs'">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"
+                        class="w-5 h-5 shrink-0 transition-all duration-300"
+                        :class="isScrolled ? 'w-3.5 h-3.5' : 'w-5 h-5'">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>PESO/JPO Directory</span>
                 </a>
 
             </div>
@@ -163,7 +178,7 @@
             <a href="{{ route('Job.Market.Demands') }}"
                 @click="mobileMenuOpen = false"
                 class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Job.Market.Demands') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
-                Labor Demand
+                Labor Demand Data
             </a>
             <a href="{{ route('Supply.Side') }}"
                 @click="mobileMenuOpen = false"
@@ -173,9 +188,13 @@
             <a href="{{ route('programStories') }}"
                 @click="mobileMenuOpen = false"
                 class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('programs.stories') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
-                Programs & Stories
+                Employment Programs
             </a>
-            
+            <a href="{{ route('peso.directory') }}"
+                @click="mobileMenuOpen = false"
+                class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('peso.directory') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
+                PESO/JPO Directory
+            </a>
             </div>
         </div>
     </div>

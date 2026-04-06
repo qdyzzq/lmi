@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logoIcon/dole_logo.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.8/dist/cdn.min.js"></script>
     <title>LMI - Licensure Passing Rates</title>
     <style>
         .sector-content {
@@ -108,6 +109,17 @@
                 </div>
                 </div><!-- end sticky top section -->
 
+                <!-- Lock Banner -->
+                <div id="lockBanner" class="mb-4 flex items-center gap-3 bg-amber-50 border-2 border-amber-300 rounded-xl px-5 py-3 shrink-0">
+                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    <p class="text-sm font-semibold text-amber-800">Enter a reporting year and click <strong>Check / Edit Year</strong> to unlock the form.</p>
+                </div>
+
+                <div id="formContent" class="relative flex flex-col flex-1 overflow-hidden opacity-50 pointer-events-none select-none">
+                <div id="formBlocker" class="absolute inset-0 z-10 cursor-not-allowed rounded-2xl bg-transparent"></div>
+
                 <!-- Sectors Form — scrollable -->
                 <form id="licensureForm" class="flex flex-col flex-1 overflow-hidden">
                     <!-- Search Bar -->
@@ -146,27 +158,31 @@
                             type="submit" 
                             class="py-3 px-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl"
                         >
-                            ✓ Submit for Review
+                            ✓ Submit
                         </button>
                     </div>
                 </form>
+                </div><!-- end formContent -->
             </div>
         </div>
     </div>
 
     <!-- Confirmation Modal -->
     <div id="confirmModal" class="hidden fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4 transform transition-all">
-            <div class="text-center">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 transform transition-all flex flex-col max-h-[90vh]">
+            <!-- Fixed header -->
+            <div class="p-8 pb-4 text-center shrink-0">
                 <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 mb-4">
                     <svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                     </svg>
                 </div>
-                
                 <h3 class="text-xl font-bold text-gray-900 mb-3">Confirm Submission</h3>
                 <p class="text-sm text-gray-600 mb-4">You are about to submit licensure passing rate data for <strong id="confirmYear">----</strong>.</p>
-                
+            </div>
+
+            <!-- Scrollable body -->
+            <div class="overflow-y-auto px-8 flex-1">
                 <!-- Incomplete Professions Warning -->
                 <div id="incompleteWarning" class="hidden mb-4 p-4 bg-orange-50 border-l-4 border-orange-400 rounded text-left">
                     <div class="flex items-start gap-2">
@@ -182,46 +198,32 @@
                     </div>
                 </div>
 
-                <!-- Changes Summary (edit mode only) -->
-                <div id="changesWarning" class="hidden mb-4 p-4 bg-green-50 border-l-4 border-green-500 rounded text-left">
-                    <div class="flex items-start gap-2">
-                        <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                        <div class="flex-1">
-                            <p class="font-semibold text-green-800 text-sm mb-1">Modified Fields</p>
-                            <p class="text-xs text-green-700 mb-2">The following fields were changed from their original values:</p>
-                            <div id="changesList" class="max-h-40 overflow-y-auto text-xs text-green-700 space-y-1"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- LAYER 3: Deletion Warning (shown when changing year) -->
+                <!-- Deletion Warning (shown when changing year) -->
                 <div id="deletionWarning" class="hidden mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded text-left">
                     <div class="flex items-start gap-2">
                         <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
                         <div class="flex-1">
-                            <p class="font-semibold text-red-800 text-sm mb-1"><svg class="w-4 h-4 inline-block mr-1 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Year Change - Data Will Be Deleted</p>
-                            <p class="text-xs text-red-700 mb-2">
-                                Because you changed the year, the old year data will be permanently deleted:
-                            </p>
+                            <p class="font-semibold text-red-800 text-sm mb-1">Year Change - Data Will Be Deleted</p>
+                            <p class="text-xs text-red-700 mb-2">Because you changed the year, the old year data will be permanently deleted:</p>
                             <div class="bg-white border border-red-200 rounded px-2 py-1 mb-2">
-                                <p class="text-xs">
-                                    <span class="font-semibold text-red-800">Old year to be deleted:</span> 
-                                    <span id="oldYearToDelete" class="font-bold text-red-600"></span>
-                                </p>
+                                <p class="text-xs"><span class="font-semibold text-red-800">Old year to be deleted:</span> <span id="oldYearToDelete" class="font-bold text-red-600"></span></p>
                             </div>
-                            <p class="text-xs text-red-700">
-                                This action cannot be undone.
-                            </p>
+                            <p class="text-xs text-red-700">This action cannot be undone.</p>
                         </div>
                     </div>
                 </div>
 
-                <p class="text-sm text-gray-600 mb-6">This data will be queued for statistician review before being published to the database.</p>
+                <!-- Data Summary -->
+                <div id="dataSummaryWrapper" class="mb-4 text-left">
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Data Summary</p>
+                    <div id="dataSummary" class="space-y-2"></div>
+                </div>
+            </div>
 
+            <!-- Fixed footer -->
+            <div class="px-8 pb-8 pt-4 shrink-0">
                 <div class="flex gap-3">
                     <button 
                         onclick="closeConfirmModal()"
@@ -249,8 +251,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
                 </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-3">Successfully Submitted!</h3>
-                <p class="text-sm text-gray-600 mb-6">Your licensure passing rate data has been submitted to the pending queue. A statistician will review and verify it before publishing to the database.</p>
+                <h3 id="successModalTitle" class="text-xl font-bold text-gray-900 mb-3">Successfully Submitted!</h3>
                 <button 
                     onclick="closeSuccessModal()"
                     class="w-full px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition"
@@ -296,6 +297,17 @@
         let isChangingYear = false; // Flag to track if we're changing year (don't clear form)
         let oldYear = null; // Store the old year when changing
         let pendingYearData = null; // Holds fetched data while waiting for modal confirmation
+
+        function lockForm() {
+            document.getElementById('formContent').classList.add('opacity-50', 'pointer-events-none', 'select-none');
+            document.getElementById('formBlocker').style.display = '';
+            document.getElementById('lockBanner').classList.remove('hidden');
+        }
+        function unlockForm() {
+            document.getElementById('formContent').classList.remove('opacity-50', 'pointer-events-none', 'select-none');
+            document.getElementById('formBlocker').style.display = 'none';
+            document.getElementById('lockBanner').classList.add('hidden');
+        }
         
         // ─── Toast Notification System ──────────────────────────────────────────
         function showToast(message, type = 'error') {
@@ -801,7 +813,7 @@
             
             // Hide cancel button - user is back to input mode (can use backspace)
             document.getElementById('cancelYearChangeBtn').classList.add('hidden');
-            
+            lockForm();
             // Focus on input for better UX
             setTimeout(() => {
                 document.getElementById('year').focus();
@@ -841,6 +853,7 @@
                     document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
                     clearExistingDataIndicator();
                     showNewYearMessage(year);
+                    unlockForm();
                     isChangingYear = false;
                 }
             } catch (error) {
@@ -869,6 +882,7 @@
             document.getElementById('displayYear').textContent = '----';
             toggleYearDisplay(false);
             document.getElementById('cancelYearChangeBtn').classList.add('hidden');
+            lockForm();
             setTimeout(() => document.getElementById('year').focus(), 100);
         }
 
@@ -877,6 +891,7 @@
             const { year, data } = pendingYearData;
             document.getElementById('existingDataModal').classList.add('hidden');
             loadExistingData(data);
+            unlockForm();
             pendingYearData = null;
         }
 
@@ -1096,6 +1111,7 @@
             originalData = {};
             document.getElementById('cancelYearChangeBtn').classList.add('hidden');
             toggleYearDisplay(false);
+            lockForm();
         }
 
         function showConfirmModal(data) {
@@ -1127,43 +1143,65 @@
             } else {
                 incompleteWarning.classList.add('hidden');
             }
-            
-            // Show changes summary if in edit mode
-            const changesWarning = document.getElementById('changesWarning');
-            const changesList = document.getElementById('changesList');
-            if (Object.keys(originalData).length > 0) {
-                const changes = [];
-                data.sectors.forEach((sector, sectorIndex) => {
-                    sector.data.forEach((p, profIndex) => {
-                        const key = `${sectorIndex}_${profIndex}`;
-                        const orig = originalData[key];
-                        const newTakers = p.takers;
-                        const newPassers = p.passers;
-                        const cleanNewTakers = parseInt(String(newTakers).replace(/,/g,'')) || 0;
-                        const cleanNewPassers = parseInt(String(newPassers).replace(/,/g,'')) || 0;
-                        if (orig && (orig.takers != cleanNewTakers || orig.passers != cleanNewPassers)) {
-                            changes.push(`<div class="py-1">
-                                <div class="font-semibold mb-0.5">${sector.sector}: ${p.profession}</div>
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="text-red-500">Takers: ${orig.takers} · Passers: ${orig.passers} · ${parseFloat(orig.rate).toFixed(2)}%</span>
-                                    <span class="text-gray-500 font-bold">→</span>
-                                    <span class="text-green-600">Takers: ${newTakers} · Passers: ${newPassers} · ${p.passing_rate !== null ? p.passing_rate.toFixed(2) : '0.00'}%</span>
-                                </div>
-                            </div>`);
-                        }
-                    });
-                });
-                if (changes.length > 0) {
-                    changesWarning.classList.remove('hidden');
-                    changesList.innerHTML = changes.join('');
-                } else {
-                    changesWarning.classList.add('hidden');
-                }
-            } else {
-                changesWarning.classList.add('hidden');
-            }
 
             document.getElementById('confirmModal').classList.remove('hidden');
+
+            // Build data summary — always shown
+            // In edit mode, rows that changed are highlighted amber; new rows are green; unchanged are normal
+            const isEditMode = Object.keys(originalData).length > 0;
+            const summaryWrapper = document.getElementById('dataSummaryWrapper');
+            const summaryEl = document.getElementById('dataSummary');
+            summaryEl.innerHTML = '';
+            let hasSummaryContent = false;
+
+            data.sectors.forEach((sector, sectorIndex) => {
+                const filled = sector.data.filter(p => p.takers && p.passers);
+                if (filled.length === 0) return;
+                hasSummaryContent = true;
+
+                const rows = filled.map(p => {
+                    const profIndex = sectorsData[sectorIndex].professions.indexOf(p.profession);
+                    const key = `${sectorIndex}_${profIndex}`;
+                    const orig = originalData[key];
+                    const cleanTakers = parseInt(String(p.takers).replace(/,/g,'')) || 0;
+                    const cleanPassers = parseInt(String(p.passers).replace(/,/g,'')) || 0;
+
+                    let rowClass = 'bg-white';
+                    let badge = '';
+                    if (isEditMode) {
+                        if (!orig) {
+                            // Newly added in edit session
+                            rowClass = 'bg-green-50';
+                            badge = '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-green-100 text-green-700 ml-1">New</span>';
+                        } else if (orig.takers != cleanTakers || orig.passers != cleanPassers) {
+                            // Changed
+                            rowClass = 'bg-amber-50';
+                            badge = '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 ml-1">Edited</span>';
+                        }
+                    }
+
+                    return `
+                        <div class="grid grid-cols-[1fr_auto_auto_auto] gap-2 px-3 py-1.5 items-center ${rowClass}">
+                            <span class="text-xs text-gray-700 truncate">${p.profession}${badge}</span>
+                            <span class="text-xs text-gray-500">T: <strong class="text-gray-800">${Number(cleanTakers).toLocaleString()}</strong></span>
+                            <span class="text-xs text-gray-500">P: <strong class="text-gray-800">${Number(cleanPassers).toLocaleString()}</strong></span>
+                            <span class="text-xs font-semibold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">${p.passing_rate !== null ? p.passing_rate.toFixed(2) : '0.00'}%</span>
+                        </div>
+                    `;
+                }).join('');
+
+                const sectorBlock = document.createElement('div');
+                sectorBlock.className = 'bg-gray-50 rounded-lg overflow-hidden border border-gray-200';
+                sectorBlock.innerHTML = `
+                    <div class="px-3 py-2 bg-gray-100 border-b border-gray-200">
+                        <p class="text-xs font-bold text-gray-700">${sector.sector}</p>
+                    </div>
+                    <div class="divide-y divide-gray-100">${rows}</div>
+                `;
+                summaryEl.appendChild(sectorBlock);
+            });
+
+            summaryWrapper.classList.toggle('hidden', !hasSummaryContent);
         }
 
         function closeConfirmModal() {
@@ -1171,7 +1209,10 @@
             pendingData = null;
         }
 
-        function showSuccessModal() {
+        function showSuccessModal(isUpdate = false) {
+            document.getElementById('successModalTitle').textContent = isUpdate
+                ? 'Successfully Updated!'
+                : 'Successfully Submitted!';
             document.getElementById('successModal').classList.remove('hidden');
         }
 
@@ -1214,8 +1255,9 @@
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    oldYear = null; // Clear the old year after successful save
-                    showSuccessModal();
+                    const wasUpdate = Object.keys(originalData).length > 0;
+                    oldYear = null;
+                    showSuccessModal(wasUpdate);
                 } else {
                     showToast('Error: ' + (result.message || 'An error occurred while saving the data.'), 'error');
                 }

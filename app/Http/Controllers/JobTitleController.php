@@ -65,7 +65,7 @@ class JobTitleController extends Controller
     public function pendingCount()
     {
         return response()->json([
-            'pending' => JobTitle::where('status', 'pending')->count(),
+            'pending' => JobTitle::where('status', 'pending')->distinct('year')->count('year'),
         ]);
     }
 
@@ -182,26 +182,66 @@ class JobTitleController extends Controller
         return response()->json($jobTitles);
     }
 
-    public function checkYear($year)
+    /**
+     * Return pending / approved / rejected records for the admin history panel.
+     * Query params: status (pending|approved|rejected), year (optional)
+     */
+    public function history(Request $request)
     {
-        $data = \App\Models\JobTitle::where('year', $year)->get();
+        $status = in_array($request->query('status'), ['pending', 'approved', 'rejected'])
+            ? $request->query('status')
+            : 'pending';
 
-        if ($data->isEmpty()) {
-            return response()->json(['exists' => false, 'data' => null], 404);
+        $year = $request->query('year');
+
+        $query = JobTitle::where('status', $status)
+            ->orderBy('year', 'desc')
+            ->orderBy($status === 'pending' ? 'created_at' : 'reviewed_at', 'desc');
+
+        if ($year) {
+            $query->where('year', (int) $year);
         }
 
+        $records = $query->get(['id', 'year', 'title', 'count', 'status', 'reviewed_at', 'created_at']);
+
+        // Badge counts — count distinct year submissions per status, not individual rows
+        $countQuery = JobTitle::whereIn('status', ['pending', 'approved', 'rejected']);
+        if ($year) {
+            $countQuery->where('year', (int) $year);
+        }
+        $counts = $countQuery->selectRaw("status, count(DISTINCT year) as total")
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        // Distinct years available for the current status (for the year filter dropdown)
+        $availableYears = JobTitle::where('status', $status)
+            ->whereNotNull('year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
         return response()->json([
-            'exists' => true,
-            'data' => [
-                'year' => $year,
-                'jobs' => $data->map(function($job) {
-                    return [
-                        'id'    => $job->id,
-                        'title' => $job->job_title,
-                        'count' => $job->job_count
-                    ];
-                })
-            ]
-        ], 200);
+            'records' => $records,
+            'counts'  => [
+                'pending'  => $counts['pending']  ?? 0,
+                'approved' => $counts['approved'] ?? 0,
+                'rejected' => $counts['rejected'] ?? 0,
+            ],
+            'years' => $availableYears,
+        ]);
+    }
+
+    /**
+     * Check if a year already has a pending submission
+     */
+    public function checkYear(Request $request)
+    {
+        $year = $request->query('year');
+
+        $exists = JobTitle::where('year', (int) $year)
+            ->where('status', 'pending')
+            ->exists();
+
+        return response()->json(['exists' => $exists]);
     }
 }

@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logoIcon/dole_logo.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
     
     <!-- Quill.js Rich Text Editor -->
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/quill@1.3.6/dist/quill.js"></script>
     
     <!-- Custom Quill Toolbar Styling -->
     <style>
@@ -80,10 +81,29 @@
         [x-html] ul, .prose ul { list-style-type: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
         [x-html] ol, .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
         [x-html] li, .prose li { margin: 0.2rem 0; display: list-item; }
+
+        /* ── Preview: render Quill-formatted HTML correctly ── */
+        .ql-editor-preview { line-height: 1.7; }
+        .ql-editor-preview strong, .ql-editor-preview b { font-weight: 700; }
+        .ql-editor-preview em, .ql-editor-preview i { font-style: italic; }
+        .ql-editor-preview u { text-decoration: underline; }
+        .ql-editor-preview s { text-decoration: line-through; }
+        .ql-editor-preview h1 { font-size: 1.5rem; font-weight: 700; margin: 0.75rem 0; }
+        .ql-editor-preview h2 { font-size: 1.25rem; font-weight: 700; margin: 0.5rem 0; }
+        .ql-editor-preview h3 { font-size: 1.1rem; font-weight: 600; margin: 0.5rem 0; }
+        .ql-editor-preview p { margin: 0.4rem 0; }
+        .ql-editor-preview ul { list-style-type: disc !important; padding-left: 1.5rem !important; margin: 0.5rem 0 !important; }
+        .ql-editor-preview ol { list-style-type: decimal !important; padding-left: 1.5rem !important; margin: 0.5rem 0 !important; }
+        .ql-editor-preview li { display: list-item !important; margin: 0.2rem 0 !important; }
+        .ql-editor-preview .ql-align-justify { text-align: justify; }
+        .ql-editor-preview .ql-align-center  { text-align: center; }
+        .ql-editor-preview .ql-align-right   { text-align: right; }
+        .ql-editor-preview .ql-align-left    { text-align: left; }
+        .ql-editor-preview blockquote { border-left: 4px solid #cbd5e1; padding-left: 1rem; color: #64748b; margin: 0.5rem 0; }
     </style>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.8/dist/cdn.min.js"></script>
     <title>Supply Side Analysis Editor</title>
 </head>
 <body x-data="supplySideEditor()" x-init="init()" class="bg-slate-100 flex h-screen overflow-hidden">
@@ -530,30 +550,32 @@
                             </div>
                         </div>
 
-                        <!-- Cards Row — exact copy from main UI -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+                        <!-- Cards Row — matches public page layout (stacked full-width) -->
+                        <div class="flex flex-col gap-6 p-6">
 
-                            <!-- Executive Analysis: Supply Side — exact copy -->
-                            <div class="col-span-1 bg-white rounded-2xl shadow-xl border border-slate-200 p-6 flex flex-col">
-                                <div class="flex items-start gap-3 mb-4 flex-shrink-0">
-                                    <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 rounded-xl shadow-lg">
-                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                        </svg>
+                            <!-- Executive Analysis: Supply Side — full width, matches public page -->
+                            <div class="w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                                <div class="flex flex-col p-6">
+                                    <div class="flex items-start gap-3 mb-4 flex-shrink-0">
+                                        <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 rounded-xl shadow-lg">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-lg font-bold text-slate-800">EXECUTIVE ANALYSIS: SUPPLY SIDE</h3>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 class="text-lg font-bold text-slate-800">EXECUTIVE ANALYSIS: SUPPLY SIDE</h3>
+                                    <!-- Dynamic Analysis Text — full width, Quill styles applied, matches public page -->
+                                    <div class="flex-1 text-sm text-slate-700 prose prose-sm max-w-none leading-relaxed ql-editor-preview"
+                                         style="font-family: inherit;"
+                                         x-html="analysisText || '<em class=\'text-slate-400\'>No content yet.</em>'">
                                     </div>
-                                </div>
-                                <!-- Dynamic Analysis Text — scrollable when content is long (exact copy) -->
-                                <div class="flex-1 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-slate-700 pr-1"
-                                     style="max-height: 380px;"
-                                     x-html="analysisText || '<em class=\'text-slate-400\'>No content yet.</em>'">
                                 </div>
                             </div>
 
-                            <!-- Discipline Market Share Pie Chart — exact copy -->
-                            <div class="col-span-2 bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
+                            <!-- Discipline Market Share Pie Chart — full width, matches public page -->
+                            <div class="w-full bg-slate-50 rounded-2xl shadow-xl border border-slate-200 p-6 relative overflow-hidden">
                                 <div class="flex items-start justify-between gap-3 mb-4">
                                     <div class="flex items-start gap-3">
                                         <div class="bg-gradient-to-br from-purple-500 to-pink-600 p-2.5 rounded-xl shadow-lg">
@@ -566,7 +588,7 @@
                                             <h3 class="text-lg font-bold text-slate-800">Distribution of enrollees</h3>
                                         </div>
                                     </div>
-                                    <!-- Expand Button — exact copy (disabled in preview) -->
+                                    <!-- Expand Button — disabled in preview -->
                                     <button class="flex-shrink-0 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold rounded-lg shadow-md flex items-center gap-2 text-sm opacity-60 cursor-not-allowed">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
@@ -575,33 +597,37 @@
                                     </button>
                                 </div>
 
-                                <!-- Pie Chart with Side Legends — exact copy layout -->
-                                <div class="flex items-start gap-4 mt-6">
-                                    <!-- LEFT LEGEND (Top Half - Highest Values) — exact copy -->
-                                    <div class="flex-1 min-w-0 space-y-2.5">
+                                <!-- Pie Chart with Side Legends — matches public page pie-inline-layout -->
+                                <div class="flex items-center justify-center gap-10 flex-wrap mt-6">
+                                    <!-- LEFT LEGEND -->
+                                    <div class="w-56 shrink-0 space-y-3">
                                         <template x-for="(item, index) in previewDisciplineLeft" :key="item.name">
-                                            <div class="flex items-center gap-1.5 min-w-0">
-                                                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            <div class="flex items-start gap-2 min-w-0">
+                                                <div class="w-3 h-3 rounded-full flex-shrink-0 mt-1"
                                                      :style="`background-color: ${item.color}`"></div>
-                                                <div class="text-slate-700 font-medium text-xs" style="white-space: nowrap;"
-                                                     x-text="item.name + ' ' + item.pct + '%'"></div>
+                                                <div class="min-w-0">
+                                                    <div class="text-slate-700 font-medium text-sm leading-snug" x-text="item.name"></div>
+                                                    <div class="text-slate-500 text-xs font-semibold" x-text="item.pct + '%'"></div>
+                                                </div>
                                             </div>
                                         </template>
                                     </div>
 
-                                    <!-- CENTER PIE CHART — exact copy canvas size -->
-                                    <div class="flex-shrink-0">
-                                        <canvas id="previewDonutChart" width="210" height="210"></canvas>
+                                    <!-- CENTER PIE CHART -->
+                                    <div class="flex-shrink-0 flex items-center justify-center">
+                                        <canvas id="previewDonutChart" width="300" height="300"></canvas>
                                     </div>
 
-                                    <!-- RIGHT LEGEND (Bottom Half - Lower Values) — exact copy -->
-                                    <div class="flex-1 min-w-0 space-y-2.5">
+                                    <!-- RIGHT LEGEND -->
+                                    <div class="w-56 shrink-0 space-y-3">
                                         <template x-for="(item, index) in previewDisciplineRight" :key="item.name">
-                                            <div class="flex items-center gap-1.5 min-w-0">
-                                                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            <div class="flex items-start gap-2 min-w-0">
+                                                <div class="w-3 h-3 rounded-full flex-shrink-0 mt-1"
                                                      :style="`background-color: ${item.color}`"></div>
-                                                <div class="text-slate-700 font-medium text-xs" style="white-space: nowrap;"
-                                                     x-text="item.name + ' ' + item.pct + '%'"></div>
+                                                <div class="min-w-0">
+                                                    <div class="text-slate-700 font-medium text-sm leading-snug" x-text="item.name"></div>
+                                                    <div class="text-slate-500 text-xs font-semibold" x-text="item.pct + '%'"></div>
+                                                </div>
                                             </div>
                                         </template>
                                     </div>
@@ -674,52 +700,40 @@
                 </div>
 
                 <!-- ─────────────────────────────────────────────────────────
-                     SMART COMPARISON — 4 scenarios
-                     1. Draft loaded + something already published → 3 columns
-                     2. Draft loaded + nothing published yet      → 2 columns
-                     3. No draft (direct edit) + overwriting live → 2 columns
-                     4. Brand new, nothing published              → single preview
+                     SMART COMPARISON — 2 cases:
+                     A. Statistician CHANGED the admin draft → show comparison
+                     B. No changes made, or no draft loaded  → show single summary
                 ──────────────────────────────────────────────────────── -->
 
-                <!-- Scenario 1a: Draft loaded + live exists + statistician EDITED → true 3-col -->
-                <template x-if="originalSubmittedText && currentlyPublishedText && originalSubmittedText !== analysisText">
+                <!-- CASE A: Draft loaded + statistician EDITED → 2-col comparison -->
+                <template x-if="originalSubmittedText && originalSubmittedText !== analysisText">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
                             <div class="h-px flex-1 bg-slate-200"></div>
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">3-Way Comparison</p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Comparison</p>
                             <div class="h-px flex-1 bg-slate-200"></div>
                         </div>
-                        <div class="grid grid-cols-3 gap-3 mb-4">
-                            <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0"></span>
-                                    <p class="text-xs font-bold text-green-700 uppercase tracking-wide">Currently Live</p>
-                                </div>
-                                <div class="bg-green-50 border border-green-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
-                                    <div x-html="currentlyPublishedText"></div>
-                                </div>
-                                <p class="text-xs text-green-600 mt-1.5 text-right">
-                                    <span x-text="currentlyPublishedText.replace(/<[^>]*>/g,'').trim().split(/\s+/).filter(w=>w.length>0).length"></span> words
-                                </p>
-                            </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <!-- Admin Submitted (original) -->
                             <div>
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span>
                                     <p class="text-xs font-bold text-amber-700 uppercase tracking-wide">Admin Submitted</p>
                                 </div>
-                                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
+                                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar text-sm ql-editor-preview">
                                     <div x-html="originalSubmittedText"></div>
                                 </div>
                                 <p class="text-xs text-amber-600 mt-1.5 text-right">
                                     <span x-text="originalSubmittedText.replace(/<[^>]*>/g,'').trim().split(/\s+/).filter(w=>w.length>0).length"></span> words
                                 </p>
                             </div>
+                            <!-- Your Edit -->
                             <div>
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"></span>
                                     <p class="text-xs font-bold text-blue-700 uppercase tracking-wide">Your Edit</p>
                                 </div>
-                                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
+                                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar text-sm ql-editor-preview">
                                     <div x-html="analysisText"></div>
                                 </div>
                                 <p class="text-xs text-blue-600 mt-1.5 text-right">
@@ -729,149 +743,37 @@
                         </div>
                         <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
                             <span class="text-orange-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></span>
-                            <p class="text-xs font-semibold text-orange-700">You've edited the admin draft — this will overwrite the currently live version.</p>
+                            <p class="text-xs font-semibold text-orange-700">You've made changes from the admin's original submission.</p>
                         </div>
                     </div>
                 </template>
 
-                <!-- Scenario 1b: Draft loaded + live exists + NO changes → 2-col (skip redundant "Your Edit" column) -->
-                <template x-if="originalSubmittedText && currentlyPublishedText && originalSubmittedText === analysisText">
+                <!-- CASE B: No changes made, OR no draft loaded → single summary card -->
+                <template x-if="!originalSubmittedText || originalSubmittedText === analysisText">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
                             <div class="h-px flex-1 bg-slate-200"></div>
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Comparison</p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Content to be Published</p>
                             <div class="h-px flex-1 bg-slate-200"></div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0"></span>
-                                    <p class="text-xs font-bold text-green-700 uppercase tracking-wide">Currently Live</p>
-                                </div>
-                                <div class="bg-green-50 border border-green-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
-                                    <div x-html="currentlyPublishedText"></div>
-                                </div>
-                                <p class="text-xs text-green-600 mt-1.5 text-right">
-                                    <span x-text="currentlyPublishedText.replace(/<[^>]*>/g,'').trim().split(/\s+/).filter(w=>w.length>0).length"></span> words
-                                </p>
-                            </div>
-                            <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span>
-                                    <p class="text-xs font-bold text-amber-700 uppercase tracking-wide">Admin Submitted <span class="text-slate-400 font-normal normal-case">(unchanged)</span></p>
-                                </div>
-                                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
-                                    <div x-html="originalSubmittedText"></div>
-                                </div>
-                                <p class="text-xs text-amber-600 mt-1.5 text-right">
-                                    <span x-text="originalSubmittedText.replace(/<[^>]*>/g,'').trim().split(/\s+/).filter(w=>w.length>0).length"></span> words
-                                </p>
-                            </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 max-h-80 overflow-y-auto custom-scrollbar text-sm text-slate-700 ql-editor-preview mb-2">
+                            <div x-html="analysisText || '<em class=\'text-slate-400\'>No content.</em>'"></div>
                         </div>
-                        <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
-                            <span class="text-green-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
-                            <p class="text-xs font-semibold text-green-700">Publishing admin's submission as-is, this will overwrite the currently live version.</p>
-                        </div>
-                    </div>
-                </template>
-
-                <!-- Scenario 2: Admin draft loaded, nothing published yet → 2 columns -->
-                <template x-if="originalSubmittedText && !currentlyPublishedText">
-                    <div>
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="h-px flex-1 bg-slate-200"></div>
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Comparison</p>
-                            <div class="h-px flex-1 bg-slate-200"></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span>
-                                    <p class="text-xs font-bold text-amber-700 uppercase tracking-wide">Admin Submitted</p>
-                                </div>
-                                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
-                                    <div x-html="originalSubmittedText"></div>
-                                </div>
-                                <p class="text-xs text-amber-600 mt-1.5 text-right">
-                                    <span x-text="originalSubmittedText.replace(/<[^>]*>/g,'').trim().split(/\s+/).filter(w=>w.length>0).length"></span> words
-                                </p>
-                            </div>
-                            <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"></span>
-                                    <p class="text-xs font-bold text-blue-700 uppercase tracking-wide">Your Edited Version</p>
-                                </div>
-                                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
-                                    <div x-html="analysisText"></div>
-                                </div>
-                                <p class="text-xs text-blue-600 mt-1.5 text-right">
-                                    <span x-text="getWordCount()"></span> words
-                                </p>
-                            </div>
-                        </div>
-                        <template x-if="originalSubmittedText !== analysisText">
-                            <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
-                                <span class="text-orange-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></span>
-                                <p class="text-xs font-semibold text-orange-700">You have made changes from the admin's original submission.</p>
-                            </div>
-                        </template>
-                        <template x-if="originalSubmittedText === analysisText">
+                        <p class="text-xs text-slate-500 text-right mb-4">
+                            <span x-text="getWordCount()"></span> words
+                        </p>
+                        <template x-if="originalSubmittedText && originalSubmittedText === analysisText">
                             <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
                                 <span class="text-green-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
                                 <p class="text-xs font-semibold text-green-700">No changes made — publishing admin's submission as-is.</p>
                             </div>
                         </template>
-                    </div>
-                </template>
-
-                <!-- Scenario 3: No draft loaded, direct edit overwriting live version → 2 columns -->
-                <template x-if="!originalSubmittedText && originalText && originalText !== analysisText">
-                    <div>
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="h-px flex-1 bg-slate-200"></div>
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Comparison</p>
-                            <div class="h-px flex-1 bg-slate-200"></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0"></span>
-                                    <p class="text-xs font-bold text-green-700 uppercase tracking-wide">Currently Published</p>
-                                </div>
-                                <div class="bg-green-50 border border-green-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
-                                    <div x-html="originalText"></div>
-                                </div>
-                                <p class="text-xs text-green-600 mt-1.5 text-right">
-                                    <span x-text="originalText.replace(/<[^>]*>/g,'').trim().split(/\s+/).filter(w=>w.length>0).length"></span> words
-                                </p>
+                        <template x-if="!originalSubmittedText">
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
+                                <span class="text-blue-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+                                <p class="text-xs font-semibold text-blue-700">This will be published to the public Supply Side page.</p>
                             </div>
-                            <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"></span>
-                                    <p class="text-xs font-bold text-blue-700 uppercase tracking-wide">Your New Version</p>
-                                </div>
-                                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 max-h-72 overflow-y-auto custom-scrollbar prose prose-sm max-w-none text-sm">
-                                    <div x-html="analysisText"></div>
-                                </div>
-                                <p class="text-xs text-blue-600 mt-1.5 text-right">
-                                    <span x-text="getWordCount()"></span> words
-                                </p>
-                            </div>
-                        </div>
-                        <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2 flex items-center gap-2 mb-5">
-                            <span class="text-orange-500"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></span>
-                            <p class="text-xs font-semibold text-orange-700">You are overwriting the currently published version with your edits.</p>
-                        </div>
-                    </div>
-                </template>
-
-                <!-- Scenario 4: Brand new — nothing published, no draft → single preview -->
-                <template x-if="!originalSubmittedText && (!originalText || originalText === analysisText)">
-                    <div>
-                        <h4 class="font-semibold text-gray-900 mb-3">Analysis Content:</h4>
-                        <div class="bg-gray-50 rounded-lg p-4 mb-5 max-h-80 overflow-y-auto border border-gray-200 prose prose-sm max-w-none custom-scrollbar">
-                            <div x-html="analysisText"></div>
-                        </div>
+                        </template>
                     </div>
                 </template>
 
@@ -1060,29 +962,29 @@
                 showPreviewModal: false,
                 previewDonutChart: null,
                 previewDisciplineLeft: [
-                    {name:'Business Administration',          pct:'27.1', color:'rgb(37, 99, 235)'},
-                    {name:'Education Science',                pct:'20.6', color:'rgb(220, 38, 38)'},
-                    {name:'Medical and Allied',               pct:'10.8', color:'rgb(22, 163, 74)'},
-                    {name:'Criminal Justice Education',       pct:'10.0', color:'rgb(234, 179, 8)'},
-                    {name:'Engineering and Technology',       pct:'6.9',  color:'rgb(249, 115, 22)'},
-                    {name:'IT-Related Disciplines',           pct:'5.3',  color:'rgb(124, 58, 237)'},
-                    {name:'Service Trades',                   pct:'3.0',  color:'rgb(20, 184, 166)'},
-                    {name:'Social and Behavioral Sciences',   pct:'2.9',  color:'rgb(236, 72, 153)'},
-                    {name:'Agriculture, Forestry, Fisheries', pct:'2.6',  color:'rgb(6, 182, 212)'},
-                    {name:'Maritime',                         pct:'2.5',  color:'rgb(132, 204, 22)'},
-                    {name:'Mathematics',                      pct:'1.6',  color:'rgb(96, 165, 250)'},
+                    {name:'Business Administration',          pct:'27.1', color:'rgb(15,23,83)'},
+                    {name:'Education Science',                pct:'20.6', color:'rgb(20,34,102)'},
+                    {name:'Medical and Allied',               pct:'10.8', color:'rgb(25,48,122)'},
+                    {name:'Criminal Justice Education',       pct:'10.0', color:'rgb(29,64,140)'},
+                    {name:'Engineering and Technology',       pct:'6.9',  color:'rgb(30,78,160)'},
+                    {name:'IT-Related Disciplines',           pct:'5.3',  color:'rgb(32,92,185)'},
+                    {name:'Service Trades',                   pct:'3.0',  color:'rgb(37,99,235)'},
+                    {name:'Social and Behavioral Sciences',   pct:'2.9',  color:'rgb(35,105,200)'},
+                    {name:'Agriculture, Forestry, Fisheries', pct:'2.6',  color:'rgb(50,115,240)'},
+                    {name:'Maritime',                         pct:'2.5',  color:'rgb(59,130,246)'},
+                    {name:'Mathematics',                      pct:'1.6',  color:'rgb(180,220,254)'},
                 ],
                 previewDisciplineRight: [
-                    {name:'Other Disciplines',               pct:'1.6',  color:'rgb(248, 113, 113)'},
-                    {name:'Architecture and Town Planning',  pct:'1.3',  color:'rgb(74, 222, 128)'},
-                    {name:'Natural Science',                 pct:'0.9',  color:'rgb(250, 204, 21)'},
-                    {name:'Humanities',                      pct:'0.7',  color:'rgb(251, 146, 60)'},
-                    {name:'Mass Communication',              pct:'0.6',  color:'rgb(167, 139, 250)'},
-                    {name:'Fine and Applied Arts',           pct:'0.6',  color:'rgb(45, 212, 191)'},
-                    {name:'Religion and Theology',           pct:'0.5',  color:'rgb(244, 114, 182)'},
-                    {name:'Law and Jurisprudence',           pct:'0.4',  color:'rgb(34, 211, 238)'},
-                    {name:'Home Economics',                  pct:'0.0',  color:'rgb(163, 230, 53)'},
-                    {name:'General Programs',                pct:'0.0',  color:'rgb(37, 99, 235)'},
+                    {name:'Other Disciplines',               pct:'1.6',  color:'rgb(219,238,255)'},
+                    {name:'Architecture and Town Planning',  pct:'1.3',  color:'rgb(80,148,248)'},
+                    {name:'Natural Science',                 pct:'0.9',  color:'rgb(96,165,250)'},
+                    {name:'Humanities',                      pct:'0.7',  color:'rgb(120,182,251)'},
+                    {name:'Mass Communication',              pct:'0.6',  color:'rgb(140,195,252)'},
+                    {name:'Fine and Applied Arts',           pct:'0.6',  color:'rgb(155,206,253)'},
+                    {name:'Religion and Theology',           pct:'0.5',  color:'rgb(168,214,253)'},
+                    {name:'Law and Jurisprudence',           pct:'0.4',  color:'rgb(190,226,254)'},
+                    {name:'Home Economics',                  pct:'0.0',  color:'rgb(200,232,255)'},
+                    {name:'General Programs',                pct:'0.0',  color:'rgb(210,237,255)'},
                 ],
 
                 // Toasts

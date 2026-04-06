@@ -55,11 +55,13 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 px-2 py-4 space-y-0.5 overflow-visible">
-        <div class="mb-4">
+    <nav class="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto overflow-x-visible">
+
+        {{-- ── Module 1 ── --}}
+        <div class="mb-1">
             <p x-show="sidebarExpanded"
                 class="text-[9px] uppercase tracking-[0.14em] text-slate-400 font-semibold font-mono mb-2 px-2 whitespace-nowrap">
-                Main Menu
+                Module 1
             </p>
 
             <!-- Regional Statistics -->
@@ -78,6 +80,58 @@
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     Regional Statistics
+                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                </div>
+            </div>
+
+            <!-- Analysis JobMarketDemands -->
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+                <a href="{{ route('admin.template-editor') }}"   {{-- ← changed --}}
+                    class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
+                        {{ request()->routeIs('admin.template-editor')   {{-- ← changed --}}
+                            ? 'text-blue-700 bg-blue-50 border-blue-500'
+                            : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.stemplate-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"   {{-- ← changed --}}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.073a2.25 2.25 0 01-2.25 2.25H5.25a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 015.25 4.5h7.5M9 4.5V3a.75.75 0 01.75-.75h4.5A.75.75 0 0115 3v1.5m-5.25 6h6M3.75 10.5h7.5"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5l1.5-1.5a1.06 1.06 0 00-1.5-1.5L18 9l1.5 1.5zm0 0l-4.5 4.5-2 .5.5-2 4-3z"/>
+                    </svg>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis JobMarketDemands</span>
+                </a>
+                <div x-show="!sidebarExpanded && hovered"
+                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    Analysis JobMarketDemands
+                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── Divider ── --}}
+        <div class="border-t border-slate-200 my-2 mx-2"></div>
+
+        {{-- ── Module 2 ── --}}
+        <div class="mb-1">
+            <p x-show="sidebarExpanded"
+                class="text-[9px] uppercase tracking-[0.14em] text-slate-400 font-semibold font-mono mb-2 px-2 whitespace-nowrap mt-2">
+                Module 2
+            </p>
+
+            <!-- LMI Submissions -->
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+                <a href="{{ route('admin.lmi-submissions.index') }}"
+                    class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
+                        {{ request()->routeIs('admin.lmi-submissions.*')
+                            ? 'text-blue-700 bg-blue-50 border-blue-500'
+                            : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.lmi-submissions.*') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z"/>
+                    </svg>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">LMI Submissions</span>
+                </a>
+                <div x-show="!sidebarExpanded && hovered"
+                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    LMI Submissions
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
@@ -101,23 +155,54 @@
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
+        </div>
 
-            <!-- Licensure Passing Rates -->
+        {{-- ── Divider ── --}}
+        <div class="border-t border-slate-200 my-2 mx-2"></div>
+
+        {{-- ── Module 3 ── --}}
+        <div class="mb-1">
+            <p x-show="sidebarExpanded"
+                class="text-[9px] uppercase tracking-[0.14em] text-slate-400 font-semibold font-mono mb-2 px-2 whitespace-nowrap mt-2">
+                Module 3
+            </p>
+
+            <!-- Graduate Form -->
             <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.licensure-rates.form') }}"
+                <a href="{{ route('admin.discipline-graduate.form') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.licensure-rates.form')
+                        {{ request()->routeIs('admin.discipline-graduate.form')
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.licensure-rates.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.discipline-graduate.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-.44 3.899 3.745 3.745 0 01-3.899.44A3.745 3.745 0 0112 21a3.745 3.745 0 01-3.068-1.593 3.745 3.745 0 01-3.899-.44 3.745 3.745 0 01-.44-3.899A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 01.44-3.899 3.745 3.745 0 013.899-.44A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.899.44 3.746 3.746 0 01.44 3.899A3.746 3.746 0 0121 12z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/>
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Licensure Passing Rates</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Graduate Form</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    Licensure Passing Rates
+                    Graduate Form
+                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                </div>
+            </div>
+
+            <!-- Analysis Labor Supply -->
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+                <a href="{{ route('admin.supply-side-editor') }}"   {{-- ← changed --}}
+                    class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
+                        {{ request()->routeIs('admin.supply-side-editor')   {{-- ← changed --}}
+                            ? 'text-blue-700 bg-blue-50 border-blue-500'
+                            : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.supply-side-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"   {{-- ← changed --}}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z"/>
+                    </svg>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis Labor Supply</span>
+                </a>
+                <div x-show="!sidebarExpanded && hovered"
+                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    Analysis Labor Supply
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
@@ -142,65 +227,36 @@
                 </div>
             </div>
 
-            <!-- Graduate Form -->
+            <!-- Licensure Passing Rates -->
             <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.discipline-graduate.form') }}"
+                <a href="{{ route('admin.licensure-rates.form') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.discipline-graduate.form')
+                        {{ request()->routeIs('admin.licensure-rates.form')
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.discipline-graduate.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.licensure-rates.form') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-.44 3.899 3.745 3.745 0 01-3.899.44A3.745 3.745 0 0112 21a3.745 3.745 0 01-3.068-1.593 3.745 3.745 0 01-3.899-.44 3.745 3.745 0 01-.44-3.899A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 01.44-3.899 3.745 3.745 0 013.899-.44A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.899.44 3.746 3.746 0 01.44 3.899A3.746 3.746 0 0121 12z"/>
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Graduate Form</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Licensure Passing Rates</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    Graduate Form
+                    Licensure Passing Rates
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
-                <!-- Analysis Template -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.supply-side-editor') }}"   {{-- ← changed --}}
-                    class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.supply-side-editor')   {{-- ← changed --}}
-                            ? 'text-blue-700 bg-blue-50 border-blue-500'
-                            : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.supply-side-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"   {{-- ← changed --}}
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z"/>
-                    </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis Labor Supply</span>
-                </a>
-                <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    Analysis Labor Supply
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
-                </div>
-            </div>
-            <!-- Analysis Template JobMarketDemand Side -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.template-editor') }}"   {{-- ← changed --}}
-                    class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.template-editor')   {{-- ← changed --}}
-                            ? 'text-blue-700 bg-blue-50 border-blue-500'
-                            : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.stemplate-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"   {{-- ← changed --}}
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.073a2.25 2.25 0 01-2.25 2.25H5.25a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 015.25 4.5h7.5M9 4.5V3a.75.75 0 01.75-.75h4.5A.75.75 0 0115 3v1.5m-5.25 6h6M3.75 10.5h7.5"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5l1.5-1.5a1.06 1.06 0 00-1.5-1.5L18 9l1.5 1.5zm0 0l-4.5 4.5-2 .5.5-2 4-3z"/>
-                    </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis JobMarketDemands</span>
-                </a>
-                <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    Analysis JobMarketDemands
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
-                </div>
-            </div>
+        </div>
 
+        {{-- ── Divider ── --}}
+        <div class="border-t border-slate-200 my-2 mx-2"></div>
+
+        {{-- ── Module 4 ── --}}
+        <div class="mb-1">
+            <p x-show="sidebarExpanded"
+                class="text-[9px] uppercase tracking-[0.14em] text-slate-400 font-semibold font-mono mb-2 px-2 whitespace-nowrap mt-2">
+                Module 4
+            </p>
 
             <!-- Programs & Stories -->
             <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
@@ -221,27 +277,43 @@
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
+        </div>
 
-            <!-- LMI Submissions -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-                <a href="{{ route('admin.lmi-submissions.index') }}"
+        {{-- ── Divider ── --}}
+        <div class="border-t border-slate-200 my-2 mx-2"></div>
+
+        {{-- ── Module 5 ── --}}
+        <div class="mb-1">
+            <p x-show="sidebarExpanded"
+                class="text-[9px] uppercase tracking-[0.14em] text-slate-400 font-semibold font-mono mb-2 px-2 whitespace-nowrap mt-2">
+                Module 5
+            </p>
+
+            <!-- PESO / JPO Directory -->
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true"
+                @mouseleave="hovered = false">
+                <a href="{{ route('admin.peso-directory.index') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.lmi-submissions.*')
+                        {{ request()->routeIs('admin.peso-directory.index')
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.lmi-submissions.*') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.peso-directory.index') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">LMI Submissions</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">PESO / JPO
+                        Directory</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
-                    LMI Submissions
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    PESO / JPO Directory
+                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
         </div>
+
     </nav>
 
     <!-- Account Section (pinned to bottom) -->
