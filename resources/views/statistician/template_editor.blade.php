@@ -212,43 +212,13 @@
 
                 <!-- LEFT PANEL -->
                 <div class="w-72 flex-shrink-0 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="px-5 py-4 border-b border-slate-200 bg-white flex items-center justify-between">
-                        <p class="text-sm font-bold text-slate-700 uppercase tracking-wide">Filters</p>
-                        <span x-show="!isUnlocked" class="text-xs text-slate-400 flex items-center gap-1"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Locked</span>
-                        <button x-show="isUnlocked" @click="lockEditor()" class="text-xs text-slate-500 hover:text-red-500 flex items-center gap-1 transition">
-                            <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg> Lock Filters
-                        </button>
-                    </div>
                     <div class="p-5 space-y-5">
-                        <div>
-                            <label class="text-xs font-semibold block mb-1.5" :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Year</label>
-                            <select x-model.number="selectedYear" @change="isUnlocked && loadSidebarOnly()" :disabled="!isUnlocked"
-                                class="w-full border rounded-lg px-3 py-2 text-sm transition"
-                                :class="isUnlocked ? 'border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 text-slate-700' : 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'">
-                                <template x-for="year in availableYears" :key="year">
-                                    <option :value="year" x-text="year"></option>
-                                </template>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold block mb-1.5" :class="isUnlocked ? 'text-slate-500' : 'text-slate-300'"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> Quarter</label>
-                            <select x-model.number="selectedMonth" @change="isUnlocked && loadSidebarOnly()" :disabled="!isUnlocked"
-                                class="w-full border rounded-lg px-3 py-2 text-sm transition"
-                                :class="isUnlocked ? 'border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 text-slate-700' : 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'">
-                                <template x-for="m in availableMonths" :key="m">
-                                    <option :value="m" x-text="quarterLabels[m] || m"></option>
-                                </template>
-                            </select>
-                        </div>
-                        <div x-show="!isUnlocked" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-400 text-center">
-                            <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Load a draft below to unlock filters &amp; editor
-                        </div>
                         <div x-show="isUnlocked && lastSaved" class="bg-green-50 border border-green-200 rounded-lg p-3">
                             <p class="text-xs font-bold text-green-800 mb-0.5"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Last Saved</p>
                             <p class="text-xs text-green-600" x-text="lastSaved"></p>
                         </div>
                         <!-- ── Pending Drafts ── -->
-                        <div class="border-t border-slate-200 pt-4">
+                        <div>
 
                             <!-- Section Label -->
                             <div class="flex items-center gap-2 mb-3">

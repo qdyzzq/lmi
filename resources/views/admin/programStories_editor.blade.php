@@ -1801,7 +1801,7 @@
                     ctaHasDraft: {{ $ctaHasDraft ? 'true' : 'false' }},
                     ctaIsPublished: {{ $ctaIsPublished ? 'true' : 'false' }},
                     ctaPublishing: false
-                }"
+                    }"
                 @cta-updated.window="ctaTitle = $event.detail.title; ctaSubtitle = $event.detail.subtitle; ctaHasDraft = true">
 
                 <div class="w-full mx-auto px-6 text-center">
@@ -1895,7 +1895,8 @@
                         <div x-show="modal.type === 'add-slide' || modal.type === 'edit-slide'" x-cloak
                             class="space-y-4">
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Story Title</label>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Story Title 
+                                    <span class="text-red-500">*</span></label>
                                 <input type="text" x-model="form.title"
                                     :class="formErrors.title ? 'border-red-500 ring-2 ring-red-200' :
                                         'border-slate-300 focus:ring-indigo-400'"
@@ -1905,8 +1906,10 @@
                                     This field is required.</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Short Excerpt</label>
-                                <div id="quill-excerpt" class="rounded-lg border border-slate-300"></div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Short Excerpt
+                                    <span class="text-red-500">*</span></label>
+                                <div id="quill-excerpt" :class="formErrors.excerpt ? 'rounded-lg border-2 border-red-500' : 'rounded-lg border border-slate-300'"></div>
+                                <p x-show="formErrors.excerpt" class="mt-1 text-xs text-red-500 font-semibold" x-cloak>This field is required.</p>
                                 <div class="mt-1 text-xs text-slate-400"><span id="quill-excerpt-wordcount">0</span>
                                     words
                                 </div>
@@ -1914,12 +1917,14 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Program
-                                        Label</label>
+                                        Label <span class="text-red-500">*</span></label>
                                     <input type="text" x-model="form.program_label"
                                         list="slide-program-label-options" placeholder="e.g. GIP"
-                                        @input="syncProgramColor(form, $event.target.value, {{ json_encode($programColorMap) }})"
-                                        @change="syncProgramColor(form, $event.target.value, {{ json_encode($programColorMap) }})"
-                                        class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none" />
+                                        @input="syncProgramColor(form, $event.target.value, {{ json_encode($programColorMap) }}); formErrors.program_label = false"
+                                        @change="syncProgramColor(form, $event.target.value, {{ json_encode($programColorMap) }}); formErrors.program_label = false"
+                                        :class="formErrors.program_label ? 'border-red-500 ring-2 ring-red-200' : 'border-slate-300 focus:ring-indigo-400'"
+                                        class="w-full border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none" />
+                                    <p x-show="formErrors.program_label" class="mt-1 text-xs text-red-500 font-semibold" x-cloak>This field is required.</p>
                                     <datalist id="slide-program-label-options">
                                         @foreach ($programs as $p)
                                             <option value="{{ $p->name }}">{{ $p->name }}</option>
@@ -1937,7 +1942,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">
-                                    Slide Image
+                                    Slide Image <span class="text-red-500">*</span>
                                     <span x-show="modal.type === 'edit-slide'"
                                         class="text-slate-400 font-normal">(leave blank
                                         to keep current)</span>
@@ -2041,7 +2046,8 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Program
-                                    Description</label>
+                                    Description <span
+                                        class="text-red-500">*</span></label>
                                 <div id="quill-program" class="rounded-lg border border-slate-300"></div>
                                 <div class="mt-1 text-xs text-slate-400"><span id="quill-program-wordcount">0</span>
                                     words
@@ -2253,7 +2259,8 @@
                                         x-cloak>Story title is required.</p>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Story Link</label>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Story Link
+                                        <span class="text-red-500">*</span></label>
                                     <input type="url" x-model="form.link" placeholder="https://..."
                                         class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none" />
                                 </div>
@@ -3583,6 +3590,16 @@
                                     key: 'title',
                                     label: 'Story Title',
                                     check: !!this.form.title?.trim()
+                                },
+                                {
+                                    key: 'excerpt',
+                                    label: 'Short Excerpt',
+                                    check: !!this.form.excerpt?.trim() && this.form.excerpt !== '<p><br></p>'
+                                },
+                                {
+                                    key: 'program_label',
+                                    label: 'Program Label',
+                                    check: !!this.form.program_label?.trim()
                                 },
                                 ...(!isEdit ? [{
                                     key: 'image',

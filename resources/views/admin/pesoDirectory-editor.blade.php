@@ -64,6 +64,8 @@
 
         .ql-container.ql-snow {
             border-radius: 0 0 8px 8px;
+            max-height: 500px;
+            overflow-y: auto;
         }
 
         .ql-editor {
@@ -71,6 +73,42 @@
             font-size: 14px;
             line-height: 1.6;
         }
+
+        .ql-editor::-webkit-scrollbar { width: 8px; }
+        .ql-editor::-webkit-scrollbar-track { background: #f1f5f9; }
+        .ql-editor::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .ql-editor::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="8pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="8pt"]::before { content: '8'; }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="10pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="10pt"]::before { content: '10'; }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="11pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="11pt"]::before { content: '11'; }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12pt"]::before { content: '12'; }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="14pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="14pt"]::before { content: '14'; }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="16pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="16pt"]::before { content: '16'; }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="18pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18pt"]::before { content: '18'; }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="24pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24pt"]::before { content: '24'; }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="36pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="36pt"]::before { content: '36'; }
+        .ql-snow .ql-picker.ql-size .ql-picker-label:not([data-value])::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item:not([data-value])::before { content: '11'; }
+
+        .ql-editor .ql-size-8pt  { font-size: 8pt;  }
+        .ql-editor .ql-size-10pt { font-size: 10pt; }
+        .ql-editor .ql-size-11pt { font-size: 11pt; }
+        .ql-editor .ql-size-12pt { font-size: 12pt; }
+        .ql-editor .ql-size-14pt { font-size: 14pt; }
+        .ql-editor .ql-size-16pt { font-size: 16pt; }
+        .ql-editor .ql-size-18pt { font-size: 18pt; }
+        .ql-editor .ql-size-24pt { font-size: 24pt; }
+        .ql-editor .ql-size-36pt { font-size: 36pt; }
 
         /* ===== CAROUSEL ===== */
         .line-clamp-2 {
@@ -1209,14 +1247,15 @@
                                                 header: [1, 2, 3, false]
                                             }],
                                             [{
-                                                align: []
-                                            }],
-                                            [{
                                                 list: 'ordered'
                                             }, {
                                                 list: 'bullet'
                                             }],
-                                            ['link', 'clean'],
+                                            [{
+                                                align: []
+                                            }],
+                                            ['link'],
+                                            ['clean'],
                                         ]
                                     }
                                 });
@@ -2099,113 +2138,20 @@
                                     <p x-show="formErrors.name" class="mt-1 text-xs text-red-500 font-semibold"
                                         x-cloak>Office name is required.</p>
                                 </div>
-                                <div x-data="officeTypeSelector()" x-init="init()">
+                                <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Office Type <span
                                             class="text-red-500">*</span></label>
-                                    <div x-show="mode === 'select'" class="space-y-2">
-                                        <div class="flex gap-2">
-                                            <select x-model="form.type"
-                                                :class="formErrors.type ? 'border-red-500 ring-2 ring-red-200' :
-                                                    'border-slate-300 focus:ring-indigo-400'"
-                                                @change="formErrors.type = false"
-                                                class="flex-1 border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none bg-white cursor-pointer">
-                                                <option value="" disabled selected hidden>— Select type —
-                                                </option>
-                                                <template x-for="t in types" :key="t">
-                                                    <option :value="t" x-text="t"
-                                                        :selected="form.type === t"></option>
-                                                </template>
-                                            </select>
-                                            <button type="button" @click="mode = 'add'; inputName = ''"
-                                                title="Add new type"
-                                                class="flex-shrink-0 w-10 h-10 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-600 flex items-center justify-center transition">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2.5" d="M12 4v16m8-8H4" />
-                                                </svg>
-                                            </button>
-                                            <button type="button" @click="startEdit()" :disabled="!form.type"
-                                                title="Edit selected type"
-                                                class="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-600 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
-                                            </button>
-                                            <button type="button" @click="mode = 'delete'" :disabled="!form.type"
-                                                title="Delete selected type"
-                                                class="flex-shrink-0 w-10 h-10 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-red-500 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                        <p x-show="typeError" x-text="typeError"
-                                            class="text-xs text-red-500 font-semibold" x-cloak></p>
-                                        <p x-show="formErrors.type && !typeError"
-                                            class="text-xs text-red-500 font-semibold" x-cloak>Please select an office
-                                            type.</p>
-                                    </div>
-                                    <div x-show="mode === 'add'" x-cloak class="space-y-2">
-                                        <div class="flex gap-2">
-                                            <input type="text" x-model="inputName"
-                                                @keydown.enter.prevent="saveNewType(form)"
-                                                @keydown.escape.prevent="mode = 'select'" placeholder="e.g. SFO"
-                                                class="flex-1 border border-indigo-400 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"
-                                                x-ref="addInput">
-                                            <button type="button" @click="saveNewType(form)" :disabled="saving"
-                                                class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition disabled:opacity-50">
-                                                <span x-show="!saving">Save</span><span x-show="saving"
-                                                    x-cloak>…</span>
-                                            </button>
-                                            <button type="button" @click="mode = 'select'; typeError = ''"
-                                                class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition">Cancel</button>
-                                        </div>
-                                        <p x-show="typeError" x-text="typeError"
-                                            class="text-xs text-red-500 font-semibold" x-cloak></p>
-                                    </div>
-                                    <div x-show="mode === 'edit'" x-cloak class="space-y-2">
-                                        <p class="text-xs text-slate-500">Renaming: <strong
-                                                x-text="form.type"></strong></p>
-                                        <div class="flex gap-2">
-                                            <input type="text" x-model="inputName"
-                                                @keydown.enter.prevent="updateType(form)"
-                                                @keydown.escape.prevent="mode = 'select'" placeholder="New name..."
-                                                class="flex-1 border border-amber-400 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-400 outline-none"
-                                                x-ref="editInput">
-                                            <button type="button" @click="updateType(form)" :disabled="saving"
-                                                class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition disabled:opacity-50">
-                                                <span x-show="!saving">Rename</span><span x-show="saving"
-                                                    x-cloak>…</span>
-                                            </button>
-                                            <button type="button" @click="mode = 'select'; typeError = ''"
-                                                class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition">Cancel</button>
-                                        </div>
-                                        <p x-show="typeError" x-text="typeError"
-                                            class="text-xs text-red-500 font-semibold" x-cloak></p>
-                                    </div>
-                                    <div x-show="mode === 'delete'" x-cloak
-                                        class="rounded-lg border border-red-200 bg-red-50 p-3 space-y-2">
-                                        <p class="text-sm text-red-700 font-semibold">Delete type "<span
-                                                x-text="form.type"></span>"?</p>
-                                        <p class="text-xs text-red-500">This only removes it from the type list.
-                                            Existing offices are not affected.</p>
-                                        <div class="flex gap-2">
-                                            <button type="button" @click="deleteType(form)" :disabled="saving"
-                                                class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition disabled:opacity-50">
-                                                <span x-show="!saving">Yes, Delete</span><span x-show="saving"
-                                                    x-cloak>…</span>
-                                            </button>
-                                            <button type="button" @click="mode = 'select'"
-                                                class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition">Cancel</button>
-                                        </div>
-                                    </div>
+                                    <select x-model="form.type"
+                                        :class="formErrors.type ? 'border-red-500 ring-2 ring-red-200' :
+                                            'border-slate-300 focus:ring-indigo-400'"
+                                        @change="formErrors.type = false; form.position_title = ''"
+                                        class="w-full border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none bg-white cursor-pointer">
+                                        <option value="" disabled selected hidden>— Select type —</option>
+                                        <option value="PESO">PESO</option>
+                                        <option value="JPO">JPO</option>
+                                    </select>
+                                    <p x-show="formErrors.type" class="mt-1 text-xs text-red-500 font-semibold"
+                                        x-cloak>Please select an office type.</p>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
@@ -2215,7 +2161,7 @@
                                     <select x-model="form.province"
                                         :class="formErrors.province ? 'border-red-500 ring-2 ring-red-200' :
                                             'border-slate-300 focus:ring-indigo-400'"
-                                        @change="formErrors.province = false"
+                                        @change="formErrors.province = false; form.position_title = ''"
                                         class="w-full border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none bg-white cursor-pointer">
                                         <option value="" disabled selected hidden>— Select province —</option>
                                         <option value="DAVAO CITY">DAVAO CITY</option>
@@ -2244,116 +2190,21 @@
                             </div>
 
                             {{-- Position Title row --}}
-                            <div x-data="positionTitleSelector()" x-init="init()">
+                            <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Position Title <span
                                         class="text-red-500">*</span></label>
-
-                                {{-- SELECT mode --}}
-                                <div x-show="mode === 'select'" class="space-y-2">
-                                    <div class="flex gap-2">
-                                        <select x-model="form.position_title"
-                                            :class="formErrors.position_title ? 'border-red-500 ring-2 ring-red-200' :
-                                                'border-slate-300 focus:ring-indigo-400'"
-                                            @change="formErrors.position_title = false"
-                                            class="flex-1 border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none bg-white cursor-pointer">
-                                            <option value="" disabled selected hidden>— Select position —
-                                            </option>
-                                            <template x-for="t in titles" :key="t">
-                                                <option :value="t" x-text="t"
-                                                    :selected="form.position_title === t"></option>
-                                            </template>
-                                        </select>
-                                        <button type="button" @click="mode = 'add'; inputName = ''"
-                                            title="Add new position title"
-                                            class="flex-shrink-0 w-10 h-10 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-600 flex items-center justify-center transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    stroke-width="2.5" d="M12 4v16m8-8H4" />
-                                            </svg>
-                                        </button>
-                                        <button type="button" @click="startEdit()" :disabled="!form.position_title"
-                                            title="Rename selected position"
-                                            class="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-600 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                        </button>
-                                        <button type="button" @click="mode = 'delete'"
-                                            :disabled="!form.position_title" title="Delete selected position"
-                                            class="flex-shrink-0 w-10 h-10 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-red-500 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <p x-show="titleError" x-text="titleError"
-                                        class="text-xs text-red-500 font-semibold" x-cloak></p>
-                                    <p x-show="formErrors.position_title && !titleError"
-                                        class="text-xs text-red-500 font-semibold" x-cloak>Please select a position
-                                        title.</p>
-                                </div>
-
-                                {{-- ADD mode --}}
-                                <div x-show="mode === 'add'" x-cloak class="space-y-2">
-                                    <div class="flex gap-2">
-                                        <input type="text" x-model="inputName"
-                                            @keydown.enter.prevent="saveNewTitle(form)"
-                                            @keydown.escape.prevent="mode = 'select'" placeholder="e.g. District Head"
-                                            class="flex-1 border border-indigo-400 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none">
-                                        <button type="button" @click="saveNewTitle(form)" :disabled="saving"
-                                            class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition disabled:opacity-50">
-                                            <span x-show="!saving">Save</span><span x-show="saving" x-cloak>…</span>
-                                        </button>
-                                        <button type="button" @click="mode = 'select'; titleError = ''"
-                                            class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition">Cancel</button>
-                                    </div>
-                                    <p x-show="titleError" x-text="titleError"
-                                        class="text-xs text-red-500 font-semibold" x-cloak></p>
-                                </div>
-
-                                {{-- EDIT mode --}}
-                                <div x-show="mode === 'edit'" x-cloak class="space-y-2">
-                                    <p class="text-xs text-slate-500">Renaming: <strong
-                                            x-text="form.position_title"></strong></p>
-                                    <div class="flex gap-2">
-                                        <input type="text" x-model="inputName"
-                                            @keydown.enter.prevent="updateTitle(form)"
-                                            @keydown.escape.prevent="mode = 'select'" placeholder="New name..."
-                                            class="flex-1 border border-amber-400 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-400 outline-none"
-                                            x-ref="editTitleInput">
-                                        <button type="button" @click="updateTitle(form)" :disabled="saving"
-                                            class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition disabled:opacity-50">
-                                            <span x-show="!saving">Rename</span><span x-show="saving" x-cloak>…</span>
-                                        </button>
-                                        <button type="button" @click="mode = 'select'; titleError = ''"
-                                            class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition">Cancel</button>
-                                    </div>
-                                    <p x-show="titleError" x-text="titleError"
-                                        class="text-xs text-red-500 font-semibold" x-cloak></p>
-                                </div>
-
-                                {{-- DELETE confirm --}}
-                                <div x-show="mode === 'delete'" x-cloak
-                                    class="rounded-lg border border-red-200 bg-red-50 p-3 space-y-2">
-                                    <p class="text-sm text-red-700 font-semibold">Delete position "<span
-                                            x-text="form.position_title"></span>"?</p>
-                                    <p class="text-xs text-red-500">This only removes it from the list. Existing
-                                        offices are not affected.</p>
-                                    <div class="flex gap-2">
-                                        <button type="button" @click="deleteTitle(form)" :disabled="saving"
-                                            class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition disabled:opacity-50">
-                                            <span x-show="!saving">Yes, Delete</span><span x-show="saving"
-                                                x-cloak>…</span>
-                                        </button>
-                                        <button type="button" @click="mode = 'select'"
-                                            class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition">Cancel</button>
-                                    </div>
-                                </div>
+                                <select x-model="form.position_title"
+                                    :class="formErrors.position_title ? 'border-red-500 ring-2 ring-red-200' :
+                                        'border-slate-300 focus:ring-indigo-400'"
+                                    @change="formErrors.position_title = false"
+                                    class="w-full border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none bg-white cursor-pointer">
+                                    <option value="" disabled selected hidden>— Select position —</option>
+                                    <template x-for="t in filteredPositionTitles" :key="t">
+                                        <option :value="t" x-text="t" :selected="form.position_title === t"></option>
+                                    </template>
+                                </select>
+                                <p x-show="formErrors.position_title" class="mt-1 text-xs text-red-500 font-semibold"
+                                    x-cloak>Please select a position title.</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Email Address <span
@@ -2778,6 +2629,41 @@
                 },
                 form: {},
                 formErrors: {},
+                allPositionTitles: [],   // master list fetched once from server
+
+                // Reactively computed – Alpine re-runs this whenever form.type or
+                // form.province changes because they all live in the same data scope.
+                get filteredPositionTitles() {
+                    const type     = (this.form?.type     ?? '').toUpperCase().trim();
+                    const province = (this.form?.province ?? '').toUpperCase().trim();
+
+                    if (!type && !province) return this.allPositionTitles;
+
+                    const rules = [
+                        { match: () => type === 'JPO',
+                          allowed: ['JPO MANAGER'] },
+                        { match: () => type === 'PESO' && province === 'DAVAO CITY',
+                          allowed: ['PESO MANAGER', 'DISTRICT HEAD'] },
+                        { match: () => type === 'PESO' && province !== 'DAVAO CITY' && province !== '',
+                          allowed: ['PESO MANAGER'] },
+                    ];
+
+                    const rule = rules.find(r => r.match());
+                    if (!rule) return this.allPositionTitles;
+
+                    return this.allPositionTitles.filter(t =>
+                        rule.allowed.some(a => a.toUpperCase() === t.toUpperCase())
+                    );
+                },
+
+                async fetchPositionTitles() {
+                    try {
+                        const res = await fetch('/admin/position-titles', {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        if (res.ok) this.allPositionTitles = await res.json();
+                    } catch (e) {}
+                },
 
                 openModal(detail) {
                     if (['add-slide', 'edit-slide', 'delete-slide'].includes(detail.type)) return;
@@ -2804,6 +2690,10 @@
                     this.form = detail.data ? {
                         ...detail.data
                     } : {};
+                    // Refresh title list whenever the add/edit modal opens
+                    if (detail.type === 'add-peso' || detail.type === 'edit-peso') {
+                        this.fetchPositionTitles();
+                    }
                 },
 
                 fail(msg) {
@@ -3147,6 +3037,35 @@
         }
 
         // ─── Position Title Selector ─────────────────────────────────────────────
+        /*
+         * TITLE FILTERING RULES
+         * ─────────────────────────────────────────────────────────────────────────
+         *  JPO  + any province          → ["JPO Manager"]
+         *  PESO + DAVAO CITY            → ["PESO Manager", "District Head"]
+         *  PESO + any other province    → ["PESO Manager"]
+         *
+         * The keys below are matched case-insensitively against form.type /
+         * form.province so the logic is resilient to capitalisation differences.
+         * All title strings must exactly match values stored in /admin/position-titles.
+         */
+        const POSITION_TITLE_RULES = [
+            {
+                // JPO + any province  →  JPO MANAGER only
+                match: (type, province) => type === 'JPO',
+                allowed: ['JPO MANAGER'],
+            },
+            {
+                // PESO + DAVAO CITY  →  PESO MANAGER + DISTRICT HEAD
+                match: (type, province) => type === 'PESO' && province === 'DAVAO CITY',
+                allowed: ['PESO MANAGER', 'DISTRICT HEAD'],
+            },
+            {
+                // PESO + other province  →  PESO MANAGER only
+                match: (type, province) => type === 'PESO' && province !== 'DAVAO CITY' && province !== '',
+                allowed: ['PESO MANAGER'],
+            },
+        ];
+
         function positionTitleSelector() {
             return {
                 titles: [],
@@ -3154,6 +3073,9 @@
                 inputName: '',
                 saving: false,
                 titleError: '',
+
+                // Filtering is handled by filteredPositionTitles in the parent adminPesoPage
+                // scope. This component only manages add / rename / delete of title records.
 
                 async init() {
                     try {
@@ -3200,6 +3122,9 @@
                         if (res.ok && data.success) {
                             this.titles.push(data.name);
                             this.titles.sort();
+                            // Keep parent's master list in sync
+                            const _p = this.$el.closest('[x-data]')?._x_dataStack?.find(d => 'allPositionTitles' in d);
+                            if (_p) { _p.allPositionTitles = [...this.titles]; }
                             form.position_title = data.name;
                             this.mode = 'select';
                             this.inputName = '';

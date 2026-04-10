@@ -5,7 +5,7 @@ use App\Http\Controllers\ChartController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JobMarketDemandsController;
 use App\Http\Controllers\KpiController;
-use App\Http\Controllers\LaborMarketController;
+use App\Http\Controllers\PendingLaborMarketController;
 use App\Http\Controllers\AutocompleteController;
 use App\Http\Controllers\JobTitleController;
 use App\Http\Controllers\AnalysisTemplateController;

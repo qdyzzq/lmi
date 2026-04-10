@@ -20,9 +20,15 @@
         <div x-data="analysisEditor()" x-init="init()" class="flex-1 flex flex-col overflow-hidden">
 
             <!-- Top Bar (page title only) -->
-            <div class="bg-white border-b border-slate-200 px-6 py-3 flex items-center shadow-sm flex-shrink-0">
-                <h1 class="text-xl font-bold text-slate-800">Analysis Template Editor • Admin</h1>
+            <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 shadow-sm">
+            <h1 class="text-xl font-bold text-slate-800">Analysis Template Editor • Admin</h1>
+            <div class="flex items-center gap-4">
+                <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">
+                    <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • 2026
+                </div>
+                <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
             </div>
+        </header>
 
             <!-- Scrollable Content -->
             <div class="flex-1 overflow-y-auto bg-blue-50/30 p-8">
@@ -86,24 +92,49 @@
                             <span class="text-sm text-slate-500 font-medium">Current status:</span>
 
                             <!-- No submission yet -->
-                            <span x-show="!pendingSubmission && !publishedExists"
+                            <span x-show="!pendingSubmission && !pendingEditSubmission && !publishedExists"
                                   class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
                                 ⬜ No submission yet
                             </span>
 
-                            <!-- Pending review -->
+                            <!-- Pending review (first-time, not yet published) -->
                             <span x-show="pendingSubmission && !publishedExists"
                                   class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
-                                <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Pending review
+                                <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Pending Review
                                 <span x-show="pendingSubmission?.submitted_at" class="font-normal text-amber-600">
                                     — submitted <span x-text="pendingSubmission?.submitted_at ? new Date(pendingSubmission.submitted_at).toLocaleString() : ''"></span>
                                 </span>
                             </span>
 
-                            <!-- Published -->
-                            <span x-show="publishedExists"
+                            <!-- Published + pending edit awaiting statistician -->
+                            <template x-if="publishedExists && pendingEditSubmission">
+                                <div class="flex items-center gap-2">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Published
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                                        <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Pending Edit Review
+                                        <span class="font-normal text-amber-600">
+                                            — submitted <span x-text="pendingEditSubmission?.submitted_at ? new Date(pendingEditSubmission.submitted_at).toLocaleString() : ''"></span>
+                                        </span>
+                                    </span>
+                                </div>
+                            </template>
+
+                            <!-- Published (original), no pending edit -->
+                            <span x-show="publishedExists && !pendingEditSubmission && !publishedIsEdited"
                                   class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
                                 <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Published
+                            </span>
+
+                            <!-- Published (Edited) — statistician approved an admin edit -->
+                            <span x-show="publishedExists && !pendingEditSubmission && publishedIsEdited"
+                                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-teal-100 text-teal-700">
+                                <svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Published
+                                <span class="inline-flex items-center gap-1 bg-teal-200 text-teal-800 px-1.5 py-0.5 rounded text-[10px] font-bold ml-0.5">
+                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    Edited
+                                </span>
                             </span>
                         </div>
 
@@ -118,7 +149,7 @@
 
                         <!-- EDITOR -->
                         <div x-show="!loading && viewMode === 'edit'" class="space-y-8"
-                             :class="(pendingSubmission || publishedExists) ? 'opacity-60 pointer-events-none select-none' : ''">
+                             :class="(pendingSubmission || pendingEditSubmission) ? 'opacity-60 pointer-events-none select-none' : ''">
 
                             <!-- Placeholder Toolbar -->
                             <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 flex-wrap">
@@ -236,7 +267,7 @@
                             </div>
                         </div>
 
-                        <!-- Pending Banner -->
+                        <!-- Pending Banner (first-time, not yet published) -->
                         <div x-show="pendingSubmission && !publishedExists"
                              class="mb-5 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
                             <div class="flex-shrink-0 w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center">
@@ -247,23 +278,23 @@
                             <div>
                                 <p class="font-semibold text-amber-800 text-sm">Submission Pending Review</p>
                                 <p class="text-xs text-amber-700 mt-0.5">
-                                    These templates were submitted on <strong x-text="pendingSubmission?.submitted_at ? new Date(pendingSubmission.submitted_at).toLocaleString() : '—'"></strong> and are awaiting the statistician's review. Only one submission is allowed per year and month.
+                                    Submitted on <strong x-text="pendingSubmission?.submitted_at ? new Date(pendingSubmission.submitted_at).toLocaleString() : '—'"></strong> and awaiting the statistician's approval.
                                 </p>
                             </div>
                         </div>
 
-                        <!-- Published Banner -->
-                        <div x-show="publishedExists"
-                             class="mb-5 flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4">
-                            <div class="flex-shrink-0 w-9 h-9 rounded-full bg-green-100 flex items-center justify-center">
-                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <!-- Pending Edit Banner (edit on top of published) -->
+                        <div x-show="publishedExists && pendingEditSubmission"
+                             class="mb-5 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
+                            <div class="flex-shrink-0 w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
                             <div>
-                                <p class="font-semibold text-green-800 text-sm">Already Published</p>
-                                <p class="text-xs text-green-700 mt-0.5">
-                                    Templates for this period have already been published. Submission is permanently locked for this year and month.
+                                <p class="font-semibold text-amber-800 text-sm">Edit Pending Review</p>
+                                <p class="text-xs text-amber-700 mt-0.5">
+                                    Your edited templates were submitted on <strong x-text="pendingEditSubmission?.submitted_at ? new Date(pendingEditSubmission.submitted_at).toLocaleString() : '—'"></strong> and are awaiting the statistician's approval. The current published version remains live until approved.
                                 </p>
                             </div>
                         </div>
@@ -275,9 +306,9 @@
                                 <span x-show="!hasValidationErrors()" class="text-green-600 font-medium"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> All templates valid</span>
                             </div>
                             <div class="flex gap-3" x-show="viewMode === 'edit'">
-                                <button @click="resetAll()" :disabled="!!(pendingSubmission || publishedExists)" class="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed">Reset Defaults</button>
+                                <button @click="resetAll()" :disabled="!!(pendingSubmission || pendingEditSubmission)" class="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed">Reset Defaults</button>
 
-                                <!-- Pending state: locked -->
+                                <!-- First-time pending: locked awaiting review -->
                                 <template x-if="pendingSubmission && !publishedExists">
                                     <button disabled
                                         class="px-8 py-2 bg-amber-100 text-amber-700 border border-amber-300 rounded-lg font-medium cursor-not-allowed flex items-center gap-2">
@@ -288,18 +319,31 @@
                                     </button>
                                 </template>
 
-                                <!-- Published state: permanently locked -->
-                                <template x-if="publishedExists">
+                                <!-- Published + pending edit: locked awaiting review -->
+                                <template x-if="publishedExists && pendingEditSubmission">
                                     <button disabled
-                                        class="px-8 py-2 bg-green-100 text-green-700 border border-green-300 rounded-lg font-medium cursor-not-allowed flex items-center gap-2">
+                                        class="px-8 py-2 bg-amber-100 text-amber-700 border border-amber-300 rounded-lg font-medium cursor-not-allowed flex items-center gap-2">
                                         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                         </svg>
-                                        Already Published
+                                        Edit Awaiting Review
                                     </button>
                                 </template>
 
-                                <!-- Normal: can submit -->
+                                <!-- Published, no pending edit: admin can submit edits -->
+                                <template x-if="publishedExists && !pendingEditSubmission">
+                                    <button
+                                        @click="saveAll()"
+                                        :disabled="saving || hasValidationErrors()"
+                                        class="px-8 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                        <span x-text="saving ? 'Submitting...' : 'Submit Edit for Review'"></span>
+                                    </button>
+                                </template>
+
+                                <!-- No submission yet: normal first submit -->
                                 <template x-if="!pendingSubmission && !publishedExists">
                                     <button
                                         @click="saveAll()"
@@ -464,8 +508,10 @@
                 // ── Modals ──
                 showResetModal:   false,
                 // ── Submission state ──
-                pendingSubmission: null,   // { submitted_by, submitted_at } or null
+                pendingSubmission: null,   // { submitted_by, submitted_at } — first-time pending
+                pendingEditSubmission: null, // { submitted_by, submitted_at } — edit on top of published
                 publishedExists:   false,  // true if already published for this year+month
+                publishedIsEdited: false,  // true if the published version is an approved admin edit
 
                 showSaveModal:    false,
                 showSuccessModal: false,
@@ -595,8 +641,10 @@
                         if (!res.ok) return;
                         const json = await res.json();
                         if (json.success) {
-                            this.pendingSubmission = json.pending || null;
-                            this.publishedExists   = json.published_exists || false;
+                            this.pendingSubmission     = json.pending           || null;
+                            this.pendingEditSubmission = json.pending_edit        || null;
+                            this.publishedExists       = json.published_exists    || false;
+                            this.publishedIsEdited     = json.published_is_edited || false;
                         }
                     } catch (e) {
                         console.error('Error loading submission status:', e);
@@ -785,9 +833,18 @@
                                 this.originalTemplates[k] = this.templates[k];
                             });
                             this.templateDiffs = [];
-                            this.pendingSubmission = { submitted_by: 'Admin', submitted_at: new Date().toISOString() };
-                            this.successTitle   = 'Submitted for Review!';
-                            this.successMessage = `Your templates for ${this.currentPeriodLabel} have been submitted. The statistician will review and publish them.`;
+
+                            if (this.publishedExists) {
+                                // This was an edit on top of a published version
+                                this.pendingEditSubmission = { submitted_by: 'Admin', submitted_at: new Date().toISOString() };
+                                this.successTitle   = 'Edit Submitted for Review!';
+                                this.successMessage = `Your edited templates for ${this.currentPeriodLabel} have been submitted. The statistician will review and approve the changes. The current published version remains live until then.`;
+                            } else {
+                                // First-time submission
+                                this.pendingSubmission = { submitted_by: 'Admin', submitted_at: new Date().toISOString() };
+                                this.successTitle   = 'Submitted for Review!';
+                                this.successMessage = `Your templates for ${this.currentPeriodLabel} have been submitted. The statistician will review and publish them.`;
+                            }
                             this.showSuccessModal = true;
                         } else {
                             this.errorTitle     = 'Submission Error';

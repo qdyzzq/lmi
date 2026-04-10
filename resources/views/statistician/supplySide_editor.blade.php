@@ -1087,7 +1087,7 @@
                                 ? new Date(data.data.updated_at).toLocaleString()
                                 : null;
                             this.hasChanges = false;
-                            if (this.quill) { this.quill.root.innerHTML = this.analysisText; }
+                            if (this.quill) { this.setQuillContent(this.analysisText); }
                         }
                     } catch (e) {
                         this.showErrorToast('Failed to load analysis');
@@ -1175,7 +1175,7 @@
                     this.draftProvince = prov;
                     this.draftYear     = year;
                     this.draftText     = text;
-                    if (this.quill) { this.quill.root.innerHTML = this.analysisText; }
+                    if (this.quill) { this.setQuillContent(this.analysisText); }
                     this.hasChanges  = true;
                     this.isUnlocked  = true;
                     // Lock publish target
@@ -1205,7 +1205,7 @@
                     this.draftProvince = prov;
                     this.draftYear     = year;
                     this.draftText     = text;
-                    if (this.quill) { this.quill.root.innerHTML = this.analysisText; }
+                    if (this.quill) { this.setQuillContent(this.analysisText); }
                     this.hasChanges        = true;
                     this.isUnlocked        = true;
                     this.pendingSubmission = item;
@@ -1290,7 +1290,7 @@
                         this.analysisText    = this.selectedArchive.analysis_text;
                         this.hasChanges      = true;
                         this.showCopyModal   = false;
-                        if (this.quill) { this.quill.root.innerHTML = this.analysisText; }
+                        if (this.quill) { this.setQuillContent(this.analysisText); }
                         this.showSuccessToastMessage('Text copied from ' + this.selectedArchive.version);
                         this.selectedArchive = null;
                     }
@@ -1308,7 +1308,7 @@
                     this.selectedAcademicYear = this.draftYear;
                     this.analysisText         = this.draftText;
                     this.originalSubmittedText = this.draftText;
-                    if (this.quill) { this.quill.root.innerHTML = this.analysisText; }
+                    if (this.quill) { this.setQuillContent(this.analysisText); }
                     this.hasChanges = false; // back to original — no unsaved changes
                     this.showSuccessToastMessage(`Reset to original draft: ${this.draftProvince} • ${this.draftYear}`);
                 },
@@ -1346,7 +1346,25 @@
                         this.hasChanges   = true;
                     });
 
-                    if (this.analysisText) { this.quill.root.innerHTML = this.analysisText; }
+                    if (this.analysisText) { this.setQuillContent(this.analysisText); }
+                },
+
+                setQuillContent(html) {
+                    if (!this.quill) return;
+                    this.quill.root.innerHTML = html || '';
+                    this.quill.update('silent');
+                    this.quill.setSelection(null);
+                    this._syncToolbarSize(html);
+                },
+
+                _syncToolbarSize(html) {
+                    const match = html && html.match(/font-size:\s*([\d.]+pt)/);
+                    const sizeValue = match ? match[1] : '8pt';
+                    const toolbar = this.quill.getModule('toolbar');
+                    if (!toolbar) return;
+                    const pickerLabel = toolbar.container.querySelector('.ql-size .ql-picker-label');
+                    if (!pickerLabel) return;
+                    pickerLabel.setAttribute('data-value', sizeValue);
                 },
 
                 // ── Toasts ───────────────────────────────────────

@@ -16,6 +16,9 @@ class AnalysisTemplate extends Model
         'year',
         'month',
         'template_text',
+        'draft_text',
+        'draft_submitted_by',
+        'draft_submitted_at',
         'is_active',
         'updated_by',
         'status',
@@ -24,10 +27,11 @@ class AnalysisTemplate extends Model
     ];
 
     protected $casts = [
-        'year'         => 'integer',
-        'month'        => 'integer',
-        'is_active'    => 'boolean',
-        'submitted_at' => 'datetime',
+        'year'               => 'integer',
+        'month'              => 'integer',
+        'is_active'          => 'boolean',
+        'submitted_at'       => 'datetime',
+        'draft_submitted_at' => 'datetime',  // needed so ->toDateTimeString() works on draft edits
     ];
 
     /**
@@ -40,7 +44,7 @@ class AnalysisTemplate extends Model
         10 => 'October',
     ];
 
-    // ─── Scopes ───────────────────────────────────────────
+    // --- Scopes ---
 
     public function scopeActive($query)
     {
@@ -57,14 +61,24 @@ class AnalysisTemplate extends Model
         return $query->where('month', (int)$month);
     }
 
-    // ─── Relationships ────────────────────────────────────
+    /**
+     * Scope: published rows that have a pending admin edit stored in draft columns.
+     * Used by the statistician pending queue to surface admin edits.
+     */
+    public function scopePendingEdits($query)
+    {
+        return $query->where('status', 'published')
+                     ->whereNotNull('draft_submitted_at');
+    }
+
+    // --- Relationships ---
 
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    // ─── Helpers ──────────────────────────────────────────
+    // --- Helpers ---
 
     /**
      * Returns the month name for this template (e.g. "January")

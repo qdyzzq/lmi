@@ -7,7 +7,7 @@ use App\Models\RegionalLaborMarketStatistic;
 use App\Models\PendingLaborMarketData;
 use Illuminate\Support\Facades\Auth;
 
-class LaborMarketController extends Controller
+class PendingLaborMarketController extends Controller
 {
     // Live polling endpoint — returns current pending record count
     public function counts()

@@ -1725,7 +1725,7 @@ textarea[name="specific_inputs"] {
                                 <label class="block text-gray-800 text-sm font-semibold mb-2">Email Address:<span class="text-red-500">*</span></label>
                                 <input type="email" name="email" id="emailInput" required
                                     class="w-full px-3 py-2.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"/>
-                                <p id="emailError" class="hidden text-red-500 text-xs mt-1.5 font-medium">Please enter a valid email address (e.g. <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="204e414d45604558414d504c450e434f4d">[email&#160;protected]</a>)</p>
+                                <p id="emailError" class="hidden text-red-500 text-xs mt-1.5 font-medium">Please enter a valid email address (e.g. <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="204e414d45604558414d504c450e434f4d">[@email.com]</a>)</p>
                             </div>
                         </div>
 
@@ -4315,46 +4315,80 @@ function exportLMIMatrixToCSV() {
     const AL          = (h, v, wrap) => ({ horizontal: h, vertical: v, wrapText: !!wrap });
     const impactFill  = { 'High': 'FEE2E2', 'Medium': 'FFF9C4', 'Low': 'DCFCE7' };
 
-    // ── Get current page data (same sort as Alpine) ───────────────────────────
+    // ── Get data to export (all filtered data if a filter is active, else current page) ──
     const impactOrder = { 'High': 1, 'Medium': 2, 'Low': 3 };
     const sorted = (window.matrixResultsData || []).slice().sort((a, b) =>
         (impactOrder[a.impact] || 2) - (impactOrder[b.impact] || 2)
     );
-    const paginationSpans = document.querySelectorAll('.pagination-controls span.font-bold');
-    const startItem    = parseInt(paginationSpans[0]?.textContent) || 1;
     const itemsPerPage = 10;
-    const currentPage  = Math.ceil(startItem / itemsPerPage);
-    const pageData     = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
     const totalPages   = Math.ceil(sorted.length / itemsPerPage);
+
+    // If a period filter is active (badge is visible), export ALL filtered results
+    const filterBadge   = document.getElementById('matrixFilterBadge');
+    const filterIsActive = filterBadge && !filterBadge.classList.contains('hidden') && filterBadge.textContent.trim() !== '';
+
+    let exportData, currentPage, exportLabel;
+    if (filterIsActive) {
+        // Export every record matching the active filter
+        exportData  = sorted;
+        currentPage = null; // N/A — exporting all
+        exportLabel = `All ${sorted.length} filtered roles`;
+    } else {
+        // No filter active — export only the current visible page (original behaviour)
+        const paginationSpans = document.querySelectorAll('.pagination-controls span.font-bold');
+        const startItem = parseInt(paginationSpans[0]?.textContent) || 1;
+        currentPage     = Math.ceil(startItem / itemsPerPage);
+        exportData      = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+        exportLabel     = `Page ${currentPage} of ${totalPages}`;
+    }
+
+    const pageData = exportData; // alias kept so the rest of the function is unchanged
 
     // ── Parse each row into skill arrays + plain text ─────────────────────────
     const parseSkills = arr =>
         (arr || []).map(s => typeof s === 'object' ? (s.name || '') : String(s || '')).filter(Boolean);
 
+    // FIXED: added salary_range to row mapping (was missing before)
     const rows = pageData.map(result => ({
-        role:   result.role   || '',
-        sector: result.sector || '',
-        impact: result.impact || 'Medium',
+        role:   result.role          || '',
+        sector: result.sector        || '',
+        salary: result.salary_range  || '',
         tech:   parseSkills(result.hard_skills),   // array of strings
         soft:   parseSkills(result.soft_skills),   // array of strings
+        impact: result.impact        || 'Medium',
     }));
 
-    // ── Auto-fit column widths based on actual content ────────────────────────
-    const colHeaders = ['Job Title / Role', 'Sector', 'Gap Impact', 'Missing Technical Skills', 'Missing Soft Skills'];
+    // ── Column order: Job Title | Sector | Salary Range | Tech Skills | Soft Skills | Gap Impact ──
+    // (Gap Impact moved to last column per design requirement)
+    const NC         = 6;
+    const colHeaders = [
+        'Job Title / Role',
+        'Sector',
+        'Salary Range',
+        'Missing Technical Skills',
+        'Missing Soft Skills',
+        'Gap Impact',
+    ];
+
+    // ── Auto-fit column widths — based on the longest actual value in each column ──
+    // Skill columns: measure the longest individual skill string (each will be on its own line)
+    const safeMax = (...vals) => {
+        const nums = vals.filter(v => typeof v === 'number' && isFinite(v));
+        return nums.length ? Math.max(...nums) : 0;
+    };
     const colW = [
-        Math.min(Math.max(colHeaders[0].length, ...rows.map(r => r.role.length))   + 3, 45),
-        Math.min(Math.max(colHeaders[1].length, ...rows.map(r => r.sector.length)) + 3, 40),
-        14,
-        Math.min(Math.max(colHeaders[3].length, ...rows.flatMap(r => r.tech.map(s => s.length))) + 3, 52),
-        Math.min(Math.max(colHeaders[4].length, ...rows.flatMap(r => r.soft.map(s => s.length))) + 3, 52),
+        Math.min(safeMax(colHeaders[0].length, ...rows.map(r => r.role.length))                          + 4, 50),
+        Math.min(safeMax(colHeaders[1].length, ...rows.map(r => r.sector.length))                        + 4, 45),
+        Math.min(safeMax(colHeaders[2].length, ...rows.map(r => r.salary.length))                        + 4, 30),
+        Math.min(safeMax(colHeaders[3].length, ...rows.flatMap(r => r.tech.map(s => s.length)))          + 4, 55),
+        Math.min(safeMax(colHeaders[4].length, ...rows.flatMap(r => r.soft.map(s => s.length)))          + 4, 55),
+        Math.min(safeMax(colHeaders[5].length, ...rows.map(r => r.impact.length))                        + 4, 18),
     ];
 
     // ── Build worksheet manually — cell by cell ───────────────────────────────
-    // This is the ONLY reliable way to get real \n line-breaks in Excel via SheetJS CE.
-    // aoa_to_sheet silently strips newlines; we must set t:'s' on each cell ourselves.
+    // SheetJS CE: aoa_to_sheet silently strips \n — must assign t:'s' cells directly.
     const ws = {};
-    const C = (r, c) => XLSX.utils.encode_cell({ r, c });
-    const NC = 5; // number of columns
+    const C  = (r, c) => XLSX.utils.encode_cell({ r, c });
 
     // Row 0 — Title
     ws[C(0,0)] = mkCell('LMI Granularity Matrix - Competency Gap Analysis', {
@@ -4369,8 +4403,11 @@ function exportLMIMatrixToCSV() {
     });
     for (let c = 1; c < NC; c++) ws[C(1,c)] = mkCell('', { font: FONT({ color: '64748B' }) });
 
-    // Row 2 — Page info
-    ws[C(2,0)] = mkCell(`Showing page ${currentPage} of ${totalPages}  (${pageData.length} of ${sorted.length} total roles)`, {
+    // Row 2 — Page / filter info
+    const infoLine = filterIsActive
+        ? `Filtered export: ${exportLabel}  (${pageData.length} of ${sorted.length} roles in dataset)`
+        : `Showing page ${currentPage} of ${totalPages}  (${pageData.length} of ${sorted.length} total roles)`;
+    ws[C(2,0)] = mkCell(infoLine, {
         font: FONT({ italic: true, color: '64748B' }), alignment: AL('left','center')
     });
     for (let c = 1; c < NC; c++) ws[C(2,c)] = mkCell('', { font: FONT({ color: '64748B' }) });
@@ -4382,7 +4419,7 @@ function exportLMIMatrixToCSV() {
     colHeaders.forEach((h, c) => {
         ws[C(4,c)] = mkCell(h, {
             fill: FILL('065F46'), font: FONT({ bold: true, color: 'FFFFFF' }),
-            alignment: AL('center','center'), border: bAll
+            alignment: AL('center','center', true), border: bAll
         });
     });
 
@@ -4396,38 +4433,59 @@ function exportLMIMatrixToCSV() {
     ];
 
     rows.forEach((row, di) => {
-        const r      = 5 + di;
-        const bg     = di % 2 === 0 ? 'F8FAFC' : 'FFFFFF';
-        const iBg    = impactFill[row.impact] || 'FFF9C4';
-        const lines  = Math.max(row.tech.length, row.soft.length, 1);
+        const r    = 5 + di;
+        const bg   = di % 2 === 0 ? 'F8FAFC' : 'FFFFFF';
+        const iBg  = impactFill[row.impact] || 'FFF9C4';
 
-        // Col 0 — Job Title
+        // Each skill on its own line.
+        // IMPORTANT: Excel requires \r\n (not just \n) to honour line breaks on first open.
+        // Using only \n causes Excel to collapse all skills onto one line until the column
+        // is resized/clicked — \r\n forces the cell to render correctly immediately.
+        const techText = row.tech.length ? row.tech.join('\r\n') : '';
+        const softText = row.soft.length ? row.soft.join('\r\n') : '';
+
+        // Row height driven by the column with the most line-items.
+        // hpt = 15pt per line (matches Calibri 10 single-spaced) + 8pt top/bottom padding.
+        // `customHeight: true` tells Excel this is a manually set height — do NOT auto-fit.
+        // Without this flag Excel ignores hpt and collapses the row on open.
+        const lines  = Math.max(row.tech.length, row.soft.length, 1);
+        const rowHpt = lines * 15 + 8;
+
+        // Col 0 — Job Title / Role
         ws[C(r,0)] = mkCell(row.role, {
-            fill: FILL(bg), font: FONT({ bold: true }), alignment: AL('left','top'), border: bAll
+            fill: FILL(bg), font: FONT({ bold: true }),
+            alignment: AL('left','top', true), border: bAll
         });
         // Col 1 — Sector
         ws[C(r,1)] = mkCell(row.sector, {
-            fill: FILL(bg), font: FONT(), alignment: AL('left','top'), border: bAll
+            fill: FILL(bg), font: FONT(),
+            alignment: AL('left','top', true), border: bAll
         });
-        // Col 2 — Gap Impact (colour-coded)
-        ws[C(r,2)] = mkCell(row.impact, {
-            fill: FILL(iBg), font: FONT({ bold: true }), alignment: AL('center','center'), border: bAll
+        // Col 2 — Salary Range
+        ws[C(r,2)] = mkCell(row.salary, {
+            fill: FILL(bg), font: FONT(),
+            alignment: AL('left','center'), border: bAll
         });
-        // Col 3 — Technical Skills  ← explicit t:'s' + real \n
+        // Col 3 — Missing Technical Skills (each skill on its own line via \r\n)
         ws[C(r,3)] = {
             t: 's',
-            v: row.tech.join('\n'),
+            v: techText,
             s: { fill: FILL(bg), font: FONT(), alignment: AL('left','top', true), border: bAll }
         };
-        // Col 4 — Soft Skills  ← explicit t:'s' + real \n
+        // Col 4 — Missing Soft Skills (each skill on its own line via \r\n)
         ws[C(r,4)] = {
             t: 's',
-            v: row.soft.join('\n'),
+            v: softText,
             s: { fill: FILL(bg), font: FONT(), alignment: AL('left','top', true), border: bAll }
         };
+        // Col 5 — Gap Impact (last column)
+        ws[C(r,5)] = mkCell(row.impact, {
+            fill: FILL(iBg), font: FONT({ bold: true }),
+            alignment: AL('center','center'), border: bAll
+        });
 
-        // Row height: 15pt per skill line + 8pt padding
-        rowHeights.push({ hpt: lines * 15 + 8 });
+        // customHeight:true locks the hpt so Excel won't collapse it on open
+        rowHeights.push({ hpt: rowHpt, customHeight: true });
     });
 
     // ── Sheet metadata ────────────────────────────────────────────────────────
@@ -4436,6 +4494,7 @@ function exportLMIMatrixToCSV() {
         { s: { r: 0, c: 0 }, e: { r: 0, c: NC - 1 } }, // title
         { s: { r: 1, c: 0 }, e: { r: 1, c: NC - 1 } }, // generated on
         { s: { r: 2, c: 0 }, e: { r: 2, c: NC - 1 } }, // page info
+        { s: { r: 3, c: 0 }, e: { r: 3, c: NC - 1 } }, // spacer
     ];
     ws['!cols'] = colW.map(wch => ({ wch }));
     ws['!rows'] = rowHeights;
@@ -4443,7 +4502,8 @@ function exportLMIMatrixToCSV() {
     // ── Export ────────────────────────────────────────────────────────────────
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Competency Gap Analysis');
-    XLSX.writeFile(wb, `lmi-competency-gap-analysis-page${currentPage}-${dateStr}.xlsx`, { bookType: 'xlsx', cellStyles: true });
+    const filenamePart = filterIsActive ? 'all-filtered' : `page${currentPage}`;
+    XLSX.writeFile(wb, `lmi-competency-gap-analysis-${filenamePart}-${dateStr}.xlsx`, { bookType: 'xlsx', cellStyles: true });
 }
 
 // Helper function to escape CSV values

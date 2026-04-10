@@ -256,6 +256,7 @@ class ProgramAdminController extends Controller
             'story_year' => 'required|numeric|min:2000|max:2100',
         ]);
 
+        $data['link']       = $data['link'] ?: null;
         $data['image_path'] = 'images/' . $this->storeImage($request->file('image'), 'stories');
         $data['sort_order'] = ProgramStory::where('program_id', $data['program_id'])->max('sort_order') + 1;
         $data['is_active']  = true;
@@ -289,6 +290,7 @@ class ProgramAdminController extends Controller
             $data['image_path'] = 'images/' . $this->storeImage($request->file('image'), 'stories');
         }
 
+        $data['link'] = $data['link'] ?: null;
         unset($data['image']);
 
         $story->update($data);

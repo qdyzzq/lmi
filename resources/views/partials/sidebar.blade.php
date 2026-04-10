@@ -55,7 +55,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto overflow-x-visible">
+    <nav class="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto min-h-0">
 
         {{-- ── Module 1 ── --}}
         <div class="mb-1">
@@ -65,7 +65,7 @@
             </p>
 
             <!-- Regional Statistics -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
                 <a href="{{ route('admin.job.Market.Demands.Form') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
                         {{ request()->routeIs('admin.job.Market.Demands.Form')
@@ -78,14 +78,15 @@
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Regional Statistics</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    :style="{ top: tooltipY + 'px' }"
+                    class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
                     Regional Statistics
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
 
             <!-- Analysis JobMarketDemands -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
                 <a href="{{ route('admin.template-editor') }}"   {{-- ← changed --}}
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
                         {{ request()->routeIs('admin.template-editor')   {{-- ← changed --}}
@@ -99,7 +100,8 @@
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis JobMarketDemands</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    :style="{ top: tooltipY + 'px' }"
+                    class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
                     Analysis JobMarketDemands
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
@@ -117,7 +119,7 @@
             </p>
 
             <!-- LMI Submissions -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
                 <a href="{{ route('admin.lmi-submissions.index') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
                         {{ request()->routeIs('admin.lmi-submissions.*')
@@ -130,14 +132,15 @@
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">LMI Submissions</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    :style="{ top: tooltipY + 'px' }"
+                    class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
                     LMI Submissions
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
 
             <!-- Job Titles Form -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
                 <a href="{{ route('admin.job-titles.form') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
                         {{ request()->routeIs('admin.job-titles.form')
@@ -150,7 +153,8 @@
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Job Titles Form</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    :style="{ top: tooltipY + 'px' }"
+                    class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
                     Job Titles Form
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
@@ -168,7 +172,7 @@
             </p>
 
             <!-- Graduate Form -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
                 <a href="{{ route('admin.discipline-graduate.form') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
                         {{ request()->routeIs('admin.discipline-graduate.form')
@@ -181,14 +185,15 @@
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Graduate Form</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    :style="{ top: tooltipY + 'px' }"
+                    class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
                     Graduate Form
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
 
             <!-- Analysis Labor Supply -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
                 <a href="{{ route('admin.supply-side-editor') }}"   {{-- ← changed --}}
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
                         {{ request()->routeIs('admin.supply-side-editor')   {{-- ← changed --}}
@@ -201,14 +206,15 @@
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Analysis Labor Supply</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    :style="{ top: tooltipY + 'px' }"
+                    class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
                     Analysis Labor Supply
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
 
             <!-- Enrollment Form -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
                 <a href="{{ route('admin.discipline-enrollment.form') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
                         {{ request()->routeIs('admin.discipline-enrollment.form')
@@ -221,14 +227,15 @@
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Enrollment Form</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    :style="{ top: tooltipY + 'px' }"
+                    class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
                     Enrollment Form
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
             </div>
 
             <!-- Licensure Passing Rates -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
                 <a href="{{ route('admin.licensure-rates.form') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
                         {{ request()->routeIs('admin.licensure-rates.form')
@@ -241,7 +248,8 @@
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Licensure Passing Rates</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    :style="{ top: tooltipY + 'px' }"
+                    class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
                     Licensure Passing Rates
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
@@ -259,7 +267,7 @@
             </p>
 
             <!-- Programs & Stories -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
                 <a href="{{ route('admin.program-stories-editor') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
                         {{ request()->routeIs('admin.program-stories')
@@ -272,7 +280,8 @@
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Programs & Stories</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    :style="{ top: tooltipY + 'px' }"
+                    class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
                     Programs & Stories
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
                 </div>
@@ -290,7 +299,7 @@
             </p>
 
             <!-- PESO / JPO Directory -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true"
+            <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true"
                 @mouseleave="hovered = false">
                 <a href="{{ route('admin.peso-directory.index') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
@@ -306,7 +315,8 @@
                         Directory</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
-                    class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                    :style="{ top: tooltipY + 'px' }"
+                    class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
                     PESO / JPO Directory
                     <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
                     </div>
@@ -324,7 +334,7 @@
         </p>
 
         <!-- Logout -->
-        <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+        <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"
@@ -336,7 +346,8 @@
                 </button>
             </form>
             <div x-show="!sidebarExpanded && hovered"
-                class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
+                :style="{ top: tooltipY + 'px' }"
+                class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
                 Logout
                 <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
             </div>

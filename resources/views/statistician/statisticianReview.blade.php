@@ -16,14 +16,13 @@
     <div class="flex-1 flex flex-col overflow-hidden">
         <!-- HEADER -->
         <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-8 shadow-sm">
-            <h2 class="text-xl font-bold text-slate-800">Pending Data Verification • Statistician</h2>
+            <h2 class="text-lg font-bold text-slate-800">Pending Data Verification <span class="text-slate-400 font-normal">• Statistician</span></h2>
             <div class="flex items-center gap-4">
-                <div class="bg-yellow-100 px-4 py-2 rounded-lg text-sm font-medium text-yellow-700 border border-yellow-300">
+                <div class="bg-yellow-100 px-3 py-1.5 rounded-lg text-xs font-medium text-yellow-700 border border-yellow-300">
                     <span id="pending-badge-count" class="font-bold">{{ $pendingRecords->total() }}</span> Total Pending
                 </div>
-                <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                </div>
+                <div class="bg-slate-100 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 border border-slate-200"><svg class="w-3.5 h-3.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • {{ date('Y') }}</div>
+                <div class="w-9 h-9 bg-blue-100 rounded-full border-2 border-blue-500"></div>
             </div>
         </header>
 

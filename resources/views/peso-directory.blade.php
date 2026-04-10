@@ -569,6 +569,7 @@
                             class="w-full appearance-none bg-white border-2 rounded-xl px-4 py-3 pr-10 text-sm font-semibold outline-none transition-all cursor-pointer"
                             :class="province ? 'border-orange-400 shadow-[0_0_0_3px_rgba(251,146,60,0.15)] text-slate-800' :
                                 'border-slate-200 text-slate-400 hover:border-slate-300'">
+                                <option value="" disabled>Select Province</option>
                             @foreach ($pesoProvinceKeys as $prov)
                                 <option value="{{ $prov }}">{{ $prov }}</option>
                             @endforeach

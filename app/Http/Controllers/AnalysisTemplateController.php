@@ -61,8 +61,7 @@ class AnalysisTemplateController extends Controller
             // 3. Pick the month
             $month = (int)($request->query('month', $availableMonths[0]));
 
-            // 4. Fetch ONLY published templates for year + month
-            //    Pending drafts must NOT appear on the public site.
+            // 4. Fetch published templates for year + month
             $fetched = AnalysisTemplate::where('year', $year)
                 ->where('month', $month)
                 ->where('status', 'published')
@@ -72,12 +71,15 @@ class AnalysisTemplateController extends Controller
             // 5. Build response — fill in defaults for any missing keys
             $templates = [];
             foreach (['employment', 'underemployment', 'unemployment', 'lfpr'] as $key) {
-                if ($fetched->has($key)) {
-                    $t = $fetched->get($key);
+                $t = $fetched->get($key);
+                if ($t) {
+                    // If admin has a pending draft edit, show that in the editor
+                    // so they see their own draft rather than the old published text
+                    $editorText = ($t->draft_text !== null) ? $t->draft_text : $t->template_text;
                     $templates[$key] = [
                         'id'            => $t->id,
                         'template_key'  => $t->template_key,
-                        'template_text' => $t->template_text,
+                        'template_text' => $editorText,
                         'year'          => $t->year,
                         'month'         => $t->month,
                         'is_active'     => $t->is_active,
@@ -209,11 +211,11 @@ class AnalysisTemplateController extends Controller
         }
 
         try {
-            // Remove any pending draft for this key + year + month
+            // Remove any pending or pending_edit draft for this key + year + month
             AnalysisTemplate::where('template_key', $key)
                 ->where('year', (int)$request->year)
                 ->where('month', (int)$request->month)
-                ->where('status', 'pending')
+                ->whereIn('status', ['pending', 'pending_edit'])
                 ->delete();
 
             $template = AnalysisTemplate::updateOrCreate(
@@ -224,12 +226,16 @@ class AnalysisTemplateController extends Controller
                     'status'       => 'published',
                 ],
                 [
-                    'template_text' => $request->template_text,
-                    'updated_by'    => auth()->id() ?? null,
-                    'is_active'     => true,
-                    'status'        => 'published',
-                    'submitted_by'  => null,
-                    'submitted_at'  => null,
+                    'template_text'      => $request->template_text,
+                    'updated_by'         => auth()->id() ?? null,
+                    'is_active'          => true,
+                    'status'             => 'published',
+                    'submitted_by'       => null,
+                    'submitted_at'       => null,
+                    // Clear any pending draft columns on approval
+                    'draft_text'         => null,
+                    'draft_submitted_by' => null,
+                    'draft_submitted_at' => null,
                 ]
             );
 
@@ -276,38 +282,45 @@ class AnalysisTemplateController extends Controller
             $month = (int)$request->month;
             $saved = [];
 
-            // Block submission if any template for this year + month is already published
-            $alreadyPublished = AnalysisTemplate::where('year', $year)
-                ->where('month', $month)
-                ->where('status', 'published')
-                ->exists();
-
-            if ($alreadyPublished) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'error'   => 'Templates for this period have already been published. Only one submission is allowed per year and month.',
-                ], 403);
-            }
-
             foreach ($request->templates as $key => $text) {
                 if (!in_array($key, ['employment', 'underemployment', 'unemployment', 'lfpr'])) continue;
 
-                $saved[] = AnalysisTemplate::updateOrCreate(
-                    [
-                        'template_key' => $key,
-                        'year'         => $year,
-                        'month'        => $month,
-                    ],
-                    [
-                        'template_text' => $text,
-                        'is_active'     => false,
-                        'status'        => 'pending',
-                        'submitted_by'  => auth()->user()?->name ?? auth()->id() ?? 'Admin',
-                        'submitted_at'  => now(),
-                        'updated_by'    => auth()->id() ?? null,
-                    ]
-                );
+                $publishedRow = AnalysisTemplate::where('template_key', $key)
+                    ->where('year', $year)
+                    ->where('month', $month)
+                    ->where('status', 'published')
+                    ->first();
+
+                if ($publishedRow) {
+                    // A published row already exists — store the admin's edit as draft columns
+                    // on that same row so the unique key (template_key, year, month) is never
+                    // violated. The published template_text stays intact for the public view.
+                    $publishedRow->draft_text         = $text;
+                    $publishedRow->draft_submitted_by = auth()->user()?->name ?? auth()->id() ?? 'Admin';
+                    $publishedRow->draft_submitted_at = now();
+                    $publishedRow->save();
+                    $saved[] = $publishedRow;
+                } else {
+                    // No published row yet — upsert a pending row normally
+                    $saved[] = AnalysisTemplate::updateOrCreate(
+                        [
+                            'template_key' => $key,
+                            'year'         => $year,
+                            'month'        => $month,
+                        ],
+                        [
+                            'template_text'      => $text,
+                            'is_active'          => false,
+                            'status'             => 'pending',
+                            'submitted_by'       => auth()->user()?->name ?? auth()->id() ?? 'Admin',
+                            'submitted_at'       => now(),
+                            'updated_by'         => auth()->id() ?? null,
+                            'draft_text'         => null,
+                            'draft_submitted_by' => null,
+                            'draft_submitted_at' => null,
+                        ]
+                    );
+                }
             }
 
             DB::commit();
@@ -330,24 +343,54 @@ class AnalysisTemplateController extends Controller
     public function allPending()
     {
         try {
+            // First-time pending submissions (status = 'pending')
             $pending = AnalysisTemplate::where('status', 'pending')
                 ->orderByDesc('submitted_at')
                 ->get();
 
-            $grouped = $pending->groupBy(fn($t) => $t->year . '-' . $t->month);
+            $groupedPending = $pending->groupBy(fn($t) => $t->year . '-' . $t->month);
 
-            $data = $grouped->map(function ($items) {
+            $pendingData = $groupedPending->map(function ($items) {
                 $first = $items->first();
                 return [
                     'id'            => $first->id,
                     'year'          => $first->year,
                     'month'         => $first->month,
+                    'type'          => 'new',          // first-time submission
                     'submitted_by'  => $first->submitted_by,
                     'submitted_at'  => $first->submitted_at?->toDateTimeString(),
                     'template_keys' => $items->pluck('template_key')->toArray(),
                     'templates'     => $items->pluck('template_text', 'template_key')->toArray(),
                 ];
             })->values();
+
+            // Pending admin edits (stored as draft_* columns on published rows)
+            $draftRows = AnalysisTemplate::where('status', 'published')
+                ->whereNotNull('draft_submitted_at')
+                ->orderByDesc('draft_submitted_at')
+                ->get();
+
+            $groupedDrafts = $draftRows->groupBy(fn($t) => $t->year . '-' . $t->month);
+
+            $draftData = $groupedDrafts->map(function ($items) {
+                $first = $items->first();
+                return [
+                    'id'            => $first->id,
+                    'year'          => $first->year,
+                    'month'         => $first->month,
+                    'type'          => 'edit',          // edit on top of published
+                    'submitted_by'  => $first->draft_submitted_by,
+                    'submitted_at'  => $first->draft_submitted_at?->toDateTimeString(),
+                    'template_keys' => $items->pluck('template_key')->toArray(),
+                    // Show the draft text so the statistician reviews what changed
+                    'templates'     => $items->pluck('draft_text', 'template_key')->toArray(),
+                ];
+            })->values();
+
+            // Merge both lists and sort by submitted_at descending
+            $data = $pendingData->concat($draftData)
+                ->sortByDesc('submitted_at')
+                ->values();
 
             return response()->json(['success' => true, 'data' => $data]);
 
@@ -371,18 +414,38 @@ class AnalysisTemplateController extends Controller
                 ->orderByDesc('submitted_at')
                 ->first();
 
-            $publishedExists = AnalysisTemplate::where('year', $year)
+            // A pending edit is stored as draft_* columns on the published row
+            $pendingEditRow = AnalysisTemplate::where('year', $year)
                 ->where('month', $month)
                 ->where('status', 'published')
-                ->exists();
+                ->whereNotNull('draft_submitted_at')
+                ->orderByDesc('draft_submitted_at')
+                ->first();
+
+            $publishedRow = AnalysisTemplate::where('year', $year)
+                ->where('month', $month)
+                ->where('status', 'published')
+                ->first();
+
+            $publishedExists = $publishedRow !== null;
+
+            // Published (Edited) = the live row was last updated by an admin-submitted edit.
+            // We detect this by checking if updated_by is set on the published row,
+            // which the update() method sets when it promotes a draft to published.
+            $publishedIsEdited = $publishedExists && !empty($publishedRow->updated_by);
 
             return response()->json([
-                'success'         => true,
-                'pending'         => $pending ? [
+                'success'            => true,
+                'pending'            => $pending ? [
                     'submitted_by' => $pending->submitted_by,
                     'submitted_at' => $pending->submitted_at?->toDateTimeString(),
                 ] : null,
-                'published_exists' => $publishedExists,
+                'pending_edit'       => $pendingEditRow ? [
+                    'submitted_by' => $pendingEditRow->draft_submitted_by,
+                    'submitted_at' => $pendingEditRow->draft_submitted_at?->toDateTimeString(),
+                ] : null,
+                'published_exists'   => $publishedExists,
+                'published_is_edited' => $publishedIsEdited,
             ]);
 
         } catch (\Exception $e) {
@@ -395,11 +458,20 @@ class AnalysisTemplateController extends Controller
 
     public function pendingCount()
     {
-        $count = AnalysisTemplate::where('status', 'pending')
+        // Count distinct periods with first-time pending submissions
+        $pendingCount = AnalysisTemplate::where('status', 'pending')
             ->selectRaw('COUNT(DISTINCT CONCAT(year, "-", month)) as count')
             ->value('count') ?? 0;
 
-        return response()->json(['success' => true, 'count' => (int)$count]);
+        // Count distinct periods with pending admin edits on published rows
+        $draftEditCount = AnalysisTemplate::where('status', 'published')
+            ->whereNotNull('draft_submitted_at')
+            ->selectRaw('COUNT(DISTINCT CONCAT(year, "-", month)) as count')
+            ->value('count') ?? 0;
+
+        $total = (int)$pendingCount + (int)$draftEditCount;
+
+        return response()->json(['success' => true, 'count' => $total]);
     }
 
     // ─── STATISTICIAN: Get all approved (published) templates ────────────────

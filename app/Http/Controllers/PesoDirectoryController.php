@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Cache;
 use App\Models\FieldOffice;
 use App\Models\OfficeType;
 use App\Models\PositionTitle;
@@ -15,6 +14,7 @@ use App\Models\PesoCoreService;
 use App\Models\PesoHowToAvail;
 use App\Models\PesoBeneficiary;
 use App\Models\PesoCarouselSlide;
+use App\Models\PesoDirectoryPublish;
 use Illuminate\Support\Facades\Storage;
 
 class PesoDirectoryController extends Controller
@@ -47,13 +47,7 @@ class PesoDirectoryController extends Controller
     // --------------------------------------------------
     private function touchPesoInfo(array $entry = []): void
     {
-        Cache::put('peso_info_last_modified_at', now()->toIso8601String(), now()->addYears(10));
-
-        if (!empty($entry)) {
-            $log   = Cache::get('peso_info_changelog', []);
-            $log[] = $entry;
-            Cache::put('peso_info_changelog', $log, now()->addYears(10));
-        }
+        PesoDirectoryPublish::singleton()->update(['has_draft_changes' => true]);
     }
 
     // ===================================================
@@ -61,16 +55,20 @@ class PesoDirectoryController extends Controller
     // ===================================================
     public function index(): View
     {
-        $snapshot         = Cache::get('field_offices_published_snapshot', []);
+        $publish  = PesoDirectoryPublish::singleton();
+        $full     = $publish->published_snapshot ?? [];
+
+        // Field offices are everything except the 'peso_info' key
+        $snapshot = collect($full)->except('peso_info')->toArray();
         $pesoProvinceKeys = collect(array_keys($snapshot));
 
-        $pesoInfo = Cache::get('peso_info_published_snapshot', [
+        $pesoInfo = $full['peso_info'] ?? [
             'description'   => '',
             'objective'     => '',
             'how_to_avail'  => '',
             'core_services' => [],
             'beneficiaries' => [],
-        ]);
+        ];
 
         $slides = PesoCarouselSlide::where('is_active', true)
             ->orderBy('sort_order')
@@ -88,24 +86,23 @@ class PesoDirectoryController extends Controller
     public function adminIndex(): View
     {
         // Eager-load positionTitle so blade can access $o->positionTitle->name
-        $fieldOffices       = FieldOffice::with('positionTitle', 'officeType')->ordered()->get();
-        $pesoInfo           = $this->buildPesoInfo();
-        $directoryPublished = Cache::has('field_offices_published_snapshot');
-        $lastModifiedAt     = Cache::get('field_offices_last_modified_at');
-        $publishedAt        = Cache::get('field_offices_published_at');
-        $directoryHasDraft  = $lastModifiedAt && (!$publishedAt || $lastModifiedAt > $publishedAt);
-        $directoryChangelog = $directoryHasDraft ? Cache::get('field_offices_changelog', []) : [];
+        $fieldOffices = FieldOffice::with('positionTitle', 'officeType')->ordered()->get();
+        $pesoInfo     = $this->buildPesoInfo();
 
-        $pesoInfoPublishedAt  = Cache::get('peso_info_published_at');
-        $pesoInfoLastModified = Cache::get('peso_info_last_modified_at');
-        $pesoInfoPublished    = Cache::has('peso_info_published_snapshot');
-        $pesoInfoHasDraft     = $pesoInfoLastModified &&
-                                (!$pesoInfoPublishedAt || $pesoInfoLastModified > $pesoInfoPublishedAt);
-        $pesoInfoChangelog    = $pesoInfoHasDraft ? Cache::get('peso_info_changelog', []) : [];
+        $publish            = PesoDirectoryPublish::singleton();
+        $directoryPublished = !is_null($publish->published_at);
+        $publishedAt        = $publish->published_at?->toIso8601String();
+        $directoryHasDraft  = (bool) $publish->has_draft_changes;
+        $directoryChangelog = [];
 
-        $slides             = PesoCarouselSlide::where('is_active', true)
-                                ->orderBy('sort_order')
-                                ->get();
+        $pesoInfoPublished   = $directoryPublished;
+        $pesoInfoPublishedAt = $publishedAt;
+        $pesoInfoHasDraft    = $directoryHasDraft;
+        $pesoInfoChangelog   = [];
+
+        $slides = PesoCarouselSlide::where('is_active', true)
+                        ->orderBy('sort_order')
+                        ->get();
 
         return view('admin.pesoDirectory-editor', compact(
             'fieldOffices',
@@ -216,12 +213,17 @@ class PesoDirectoryController extends Controller
     // ===================================================
     public function publishPesoInfo(): JsonResponse
     {
-        $snapshot = $this->buildPesoInfo();
+        $publish  = PesoDirectoryPublish::singleton();
+        $existing = $publish->published_snapshot ?? [];
 
-        Cache::put('peso_info_published_snapshot', $snapshot, now()->addYears(10));
-        Cache::put('peso_info_published_at', now()->toIso8601String(), now()->addYears(10));
-        Cache::forget('peso_info_last_modified_at');
-        Cache::forget('peso_info_changelog');
+        // Merge updated peso_info into the existing snapshot (keeps field offices intact)
+        $existing['peso_info'] = $this->buildPesoInfo();
+
+        $publish->update([
+            'published_snapshot' => $existing,
+            'published_at'       => now(),
+            'has_draft_changes'  => false,
+        ]);
 
         return response()->json([
             'success'      => true,
@@ -389,7 +391,7 @@ class PesoDirectoryController extends Controller
  
     public function publishDirectory(): JsonResponse
     {
-        $snapshot = FieldOffice::with('positionTitle', 'officeType')->ordered()->get()
+        $officesSnapshot = FieldOffice::with('positionTitle', 'officeType')->ordered()->get()
             ->groupBy('province')
             ->map(fn($offices) => $offices->map(fn($o) => [
                 'id'             => $o->id,
@@ -402,24 +404,27 @@ class PesoDirectoryController extends Controller
                 'province'       => $o->province,
             ])->values())
             ->toArray();
- 
-        Cache::put('field_offices_published_snapshot', $snapshot, now()->addYears(10));
-        Cache::put('field_offices_published_at', now()->toIso8601String(), now()->addYears(10));
-        Cache::forget('field_offices_last_modified_at');
-        Cache::forget('field_offices_changelog');
- 
+
+        // Preserve any existing peso_info snapshot and merge new offices snapshot
+        $publish  = PesoDirectoryPublish::singleton();
+        $existing = $publish->published_snapshot ?? [];
+
+        $fullSnapshot = array_merge($officesSnapshot, [
+            'peso_info' => $existing['peso_info'] ?? $this->buildPesoInfo(),
+        ]);
+
+        $publish->update([
+            'published_snapshot' => $fullSnapshot,
+            'published_at'       => now(),
+            'has_draft_changes'  => false,
+        ]);
+
         return response()->json(['success' => true, 'published_at' => now()->toIso8601String()]);
     }
  
     public function touchDirectory(Request $request): JsonResponse
     {
-        Cache::put('field_offices_last_modified_at', now()->toIso8601String(), now()->addYears(10));
-        $entry = $request->only(['action', 'label', 'type', 'province', 'time']);
-        if (!empty($entry)) {
-            $log   = Cache::get('field_offices_changelog', []);
-            $log[] = $entry;
-            Cache::put('field_offices_changelog', $log, now()->addYears(10));
-        }
+        PesoDirectoryPublish::singleton()->update(['has_draft_changes' => true]);
         return response()->json(['success' => true]);
     }
 

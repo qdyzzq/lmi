@@ -25,14 +25,14 @@
             <h2 class="text-xl font-bold text-slate-800">Licensure Passing Rates • Admin</h2>
             <div class="flex items-center gap-4">
                 <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-200">
-                    <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • 2024
+                    <svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Region XI • 2026
                 </div>
                 <div class="w-10 h-10 bg-blue-100 rounded-full border-2 border-blue-500"></div>
             </div>
         </header>
         <!-- Main Form Area -->
         <div class="flex-1 overflow-hidden flex flex-col p-8 gap-0">
-            <div class="max-w-7xl w-full mx-auto flex flex-col flex-1 overflow-hidden">
+            <div class="max-w-7xl w-full mx-auto flex flex-col flex-1 min-h-0">
                 <!-- Sticky top section: year picker + status -->
                 <div class="shrink-0">
                 <!-- Year Selection Card -->
@@ -117,11 +117,11 @@
                     <p class="text-sm font-semibold text-amber-800">Enter a reporting year and click <strong>Check / Edit Year</strong> to unlock the form.</p>
                 </div>
 
-                <div id="formContent" class="relative flex flex-col flex-1 overflow-hidden opacity-50 pointer-events-none select-none">
+                <div id="formContent" class="relative flex flex-col flex-1 min-h-0 opacity-50 pointer-events-none select-none">
                 <div id="formBlocker" class="absolute inset-0 z-10 cursor-not-allowed rounded-2xl bg-transparent"></div>
 
                 <!-- Sectors Form — scrollable -->
-                <form id="licensureForm" class="flex flex-col flex-1 overflow-hidden">
+                <form id="licensureForm" class="flex flex-col flex-1 min-h-0">
                     <!-- Search Bar -->
                     <div class="relative mb-4 shrink-0">
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,7 +141,7 @@
                     <!-- No Results Message -->
                     <div id="noSearchResults" class="hidden text-center py-8 text-sm text-gray-500 italic bg-white rounded-2xl shadow-lg mb-4 shrink-0">No professions match your search.</div>
 
-                    <div class="flex-1 overflow-y-auto space-y-4 pr-1" id="sectorsContainer">
+                    <div class="flex-1 overflow-y-auto space-y-4 pr-1 min-h-0" id="sectorsContainer">
                         <!-- Sectors will be dynamically generated here -->
                     </div>
 

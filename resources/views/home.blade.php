@@ -443,7 +443,6 @@
                                                             class="text-[10px] text-slate-500 mb-1 block">Quarter</label>
                                                         <select x-model="selectedMonth"
                                                             class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                                            <option value="">Select</option>
                                                             <option value="1">Jan</option>
                                                             <option value="4">Apr</option>
                                                             <option value="7">Jul</option>
@@ -455,7 +454,7 @@
                                                             class="text-[10px] text-slate-500 mb-1 block">Year</label>
                                                         <select x-model="selectedYear"
                                                             class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                                            <option value="">Select</option>
+                                                            <option value="" disabled>Select year</option>
                                                             <template x-for="year in availableYears"
                                                                 :key="year">
                                                                 <option :value="year" x-text="year"></option>
@@ -1356,10 +1355,10 @@
                     // ── ROW 3: Column headers ─────────────────────────────────────────────
                     const headers = [
                         'Period',
-                        "Labor Force\n('000)",
-                        "Employed\n('000)",
-                        "Unemployed\n('000)",
-                        "Underemployed\n('000)",
+                        "Labor Force\n",
+                        "Employed\n",
+                        "Unemployed\n",
+                        "Underemployed\n",
                         'Employment\nRate (%)',
                         'Underemployment\nRate (%)',
                         'Unemployment\nRate (%)',
@@ -1572,6 +1571,15 @@
                                         if (prevResult.success) prev = prevResult.data;
                                     } catch (_) {}
 
+                                    // If no previous year data, skip templates entirely — show standalone sentences
+                                    if (!prev) {
+                                        this.analysis.employment      = `The employment rate in ${b(monthName + ' ' + currentYear)} was estimated at ${b(cur.employment_rate.rate)}.`;
+                                        this.analysis.underemployment = `The underemployment rate in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.underemployment_rate.rate)}.`;
+                                        this.analysis.unemployment    = `The unemployment rate in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.unemployment_rate.rate)}.`;
+                                        this.analysis.lfpr            = `The country's labor force participation rate (LFPR) in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.participation_rate.rate)}.`;
+                                        return;
+                                    }
+
                                     const replacePlaceholders = (text, currentRate, previousRate, trendWord) => {
                                         return text
                                             .replace(/\{current_period\}/g,  `<strong>${monthName} ${currentYear}</strong>`)
@@ -1582,41 +1590,41 @@
                                     };
 
                                     if (employmentText) {
-                                        const empHigher = prev ? parseFloat(cur.employment_rate.raw_value) >= parseFloat(prev.employment_rate.raw_value) : true;
+                                        const empHigher = parseFloat(cur.employment_rate.raw_value) >= parseFloat(prev.employment_rate.raw_value);
                                         this.analysis.employment = replacePlaceholders(
                                             employmentText,
                                             cur.employment_rate.rate,
-                                            prev ? prev.employment_rate.rate : '—',
+                                            prev.employment_rate.rate,
                                             empHigher ? 'higher' : 'lower'
                                         );
                                     }
 
                                     if (underempText) {
-                                        const underHigher = prev ? parseFloat(cur.underemployment_rate.raw_value) >= parseFloat(prev.underemployment_rate.raw_value) : true;
+                                        const underHigher = parseFloat(cur.underemployment_rate.raw_value) >= parseFloat(prev.underemployment_rate.raw_value);
                                         this.analysis.underemployment = replacePlaceholders(
                                             underempText,
                                             cur.underemployment_rate.rate,
-                                            prev ? prev.underemployment_rate.rate : '—',
+                                            prev.underemployment_rate.rate,
                                             underHigher ? 'went up' : 'went down'
                                         );
                                     }
 
                                     if (unempText) {
-                                        const unempHigher = prev ? parseFloat(cur.unemployment_rate.raw_value) >= parseFloat(prev.unemployment_rate.raw_value) : true;
+                                        const unempHigher = parseFloat(cur.unemployment_rate.raw_value) >= parseFloat(prev.unemployment_rate.raw_value);
                                         this.analysis.unemployment = replacePlaceholders(
                                             unempText,
                                             cur.unemployment_rate.rate,
-                                            prev ? prev.unemployment_rate.rate : '—',
+                                            prev.unemployment_rate.rate,
                                             unempHigher ? 'rose' : 'dropped'
                                         );
                                     }
 
                                     if (lfprText) {
-                                        const lfprHigher = prev ? parseFloat(cur.participation_rate.raw_value) >= parseFloat(prev.participation_rate.raw_value) : true;
+                                        const lfprHigher = parseFloat(cur.participation_rate.raw_value) >= parseFloat(prev.participation_rate.raw_value);
                                         this.analysis.lfpr = replacePlaceholders(
                                             lfprText,
                                             cur.participation_rate.rate,
-                                            prev ? prev.participation_rate.rate : '—',
+                                            prev.participation_rate.rate,
                                             lfprHigher ? 'higher' : 'lower'
                                         );
                                     }
@@ -1670,11 +1678,38 @@
                                 `The country's labor force participation rate (LFPR) in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.participation_rate.rate)}, ${trendBold(lfprWord)} than the estimated LFPR in ${b(monthName + ' ' + prevYear)} at ${b(prev.participation_rate.rate)}.`;
 
                         } else {
-                            this.analysis.employment = `Historical comparison data not found for ${prevYear}.`;
-                            this.analysis.underemployment = this.analysis.unemployment = this.analysis.lfpr = "";
+                            // No previous year data — show standalone analysis without comparison
+                            const cur = this.kpiData;
+                            const b = (val) => `<span class="font-bold text-slate-900">${val}</span>`;
+
+                            this.analysis.employment =
+                                `The employment rate in ${b(monthName + ' ' + currentYear)} was estimated at ${b(cur.employment_rate.rate)}.`;
+
+                            this.analysis.underemployment =
+                                `The underemployment rate in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.underemployment_rate.rate)}.`;
+
+                            this.analysis.unemployment =
+                                `The unemployment rate in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.unemployment_rate.rate)}.`;
+
+                            this.analysis.lfpr =
+                                `The country's labor force participation rate (LFPR) in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.participation_rate.rate)}.`;
                         }
                     } catch (e) {
-                        this.analysis.employment = "Could not generate analysis due to a network error.";
+                        // Network error fetching prev year — fall back to standalone analysis
+                        const cur = this.kpiData;
+                        const b = (val) => `<span class="font-bold text-slate-900">${val}</span>`;
+
+                        this.analysis.employment =
+                            `The employment rate in ${b(monthName + ' ' + currentYear)} was estimated at ${b(cur.employment_rate.rate)}.`;
+
+                        this.analysis.underemployment =
+                            `The underemployment rate in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.underemployment_rate.rate)}.`;
+
+                        this.analysis.unemployment =
+                            `The unemployment rate in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.unemployment_rate.rate)}.`;
+
+                        this.analysis.lfpr =
+                            `The country's labor force participation rate (LFPR) in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.participation_rate.rate)}.`;
                     }
                 },
 
@@ -1729,7 +1764,6 @@
                 unempOpen: false,
 
                 async init() {
-                    console.log('Initializing chart filters...');
                     await this.fetchAvailableYears();
                     await this.initializeLaborChart();
                     await this.initializeUnempChart();

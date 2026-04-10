@@ -55,7 +55,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto overflow-x-visible">
+    <nav class="flex-1 px-2 py-4 space-y-0.5 overflow-y-visible">
 
         {{-- ── Module 1 ── --}}
         <div class="mb-1">
