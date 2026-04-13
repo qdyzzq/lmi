@@ -1,16 +1,11 @@
-// =============================================================================
-// Admin – Enrollment Form JS
-// File: public/js/admin/enrollment-form.js
-// =============================================================================
-
-// ─── State Variables ──────────────────────────────────────────────────────────
+// ─── State Variables ────────────────────────────────────────────────────────
 let existingData = null;
 let oldYear = null;
 let isChangingYear = false;
 let pendingData = null;
 let pendingYearData = null;
 
-// ─── Discipline Labels ────────────────────────────────────────────────────────
+// ─── Discipline Labels ───────────────────────────────────────────────────────
 const disciplineLabels = {
     agriculture: 'Agriculture, Forestry, Fisheries',
     architecture: 'Architecture and Town Planning',
@@ -35,7 +30,7 @@ const disciplineLabels = {
     social_sciences: 'Social and Behavioral Sciences'
 };
 
-// ─── Toast Notification System ────────────────────────────────────────────────
+// ─── Toast Notification System ───────────────────────────────────────────────
 function showToast(message, type = 'error') {
     const container = document.getElementById('toastContainer');
 
@@ -108,7 +103,7 @@ function showToast(message, type = 'error') {
     }, 4000);
 }
 
-// CSS for the shrink progress bar
+// Inject toast animation style once
 if (!document.getElementById('toastStyle')) {
     const style = document.createElement('style');
     style.id = 'toastStyle';
@@ -116,16 +111,7 @@ if (!document.getElementById('toastStyle')) {
     document.head.appendChild(style);
 }
 
-// ─── Province Change Handler ──────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function () {
-    const provinceSelect = document.getElementById('province');
-    if (provinceSelect) {
-        provinceSelect.addEventListener('change', function () {
-            handleProvinceChange(this.value);
-        });
-    }
-});
-
+// ─── Province Change Handler ─────────────────────────────────────────────────
 function handleProvinceChange(province) {
     document.querySelectorAll('input[name="institution_type"]').forEach(r => r.checked = false);
     const lockBannerText = document.getElementById('lockBannerText');
@@ -134,7 +120,7 @@ function handleProvinceChange(province) {
     }
 }
 
-// ─── Check & Load Year ────────────────────────────────────────────────────────
+// ─── Year Check & Load ───────────────────────────────────────────────────────
 async function checkAndLoadYear() {
     const yearInput = document.getElementById('academicYear');
     const year = yearInput.value.trim();
@@ -235,7 +221,77 @@ function loadNewYear(year, province, institutionType) {
     lockSelections();
 }
 
-// ─── Existing Data Modal ──────────────────────────────────────────────────────
+// ─── Year Display Toggle ─────────────────────────────────────────────────────
+function toggleYearDisplay(showDisplay) {
+    const inputGroup = document.getElementById('yearInputGroup');
+    const yearDisplay = document.getElementById('yearDisplay');
+
+    if (showDisplay) {
+        inputGroup.classList.add('hidden');
+        yearDisplay.classList.remove('hidden');
+        yearDisplay.classList.add('flex');
+    } else {
+        inputGroup.classList.remove('hidden');
+        yearDisplay.classList.add('hidden');
+        yearDisplay.classList.remove('flex');
+    }
+}
+
+function changeYear() {
+    const currentYear = document.getElementById('displayYear').textContent;
+    document.getElementById('changeYearCurrent').textContent = currentYear;
+    document.getElementById('changeYearModal').classList.remove('hidden');
+}
+
+function closeChangeYearModal() {
+    document.getElementById('changeYearModal').classList.add('hidden');
+}
+
+function confirmChangeYear() {
+    document.getElementById('changeYearModal').classList.add('hidden');
+    isChangingYear = true;
+    oldYear = document.getElementById('displayYear').textContent;
+    document.getElementById('academicYear').value = '';
+    document.getElementById('displayYear').textContent = '----';
+    hideStatusNotification();
+    existingData = null;
+    toggleYearDisplay(false);
+    unlockSelections();
+    lockForm();
+
+    setTimeout(() => {
+        document.getElementById('academicYear').focus();
+    }, 100);
+}
+
+function cancelYearChange() {
+    document.getElementById('academicYear').value = '';
+    document.getElementById('displayYear').textContent = '----';
+    hideStatusNotification();
+    toggleYearDisplay(false);
+    unlockSelections();
+
+    document.getElementById('province').value = '';
+    document.querySelectorAll('input[name="institution_type"]').forEach(r => r.checked = false);
+
+    clearForm();
+    document.getElementById('grandTotal').textContent = '0';
+
+    if (oldYear && oldYear !== '----') {
+        isChangingYear = false;
+        oldYear = null;
+        existingData = null;
+    }
+
+    document.getElementById('cancelYearChangeBtn').classList.add('hidden');
+    lockForm();
+
+    setTimeout(() => {
+        document.getElementById('academicYear').focus();
+    }, 100);
+}
+
+// ─── Existing Data Modal ─────────────────────────────────────────────────────
 function showExistingDataModal(year, province, institutionType) {
     document.getElementById('existingDataYear').textContent = year;
     document.getElementById('existingDataProvince').textContent = province;
@@ -270,7 +326,72 @@ function confirmLoadExistingData() {
     lockSelections();
 }
 
-// ─── Selection Lock / Unlock ──────────────────────────────────────────────────
+// ─── Year Collision Modal ─────────────────────────────────────────────────────
+function showYearCollisionModal(targetYear, province, institutionType) {
+    const currentYear = oldYear && oldYear !== '----' ? oldYear : document.getElementById('displayYear').textContent;
+    document.getElementById('collisionTargetYear').textContent = `${targetYear} - ${province} - ${institutionType}`;
+    document.getElementById('collisionCurrentYear').textContent = currentYear;
+    document.getElementById('yearCollisionModal').classList.remove('hidden');
+}
+
+function closeYearCollisionModal() {
+    document.getElementById('yearCollisionModal').classList.add('hidden');
+    document.getElementById('academicYear').value = '';
+    document.getElementById('academicYear').focus();
+}
+
+// ─── Status Notification ─────────────────────────────────────────────────────
+function showStatusNotification(year, exists, province, institutionType) {
+    const notification = document.getElementById('statusNotification');
+    const icon = document.getElementById('statusIcon');
+    const title = document.getElementById('statusTitle');
+    const message = document.getElementById('statusMessage');
+
+    if (exists) {
+        notification.className = 'mb-8 p-6 rounded-2xl shadow-lg bg-blue-50 border-2 border-blue-200';
+        icon.className = 'flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-2xl';
+        icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>';
+        title.textContent = 'Editing Existing Data';
+        title.className = 'text-lg font-bold mb-1 text-blue-900';
+        message.textContent = `Loading data for ${year} - ${province} - ${institutionType}. You can now edit the existing enrollment data.`;
+        message.className = 'text-sm text-blue-800';
+    } else {
+        notification.className = 'mb-8 p-6 rounded-2xl shadow-lg bg-green-50 border-2 border-green-200';
+        icon.className = 'flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-green-500 text-white text-2xl';
+        icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 000-2H5a1 1 0 000 2zm0 0v2m0-2h.01M5 20h2a1 1 0 000-2H5a1 1 0 000 2zm0 0v2m0-2h.01"/></svg>';
+        title.textContent = 'Creating New Data';
+        title.className = 'text-lg font-bold mb-1 text-green-900';
+        message.textContent = `No existing data found for ${year} - ${province} - ${institutionType}. You can now enter new enrollment data.`;
+        message.className = 'text-sm text-green-800';
+    }
+
+    notification.classList.remove('hidden');
+}
+
+function hideStatusNotification() {
+    document.getElementById('statusNotification').classList.add('hidden');
+}
+
+// ─── Form Lock / Unlock ──────────────────────────────────────────────────────
+function unlockForm() {
+    const formContent = document.getElementById('formContent');
+    const lockBanner = document.getElementById('lockBanner');
+    const formBlocker = document.getElementById('formBlocker');
+    if (formContent) formContent.classList.remove('opacity-50', 'pointer-events-none', 'select-none');
+    if (lockBanner) lockBanner.style.display = 'none';
+    if (formBlocker) formBlocker.style.display = 'none';
+}
+
+function lockForm() {
+    const formContent = document.getElementById('formContent');
+    const lockBanner = document.getElementById('lockBanner');
+    const formBlocker = document.getElementById('formBlocker');
+    if (formContent) formContent.classList.add('opacity-50', 'pointer-events-none', 'select-none');
+    if (lockBanner) lockBanner.style.display = 'flex';
+    if (formBlocker) formBlocker.style.display = 'block';
+}
+
+// ─── Selection Lock / Unlock ─────────────────────────────────────────────────
 function lockSelections() {
     const province = document.getElementById('province');
     const radios = document.querySelectorAll('input[name="institution_type"]');
@@ -312,148 +433,7 @@ function unlockSelections() {
     if (hint) hint.remove();
 }
 
-// ─── Form Lock / Unlock ───────────────────────────────────────────────────────
-function unlockForm() {
-    const formContent = document.getElementById('formContent');
-    const lockBanner = document.getElementById('lockBanner');
-    const formBlocker = document.getElementById('formBlocker');
-    if (formContent) {
-        formContent.classList.remove('opacity-50', 'pointer-events-none', 'select-none');
-    }
-    if (lockBanner) lockBanner.style.display = 'none';
-    if (formBlocker) formBlocker.style.display = 'none';
-}
-
-function lockForm() {
-    const formContent = document.getElementById('formContent');
-    const lockBanner = document.getElementById('lockBanner');
-    const formBlocker = document.getElementById('formBlocker');
-    if (formContent) {
-        formContent.classList.add('opacity-50', 'pointer-events-none', 'select-none');
-    }
-    if (lockBanner) lockBanner.style.display = 'flex';
-    if (formBlocker) formBlocker.style.display = 'block';
-}
-
-// ─── Year Display Toggle ──────────────────────────────────────────────────────
-function toggleYearDisplay(showDisplay) {
-    const inputGroup = document.getElementById('yearInputGroup');
-    const yearDisplay = document.getElementById('yearDisplay');
-
-    if (showDisplay) {
-        inputGroup.classList.add('hidden');
-        yearDisplay.classList.remove('hidden');
-        yearDisplay.classList.add('flex');
-    } else {
-        inputGroup.classList.remove('hidden');
-        yearDisplay.classList.add('hidden');
-        yearDisplay.classList.remove('flex');
-    }
-}
-
-// ─── Change Year ──────────────────────────────────────────────────────────────
-function changeYear() {
-    const currentYear = document.getElementById('displayYear').textContent;
-    document.getElementById('changeYearCurrent').textContent = currentYear;
-    document.getElementById('changeYearModal').classList.remove('hidden');
-}
-
-function closeChangeYearModal() {
-    document.getElementById('changeYearModal').classList.add('hidden');
-}
-
-function confirmChangeYear() {
-    document.getElementById('changeYearModal').classList.add('hidden');
-    isChangingYear = true;
-    oldYear = document.getElementById('displayYear').textContent;
-    document.getElementById('academicYear').value = '';
-    document.getElementById('displayYear').textContent = '----';
-    hideStatusNotification();
-    existingData = null;
-    toggleYearDisplay(false);
-    unlockSelections();
-    lockForm();
-
-    setTimeout(() => {
-        document.getElementById('academicYear').focus();
-    }, 100);
-}
-
-// ─── Year Collision Modal ─────────────────────────────────────────────────────
-function showYearCollisionModal(targetYear, province, institutionType) {
-    const currentYear = oldYear && oldYear !== '----' ? oldYear : document.getElementById('displayYear').textContent;
-    document.getElementById('collisionTargetYear').textContent = `${targetYear} - ${province} - ${institutionType}`;
-    document.getElementById('collisionCurrentYear').textContent = currentYear;
-    document.getElementById('yearCollisionModal').classList.remove('hidden');
-}
-
-function closeYearCollisionModal() {
-    document.getElementById('yearCollisionModal').classList.add('hidden');
-    document.getElementById('academicYear').value = '';
-    document.getElementById('academicYear').focus();
-}
-
-// ─── Cancel Year Change ───────────────────────────────────────────────────────
-function cancelYearChange() {
-    document.getElementById('academicYear').value = '';
-    document.getElementById('displayYear').textContent = '----';
-    hideStatusNotification();
-    toggleYearDisplay(false);
-    unlockSelections();
-
-    document.getElementById('province').value = '';
-    document.querySelectorAll('input[name="institution_type"]').forEach(r => r.checked = false);
-
-    clearForm();
-    document.getElementById('grandTotal').textContent = '0';
-
-    if (oldYear && oldYear !== '----') {
-        isChangingYear = false;
-        oldYear = null;
-        existingData = null;
-    }
-
-    document.getElementById('cancelYearChangeBtn').classList.add('hidden');
-    lockForm();
-
-    setTimeout(() => {
-        document.getElementById('academicYear').focus();
-    }, 100);
-}
-
-// ─── Status Notification ──────────────────────────────────────────────────────
-function showStatusNotification(year, exists, province, institutionType) {
-    const notification = document.getElementById('statusNotification');
-    const icon = document.getElementById('statusIcon');
-    const title = document.getElementById('statusTitle');
-    const message = document.getElementById('statusMessage');
-
-    if (exists) {
-        notification.className = 'mb-8 p-6 rounded-2xl shadow-lg bg-blue-50 border-2 border-blue-200';
-        icon.className = 'flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-2xl';
-        icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>';
-        title.textContent = 'Editing Existing Data';
-        title.className = 'text-lg font-bold mb-1 text-blue-900';
-        message.textContent = `Loading data for ${year} - ${province} - ${institutionType}. You can now edit the existing enrollment data.`;
-        message.className = 'text-sm text-blue-800';
-    } else {
-        notification.className = 'mb-8 p-6 rounded-2xl shadow-lg bg-green-50 border-2 border-green-200';
-        icon.className = 'flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-green-500 text-white text-2xl';
-        icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 000-2H5a1 1 0 000 2zm0 0v2m0-2h.01M5 20h2a1 1 0 000-2H5a1 1 0 000 2zm0 0v2m0-2h.01"/></svg>';
-        title.textContent = 'Creating New Data';
-        title.className = 'text-lg font-bold mb-1 text-green-900';
-        message.textContent = `No existing data found for ${year} - ${province} - ${institutionType}. You can now enter new enrollment data.`;
-        message.className = 'text-sm text-green-800';
-    }
-
-    notification.classList.remove('hidden');
-}
-
-function hideStatusNotification() {
-    document.getElementById('statusNotification').classList.add('hidden');
-}
-
-// ─── Discipline Input Helpers ─────────────────────────────────────────────────
+// ─── Discipline Input Helpers ────────────────────────────────────────────────
 function getRawValue(input) {
     return parseInt(input.value.replace(/,/g, '')) || 0;
 }
@@ -495,9 +475,6 @@ function initDisciplineInputs() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', initDisciplineInputs);
-
-// ─── Populate / Clear Form ────────────────────────────────────────────────────
 function populateForm(disciplines) {
     for (const [key, value] of Object.entries(disciplines)) {
         const input = document.querySelector(`input[name="${key}"]`);
@@ -516,7 +493,21 @@ function clearForm() {
     updateGrandTotal();
 }
 
-// ─── Reset Modal ──────────────────────────────────────────────────────────────
+function filterDisciplines(query) {
+    const q = query.toLowerCase().trim();
+    const rows = document.querySelectorAll('#disciplineList > div[class*="grid"]');
+    let visibleCount = 0;
+    rows.forEach(row => {
+        const label = row.querySelector('label');
+        if (!label) return;
+        const match = label.textContent.toLowerCase().includes(q);
+        row.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+    });
+    document.getElementById('noResultsMsg').classList.toggle('hidden', visibleCount > 0);
+}
+
+// ─── Reset Modal ─────────────────────────────────────────────────────────────
 function confirmReset() {
     const title = document.getElementById('resetModalTitle');
     const msg = document.getElementById('resetModalMessage');
@@ -548,7 +539,7 @@ function doReset() {
     }
 }
 
-// ─── Confirm Submit Modal ─────────────────────────────────────────────────────
+// ─── Confirm Submit Modal ────────────────────────────────────────────────────
 function showConfirmModal(data) {
     pendingData = data;
 
@@ -634,7 +625,7 @@ function closeConfirmModal() {
     pendingData = null;
 }
 
-// ─── Success Modal ────────────────────────────────────────────────────────────
+// ─── Success Modal ───────────────────────────────────────────────────────────
 function showSuccessModal(isUpdate = false) {
     const message = document.querySelector('#successModal p.text-gray-600');
     if (message) {
@@ -671,13 +662,10 @@ function closeSuccessModal() {
     lockForm();
 }
 
-// ─── Confirm Submit (API Call) ────────────────────────────────────────────────
+// ─── Form Submit Handler ─────────────────────────────────────────────────────
 async function confirmSubmit() {
     const dataToSubmit = pendingData;
     closeConfirmModal();
-
-    // Read the store URL from the form's data attribute (set in blade)
-    const storeUrl = document.getElementById('disciplineForm').dataset.storeUrl;
 
     try {
         if (oldYear && oldYear !== '----') {
@@ -691,12 +679,13 @@ async function confirmSubmit() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
+                console.log(`Deleted old year data: ${oldYear} - ${province} - ${institutionType}`);
             } catch (deleteError) {
                 console.error('Error deleting old year:', deleteError);
             }
         }
 
-        const response = await fetch(storeUrl, {
+        const response = await fetch(window.AppRoutes.storeEnrollment, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -721,91 +710,109 @@ async function confirmSubmit() {
     }
 }
 
-// ─── Form Submit Handler ──────────────────────────────────────────────────────
+// ─── DOMContentLoaded Init ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('disciplineForm').addEventListener('submit', function (e) {
-        e.preventDefault();
+    // Province change listener
+    const provinceSelect = document.getElementById('province');
+    if (provinceSelect) {
+        provinceSelect.addEventListener('change', function () {
+            handleProvinceChange(this.value);
+        });
+    }
 
-        const academicYear = document.getElementById('displayYear').textContent;
+    // Discipline input formatting
+    initDisciplineInputs();
 
-        if (academicYear === '----') {
-            showToast('Please click "Check Year" first to select an academic year.', 'warning');
-            return;
-        }
+    // Form submit listener
+    const disciplineForm = document.getElementById('disciplineForm');
+    if (disciplineForm) {
+        disciplineForm.addEventListener('submit', function (e) {
+            e.preventDefault();
 
-        const province = document.getElementById('province').value;
-        const institutionType = document.querySelector('input[name="institution_type"]:checked');
+            const academicYear = document.getElementById('displayYear').textContent;
 
-        if (!province || !institutionType) {
-            showToast('Please select a Province and Institution Type before checking the year.', 'error');
-            if (!province) {
-                const provinceEl = document.getElementById('province');
-                provinceEl.classList.add('border-red-500', 'ring-2', 'ring-red-300');
-                provinceEl.addEventListener('change', () => provinceEl.classList.remove('border-red-500', 'ring-2', 'ring-red-300'), { once: true });
+            if (academicYear === '----') {
+                showToast('Please click "Check Year" first to select an academic year.', 'warning');
+                return;
             }
-            if (!institutionType) {
-                document.querySelectorAll('input[name="institution_type"]').forEach(r => {
-                    r.closest('label').classList.add('text-red-600');
-                    r.addEventListener('change', () => {
-                        document.querySelectorAll('input[name="institution_type"]').forEach(x => x.closest('label').classList.remove('text-red-600'));
-                    }, { once: true });
-                });
+
+            const province = document.getElementById('province').value;
+            const institutionType = document.querySelector('input[name="institution_type"]:checked');
+
+            if (!province || !institutionType) {
+                showToast('Please select a Province and Institution Type before checking the year.', 'error');
+                if (!province) {
+                    const provinceEl = document.getElementById('province');
+                    provinceEl.classList.add('border-red-500', 'ring-2', 'ring-red-300');
+                    provinceEl.addEventListener('change', () => provinceEl.classList.remove('border-red-500', 'ring-2', 'ring-red-300'), { once: true });
+                }
+                if (!institutionType) {
+                    document.querySelectorAll('input[name="institution_type"]').forEach(r => {
+                        r.closest('label').classList.add('text-red-600');
+                        r.addEventListener('change', () => {
+                            document.querySelectorAll('input[name="institution_type"]').forEach(x => x.closest('label').classList.remove('text-red-600'));
+                        }, { once: true });
+                    });
+                }
+                return;
             }
-            return;
-        }
 
-        const disciplines = {
-            agriculture: document.querySelector('input[name="agriculture"]').value,
-            architecture: document.querySelector('input[name="architecture"]').value,
-            business: document.querySelector('input[name="business"]').value,
-            criminal_justice: document.querySelector('input[name="criminal_justice"]').value,
-            education: document.querySelector('input[name="education"]').value,
-            engineering: document.querySelector('input[name="engineering"]').value,
-            arts: document.querySelector('input[name="arts"]').value,
-            general: document.querySelector('input[name="general"]').value,
-            home_economics: document.querySelector('input[name="home_economics"]').value,
-            humanities: document.querySelector('input[name="humanities"]').value,
-            it: document.querySelector('input[name="it"]').value,
-            law: document.querySelector('input[name="law"]').value,
-            maritime: document.querySelector('input[name="maritime"]').value,
-            mass_comm: document.querySelector('input[name="mass_comm"]').value,
-            mathematics: document.querySelector('input[name="mathematics"]').value,
-            medical: document.querySelector('input[name="medical"]').value,
-            natural_science: document.querySelector('input[name="natural_science"]').value,
-            other_disciplines: document.querySelector('input[name="other_disciplines"]').value,
-            religion: document.querySelector('input[name="religion"]').value,
-            service_trades: document.querySelector('input[name="service_trades"]').value,
-            social_sciences: document.querySelector('input[name="social_sciences"]').value
-        };
+            const disciplines = {
+                agriculture: document.querySelector('input[name="agriculture"]').value,
+                architecture: document.querySelector('input[name="architecture"]').value,
+                business: document.querySelector('input[name="business"]').value,
+                criminal_justice: document.querySelector('input[name="criminal_justice"]').value,
+                education: document.querySelector('input[name="education"]').value,
+                engineering: document.querySelector('input[name="engineering"]').value,
+                arts: document.querySelector('input[name="arts"]').value,
+                general: document.querySelector('input[name="general"]').value,
+                home_economics: document.querySelector('input[name="home_economics"]').value,
+                humanities: document.querySelector('input[name="humanities"]').value,
+                it: document.querySelector('input[name="it"]').value,
+                law: document.querySelector('input[name="law"]').value,
+                maritime: document.querySelector('input[name="maritime"]').value,
+                mass_comm: document.querySelector('input[name="mass_comm"]').value,
+                mathematics: document.querySelector('input[name="mathematics"]').value,
+                medical: document.querySelector('input[name="medical"]').value,
+                natural_science: document.querySelector('input[name="natural_science"]').value,
+                other_disciplines: document.querySelector('input[name="other_disciplines"]').value,
+                religion: document.querySelector('input[name="religion"]').value,
+                service_trades: document.querySelector('input[name="service_trades"]').value,
+                social_sciences: document.querySelector('input[name="social_sciences"]').value
+            };
 
-        const cleanedDisciplines = {};
-        for (const [key, value] of Object.entries(disciplines)) {
-            const raw = String(value).replace(/,/g, '');
-            cleanedDisciplines[key] = raw ? parseInt(raw) : 0;
-        }
+            const cleanedDisciplines = {};
+            for (const [key, value] of Object.entries(disciplines)) {
+                const raw = String(value).replace(/,/g, '');
+                cleanedDisciplines[key] = raw ? parseInt(raw) : 0;
+            }
 
-        const dataToSave = {
-            academic_year: academicYear,
-            province: province,
-            institution_type: institutionType.value,
-            disciplines: cleanedDisciplines
-        };
+            const dataToSave = {
+                academic_year: academicYear,
+                province: province,
+                institution_type: institutionType.value,
+                disciplines: cleanedDisciplines
+            };
 
-        showConfirmModal(dataToSave);
-    });
+            console.log('Data being sent to server:', dataToSave);
+            console.log('Existing data flag:', existingData ? 'UPDATE MODE' : 'CREATE MODE');
+
+            showConfirmModal(dataToSave);
+        });
+    }
 });
-
-// ─── Discipline Search / Filter ───────────────────────────────────────────────
-function filterDisciplines(query) {
-    const q = query.toLowerCase().trim();
-    const rows = document.querySelectorAll('#disciplineList > div[class*="grid"]');
-    let visibleCount = 0;
-    rows.forEach(row => {
-        const label = row.querySelector('label');
-        if (!label) return;
-        const match = label.textContent.toLowerCase().includes(q);
-        row.style.display = match ? '' : 'none';
-        if (match) visibleCount++;
-    });
-    document.getElementById('noResultsMsg').classList.toggle('hidden', visibleCount > 0);
-}
+window.checkAndLoadYear = checkAndLoadYear;
+window.changeYear = changeYear;
+window.cancelYearChange = cancelYearChange;
+window.confirmChangeYear = confirmChangeYear;
+window.closeChangeYearModal = closeChangeYearModal;
+window.closeExistingDataModal = closeExistingDataModal;
+window.confirmLoadExistingData = confirmLoadExistingData;
+window.closeYearCollisionModal = closeYearCollisionModal;
+window.confirmReset = confirmReset;
+window.closeResetModal = closeResetModal;
+window.doReset = doReset;
+window.closeConfirmModal = closeConfirmModal;
+window.confirmSubmit = confirmSubmit;
+window.closeSuccessModal = closeSuccessModal;
+window.filterDisciplines = filterDisciplines;
