@@ -17,7 +17,7 @@ return new class extends Migration
 
         // Seed the position titles
         DB::table('position_titles')->insert([
-            ['name' => 'MANAGER',       'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'JPO MANAGER',       'created_at' => now(), 'updated_at' => now()],
             ['name' => 'PESO MANAGER',  'created_at' => now(), 'updated_at' => now()],
             ['name' => 'DISTRICT HEAD', 'created_at' => now(), 'updated_at' => now()],
         ]);

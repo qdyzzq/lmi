@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('province');
             $table->string('name');
-            $table->string('office_type');   // PESO, JPO, DOLE, TESDA, etc. — open-ended string
-            $table->string('manager_name')->nullable();
+            $table->string('office_type');  
+            $table->string('persons_name')->nullable();
             $table->string('email')->nullable();
             $table->text('address')->nullable();
             $table->integer('sort_order')->default(0);
