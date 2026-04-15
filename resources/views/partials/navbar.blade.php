@@ -66,9 +66,9 @@
             <div class="hidden xl:flex items-center gap-1 min-w-0 flex-1 justify-end transition-all duration-300"
                 :class="isScrolled ? 'gap-0.5' : 'gap-1'">
 
-                <a href="{{ route('home') }}"
+                <a href="{{ route('Public.Module1.home') }}"
                     class="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap rounded-lg font-medium transition-all duration-300
-                          {{ request()->routeIs('home')
+                          {{ request()->routeIs('Public.Module1.home')
                               ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
                               : 'text-white hover:bg-white/20' }}"
                     :class="isScrolled ? 'gap-1 px-2 py-1.5 text-xs' : 'gap-1.5 px-3 py-2 text-xs'">
@@ -80,9 +80,9 @@
                     <span>Regional Statistics</span>
                 </a>
 
-                <a href="{{ route('Job.Market.Demands') }}"
+                <a href="{{ route('Public.Module2.Job.Market.Demands') }}"
                     class="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap rounded-lg font-medium transition-all duration-300
-                          {{ request()->routeIs('Job.Market.Demands')
+                          {{ request()->routeIs('Public.Module2.Job.Market.Demands')
                               ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
                               : 'text-white hover:bg-white/20' }}"
                     :class="isScrolled ? 'gap-1 px-2 py-1.5 text-xs' : 'gap-1.5 px-3 py-2 text-xs'">
@@ -95,9 +95,9 @@
                     <span>Labor Demand Data</span>
                 </a>
 
-                <a href="{{ route('Supply.Side') }}"
+                <a href="{{ route('Public.Module3.supply.side') }}"
                     class="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap rounded-lg font-medium transition-all duration-300
-                          {{ request()->routeIs('Supply.Side')
+                          {{ request()->routeIs('Public.Module3.supply.side')
                               ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
                               : 'text-white hover:bg-white/20' }}"
                     :class="isScrolled ? 'gap-1 px-2 py-1.5 text-xs' : 'gap-1.5 px-3 py-2 text-xs'">
@@ -110,9 +110,9 @@
                     <span>Labor Supply Data</span>
                 </a>
 
-                <a href="{{ route('programStories') }}"
+                <a href="{{ route('Public.Module4.programStories') }}"
                     class="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap rounded-lg font-medium transition-all duration-300
-                          {{ request()->routeIs('programStories')
+                          {{ request()->routeIs('Public.Module4.programStories')
                               ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
                               : 'text-white hover:bg-white/20' }}"
                     :class="isScrolled ? 'gap-1 px-2 py-1.5 text-xs' : 'gap-1.5 px-3 py-2 text-xs'">
@@ -125,9 +125,9 @@
                     <span>Employment Programs</span>
                 </a>
 
-                <a href="{{ route('peso.directory') }}"
+                <a href="{{ route('Public.Module5.peso.directory') }}"
                     class="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap rounded-lg font-medium transition-all duration-300
-                          {{ request()->routeIs('peso.directory')
+                          {{ request()->routeIs('Public.Module5.peso.directory')
                               ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
                               : 'text-white hover:bg-white/20' }}"
                     :class="isScrolled ? 'gap-1 px-2 py-1.5 text-xs' : 'gap-1.5 px-3 py-2 text-xs'">
@@ -170,29 +170,29 @@
     <div x-show="mobileMenuOpen" x-transition
         class="xl:hidden border-t border-white/10 bg-slate-900/98 backdrop-blur-md" style="display: none;">
         <div class="px-6 py-4 space-y-2">
-            <a href="{{ route('home') }}"
+            <a href="{{ route('Public.Module1.home') }}"
                 @click="mobileMenuOpen = false"
-                class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('home') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
+                class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Public.Module1.home') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 Regional Statistics
             </a>
-            <a href="{{ route('Job.Market.Demands') }}"
+            <a href="{{ route('Public.Module2.Job.Market.Demands') }}"
                 @click="mobileMenuOpen = false"
-                class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Job.Market.Demands') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
+                class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Public.Module2.Job.Market.Demands') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 Labor Demand Data
             </a>
-            <a href="{{ route('Supply.Side') }}"
+            <a href="{{ route('Public.Module3.supply.side') }}"
                 @click="mobileMenuOpen = false"
-                class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Supply.Side') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
+                class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Public.Module3.supply.side') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 Labor Supply Data
             </a>
-            <a href="{{ route('programStories') }}"
+            <a href="{{ route('Public.Module4.programStories') }}"
                 @click="mobileMenuOpen = false"
-                class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('programs.stories') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
+                class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Public.Module4.programStories') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 Employment Programs
             </a>
-            <a href="{{ route('peso.directory') }}"
+            <a href="{{ route('Public.Module5.peso.directory') }}"
                 @click="mobileMenuOpen = false"
-                class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('peso.directory') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
+                class="block px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Public.Module5.peso.directory') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
                 PESO/JPO Directory
             </a>
             </div>

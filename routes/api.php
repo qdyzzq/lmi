@@ -1,20 +1,20 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ChartController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\JobMarketDemandsController;
-use App\Http\Controllers\KpiController;
-use App\Http\Controllers\PendingLaborMarketController;
-use App\Http\Controllers\AutocompleteController;
-use App\Http\Controllers\JobTitleController;
-use App\Http\Controllers\AnalysisTemplateController;
-use App\Http\Controllers\LicensureRateController;
-use App\Http\Controllers\DisciplineEnrollmentController;
-use App\Http\Controllers\DisciplineGraduateController;
-use App\Http\Controllers\ProvincialProgressionController;
-use App\Http\Controllers\GraduationRateController;
-use App\Http\Controllers\SupplySideAnalysisController;
+use App\Http\Controllers\Module1\ChartController;
+use App\Http\Controllers\Module1\DashboardController;
+use App\Http\Controllers\Module2\JobMarketDemandsController;
+use App\Http\Controllers\Module1\KpiController;
+use App\Http\Controllers\Module1\PendingLaborMarketController;
+use App\Http\Controllers\Module2\AutocompleteController;
+use App\Http\Controllers\Module2\JobTitleController;
+use App\Http\Controllers\Module1\AnalysisTemplateController;
+use App\Http\Controllers\Module3\LicensureRateController;
+use App\Http\Controllers\Module3\DisciplineEnrollmentController;
+use App\Http\Controllers\Module3\DisciplineGraduateController;
+use App\Http\Controllers\Module3\ProvincialProgressionController;
+use App\Http\Controllers\Module3\GraduationRateController;
+use App\Http\Controllers\Module3\SupplySideAnalysisController;
 
 /*
 |--------------------------------------------------------------------------

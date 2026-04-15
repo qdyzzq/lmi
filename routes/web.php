@@ -1,35 +1,42 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\JobMarketDemandsController;
+use App\Http\Controllers\Module1\DashboardController;
+use App\Http\Controllers\Module2\JobMarketDemandsController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\LaborMarketController;
-use App\Http\Controllers\LmiSubmissionController;
-use App\Http\Controllers\AnalysisTemplateController;
-use App\Http\Controllers\JobTitleController;
-use App\Http\Controllers\LicensureRateController;
-use App\Http\Controllers\DisciplineEnrollmentController;
-use App\Http\Controllers\DisciplineGraduateController;
-use App\Http\Controllers\SupplySideAnalysisController;
-use App\Http\Controllers\ProgramsController;
-use App\Http\Controllers\ProgramAdminController;
-use App\Http\Controllers\PesoDirectoryController;
+use App\Http\Controllers\Module1\LaborMarketController;
+use App\Http\Controllers\Module2\LmiSubmissionController;
+use App\Http\Controllers\Module1\AnalysisTemplateController;
+use App\Http\Controllers\Module2\JobTitleController;
+use App\Http\Controllers\Module3\LicensureRateController;
+use App\Http\Controllers\Module3\DisciplineEnrollmentController;
+use App\Http\Controllers\Module3\DisciplineGraduateController;
+use App\Http\Controllers\Module3\SupplySideAnalysisController;
+use App\Http\Controllers\Module4\ProgramsController;
+use App\Http\Controllers\Module4\ProgramAdminController;
+use App\Http\Controllers\Module5\PesoDirectoryController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController; // <-- added for OTP
 
 
 
 
 // ==================== PUBLIC ROUTES (No login required) ====================
 Route::get('/programs-stories', [ProgramsController::class, 'index'])
-    ->name('programStories');
+    ->name('Public.Module4.programStories');
 
-Route::get('/peso-directory', [PesoDirectoryController::class, 'index'])->name('peso.directory');
+Route::get('/peso-directory', [PesoDirectoryController::class, 'index'])->name('Public.Module5.peso.directory');
 
 Route::post('/lmi/submit', [LmiSubmissionController::class, 'store'])->name('lmi.submit');
 
 Route::get('/login', function () {
+    if (auth()->check()) {
+        if (auth()->user()->role === 'admin') {
+            return redirect()->route('admin.job.Market.Demands.Form');
+        }
+        return redirect()->route('statistician.review');
+    }
     return view('auth.Login');
-})->name('login');
+})->name('login')->middleware('no.back');
 
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 
@@ -38,22 +45,27 @@ Route::get('/forgot-password', function () {
 })->name('password.request');
 
 // PUBLIC DASHBOARD - Anyone can view
-Route::get('/', [DashboardController::class, 'index'])->name('home');
+Route::get('/', [DashboardController::class, 'index'])->name('Public.Module1.home');
 
 // Public view pages (anyone can access)
-Route::get('/JobMarketDemands', [JobMarketDemandsController::class, 'jobMarket'])->name('Job.Market.Demands');
+Route::get('/JobMarketDemands', [JobMarketDemandsController::class, 'jobMarket'])->name('Public.Module2.Job.Market.Demands');
 
 Route::get('/JobMarketOverview', function () {
     return view('JobMarketOverview');
 })->name('Job.Market.Overview');
 
 Route::get('/SupplySide', function(){
-    return view('SupplySide');
-})->name('Supply.Side');
+    return view('Public.Module3.SupplySide');
+})->name('Public.Module3.supply.side');
+
+// ==================== OTP ROUTES (No auth required — user not logged in yet) ====================
+Route::get('/otp', [AuthenticatedSessionController::class, 'otp'])->name('otp')->middleware('no.back');
+Route::post('/otp/verify', [AuthenticatedSessionController::class, 'verifyOtp'])->name('otp.verify')->middleware('no.back');
+Route::post('/otp/resend', [AuthenticatedSessionController::class, 'resendOtp'])->name('otp.resend');
 
 
 //==================== PROTECTED ROUTES (Login required for updates) ====================
-Route::middleware(['auth', 'role:statistician'])->prefix('statistician')->name('statistician.')->group(function () {
+Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:statistician'])->prefix('statistician')->name('statistician.')->group(function () {
     
     // Statistician Review Page (Login required)
     Route::get('/review', [LaborMarketController::class, 'index'])
@@ -95,7 +107,7 @@ Route::middleware(['auth', 'role:statistician'])->prefix('statistician')->name('
 });
 
 // Routes accessible by both Admin and Statistician
-Route::middleware(['auth', 'role:admin,statistician'])->group(function () {
+Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admin,statistician'])->group(function () {
     
     // Admin checks for duplicates before submitting to pending (Dashboard)
     Route::post('/labor-market/check-duplicate', [LaborMarketController::class, 'check'])
@@ -110,10 +122,10 @@ Route::middleware(['auth', 'role:admin,statistician'])->group(function () {
 });
 
 // Admin routes (protected by auth middleware)
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/JobMarketDemandsForm', function () {
-        return view('admin.jobMarketDemandsForm');
+        return view('admin.Module1.jobMarketDemandsForm');
     })->name('job.Market.Demands.Form');
     
     // Labor Market Routes
@@ -192,7 +204,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         ->name('discipline-graduate.delete');
 
     // Live polling — returns submission counts for real-time badge updates
-    // ⚠️ MUST be before /{id} wildcard routes
+  
     Route::get('/lmi-submissions/counts', [LmiSubmissionController::class, 'counts'])
         ->name('lmi-submissions.counts');
 

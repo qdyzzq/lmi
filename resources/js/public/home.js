@@ -738,7 +738,7 @@ function statsFilter() {
                                         },
                                         formatter: (value, context) => {
                                             const total = context.chart.data.labels.length;
-                                            const step = total > 12 ? 3 : total > 6 ? 2 : 1;
+                                            const step = total > 16 ? 3 : total > 12 ? 2 : 1;
                                             return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
                                         }
                                     }
@@ -773,7 +773,7 @@ function statsFilter() {
                                         },
                                         formatter: (value, context) => {
                                             const total = context.chart.data.labels.length;
-                                            const step = total > 12 ? 3 : total > 6 ? 2 : 1;
+                                            const step = total > 16 ? 3 : total > 12 ? 2 : 1;
                                             return context.dataIndex % step === 0 ? new Intl.NumberFormat('en-US').format(value) : null;
                                         }
                                     }
@@ -823,7 +823,7 @@ function statsFilter() {
                                 x: {
                                     ticks: {
                                         autoSkip: true,
-                                        maxTicksLimit: isMobile ? 3 : 12,
+                                        maxTicksLimit: isMobile ? 3 : originalChart.data.labels.length,
                                         maxRotation: 90,
                                         minRotation: 0,
                                         color: '#475569',

@@ -135,33 +135,10 @@ function addJobEntry() {
                 onblur="refornatOnBlur(this)"
             >
         </div>
-        <button
-            type="button"
-            class="jt-remove-btn"
-            onclick="removeJobEntry(${entryCount})"
-            title="Remove entry"
-        >
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-        </button>
     `;
 
     jobEntries.appendChild(entryDiv);
     jobEntries.scrollTop = jobEntries.scrollHeight;
-}
-
-function removeJobEntry(id) {
-    const entry = document.getElementById(`entry-${id}`);
-    if (entry) {
-        entry.remove();
-        // Renumber remaining entries
-        const entries = document.getElementById('jobEntries').children;
-        Array.from(entries).forEach((el, i) => {
-            const numBadge = el.querySelector('.jt-entry-num');
-            if (numBadge) numBadge.textContent = i + 1;
-        });
-    }
 }
 
 // ─── Reset Modal ──────────────────────────────────────────────────────────────
@@ -662,7 +639,6 @@ document.addEventListener('DOMContentLoaded', () => {
 window.switchTab           = switchTab;
 window.loadHistory         = loadHistory;
 window.addJobEntry         = addJobEntry;
-window.removeJobEntry      = removeJobEntry;
 window.resetForm           = resetForm;
 window.closeResetModal     = closeResetModal;
 window.confirmReset        = confirmReset;

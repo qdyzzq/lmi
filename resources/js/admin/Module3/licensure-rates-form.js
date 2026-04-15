@@ -1,5 +1,4 @@
 // ─── State Variables ────────────────────────────────────────────────────────
-let isChangingYear = false;
 let oldYear = null;
 let pendingYearData = null;
 let pendingData = null;
@@ -442,36 +441,13 @@ function toggleYearDisplay(showDisplay) {
     }
 }
 
-function changeYear() {
-    document.getElementById('changeYearModal').classList.remove('hidden');
-}
-
-function closeChangeYearModal() {
-    document.getElementById('changeYearModal').classList.add('hidden');
-}
-
-function confirmChangeYear() {
-    document.getElementById('changeYearModal').classList.add('hidden');
-    isChangingYear = true;
-    oldYear = document.getElementById('displayYear').textContent;
-    document.getElementById('year').value = '';
-    document.getElementById('displayYear').textContent = '----';
-    clearExistingDataIndicator();
-    toggleYearDisplay(false);
-    document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
-    setTimeout(() => document.getElementById('year').focus(), 100);
-}
-
 function cancelYearChange() {
     document.getElementById('year').value = '';
     document.getElementById('displayYear').textContent = '----';
     clearExistingDataIndicator();
     toggleYearDisplay(false);
 
-    if (oldYear && oldYear !== '----') {
-        isChangingYear = false;
-        oldYear = null;
-    }
+    oldYear = null;
 
     document.getElementById('cancelYearChangeBtn').classList.add('hidden');
     lockForm();
@@ -484,12 +460,6 @@ async function checkExistingData(year) {
             headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         });
         const result = await response.json();
-
-        if (result.exists && isChangingYear) {
-            showYearCollisionModal(year);
-            isChangingYear = false;
-            return;
-        }
 
         if (result.exists) {
             document.getElementById('displayYear').textContent = year;
@@ -504,12 +474,10 @@ async function checkExistingData(year) {
             clearExistingDataIndicator();
             showStatusNotification(year, false);
             unlockForm();
-            isChangingYear = false;
         }
     } catch (error) {
         console.error('Error checking existing data:', error);
         showToast('Error checking year data. Please try again.', 'error');
-        isChangingYear = false;
     }
 }
 
@@ -537,7 +505,6 @@ function showExistingDataModal(year, totalRecords) {
 function closeExistingDataModal() {
     document.getElementById('existingDataModal').classList.add('hidden');
     pendingYearData = null;
-    isChangingYear = false;
     document.getElementById('year').value = '';
     document.getElementById('displayYear').textContent = '----';
     toggleYearDisplay(false);
@@ -894,10 +861,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ─── Global Exports (required for Blade onclick handlers) ────────────────────
 window.checkAndLoadYear        = checkAndLoadYear;
-window.changeYear              = changeYear;
 window.cancelYearChange        = cancelYearChange;
-window.confirmChangeYear       = confirmChangeYear;
-window.closeChangeYearModal    = closeChangeYearModal;
 window.closeYearCollisionModal = closeYearCollisionModal;
 window.confirmLoadExistingData = confirmLoadExistingData;
 window.closeExistingDataModal  = closeExistingDataModal;

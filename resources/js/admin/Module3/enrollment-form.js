@@ -1,7 +1,6 @@
 // ─── State Variables ────────────────────────────────────────────────────────
 let existingData = null;
 let oldYear = null;
-let isChangingYear = false;
 let pendingData = null;
 let pendingYearData = null;
 
@@ -174,17 +173,6 @@ async function checkAndLoadYear() {
         if (data.exists && data.data) {
             const isEmpty = Object.values(data.data.disciplines ?? data.data).every(v => !parseInt(v));
 
-            if (isChangingYear) {
-                if (isEmpty) {
-                    confirmChangeYear();
-                    isChangingYear = false;
-                    return;
-                }
-                showYearCollisionModal(year, province, institutionType.value);
-                isChangingYear = false;
-                return;
-            }
-
             if (isEmpty) {
                 loadNewYear(year, province, institutionType.value);
                 return;
@@ -203,20 +191,16 @@ async function checkAndLoadYear() {
     } catch (error) {
         console.error('Error:', error);
         showToast('An error occurred while checking the year. Please try again.', 'error');
-        isChangingYear = false;
     }
 }
 
 function loadNewYear(year, province, institutionType) {
     document.getElementById('displayYear').textContent = year;
     existingData = null;
-    if (!isChangingYear) {
-        clearForm();
-    }
+    clearForm();
     showStatusNotification(year, false, province, institutionType);
     toggleYearDisplay(true);
     document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
-    isChangingYear = false;
     unlockForm();
     lockSelections();
 }
@@ -237,32 +221,7 @@ function toggleYearDisplay(showDisplay) {
     }
 }
 
-function changeYear() {
-    const currentYear = document.getElementById('displayYear').textContent;
-    document.getElementById('changeYearCurrent').textContent = currentYear;
-    document.getElementById('changeYearModal').classList.remove('hidden');
-}
 
-function closeChangeYearModal() {
-    document.getElementById('changeYearModal').classList.add('hidden');
-}
-
-function confirmChangeYear() {
-    document.getElementById('changeYearModal').classList.add('hidden');
-    isChangingYear = true;
-    oldYear = document.getElementById('displayYear').textContent;
-    document.getElementById('academicYear').value = '';
-    document.getElementById('displayYear').textContent = '----';
-    hideStatusNotification();
-    existingData = null;
-    toggleYearDisplay(false);
-    unlockSelections();
-    lockForm();
-
-    setTimeout(() => {
-        document.getElementById('academicYear').focus();
-    }, 100);
-}
 
 function cancelYearChange() {
     document.getElementById('academicYear').value = '';
@@ -278,7 +237,6 @@ function cancelYearChange() {
     document.getElementById('grandTotal').textContent = '0';
 
     if (oldYear && oldYear !== '----') {
-        isChangingYear = false;
         oldYear = null;
         existingData = null;
     }
@@ -321,7 +279,6 @@ function confirmLoadExistingData() {
     document.getElementById('cancelYearChangeBtn').classList.remove('hidden');
 
     closeExistingDataModal();
-    isChangingYear = false;
     unlockForm();
     lockSelections();
 }
@@ -802,10 +759,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 window.checkAndLoadYear = checkAndLoadYear;
-window.changeYear = changeYear;
 window.cancelYearChange = cancelYearChange;
-window.confirmChangeYear = confirmChangeYear;
-window.closeChangeYearModal = closeChangeYearModal;
 window.closeExistingDataModal = closeExistingDataModal;
 window.confirmLoadExistingData = confirmLoadExistingData;
 window.closeYearCollisionModal = closeYearCollisionModal;

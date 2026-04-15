@@ -119,13 +119,27 @@ if (!document.getElementById('toastStyle')) {
     document.head.appendChild(style);
 }
 
-// ─── Year Input Helpers ──────────────────────────────────────────────────────
-function toggleClearBtn(value) {
-    const btn = document.getElementById('clearYearBtn');
-    value.trim() ? btn.classList.remove('hidden') : btn.classList.add('hidden');
+// ─── Year Display Toggle ─────────────────────────────────────────────────────
+function toggleYearDisplay(showDisplay, year) {
+    const inputGroup  = document.getElementById('yearInputGroup');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const cancelBtn   = document.getElementById('cancelYearBtn');
+
+    if (showDisplay) {
+        inputGroup.classList.add('hidden');
+        document.getElementById('displayYear').textContent = year;
+        yearDisplay.classList.remove('hidden');
+        yearDisplay.classList.add('flex');
+        cancelBtn.classList.remove('hidden');
+    } else {
+        inputGroup.classList.remove('hidden');
+        yearDisplay.classList.add('hidden');
+        yearDisplay.classList.remove('flex');
+        cancelBtn.classList.add('hidden');
+    }
 }
 
-function clearYearInput() {
+function cancelYear() {
     resetForm();
 }
 
@@ -182,6 +196,7 @@ async function checkAndLoadYear() {
 function loadNewYear(year) {
     currentYear = year;
     graduationRateData = null;
+    toggleYearDisplay(true, year);
     showStatusNotification(year, false);
     loadEnrollmentContext(year);
 }
@@ -196,6 +211,7 @@ function showExistingDataModal(year, rate) {
 function closeExistingDataModal() {
     document.getElementById('existingDataModal').classList.add('hidden');
     pendingYearData = null;
+    toggleYearDisplay(false);
     resetForm();
 }
 
@@ -204,6 +220,7 @@ function confirmLoadExistingData() {
     const { year, data } = pendingYearData;
     currentYear = year;
     graduationRateData = data;
+    toggleYearDisplay(true, year);
     document.getElementById('graduationRateCard').style.display = 'block';
     initDescriptionQuill();
     displayGraduationRateData(data);
@@ -214,9 +231,8 @@ function confirmLoadExistingData() {
 
 // ─── Reset Form ──────────────────────────────────────────────────────────────
 function resetForm() {
-    const input = document.getElementById('academicYear');
-    input.value = '';
-    document.getElementById('clearYearBtn').classList.add('hidden');
+    document.getElementById('academicYear').value = '';
+    toggleYearDisplay(false);
     if (descriptionQuill) { descriptionQuill.setContents([]); }
     hideStatusNotification();
     clearMissingEnrollmentWarning();
@@ -300,7 +316,7 @@ function showFutureYearWarning(graduateYear) {
     document.getElementById('futureYearUnlockYear').textContent = startYear;
     document.getElementById('futureYearWarning').classList.remove('hidden');
 
-    const saveBtn = document.querySelector('button[onclick="saveGraduationRate()"]');
+    const saveBtn = document.getElementById('saveRateBtn');
     if (saveBtn) {
         saveBtn.disabled = true;
         saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -311,7 +327,7 @@ function showFutureYearWarning(graduateYear) {
 function hideFutureYearWarning() {
     document.getElementById('futureYearWarning').classList.add('hidden');
 
-    const saveBtn = document.querySelector('button[onclick="saveGraduationRate()"]');
+    const saveBtn = document.getElementById('saveRateBtn');
     if (saveBtn) {
         saveBtn.disabled = false;
         saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -324,7 +340,7 @@ function handleMissingEnrollment(enrollmentYear) {
     document.getElementById('missingEnrollmentYear').textContent = enrollmentYear || '(unknown year)';
     document.getElementById('missingEnrollmentWarning').classList.remove('hidden');
 
-    const saveBtn = document.querySelector('button[onclick="saveGraduationRate()"]');
+    const saveBtn = document.getElementById('saveRateBtn');
     if (saveBtn) {
         saveBtn.disabled = true;
         saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -339,7 +355,7 @@ function handleMissingEnrollment(enrollmentYear) {
 function clearMissingEnrollmentWarning() {
     document.getElementById('missingEnrollmentWarning').classList.add('hidden');
 
-    const saveBtn = document.querySelector('button[onclick="saveGraduationRate()"]');
+    const saveBtn = document.getElementById('saveRateBtn');
     if (saveBtn) {
         saveBtn.disabled = false;
         saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -452,6 +468,12 @@ function updateRateFromSlider(value) {
 function saveGraduationRate() {
     if (!currentYear) {
         showToast('Please select an academic year first', 'warning');
+        return;
+    }
+
+    if (isGraduateYearInFuture(currentYear)) {
+        const startYear = currentYear.split('-')[0];
+        showToast(`Saving is locked until ${startYear} — this academic year has not started yet.`, 'warning');
         return;
     }
 
@@ -586,8 +608,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 // ─── Global Exports (required for Blade onclick handlers) ────────────────────
 window.checkAndLoadYear       = checkAndLoadYear;
-window.clearYearInput         = clearYearInput;
-window.toggleClearBtn         = toggleClearBtn;
+window.cancelYear             = cancelYear;
 window.closeExistingDataModal = closeExistingDataModal;
 window.confirmLoadExistingData = confirmLoadExistingData;
 window.saveGraduationRate     = saveGraduationRate;

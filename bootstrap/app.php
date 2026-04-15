@@ -12,8 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->alias([
-            'role' => \App\Http\Middleware\CheckRole::class,
+    $middleware->alias([
+        'role'         => \App\Http\Middleware\CheckRole::class,
+        'otp.verified' => \App\Http\Middleware\EnsureOtpVerified::class,
+        'no.duplicate' => \App\Http\Middleware\PreventDuplicateSession::class,
+        'no.back'      => \App\Http\Middleware\PreventBackHistory::class, 
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

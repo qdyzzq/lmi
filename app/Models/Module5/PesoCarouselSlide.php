@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Models\Module5;
+
+use Illuminate\Database\Eloquent\Model;
+
+class PesoCarouselSlide extends Model
+{
+    protected $fillable = [
+        'image_path',
+        'sort_order',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active'  => 'boolean',
+        'sort_order' => 'integer',
+    ];
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+}
