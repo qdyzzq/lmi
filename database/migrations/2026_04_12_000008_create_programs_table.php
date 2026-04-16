@@ -13,11 +13,11 @@ return new class extends Migration
     {
           Schema::create('programs', function (Blueprint $table) {
         $table->id();
-        $table->string('name');           // e.g. "Government Internship Program"
-        $table->string('acronym');        // e.g. "GIP"
-        $table->string('subtitle');       // e.g. "3–6 month internship opportunity in government"
-        $table->text('description');      // the main program details paragraph
-        $table->string('color');          // e.g. "green", "red", "blue"
+        $table->string('name');       
+        $table->string('acronym');      
+        $table->string('subtitle');       
+        $table->text('description'); 
+        $table->string('color');     
         $table->string('logo_path')->nullable();
         $table->integer('sort_order')->default(0);
         $table->boolean('is_active')->default(true);

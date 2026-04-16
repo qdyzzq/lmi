@@ -12,7 +12,7 @@ return new class extends Migration
             if (!Schema::hasColumn('field_offices', 'position_title_id')) {
                 $table->foreignId('position_title_id')
                       ->nullable()
-                      ->after('office_type')
+                      ->after('office_type_id')
                       ->constrained('position_titles')
                       ->nullOnDelete();
             }

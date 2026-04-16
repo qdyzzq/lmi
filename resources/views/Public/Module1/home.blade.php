@@ -29,17 +29,26 @@
 
         /* Mobile: taller aspect so charts breathe */
         @media (max-width: 640px) {
-            .chart-wrapper { aspect-ratio: 4 / 3; min-height: 220px; }
+            .chart-wrapper {
+                aspect-ratio: 4 / 3;
+                min-height: 220px;
+            }
         }
 
         /* Tablet */
         @media (min-width: 641px) and (max-width: 1023px) {
-            .chart-wrapper { aspect-ratio: 16 / 9; }
+            .chart-wrapper {
+                aspect-ratio: 16 / 9;
+            }
         }
 
         /* Desktop */
         @media (min-width: 1024px) {
-            .chart-wrapper { height: 384px; } /* same as old h-96 */
+            .chart-wrapper {
+                height: 384px;
+            }
+
+            /* same as old h-96 */
         }
 
         /* Responsive filter dropdowns — prevent overflow on mobile */
@@ -60,6 +69,7 @@
         .table-scroll-hint {
             display: none;
         }
+
         @media (max-width: 767px) {
             .table-scroll-hint {
                 display: flex;
@@ -67,11 +77,22 @@
         }
 
         /* ── Employment table: hide table on mobile, show cards ── */
-        .emp-table-view { display: block; }
-        .emp-cards-view { display: none;  }
+        .emp-table-view {
+            display: block;
+        }
+
+        .emp-cards-view {
+            display: none;
+        }
+
         @media (max-width: 767px) {
-            .emp-table-view { display: none;  }
-            .emp-cards-view { display: block; }
+            .emp-table-view {
+                display: none;
+            }
+
+            .emp-cards-view {
+                display: block;
+            }
         }
 
         /* ── Employment mobile card styles ── */
@@ -82,12 +103,14 @@
             padding: 14px 16px;
             margin-bottom: 10px;
         }
+
         .emp-card-period {
             font-size: 0.9375rem;
             font-weight: 700;
             color: #0f172a;
             margin: 0 0 10px;
         }
+
         .emp-card-highlight {
             background: #eff6ff;
             border-radius: 0.5rem;
@@ -97,6 +120,7 @@
             align-items: center;
             margin-bottom: 10px;
         }
+
         .emp-card-highlight-label {
             font-size: 10px;
             font-weight: 700;
@@ -105,23 +129,27 @@
             letter-spacing: 0.06em;
             margin: 0 0 2px;
         }
+
         .emp-card-highlight-value {
             font-size: 22px;
             font-weight: 700;
             color: #1e40af;
             margin: 0;
         }
+
         .emp-card-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
             margin-bottom: 0;
         }
+
         .emp-card-stat {
             background: #f8fafc;
             border-radius: 0.5rem;
             padding: 8px 10px;
         }
+
         .emp-card-stat-label {
             font-size: 10px;
             font-weight: 700;
@@ -131,12 +159,14 @@
             margin: 0 0 2px;
             line-height: 1.3;
         }
+
         .emp-card-stat-value {
             font-size: 14px;
             font-weight: 600;
             color: #1e293b;
             margin: 0;
         }
+
         .emp-card-expand-btn {
             margin-top: 8px;
             width: 100%;
@@ -154,14 +184,21 @@
             gap: 4px;
             transition: background 0.12s;
         }
-        .emp-card-expand-btn:hover { background: #f1f5f9; }
+
+        .emp-card-expand-btn:hover {
+            background: #f1f5f9;
+        }
+
         .emp-card-extra {
             display: none;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
             margin-top: 8px;
         }
-        .emp-card-extra.open { display: grid; }
+
+        .emp-card-extra.open {
+            display: grid;
+        }
 
         /* ── Toast Notifications ── */
         #toast-container {
@@ -174,6 +211,7 @@
             gap: 0.5rem;
             pointer-events: none;
         }
+
         .toast {
             display: flex;
             align-items: flex-start;
@@ -183,33 +221,108 @@
             background: #fff;
             border-radius: 0.75rem;
             padding: 0.875rem 1rem;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 4px 10px -5px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 4px 10px -5px rgba(0, 0, 0, 0.1);
             border-left: 4px solid;
             pointer-events: all;
             animation: toastIn 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
         }
-        .toast.removing { animation: toastOut 0.3s ease-in forwards; }
-        .toast.toast-error   { border-color: #ef4444; }
-        .toast.toast-warning { border-color: #f59e0b; }
-        .toast.toast-success { border-color: #22c55e; }
-        .toast.toast-info    { border-color: #3b82f6; }
-        .toast-icon { flex-shrink: 0; width: 1.25rem; height: 1.25rem; margin-top: 1px; }
-        .toast-error   .toast-icon { color: #ef4444; }
-        .toast-warning .toast-icon { color: #f59e0b; }
-        .toast-success .toast-icon { color: #22c55e; }
-        .toast-info    .toast-icon { color: #3b82f6; }
-        .toast-body { flex: 1; }
-        .toast-title { font-size: 0.8125rem; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
-        .toast-message { font-size: 0.8125rem; color: #475569; line-height: 1.4; }
-        .toast-close { background: none; border: none; cursor: pointer; color: #94a3b8; padding: 0; flex-shrink: 0; line-height: 1; }
-        .toast-close:hover { color: #475569; }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateX(100%); }
-            to   { opacity: 1; transform: translateX(0); }
+
+        .toast.removing {
+            animation: toastOut 0.3s ease-in forwards;
         }
+
+        .toast.toast-error {
+            border-color: #ef4444;
+        }
+
+        .toast.toast-warning {
+            border-color: #f59e0b;
+        }
+
+        .toast.toast-success {
+            border-color: #22c55e;
+        }
+
+        .toast.toast-info {
+            border-color: #3b82f6;
+        }
+
+        .toast-icon {
+            flex-shrink: 0;
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-top: 1px;
+        }
+
+        .toast-error .toast-icon {
+            color: #ef4444;
+        }
+
+        .toast-warning .toast-icon {
+            color: #f59e0b;
+        }
+
+        .toast-success .toast-icon {
+            color: #22c55e;
+        }
+
+        .toast-info .toast-icon {
+            color: #3b82f6;
+        }
+
+        .toast-body {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+
+        .toast-message {
+            font-size: 0.8125rem;
+            color: #475569;
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 0;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .toast-close:hover {
+            color: #475569;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
         @keyframes toastOut {
-            from { opacity: 1; transform: translateX(0); }
-            to   { opacity: 0; transform: translateX(110%); }
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(110%);
+            }
         }
     </style>
 </head>
@@ -219,7 +332,7 @@
     <!-- Toast Notification Container -->
     <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-    
+
     <div x-data="{
         activeView: 'overview',
         showReportModal: false,
@@ -231,23 +344,23 @@
 
         <div class="relative w-full h-[55vh] sm:h-[65vh] md:h-[75vh] lg:h-[900px] overflow-hidden">
             <div class="absolute inset-0">
-                <img src="{{ asset('images/navbar-bg.jpg') }}" alt="Background"
+                <img src="{{ asset('images/navbar-bg.webp') }}" alt="Background"
                     class="w-full h-full object-cover object-top">
                 <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-100"></div>
             </div>
 
             <div class="relative z-10 h-full flex items-center justify-center px-4">
-            <div class="text-center text-white pointer-events-none">
-                <h1 class="text-white font-black leading-tight tracking-tight"
-                    style="font-size: clamp(1.25rem, 4vw, 3.5rem); text-shadow: 0 2px 16px rgba(0,0,0,1), 0 0 40px rgba(0,0,0,0.7);">
-                    Davao Regional Labor Market Situation
-                </h1>
-                <p class="text-slate-200 font-medium mt-2"
-                    style="font-size: clamp(0.75rem, 1.5vw, 1.125rem); text-shadow: 0 1px 8px rgba(0,0,0,1);">
-                    Regional Labor Market Intelligence & Trends
-                </p>
+                <div class="text-center text-white pointer-events-none">
+                    <h1 class="text-white font-black leading-tight tracking-tight"
+                        style="font-size: clamp(1.25rem, 4vw, 3.5rem); text-shadow: 0 2px 16px rgba(0,0,0,1), 0 0 40px rgba(0,0,0,0.7);">
+                        Davao Regional Labor Market Situation
+                    </h1>
+                    <p class="text-slate-200 font-medium mt-2"
+                        style="font-size: clamp(0.75rem, 1.5vw, 1.125rem); text-shadow: 0 1px 8px rgba(0,0,0,1);">
+                        Regional Labor Market Intelligence & Trends
+                    </p>
+                </div>
             </div>
-        </div>
             <a href="#kpi-section"
                 class="absolute bottom-8 sm:bottom-16 md:bottom-24 lg:bottom-32 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-80"
                 @click.prevent="document.getElementById('kpi-section').scrollIntoView({ behavior: 'smooth' })">
@@ -289,8 +402,12 @@
                                 <div
                                     class="group relative bg-white/95 backdrop-blur-sm border-l-4 border-[#023E8A] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
                                     <!-- Bubble decorations -->
-                                    <div class="absolute -top-6 -right-6 w-28 h-28 bg-blue-100/60 rounded-full pointer-events-none"></div>
-                                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-blue-200/40 rounded-full pointer-events-none"></div>
+                                    <div
+                                        class="absolute -top-6 -right-6 w-28 h-28 bg-blue-100/60 rounded-full pointer-events-none">
+                                    </div>
+                                    <div
+                                        class="absolute -top-2 -right-2 w-16 h-16 bg-blue-200/40 rounded-full pointer-events-none">
+                                    </div>
                                     <div class="flex justify-between items-center mb-3 relative z-10">
                                         <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">
                                             Participation Rate</p>
@@ -305,7 +422,8 @@
                                     </div>
                                     <h2 class="text-4xl font-black text-slate-900 mb-2 relative z-10"
                                         x-text="kpiData.participation_rate?.rate || '0%'">67.0%</h2>
-                                    <div class="h-1 w-16 bg-gradient-to-r from-[#023E8A] to-blue-300 rounded-full mb-3 relative z-10">
+                                    <div
+                                        class="h-1 w-16 bg-gradient-to-r from-[#023E8A] to-blue-300 rounded-full mb-3 relative z-10">
                                     </div>
                                     <p class="text-xs text-slate-600 font-medium relative z-10"
                                         x-text="(kpiData.participation_rate?.active_workforce || '0') + ' Estimate number of people'">
@@ -315,8 +433,12 @@
                                 <div
                                     class="group relative bg-white/95 backdrop-blur-sm border-l-4 border-[#006400] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
                                     <!-- Bubble decorations -->
-                                    <div class="absolute -top-6 -right-6 w-28 h-28 bg-green-100/60 rounded-full pointer-events-none"></div>
-                                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-green-200/40 rounded-full pointer-events-none"></div>
+                                    <div
+                                        class="absolute -top-6 -right-6 w-28 h-28 bg-green-100/60 rounded-full pointer-events-none">
+                                    </div>
+                                    <div
+                                        class="absolute -top-2 -right-2 w-16 h-16 bg-green-200/40 rounded-full pointer-events-none">
+                                    </div>
                                     <div class="flex justify-between items-center mb-3 relative z-10">
                                         <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">Employment
                                             Rate</p>
@@ -342,8 +464,12 @@
                                 <div
                                     class="group relative bg-white/95 backdrop-blur-sm border-l-4 border-[#FF8C00] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
                                     <!-- Bubble decorations -->
-                                    <div class="absolute -top-6 -right-6 w-28 h-28 bg-orange-100/60 rounded-full pointer-events-none"></div>
-                                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-orange-200/40 rounded-full pointer-events-none"></div>
+                                    <div
+                                        class="absolute -top-6 -right-6 w-28 h-28 bg-orange-100/60 rounded-full pointer-events-none">
+                                    </div>
+                                    <div
+                                        class="absolute -top-2 -right-2 w-16 h-16 bg-orange-200/40 rounded-full pointer-events-none">
+                                    </div>
                                     <div class="flex justify-between items-center mb-3 relative z-10">
                                         <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">
                                             Underemployment</p>
@@ -369,8 +495,12 @@
                                 <div
                                     class="group relative bg-white/95 backdrop-blur-sm border-l-4 border-[#D30000] rounded-xl p-6 shadow-xl hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
                                     <!-- Bubble decorations -->
-                                    <div class="absolute -top-6 -right-6 w-28 h-28 bg-red-100/60 rounded-full pointer-events-none"></div>
-                                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-red-200/40 rounded-full pointer-events-none"></div>
+                                    <div
+                                        class="absolute -top-6 -right-6 w-28 h-28 bg-red-100/60 rounded-full pointer-events-none">
+                                    </div>
+                                    <div
+                                        class="absolute -top-2 -right-2 w-16 h-16 bg-red-200/40 rounded-full pointer-events-none">
+                                    </div>
                                     <div class="flex justify-between items-center mb-3 relative z-10">
                                         <p class="text-xs text-slate-600 font-bold uppercase tracking-wide">
                                             Unemployment
@@ -386,7 +516,8 @@
                                     </div>
                                     <h2 class="text-4xl font-black text-slate-900 mb-2 relative z-10"
                                         x-text="kpiData.unemployment_rate?.rate || '0%'">7.0%</h2>
-                                    <div class="h-1 w-16 bg-gradient-to-r from-[#D30000] to-red-300 rounded-full mb-3 relative z-10">
+                                    <div
+                                        class="h-1 w-16 bg-gradient-to-r from-[#D30000] to-red-300 rounded-full mb-3 relative z-10">
                                     </div>
                                     <p class="text-xs text-slate-600 font-medium relative z-10"
                                         x-text="(kpiData.unemployment_rate?.count_formatted || '0') + ' Estimate number of people'">
@@ -420,7 +551,8 @@
                                         </div>
 
                                         <div class="relative" x-data="{ open: false }" @click.stop>
-                                            <button @click="open = !open; if(open) positionDropdown($el, 'kpi-period-dropdown')"
+                                            <button
+                                                @click="open = !open; if(open) positionDropdown($el, 'kpi-period-dropdown')"
                                                 id="kpi-period-btn"
                                                 class="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-sm font-medium rounded-lg flex items-center gap-2 transition">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor"
@@ -433,8 +565,7 @@
                                             </button>
 
                                             <div x-show="open" @click.away="open = false" x-transition
-                                                id="kpi-period-dropdown"
-                                                class="filter-dropdown">
+                                                id="kpi-period-dropdown" class="filter-dropdown">
                                                 <label class="block text-xs font-semibold text-slate-700 mb-3">Select
                                                     Period</label>
 
@@ -444,8 +575,11 @@
                                                             class="text-[10px] text-slate-500 mb-1 block">Quarter</label>
                                                         <select x-model="pendingMonth"
                                                             class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                                            <template x-for="month in availableMonths" :key="month">
-                                                                <option :value="month.toString()" x-text="{1:'Jan',4:'Apr',7:'Jul',10:'Oct'}[month] ?? month"></option>
+                                                            <template x-for="month in availableMonths"
+                                                                :key="month">
+                                                                <option :value="month.toString()"
+                                                                    x-text="{1:'Jan',4:'Apr',7:'Jul',10:'Oct'}[month] ?? month">
+                                                                </option>
                                                             </template>
                                                         </select>
                                                     </div>
@@ -607,28 +741,32 @@
                                 <div class="p-3 sm:p-6 space-y-4">
 
                                     <!-- Centered Tab Navigation — pill-style -->
-                                    <div class="flex flex-wrap items-center justify-center gap-1 sm:gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
+                                    <div
+                                        class="flex flex-wrap items-center justify-center gap-1 sm:gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
                                         <button
                                             @click="activeChart = 'side'; $nextTick(() => { window.laborChart?.resize(); window.unempChart?.resize(); })"
                                             :class="activeChart === 'side'
-                                                ? 'bg-white text-slate-900 shadow font-semibold border border-slate-200'
-                                                : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'"
+                                                ?
+                                                'bg-white text-slate-900 shadow font-semibold border border-slate-200' :
+                                                'text-slate-500 hover:text-slate-800 hover:bg-white/60'"
                                             class="px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 cursor-pointer whitespace-nowrap">
                                             Overview
                                         </button>
                                         <button
                                             @click="activeChart = 'labor'; $nextTick(() => { window.laborChart?.resize(); window.laborChart?.update(); })"
                                             :class="activeChart === 'labor'
-                                                ? 'bg-white text-blue-700 shadow font-semibold border border-blue-100'
-                                                : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'"
+                                                ?
+                                                'bg-white text-blue-700 shadow font-semibold border border-blue-100' :
+                                                'text-slate-500 hover:text-slate-800 hover:bg-white/60'"
                                             class="px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 cursor-pointer whitespace-nowrap">
                                             Labor Force &amp; Employment
                                         </button>
                                         <button
                                             @click="activeChart = 'compiled'; $nextTick(() => { window.unempChart?.resize(); window.unempChart?.update(); })"
                                             :class="activeChart === 'compiled'
-                                                ? 'bg-white text-blue-700 shadow font-semibold border border-blue-100'
-                                                : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'"
+                                                ?
+                                                'bg-white text-blue-700 shadow font-semibold border border-blue-100' :
+                                                'text-slate-500 hover:text-slate-800 hover:bg-white/60'"
                                             class="px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 cursor-pointer text-center leading-snug">
                                             DAVAO REGION<br>LABOR MARKET PERFORMANCE
                                         </button>
@@ -644,8 +782,10 @@
                                             x-show="activeChart === 'labor' || activeChart === 'side'" x-transition>
                                             <div class="flex flex-col gap-3 mb-4">
                                                 <div>
-                                                    <h3 class="font-semibold text-slate-800 text-base">Labor Force vs Employment Rate</h3>
-                                                    <p class="text-xs text-slate-500 mt-0.5">Comparing workforce size (bars) vs employment rate (line)</p>
+                                                    <h3 class="font-semibold text-slate-800 text-base">Labor Force vs
+                                                        Employment Rate</h3>
+                                                    <p class="text-xs text-slate-500 mt-0.5">Comparing workforce size
+                                                        (bars) vs employment rate (line)</p>
                                                 </div>
                                                 <div class="flex items-center gap-2">
                                                     <button @click="openChartModal('labor')"
@@ -659,37 +799,53 @@
                                                         Expand
                                                     </button>
                                                     <div class="relative">
-                                                        <button @click="laborOpen = !laborOpen; if(laborOpen) positionDropdown($el, 'labor-dropdown')"
+                                                        <button
+                                                            @click="laborOpen = !laborOpen; if(laborOpen) positionDropdown($el, 'labor-dropdown')"
                                                             id="labor-filter-btn"
                                                             class="text-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
-                                                            <span x-text="laborYearRange" class="whitespace-nowrap"></span>
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                            <span x-text="laborYearRange"
+                                                                class="whitespace-nowrap"></span>
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                                viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                                             </svg>
                                                         </button>
                                                         <div x-show="laborOpen" @click.away="laborOpen = false"
                                                             x-transition id="labor-dropdown" class="filter-dropdown">
                                                             <div class="mb-4">
-                                                                <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
+                                                                <label
+                                                                    class="block text-xs font-semibold text-slate-700 mb-3">Select
+                                                                    Year Range</label>
                                                                 <div class="flex items-center gap-3">
                                                                     <div class="flex-1">
-                                                                        <label class="text-[10px] text-slate-500 mb-1 block">From</label>
+                                                                        <label
+                                                                            class="text-[10px] text-slate-500 mb-1 block">From</label>
                                                                         <select x-model="laborStartYear"
                                                                             class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 cursor-pointer">
-                                                                            <option value="" disabled>Select year</option>
-                                                                            <template x-for="year in laborAvailableYears" :key="year">
-                                                                                <option :value="year" x-text="year"></option>
+                                                                            <option value="" disabled>Select year
+                                                                            </option>
+                                                                            <template
+                                                                                x-for="year in laborAvailableYears"
+                                                                                :key="year">
+                                                                                <option :value="year"
+                                                                                    x-text="year"></option>
                                                                             </template>
                                                                         </select>
                                                                     </div>
                                                                     <span class="text-slate-400 mt-5">—</span>
                                                                     <div class="flex-1">
-                                                                        <label class="text-[10px] text-slate-500 mb-1 block">To</label>
+                                                                        <label
+                                                                            class="text-[10px] text-slate-500 mb-1 block">To</label>
                                                                         <select x-model="laborEndYear"
                                                                             class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 cursor-pointer">
-                                                                            <option value="" disabled>Select year</option>
-                                                                            <template x-for="year in laborAvailableYears" :key="year">
-                                                                                <option :value="year" x-text="year"></option>
+                                                                            <option value="" disabled>Select year
+                                                                            </option>
+                                                                            <template
+                                                                                x-for="year in laborAvailableYears"
+                                                                                :key="year">
+                                                                                <option :value="year"
+                                                                                    x-text="year"></option>
                                                                             </template>
                                                                         </select>
                                                                     </div>
@@ -734,7 +890,8 @@
                                                 <canvas id="laborEmploymentChart"></canvas>
                                             </div>
                                             <!-- Mobile tip -->
-                                            <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">Tap "Expand" above for a full-screen view</p>
+                                            <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">
+                                                Tap "Expand" above for a full-screen view</p>
                                         </div>
 
                                         <!-- Compiled Indicators Chart -->
@@ -742,50 +899,70 @@
                                             x-show="activeChart === 'compiled' || activeChart === 'side'" x-transition>
                                             <div class="flex flex-col gap-3 mb-4">
                                                 <div>
-                                                    <h3 class="font-semibold text-slate-800 text-base">DAVAO REGION LABOR MARKET PERFORMANCE</h3>
-                                                    <p class="text-xs text-slate-500 mt-0.5">Key Employment Indicators</p>
+                                                    <h3 class="font-semibold text-slate-800 text-base">DAVAO REGION
+                                                        LABOR MARKET PERFORMANCE</h3>
+                                                    <p class="text-xs text-slate-500 mt-0.5">Key Employment Indicators
+                                                    </p>
                                                 </div>
                                                 <div class="flex items-center gap-2">
                                                     <button @click="openChartModal('unemployment')"
                                                         class="text-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
                                                                 d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                                                         </svg>
                                                         Expand
                                                     </button>
                                                     <div class="relative">
-                                                        <button @click="unempOpen = !unempOpen; if(unempOpen) positionDropdown($el, 'unemp-dropdown')"
+                                                        <button
+                                                            @click="unempOpen = !unempOpen; if(unempOpen) positionDropdown($el, 'unemp-dropdown')"
                                                             id="unemp-filter-btn"
                                                             class="text-xs bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-2 rounded-lg flex items-center gap-2 transition">
-                                                            <span x-text="unempYearRange" class="whitespace-nowrap"></span>
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                            <span x-text="unempYearRange"
+                                                                class="whitespace-nowrap"></span>
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                                viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                                             </svg>
                                                         </button>
                                                         <div x-show="unempOpen" @click.away="unempOpen = false"
                                                             x-transition id="unemp-dropdown" class="filter-dropdown">
                                                             <div class="mb-4">
-                                                                <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
+                                                                <label
+                                                                    class="block text-xs font-semibold text-slate-700 mb-3">Select
+                                                                    Year Range</label>
                                                                 <div class="flex items-center gap-3">
                                                                     <div class="flex-1">
-                                                                        <label class="text-[10px] text-slate-500 mb-1 block">From</label>
+                                                                        <label
+                                                                            class="text-[10px] text-slate-500 mb-1 block">From</label>
                                                                         <select x-model="unempStartYear"
                                                                             class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 cursor-pointer">
-                                                                            <option value="" disabled>Select year</option>
-                                                                            <template x-for="year in unempAvailableYears" :key="year">
-                                                                                <option :value="year" x-text="year"></option>
+                                                                            <option value="" disabled>Select year
+                                                                            </option>
+                                                                            <template
+                                                                                x-for="year in unempAvailableYears"
+                                                                                :key="year">
+                                                                                <option :value="year"
+                                                                                    x-text="year"></option>
                                                                             </template>
                                                                         </select>
                                                                     </div>
                                                                     <span class="text-slate-400 mt-5">—</span>
                                                                     <div class="flex-1">
-                                                                        <label class="text-[10px] text-slate-500 mb-1 block">To</label>
+                                                                        <label
+                                                                            class="text-[10px] text-slate-500 mb-1 block">To</label>
                                                                         <select x-model="unempEndYear"
                                                                             class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 cursor-pointer">
-                                                                            <option value="" disabled>Select year</option>
-                                                                            <template x-for="year in unempAvailableYears" :key="year">
-                                                                                <option :value="year" x-text="year"></option>
+                                                                            <option value="" disabled>Select year
+                                                                            </option>
+                                                                            <template
+                                                                                x-for="year in unempAvailableYears"
+                                                                                :key="year">
+                                                                                <option :value="year"
+                                                                                    x-text="year"></option>
                                                                             </template>
                                                                         </select>
                                                                     </div>
@@ -830,7 +1007,8 @@
                                                 <canvas id="unemploymentChart"></canvas>
                                             </div>
                                             <!-- Mobile tip -->
-                                            <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">Tap "Expand" above for a full-screen view</p>
+                                            <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">
+                                                Tap "Expand" above for a full-screen view</p>
                                         </div>
 
                                         <!-- Modal -->
@@ -866,7 +1044,8 @@
                                                         </button>
                                                     </div>
                                                     <div class="p-6">
-                                                        <div class="relative w-full" style="height: clamp(280px, 60vh, 600px);">
+                                                        <div class="relative w-full"
+                                                            style="height: clamp(280px, 60vh, 600px);">
                                                             <canvas id="expandedChart"></canvas>
                                                         </div>
                                                     </div>
@@ -874,7 +1053,7 @@
                                                         class="p-6 border-t border-gray-200 bg-slate-50 flex justify-between items-center">
                                                         <p class="text-xs text-slate-500">Press ESC or click outside to
                                                             close</p>
-                                                        
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -888,7 +1067,8 @@
                             <!-- Section divider -->
                             <div class="flex items-center gap-3 mb-3 px-1">
                                 <div class="flex-1 h-px bg-slate-300"></div>
-                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Data Table</span>
+                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Data
+                                    Table</span>
                                 <div class="flex-1 h-px bg-slate-300"></div>
                             </div>
                             <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
@@ -928,7 +1108,8 @@
                                         class="p-5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-end gap-3">
                                         <div class="flex flex-wrap items-center gap-2">
                                             <div class="relative" x-data="{ open: false }">
-                                                <button @click="open = !open; if(open) positionDropdown($el, 'table-year-dropdown')"
+                                                <button
+                                                    @click="open = !open; if(open) positionDropdown($el, 'table-year-dropdown')"
                                                     id="table-year-btn"
                                                     class="text-xs bg-white hover:bg-slate-50 border border-slate-300 px-4 py-2 rounded-lg flex items-center gap-2 transition shadow-sm">
                                                     <span x-text="displayRange"
@@ -940,28 +1121,35 @@
                                                     </svg>
                                                 </button>
                                                 <div x-show="open" @click.away="open = false" x-transition
-                                                    id="table-year-dropdown"
-                                                    class="filter-dropdown">
-                                                    <label class="block text-xs font-semibold text-slate-700 mb-3">Select Year Range</label>
+                                                    id="table-year-dropdown" class="filter-dropdown">
+                                                    <label
+                                                        class="block text-xs font-semibold text-slate-700 mb-3">Select
+                                                        Year Range</label>
                                                     <div class="flex items-center gap-3 mb-4">
                                                         <div class="flex-1">
-                                                            <label class="text-[10px] text-slate-500 mb-1 block">From</label>
+                                                            <label
+                                                                class="text-[10px] text-slate-500 mb-1 block">From</label>
                                                             <select x-model="startYear"
                                                                 class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 cursor-pointer">
                                                                 <option value="" disabled>Select year</option>
-                                                                <template x-for="year in availableYears" :key="year">
-                                                                    <option :value="year" x-text="year"></option>
+                                                                <template x-for="year in availableYears"
+                                                                    :key="year">
+                                                                    <option :value="year" x-text="year">
+                                                                    </option>
                                                                 </template>
                                                             </select>
                                                         </div>
                                                         <span class="text-slate-400 mt-5">—</span>
                                                         <div class="flex-1">
-                                                            <label class="text-[10px] text-slate-500 mb-1 block">To</label>
+                                                            <label
+                                                                class="text-[10px] text-slate-500 mb-1 block">To</label>
                                                             <select x-model="endYear"
                                                                 class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 cursor-pointer">
                                                                 <option value="" disabled>Select year</option>
-                                                                <template x-for="year in availableYears" :key="year">
-                                                                    <option :value="year" x-text="year"></option>
+                                                                <template x-for="year in availableYears"
+                                                                    :key="year">
+                                                                    <option :value="year" x-text="year">
+                                                                    </option>
                                                                 </template>
                                                             </select>
                                                         </div>
@@ -985,57 +1173,71 @@
                                         </div>
                                     </div>
                                     {{-- ── MOBILE CARD VIEW (shown on < 768px) ── --}}
-                                    <div class="emp-cards-view px-4 py-4 bg-gray-50 space-y-0" style="max-height: 500px; overflow-y: auto;">
-                                        <template x-for="stat in filteredData" :key="'card-'+stat.period">
+                                    <div class="emp-cards-view px-4 py-4 bg-gray-50 space-y-0"
+                                        style="max-height: 500px; overflow-y: auto;">
+                                        <template x-for="stat in filteredData" :key="'card-' + stat.period">
                                             <div class="emp-card">
                                                 {{-- Period --}}
                                                 <p class="emp-card-period">
                                                     <span x-text="formatPeriod(stat.period).month"></span>
-                                                    <span class="text-slate-500 text-sm font-semibold" x-text="formatPeriod(stat.period).year"></span>
+                                                    <span class="text-slate-500 text-sm font-semibold"
+                                                        x-text="formatPeriod(stat.period).year"></span>
                                                 </p>
                                                 {{-- Highlight: Employment Rate + Labor Force --}}
                                                 <div class="emp-card-highlight">
                                                     <div>
                                                         <p class="emp-card-highlight-label">Employment rate</p>
-                                                        <p class="emp-card-highlight-value" x-text="formatRate(stat.emp_rate)"></p>
+                                                        <p class="emp-card-highlight-value"
+                                                            x-text="formatRate(stat.emp_rate)"></p>
                                                     </div>
                                                     <div style="text-align:right">
                                                         <p class="emp-card-highlight-label">Labor force</p>
-                                                        <p style="font-size:18px;font-weight:700;color:#1e40af;margin:0" x-text="formatNumber(stat.labor_force)"></p>
+                                                        <p style="font-size:18px;font-weight:700;color:#1e40af;margin:0"
+                                                            x-text="formatNumber(stat.labor_force)"></p>
                                                     </div>
                                                 </div>
                                                 {{-- Primary stats: raw counts always visible --}}
                                                 <div class="emp-card-grid">
                                                     <div class="emp-card-stat">
                                                         <p class="emp-card-stat-label">Employed</p>
-                                                        <p class="emp-card-stat-value" x-text="formatNumber(stat.employed)"></p>
+                                                        <p class="emp-card-stat-value"
+                                                            x-text="formatNumber(stat.employed)"></p>
                                                     </div>
                                                     <div class="emp-card-stat">
                                                         <p class="emp-card-stat-label">Unemployed</p>
-                                                        <p class="emp-card-stat-value" x-text="stat.unemployed ?? '—'"></p>
+                                                        <p class="emp-card-stat-value"
+                                                            x-text="stat.unemployed ?? '—'"></p>
                                                     </div>
                                                 </div>
                                                 <button class="emp-card-expand-btn"
                                                     onclick="const extra = this.nextElementSibling; extra.classList.toggle('open'); this.querySelector('span').textContent = extra.classList.contains('open') ? 'Hide details' : 'More details'; this.querySelector('svg').style.transform = extra.classList.contains('open') ? 'rotate(180deg)' : '';">
-                                                    <svg style="width:12px;height:12px;transition:transform 0.2s" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                                    <svg style="width:12px;height:12px;transition:transform 0.2s"
+                                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
                                                     <span>More details</span>
                                                 </button>
                                                 <div class="emp-card-extra">
                                                     <div class="emp-card-stat">
                                                         <p class="emp-card-stat-label">Underemployed</p>
-                                                        <p class="emp-card-stat-value" x-text="stat.underemployed ?? '—'"></p>
+                                                        <p class="emp-card-stat-value"
+                                                            x-text="stat.underemployed ?? '—'"></p>
                                                     </div>
                                                     <div class="emp-card-stat">
                                                         <p class="emp-card-stat-label">Unemployment rate</p>
-                                                        <p class="emp-card-stat-value" x-text="formatRate(stat.unemp_rate)"></p>
+                                                        <p class="emp-card-stat-value"
+                                                            x-text="formatRate(stat.unemp_rate)"></p>
                                                     </div>
                                                     <div class="emp-card-stat">
                                                         <p class="emp-card-stat-label">Underemployment rate</p>
-                                                        <p class="emp-card-stat-value" x-text="formatRate(stat.underemp_rate)"></p>
+                                                        <p class="emp-card-stat-value"
+                                                            x-text="formatRate(stat.underemp_rate)"></p>
                                                     </div>
                                                     <div class="emp-card-stat">
                                                         <p class="emp-card-stat-label">Participation rate</p>
-                                                        <p class="emp-card-stat-value" x-text="formatRate(stat.particip_rate)"></p>
+                                                        <p class="emp-card-stat-value"
+                                                            x-text="formatRate(stat.particip_rate)"></p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1044,103 +1246,106 @@
 
                                     {{-- ── DESKTOP TABLE VIEW (hidden on < 768px) ── --}}
                                     <div class="emp-table-view">
-                                    <div class="table-scroll-hint items-center gap-2 px-5 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-600 font-medium">
-                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                                        </svg>
-                                        Scroll horizontally to see all columns
-                                    </div>
-                                    <!-- Table -->
-                                    <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
-                                        <table class="w-full min-w-[640px] text-sm border-collapse">
-                                            <thead class="sticky top-0">
-                                                <tr class="bg-slate-50 border-b border-slate-200">
-                                                    <th
-                                                        class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
-                                                        Period</th>
-                                                    <th
-                                                        class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
-                                                        Labor Force</th>
-                                                    <th
-                                                        class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
-                                                        Employed</th>
-                                                    <th
-                                                        class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
-                                                        Underemployed</th>
-                                                    <th
-                                                        class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
-                                                        Unemployed</th>
-                                                    <th
-                                                        class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
-                                                        Employment Rate</th>
-                                                    <th
-                                                        class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
-                                                        Underemployment Rate</th>
-                                                    <th
-                                                        class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
-                                                        Unemployment Rate</th>
-                                                    <th
-                                                        class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                                        Participation Rate</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <template x-for="stat in filteredData" :key="stat.period">
-                                                    <tr
-                                                        class="border-b border-slate-100 hover:bg-blue-50/30 transition-colors group">
-                                                        <td
-                                                            class="px-4 py-3 font-bold text-slate-900 text-center bg-slate-50/50 border-r border-slate-100">
-                                                            <div class="flex flex-col leading-tight">
-                                                                <span class="text-sm"
-                                                                    x-text="formatPeriod(stat.period).month"></span>
-                                                                <span class="text-xs text-slate-500 font-semibold"
-                                                                    x-text="formatPeriod(stat.period).year"></span>
-                                                            </div>
-                                                        </td>
-                                                        <td class="px-4 py-3 text-center text-slate-700 border-r border-slate-100"
-                                                            x-text="formatNumber(stat.labor_force)"></td>
-                                                        <td class="px-4 py-3 text-center text-slate-700 border-r border-slate-100"
-                                                            x-text="formatNumber(stat.employed)"></td>
-                                                        <td class="px-4 py-3 text-center text-slate-700 border-r border-slate-100"
-                                                            x-text="stat.underemployed"></td>
-                                                        <td class="px-4 py-3 text-center text-slate-700 border-r border-slate-100"
-                                                            x-text="stat.unemployed"></td>
-                                                        <td class="px-4 py-3 text-center text-base font-black bg-blue-50 text-blue-900 border-r border-blue-100"
-                                                            x-text="formatRate(stat.emp_rate)"></td>
-                                                        <td class="px-4 py-3 text-center text-slate-700 border-r border-slate-100"
-                                                            x-text="formatRate(stat.underemp_rate)"></td>
-                                                        <td class="px-4 py-3 text-center text-slate-700 border-r border-slate-100"
-                                                            x-text="formatRate(stat.unemp_rate)"></td>
-                                                        <td class="px-4 py-3 text-center text-slate-700"
-                                                            x-text="formatRate(stat.particip_rate)"></td>
+                                        <div
+                                            class="table-scroll-hint items-center gap-2 px-5 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-600 font-medium">
+                                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                            </svg>
+                                            Scroll horizontally to see all columns
+                                        </div>
+                                        <!-- Table -->
+                                        <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
+                                            <table class="w-full min-w-[640px] text-sm border-collapse">
+                                                <thead class="sticky top-0">
+                                                    <tr class="bg-slate-50 border-b border-slate-200">
+                                                        <th
+                                                            class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
+                                                            Period</th>
+                                                        <th
+                                                            class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
+                                                            Labor Force</th>
+                                                        <th
+                                                            class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
+                                                            Employed</th>
+                                                        <th
+                                                            class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
+                                                            Underemployed</th>
+                                                        <th
+                                                            class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
+                                                            Unemployed</th>
+                                                        <th
+                                                            class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
+                                                            Employment Rate</th>
+                                                        <th
+                                                            class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
+                                                            Underemployment Rate</th>
+                                                        <th
+                                                            class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200">
+                                                            Unemployment Rate</th>
+                                                        <th
+                                                            class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                                            Participation Rate</th>
                                                     </tr>
-                                                </template>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                </thead>
+                                                <tbody>
+                                                    <template x-for="stat in filteredData" :key="stat.period">
+                                                        <tr
+                                                            class="border-b border-slate-100 hover:bg-blue-50/30 transition-colors group">
+                                                            <td
+                                                                class="px-4 py-3 font-bold text-slate-900 text-center bg-slate-50/50 border-r border-slate-100">
+                                                                <div class="flex flex-col leading-tight">
+                                                                    <span class="text-sm"
+                                                                        x-text="formatPeriod(stat.period).month"></span>
+                                                                    <span class="text-xs text-slate-500 font-semibold"
+                                                                        x-text="formatPeriod(stat.period).year"></span>
+                                                                </div>
+                                                            </td>
+                                                            <td class="px-4 py-3 text-center text-slate-700 border-r border-slate-100"
+                                                                x-text="formatNumber(stat.labor_force)"></td>
+                                                            <td class="px-4 py-3 text-center text-slate-700 border-r border-slate-100"
+                                                                x-text="formatNumber(stat.employed)"></td>
+                                                            <td class="px-4 py-3 text-center text-slate-700 border-r border-slate-100"
+                                                                x-text="stat.underemployed"></td>
+                                                            <td class="px-4 py-3 text-center text-slate-700 border-r border-slate-100"
+                                                                x-text="stat.unemployed"></td>
+                                                            <td class="px-4 py-3 text-center text-base font-black bg-blue-50 text-blue-900 border-r border-blue-100"
+                                                                x-text="formatRate(stat.emp_rate)"></td>
+                                                            <td class="px-4 py-3 text-center text-slate-700 border-r border-slate-100"
+                                                                x-text="formatRate(stat.underemp_rate)"></td>
+                                                            <td class="px-4 py-3 text-center text-slate-700 border-r border-slate-100"
+                                                                x-text="formatRate(stat.unemp_rate)"></td>
+                                                            <td class="px-4 py-3 text-center text-slate-700"
+                                                                x-text="formatRate(stat.particip_rate)"></td>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>{{-- end emp-table-view --}}
 
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <!-- Footer -->
-                <div class="p-4 bg-slate-50 border-t border-slate-200 text-center">
-                    <p class="text-xs text-slate-500">Source: Philippine Statistics Authority; Labor
-                        Force Survey</p>
+                    <!-- Footer -->
+                    <div class="p-4 bg-slate-50 border-t border-slate-200 text-center">
+                        <p class="text-xs text-slate-500">Source: Philippine Statistics Authority; Labor
+                            Force Survey</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    {{-- Regional stats passed to JS --}}
-    <script>
-        window.AppData = {
-            regionalStats: @json($regionalStats ?? [])
-        };
-    </script>
-    @vite('resources/js/public/home.js')
-   
+        {{-- Regional stats passed to JS --}}
+        <script>
+            window.AppData = {
+                regionalStats: @json($regionalStats ?? [])
+            };
+        </script>
+        @vite('resources/js/public/home.js')
+
 
 </body>
 
