@@ -44,6 +44,36 @@ class DisciplineEnrollmentsPrivateRegion extends Seeder
             ],
         ];
 
+         $records = [
+            [
+                'academic_year'     => '2023-2024',
+                'province'          => 'Davao Region',
+                'institution_type'  => 'Private',
+'agriculture'       => 175,
+'architecture'      => 2286,
+'business'          => 26761,
+'criminal_justice'  => 9863,
+'education'         => 23931,
+'engineering'       => 9806,
+'arts'              => 579,
+'general'           => 4162,
+'home_economics'    => 37,
+'humanities'        => 286,
+'it'                => 4012,
+'law'               => 1822,
+'maritime'          => 3543,
+'mass_comm'         => 102,
+'mathematics'       => 100,
+'medical'           => 19697,
+'natural_science'   => 1028,
+'other_disciplines' => 1501,
+'religion'          => 232,
+'service_trades'    => 2378,
+'social_sciences'   => 2819,
+'grand_total'       => 115120,
+            ],
+        ];
+
         DB::table('discipline_enrollments')->insert($records);
     }
 }
