@@ -213,7 +213,7 @@
 
             {{-- Scroll down arrow --}}
             <a href="#peso-directory-content"
-                class="absolute bottom-2 sm:bottom-5 md:bottom-7 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-20"
+                class="absolute bottom-4 sm:bottom-5 md:bottom-7 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-20"
                 @click.prevent="document.getElementById('peso-directory-content').scrollIntoView({ behavior: 'smooth' })">
                 <div class="flex flex-col items-center">
                     <svg class="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor"
@@ -402,7 +402,7 @@
         </script>
 
 
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden" x-data="pesoDirectory()">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200" x-data="pesoDirectory()">
 
             {{-- Directory card top bar --}}
             <div class="flex flex-wrap items-center gap-3 px-4 sm:px-6 md:px-8 py-4 border-b border-slate-100"
@@ -425,22 +425,41 @@
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
                         1 · Select Province
                     </label>
-                    <div class="relative w-full">
-                        <select @change="selectProvince($event.target.value)" :value="province"
-                            class="w-full appearance-none bg-white border-2 rounded-xl px-4 py-3 pr-10 text-sm font-semibold outline-none transition-all cursor-pointer"
-                            :class="province ? 'border-orange-400 shadow-[0_0_0_3px_rgba(251,146,60,0.15)] text-slate-800' :
-                                'border-slate-200 text-slate-400 hover:border-slate-300'">
-                                <option value="" disabled>Select Province</option>
-                            @foreach ($pesoProvinceKeys as $prov)
-                                <option value="{{ $prov }}">{{ $prov }}</option>
-                            @endforeach
-                        </select>
-                        <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                    d="M19 9l-7 7-7-7" />
+                    {{-- Custom dropdown: avoids overflow-clipping & off-screen issues on mobile --}}
+                    <div class="relative w-full" x-data="{ open: false }" @keydown.escape.window="open = false">
+                        {{-- Trigger button --}}
+                        <button type="button"
+                            @click="open = !open"
+                            class="w-full flex items-center justify-between bg-white border-2 rounded-xl px-4 py-3 pr-4 text-sm font-semibold outline-none transition-all cursor-pointer text-left"
+                            :class="province ? 'border-orange-400 shadow-[0_0_0_3px_rgba(251,146,60,0.15)] text-slate-800' : 'border-slate-200 text-slate-400 hover:border-slate-300'">
+                            <span x-text="province || 'Select Province'"></span>
+                            <svg class="w-4 h-4 flex-shrink-0 transition-transform duration-200 text-slate-400"
+                                :class="open ? 'rotate-180' : ''"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
                             </svg>
-                        </span>
+                        </button>
+
+                        {{-- Dropdown panel --}}
+                        <div x-show="open"
+                            @click.outside="open = false"
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 -translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 -translate-y-1"
+                            x-cloak
+                            style="position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:9999; background:white; border:2px solid #e2e8f0; border-radius:0.75rem; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:min(260px, 45vh); overflow-y:auto;">
+                            @foreach ($pesoProvinceKeys as $prov)
+                                <button type="button"
+                                    @click="selectProvince('{{ $prov }}'); open = false"
+                                    class="w-full text-left px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-orange-50 hover:text-orange-600"
+                                    :class="province === '{{ $prov }}' ? 'bg-orange-50 text-orange-600' : 'text-slate-700'">
+                                    {{ $prov }}
+                                </button>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
 

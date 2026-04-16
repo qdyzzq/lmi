@@ -199,6 +199,8 @@
                         <input type="text" name="company_name" value="{{ $submission->company_name }}" 
                                data-original="{{ $submission->company_name }}"
                                data-label="Company Name"
+                               data-required="true"
+                               data-maxlength="255"
                                class="editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" disabled>
                     </td>
                 </tr>
@@ -208,6 +210,8 @@
                         <input type="text" name="respondent_name" value="{{ $submission->respondent_name }}" 
                                data-original="{{ $submission->respondent_name }}"
                                data-label="Respondent"
+                               data-required="true"
+                               data-maxlength="255"
                                class="editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" disabled>
                     </td>
                 </tr>
@@ -217,6 +221,8 @@
                         <input type="text" name="position" value="{{ $submission->position }}" 
                                data-original="{{ $submission->position }}"
                                data-label="Position"
+                               data-required="true"
+                               data-maxlength="255"
                                class="editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" disabled>
                     </td>
                 </tr>
@@ -293,6 +299,8 @@
                                             value="{{ $submission->contact_type !== 'telephone' ? $submission->contact_number : '' }}"
                                             data-original="{{ $submission->contact_number }}"
                                             data-label="Contact Number"
+                                            data-required="true"
+                                            data-mobile-digits="10"
                                             inputmode="numeric"
                                             placeholder="9123456789"
                                             oninput="this.value = this.value.replace(/[^0-9]/g, ''); syncAdminCarrier('{{ $submission->id }}')"
@@ -314,6 +322,8 @@
                                         value="{{ $submission->contact_type === 'telephone' ? $submission->contact_number : '' }}"
                                         data-original="{{ $submission->contact_number }}"
                                         data-label="Contact Number"
+                                        data-required="true"
+                                        data-telephone="true"
                                         maxlength="12"
                                         inputmode="numeric"
                                         autocomplete="off"
@@ -350,6 +360,8 @@
                         <input type="email" name="email" value="{{ $submission->email }}" 
                                data-original="{{ $submission->email }}"
                                data-label="Email"
+                               data-required="true"
+                               data-email="true"
                                class="editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" disabled>
                     </td>
                 </tr>
@@ -438,6 +450,8 @@
                             <td class="px-6 py-4">
                                 <input type="text" name="roles[{{ $index }}][job_title]" 
                                        value="{{ $role->job_title }}" 
+                                       data-required="true"
+                                       data-label="Job Title"
                                        class="role-editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" disabled>
                             </td>
                         </tr>
@@ -479,6 +493,9 @@
                                 @endphp
 
                                 <select name="roles[{{ $index }}][salary_range]"
+                                        data-required="true"
+                                        data-label="Salary Range"
+                                        data-original="{{ $salaryDropdownVal }}"
                                         class="role-editable-field salary-range-select-{{ $index }} w-full border border-slate-300 rounded px-3 py-2 text-sm"
                                         onchange="handleAdminSalaryChange({{ $index }}, this.value)"
                                         disabled>
@@ -499,8 +516,11 @@
                                                class="below-30k-exact-{{ $index }} role-editable-field w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-sm"
                                                placeholder="e.g. 25,000"
                                                value="{{ $below30kVal }}"
+                                               data-original="{{ $below30kVal }}"
                                                inputmode="numeric"
                                                name="roles[{{ $index }}][below_30k_salary]"
+                                               data-label="Exact Salary (below ₱30,000)"
+                                               data-required-when-below30k="{{ $index }}"
                                                oninput="formatAdminSalaryInput(this)"
                                                disabled>
                                     </div>
@@ -572,6 +592,7 @@
                                                            class="technical-skills-input-{{ $index }}"
                                                            name="roles[{{ $index }}][technical_skills_missing]"
                                                            value="{{ implode(', ', array_filter(array_map('trim', $techSkills))) }}"
+                                                           data-label="Technical Skills Missing"
                                                            data-original="{{ implode(', ', array_filter(array_map('trim', $techSkills))) }}">
                                                 </div>
                                             </div>
@@ -614,6 +635,7 @@
                                                            class="soft-skills-input-{{ $index }}"
                                                            name="roles[{{ $index }}][soft_skills_missing]"
                                                            value="{{ implode(', ', array_filter(array_map('trim', $softSkills))) }}"
+                                                           data-label="Soft Skills Missing"
                                                            data-original="{{ implode(', ', array_filter(array_map('trim', $softSkills))) }}">
                                                 </div>
                                             </div>
@@ -676,69 +698,129 @@
     @endphp
     
     @if($firstDiagnosis)
-        <form id="form-diagnosis-{{ $submission->id }}" action="{{ route('admin.lmi-submissions.update-diagnosis', $submission->id) }}" method="POST" onsubmit="return handleFormSubmit(event, this, 'diagnosis')">
+        <form id="form-diagnosis-{{ $submission->id }}" action="{{ route('admin.lmi-submissions.update-diagnosis', $submission->id) }}" method="POST"
+              data-validate-rejection-group="true"
+              data-validate-coordination-group="true"
+              onsubmit="return handleFormSubmit(event, this, 'diagnosis')">
             @csrf
             @method('PUT')
             
             <input type="hidden" name="diagnosis_id" value="{{ $firstDiagnosis->id }}">
             
+            @php
+                $rejectionReasons = is_array($firstDiagnosis->rejection_reasons) ? $firstDiagnosis->rejection_reasons : [];
+                $coordFreq = $firstDiagnosis->coordination_frequency;
+                $coordOptions = ['Never', 'Rarely', 'Occasionally', 'Frequently'];
+            @endphp
             <table class="w-full">
                 <tbody class="divide-y">
                     <tr>
-                        <td class="px-6 py-4 font-medium align-top w-1/3">Common Rejection Reasons</td>
+                        <td class="px-6 py-4 font-medium align-top w-1/3">
+                            Common Rejection Reasons
+                            <div class="text-xs text-slate-400 font-normal mt-0.5">Check all that apply</div>
+                        </td>
                         <td class="px-6 py-4">
                             <div class="space-y-2">
-                                @php
-                                    $rejectionReasons = is_array($firstDiagnosis->rejection_reasons) ? $firstDiagnosis->rejection_reasons : [];
-                                @endphp
-                                <label class="flex items-center gap-2">
-                                    <input type="checkbox" name="rejection_reasons[]" value="Lack of practical / hands-on experience" 
+                                {{-- Lack of practical --}}
+                                <label class="flex items-start gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer transition hover:bg-slate-50 admin-diagnosis-cb-label {{ in_array('Lack of practical / hands-on experience', $rejectionReasons) ? 'border-teal-400 bg-teal-50' : '' }}">
+                                    <input type="checkbox" name="rejection_reasons[]" value="Lack of practical / hands-on experience"
                                            {{ in_array('Lack of practical / hands-on experience', $rejectionReasons) ? 'checked' : '' }}
-                                           class="diagnosis-editable-field" disabled>
-                                    <span class="text-sm">Lack of practical / hands-on experience</span>
-                                </label>
-                                <label class="flex items-center gap-2">
-                                    <input type="checkbox" name="rejection_reasons[]" value="Skills are outdated" 
-                                           {{ in_array('Skills are outdated', $rejectionReasons) ? 'checked' : '' }}
-                                           class="diagnosis-editable-field" disabled>
-                                    <span class="text-sm">Skills are outdated</span>
-                                </label>
-                                <label class="flex items-center gap-2">
-                                    <input type="checkbox" name="rejection_reasons[]" value="Poor communication skills" 
-                                           {{ in_array('Poor communication skills', $rejectionReasons) ? 'checked' : '' }}
-                                           class="diagnosis-editable-field" disabled>
-                                    <span class="text-sm">Poor communication skills</span>
-                                </label>
-                                <label class="flex items-center gap-2">
-                                    <input type="checkbox" name="rejection_reasons[]" value="Low job readiness / poor interview performance" 
-                                           {{ in_array('Low job readiness / poor interview performance', $rejectionReasons) ? 'checked' : '' }}
-                                           class="diagnosis-editable-field" disabled>
-                                    <span class="text-sm">Low job readiness / poor interview performance</span>
-                                </label>
-                                <label class="flex items-center gap-2">
-                                    <input type="checkbox" name="rejection_reasons[]" value="Other" 
-                                           {{ in_array('Other', $rejectionReasons) ? 'checked' : '' }}
-                                           class="diagnosis-editable-field" disabled>
-                                    <span class="text-sm">Other (please specify)</span>
-                                </label>
-                                
-                                @if($firstDiagnosis->rejection_reasons_other)
-                                    <div class="ml-6 mt-2">
-                                        <input type="text" name="rejection_reasons_other" 
-                                               value="{{ $firstDiagnosis->rejection_reasons_other }}" 
-                                               class="diagnosis-editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" 
-                                               placeholder="Please specify" disabled>
+                                           data-original="{{ in_array('Lack of practical / hands-on experience', $rejectionReasons) ? '1' : '0' }}"
+                                           data-label="Rejection: Lack of practical experience"
+                                           class="diagnosis-editable-field admin-diagnosis-cb mt-0.5" disabled>
+                                    <div>
+                                        <div class="text-sm font-medium">Lack of practical / hands-on experience</div>
+                                        <div class="text-xs text-slate-500">Cannot apply theory to real work; requires supervision</div>
                                     </div>
-                                @endif
+                                </label>
+                                {{-- Skills outdated --}}
+                                <label class="flex items-start gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer transition hover:bg-slate-50 admin-diagnosis-cb-label {{ in_array('Skills are outdated', $rejectionReasons) ? 'border-teal-400 bg-teal-50' : '' }}">
+                                    <input type="checkbox" name="rejection_reasons[]" value="Skills are outdated"
+                                           {{ in_array('Skills are outdated', $rejectionReasons) ? 'checked' : '' }}
+                                           data-original="{{ in_array('Skills are outdated', $rejectionReasons) ? '1' : '0' }}"
+                                           data-label="Rejection: Skills are outdated"
+                                           class="diagnosis-editable-field admin-diagnosis-cb mt-0.5" disabled>
+                                    <div>
+                                        <div class="text-sm font-medium">Skills are outdated</div>
+                                        <div class="text-xs text-slate-500">Training received does not match current tools, systems, or industry practices</div>
+                                    </div>
+                                </label>
+                                {{-- Poor communication --}}
+                                <label class="flex items-start gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer transition hover:bg-slate-50 admin-diagnosis-cb-label {{ in_array('Poor communication skills', $rejectionReasons) ? 'border-teal-400 bg-teal-50' : '' }}">
+                                    <input type="checkbox" name="rejection_reasons[]" value="Poor communication skills"
+                                           {{ in_array('Poor communication skills', $rejectionReasons) ? 'checked' : '' }}
+                                           data-original="{{ in_array('Poor communication skills', $rejectionReasons) ? '1' : '0' }}"
+                                           data-label="Rejection: Poor communication skills"
+                                           class="diagnosis-editable-field admin-diagnosis-cb mt-0.5" disabled>
+                                    <div>
+                                        <div class="text-sm font-medium">Poor communication skills</div>
+                                        <div class="text-xs text-slate-500">Oral, written, presentation, or cross-cultural communication issues</div>
+                                    </div>
+                                </label>
+                                {{-- Low job readiness --}}
+                                <label class="flex items-start gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer transition hover:bg-slate-50 admin-diagnosis-cb-label {{ in_array('Low job readiness / poor interview performance', $rejectionReasons) ? 'border-teal-400 bg-teal-50' : '' }}">
+                                    <input type="checkbox" name="rejection_reasons[]" value="Low job readiness / poor interview performance"
+                                           {{ in_array('Low job readiness / poor interview performance', $rejectionReasons) ? 'checked' : '' }}
+                                           data-original="{{ in_array('Low job readiness / poor interview performance', $rejectionReasons) ? '1' : '0' }}"
+                                           data-label="Rejection: Low job readiness / poor interview performance"
+                                           class="diagnosis-editable-field admin-diagnosis-cb mt-0.5" disabled>
+                                    <div>
+                                        <div class="text-sm font-medium">Low job readiness / poor interview performance</div>
+                                        <div class="text-xs text-slate-500">Cannot demonstrate readiness during recruitment; fails assessments; lacks workplace etiquette</div>
+                                    </div>
+                                </label>
+                                {{-- Other --}}
+                                <label class="flex items-start gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer transition hover:bg-slate-50 admin-diagnosis-cb-label {{ in_array('Other', $rejectionReasons) ? 'border-teal-400 bg-teal-50' : '' }}">
+                                    <input type="checkbox" name="rejection_reasons[]" value="Other"
+                                           {{ in_array('Other', $rejectionReasons) ? 'checked' : '' }}
+                                           data-original="{{ in_array('Other', $rejectionReasons) ? '1' : '0' }}"
+                                           data-label="Rejection: Other"
+                                           class="diagnosis-editable-field admin-diagnosis-other-checkbox admin-diagnosis-cb mt-0.5" disabled>
+                                    <div class="text-sm font-medium">Other (please specify)</div>
+                                </label>
+                                <div class="admin-diagnosis-other-input ml-4 {{ in_array('Other', $rejectionReasons) ? '' : 'hidden' }}">
+                                    <input type="text" name="rejection_reasons_other"
+                                           value="{{ $firstDiagnosis->rejection_reasons_other }}"
+                                           data-original="{{ $firstDiagnosis->rejection_reasons_other }}"
+                                           data-label="Rejection: Other (specify)"
+                                           data-required-when-checked=".admin-diagnosis-other-checkbox"
+                                           class="diagnosis-editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm"
+                                           placeholder="Please specify" disabled>
+                                </div>
                             </div>
                         </td>
                     </tr>
                     <tr>
-                        <td class="px-6 py-4 font-medium">Coordination with Schools</td>
+                        <td class="px-6 py-4 font-medium align-top">
+                            Coordination with Schools
+                            <div class="text-xs text-slate-400 font-normal mt-0.5">Select one</div>
+                        </td>
                         <td class="px-6 py-4">
-                            <input type="text" name="coordination_frequency" 
-                                   value="{{ $firstDiagnosis->coordination_frequency === 'Other' && $firstDiagnosis->coordination_frequency_other ? $firstDiagnosis->coordination_frequency_other : $firstDiagnosis->coordination_frequency }}" 
-                                   class="diagnosis-editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" disabled>
+                            <div class="space-y-2">
+                                @php
+                                    $coordDescriptions = [
+                                        'Never'        => '',
+                                        'Rarely'       => 'Only when invited to graduations/events',
+                                        'Occasionally' => 'During OJT placement',
+                                        'Frequently'   => 'We sit on advisory boards/curriculum reviews',
+                                    ];
+                                @endphp
+                                @foreach($coordOptions as $opt)
+                                <label class="flex items-start gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer transition hover:bg-slate-50 admin-diagnosis-radio-label {{ $coordFreq === $opt ? 'border-teal-400 bg-teal-50' : '' }}">
+                                    <input type="radio" name="coordination_frequency" value="{{ $opt }}"
+                                           {{ $coordFreq === $opt ? 'checked' : '' }}
+                                           data-original="{{ $coordFreq === $opt ? '1' : '0' }}"
+                                           data-label="Coordination Frequency: {{ $opt }}"
+                                           class="diagnosis-editable-field admin-diagnosis-radio mt-0.5" disabled>
+                                    <div>
+                                        <div class="text-sm font-medium">{{ $opt }}</div>
+                                        @if($coordDescriptions[$opt])
+                                            <div class="text-xs text-slate-500">{{ $coordDescriptions[$opt] }}</div>
+                                        @endif
+                                    </div>
+                                </label>
+                                @endforeach
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -773,7 +855,9 @@
 <!-- Engagement Tab -->
 <div class="tab-content" id="engagement-{{ $submission->id }}">
     @if($submission->engagement)
-        <form id="form-engagement-{{ $submission->id }}" action="{{ route('admin.lmi-submissions.update-engagement', $submission->id) }}" method="POST" onsubmit="return handleFormSubmit(event, this, 'engagement')">
+        <form id="form-engagement-{{ $submission->id }}" action="{{ route('admin.lmi-submissions.update-engagement', $submission->id) }}" method="POST"
+              data-validate-lmi-features-group="true"
+              onsubmit="return handleFormSubmit(event, this, 'engagement')">
             @csrf
             @method('PUT')
             
@@ -782,7 +866,10 @@
             <table class="w-full">
                 <tbody class="divide-y">
                     <tr>
-                        <td class="px-6 py-4 font-medium align-top w-1/3">LMI Features Interested In</td>
+                        <td class="px-6 py-4 font-medium align-top w-1/3">
+                            LMI Features Interested In
+                            <div class="text-xs text-slate-400 font-normal mt-0.5">Select top 2</div>
+                        </td>
                         <td class="px-6 py-4">
                             <div class="space-y-2">
                                 @php
@@ -801,38 +888,50 @@
                                     }
                                     $hasOther = in_array('Other', $lmiFeatures) || !empty($lmiOtherValue);
                                 @endphp
-                                <label class="flex items-center gap-2">
-                                    <input type="checkbox" name="lmi_features[]" value="Viewing the supply of graduates" 
+                                <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer transition hover:bg-slate-50 admin-engagement-cb-label {{ in_array('Viewing the supply of graduates', $lmiFeatures) ? 'border-teal-400 bg-teal-50' : '' }}">
+                                    <input type="checkbox" name="lmi_features[]" value="Viewing the supply of graduates"
                                            {{ in_array('Viewing the supply of graduates', $lmiFeatures) ? 'checked' : '' }}
-                                           class="engagement-editable-field" disabled>
+                                           data-original="{{ in_array('Viewing the supply of graduates', $lmiFeatures) ? '1' : '0' }}"
+                                           data-label="LMI Feature: Viewing supply of graduates"
+                                           class="engagement-editable-field admin-lmi-top2-cb" disabled>
                                     <span class="text-sm">Viewing the supply of graduates (e.g., "How many IT grads will graduate next year?")</span>
                                 </label>
-                                <label class="flex items-center gap-2">
-                                    <input type="checkbox" name="lmi_features[]" value="A channel to submit real-time feedback" 
+                                <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer transition hover:bg-slate-50 admin-engagement-cb-label {{ in_array('A channel to submit real-time feedback', $lmiFeatures) ? 'border-teal-400 bg-teal-50' : '' }}">
+                                    <input type="checkbox" name="lmi_features[]" value="A channel to submit real-time feedback"
                                            {{ in_array('A channel to submit real-time feedback', $lmiFeatures) ? 'checked' : '' }}
-                                           class="engagement-editable-field" disabled>
+                                           data-original="{{ in_array('A channel to submit real-time feedback', $lmiFeatures) ? '1' : '0' }}"
+                                           data-label="LMI Feature: Real-time feedback channel"
+                                           class="engagement-editable-field admin-lmi-top2-cb" disabled>
                                     <span class="text-sm">A channel to submit real-time feedback on curriculum quality</span>
                                 </label>
-                                <label class="flex items-center gap-2">
-                                    <input type="checkbox" name="lmi_features[]" value="A directory of job placement offices" 
+                                <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer transition hover:bg-slate-50 admin-engagement-cb-label {{ in_array('A directory of job placement offices', $lmiFeatures) ? 'border-teal-400 bg-teal-50' : '' }}">
+                                    <input type="checkbox" name="lmi_features[]" value="A directory of job placement offices"
                                            {{ in_array('A directory of job placement offices', $lmiFeatures) ? 'checked' : '' }}
-                                           class="engagement-editable-field" disabled>
+                                           data-original="{{ in_array('A directory of job placement offices', $lmiFeatures) ? '1' : '0' }}"
+                                           data-label="LMI Feature: Directory of job placement offices"
+                                           class="engagement-editable-field admin-lmi-top2-cb" disabled>
                                     <span class="text-sm">A directory of job placement offices and Public Employment offices (PESOs)</span>
                                 </label>
                                 <div>
-                                    <label class="flex items-center gap-2">
-                                        <input type="checkbox" name="lmi_features[]" value="Other" 
+                                    <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer transition hover:bg-slate-50 admin-engagement-cb-label {{ $hasOther ? 'border-teal-400 bg-teal-50' : '' }}">
+                                        <input type="checkbox" name="lmi_features[]" value="Other"
                                                {{ $hasOther ? 'checked' : '' }}
-                                               class="engagement-editable-field admin-lmi-other-checkbox" disabled>
+                                               data-original="{{ $hasOther ? '1' : '0' }}"
+                                               data-label="LMI Feature: Other"
+                                               class="engagement-editable-field admin-lmi-other-checkbox admin-lmi-top2-cb" disabled>
                                         <span class="text-sm">Other (please specify)</span>
                                     </label>
-                                    <div class="admin-lmi-other-input ml-6 mt-1 {{ $hasOther ? '' : 'hidden' }}">
+                                    <div class="admin-lmi-other-input ml-4 mt-1 {{ $hasOther ? '' : 'hidden' }}">
                                         <input type="text" name="lmi_features_other"
                                                value="{{ $lmiOtherValue }}"
+                                               data-original="{{ $lmiOtherValue }}"
+                                               data-label="LMI Feature: Other (specify)"
+                                               data-required-when-checked=".admin-lmi-other-checkbox"
                                                class="engagement-editable-field w-full border border-slate-300 rounded px-3 py-1.5 text-sm"
                                                placeholder="Please specify" disabled>
                                     </div>
                                 </div>
+                                <p class="admin-lmi-top2-warning hidden text-xs text-red-500 mt-1">You can only select up to 2 options.</p>
                             </div>
                         </td>
                     </tr>
@@ -840,6 +939,9 @@
                         <td class="px-6 py-4 font-medium align-top">Specific Inputs Needed</td>
                         <td class="px-6 py-4">
                             <textarea name="specific_inputs" rows="4" 
+                                      data-original="{{ $submission->engagement->specific_inputs }}"
+                                      data-label="Specific Inputs Needed"
+                                      data-required="true"
                                       class="engagement-editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" 
                                       disabled>{{ $submission->engagement->specific_inputs }}</textarea>
                         </td>

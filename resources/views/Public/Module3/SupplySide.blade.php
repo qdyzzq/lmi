@@ -281,7 +281,7 @@
         </div>
             
             <!-- Scroll Indicator -->
-            <div class="absolute bottom-4 sm:bottom-16 left-1/2 transform -translate-x-1/2 z-20 scroll-indicator animate-bounce">
+            <div class="absolute bottom-6 sm:bottom-16 left-1/2 transform -translate-x-1/2 z-20 scroll-indicator animate-bounce">
                 <a href="#kpi-section"
                    class="flex flex-col items-center cursor-pointer group"
                    @click.prevent="() => {

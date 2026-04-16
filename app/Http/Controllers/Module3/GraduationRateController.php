@@ -12,7 +12,13 @@ class GraduationRateController extends Controller
 {
     /**
      * Get enrollment data for a specific academic year
-     */
+     */ 
+
+    public function showForm()
+    {
+        return view('admin.Module3.graduateForm');
+    }
+    
     public function getEnrollmentData($academicYear)
     {
         try {
@@ -205,7 +211,7 @@ class GraduationRateController extends Controller
     public function checkYear(string $graduateYear): \Illuminate\Http\JsonResponse
     {
         // Look for a real saved record (not a computed default)
-        $record = \App\Models\GraduationRate::where('graduate_year', $graduateYear)->first();
+        $record = \App\Models\Module3\GraduationRate::where('graduate_year', $graduateYear)->first();
 
         if (!$record) {
             // No saved record — return 404 so the blade falls through to loadNewYear()

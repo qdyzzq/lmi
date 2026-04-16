@@ -716,8 +716,16 @@ textarea[name="specific_inputs"] {
                 <div class="max-w-7xl mx-auto px-4 md:px-6 space-y-6" id="job-market-section">
                         
                         <div class="bg-slate-700 rounded-xl p-6 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-lg">
-                            <div class="flex items-start gap-4">
-                                <div class="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">🤝</div>
+                        <div class="flex items-start gap-4">
+                            <div class="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m11 17 2 2a1 1 0 1 0 3-3"/>
+                                    <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/>
+                                    <path d="m21 3 1 11h-2"/>
+                                    <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/>
+                                    <path d="M3 4h8"/>
+                                </svg>
+                            </div>
                                 <div>   
                                     <h2 class="text-lg font-bold">Help us map the future of Davao's workforce.</h2>
                                     <p class="text-sm text-slate-400 max-w-xl">Official data lags behind real-time market needs. Help us bridge the gap by identifying hard-to-fill roles and critical skill shortages.</p>

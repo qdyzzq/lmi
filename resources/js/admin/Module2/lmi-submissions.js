@@ -132,6 +132,23 @@ function switchTab(button, tabId) {
 function _getCard(btn) { return btn.closest('.admin-review-card'); }
 function _getForm(btn, prefix) { return _getCard(btn).querySelector('[id^="' + prefix + '"]'); }
 
+// ─── Review-button lock helpers ─────────────────────────────────────────────
+// While a form is in edit mode the "Mark as Reviewed" button for that tab
+// must be disabled so admins cannot mark a tab reviewed mid-edit.
+// tabKey: 'company' | 'roles' | 'impact' | 'engagement'
+function _setReviewBtnLocked(card, tabKey, locked) {
+    // submissionId is encoded in the card's data-submission-id attribute, or
+    // we fall back to scanning for any matching button inside the card.
+    const btn = card.querySelector('[id^="tab-review-btn-' + tabKey + '-"]');
+    if (!btn) return;
+    btn.disabled = locked;
+    if (locked) {
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+    } else {
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+}
+
 // Company Profile Edit
 function toggleEdit(button) {
     const card = _getCard(button);
@@ -171,11 +188,14 @@ function toggleEdit(button) {
             mobileInput.dataset.original = rawValue;
         }
     });
+
+    _setReviewBtnLocked(card, 'company', true);
 }
 
 function cancelEdit(button) {
     const card = _getCard(button);
     const form = _getForm(button, 'form-company-');
+    _adminClearAllErrors(form);
     // Restore all fields to their data-original values so the next edit
     // session starts clean. form.reset() is NOT used because it restores
     // to the HTML value attribute, which may differ from data-original
@@ -199,6 +219,8 @@ function cancelEdit(button) {
     const editControls = form.querySelector('.contact-edit-controls');
     if (viewDisplay)  viewDisplay.classList.remove('hidden');
     if (editControls) editControls.classList.add('hidden');
+
+    _setReviewBtnLocked(card, 'company', false);
 }
 
 // Roles Edit
@@ -286,10 +308,17 @@ function initRolesTagSystems(form) {
                     techDetails.classList.remove('hidden');
                     label.classList.add('border-teal-500', 'bg-teal-50');
                     label.classList.remove('border-gray-200', 'hover:bg-gray-50');
+                    // Restore hidden input value from currently rendered tags
+                    if (techHidden && techTagsContainer) {
+                        const existingTags = [...techTagsContainer.querySelectorAll('[data-tag]')].map(el => el.getAttribute('data-tag'));
+                        techHidden.value = existingTags.join(', ');
+                    }
                 } else {
                     techDetails.classList.add('hidden');
                     label.classList.remove('border-teal-500', 'bg-teal-50');
                     label.classList.add('border-gray-200', 'hover:bg-gray-50');
+                    // Clear the hidden input so change detection sees the diff
+                    if (techHidden) techHidden.value = '';
                 }
             });
         }
@@ -313,10 +342,17 @@ function initRolesTagSystems(form) {
                     softDetails.classList.remove('hidden');
                     label.classList.add('border-teal-500', 'bg-teal-50');
                     label.classList.remove('border-gray-200', 'hover:bg-gray-50');
+                    // Restore hidden input value from currently rendered tags
+                    if (softHidden && softTagsContainer) {
+                        const existingTags = [...softTagsContainer.querySelectorAll('[data-tag]')].map(el => el.getAttribute('data-tag'));
+                        softHidden.value = existingTags.join(', ');
+                    }
                 } else {
                     softDetails.classList.add('hidden');
                     label.classList.remove('border-teal-500', 'bg-teal-50');
                     label.classList.add('border-gray-200', 'hover:bg-gray-50');
+                    // Clear the hidden input so change detection sees the diff
+                    if (softHidden) softHidden.value = '';
                 }
             });
         }
@@ -346,11 +382,14 @@ function toggleRolesEdit(button) {
     card.querySelector('.edit-roles-btn').classList.add('hidden');
     card.querySelector('.save-roles-btn').classList.remove('hidden');
     card.querySelector('.cancel-roles-btn').classList.remove('hidden');
+
+    _setReviewBtnLocked(card, 'roles', true);
 }
 
 function cancelRolesEdit(button) {
     const card = _getCard(button);
     const form = _getForm(button, 'form-roles-');
+    _adminClearAllErrors(form);
 
     // 1. Restore plain text/select fields from data-original
     form.querySelectorAll('[data-original]').forEach(f => {
@@ -361,6 +400,27 @@ function cancelRolesEdit(button) {
     // 2. Restore checkboxes & radios to their original checked state
     form.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(cb => {
         cb.checked = cb.defaultChecked;
+    });
+
+    // 2b. Sync below-30k container visibility to the restored salary select value
+    const allClassesForSalary = [...form.querySelectorAll('[class]')].flatMap(el => [...el.classList]);
+    const salaryIndices = new Set(
+        allClassesForSalary
+            .map(c => c.match(/^salary-range-select-(\d+)$/))
+            .filter(Boolean)
+            .map(m => m[1])
+    );
+    salaryIndices.forEach(i => {
+        const salarySelect       = form.querySelector(`.salary-range-select-${i}`);
+        const below30kContainer  = form.querySelector(`.below-30k-container-${i}`);
+        const below30kInput      = form.querySelector(`.below-30k-exact-${i}`);
+        if (!salarySelect || !below30kContainer) return;
+        if (salarySelect.value === 'Below ₱30,000') {
+            below30kContainer.classList.remove('hidden');
+        } else {
+            below30kContainer.classList.add('hidden');
+            if (below30kInput) below30kInput.value = below30kInput.dataset.original ?? '';
+        }
     });
 
     // 3. Re-render skill tag chips from data-original on the hidden inputs,
@@ -430,6 +490,8 @@ function cancelRolesEdit(button) {
     card.querySelector('.edit-roles-btn').classList.remove('hidden');
     card.querySelector('.save-roles-btn').classList.add('hidden');
     card.querySelector('.cancel-roles-btn').classList.add('hidden');
+
+    _setReviewBtnLocked(card, 'roles', false);
 }
 
 // Diagnosis Edit
@@ -440,15 +502,70 @@ function toggleDiagnosisEdit(button) {
     card.querySelector('.edit-diagnosis-btn').classList.add('hidden');
     card.querySelector('.save-diagnosis-btn').classList.remove('hidden');
     card.querySelector('.cancel-diagnosis-btn').classList.remove('hidden');
+
+    // ── Card highlight for checkboxes ──────────────────────────────────────
+    form.querySelectorAll('.admin-diagnosis-cb').forEach(cb => {
+        _diagnosisSetCbHighlight(cb);
+        cb.addEventListener('change', function () { _diagnosisSetCbHighlight(this); });
+    });
+
+    // ── Card highlight for radio buttons (select one) ─────────────────────
+    form.querySelectorAll('.admin-diagnosis-radio').forEach(radio => {
+        _diagnosisSetRadioHighlight(form, radio.value, radio.checked);
+        radio.addEventListener('change', function () {
+            // Clear all, then highlight only the selected one
+            form.querySelectorAll('.admin-diagnosis-radio').forEach(r => {
+                const lbl = r.closest('.admin-diagnosis-radio-label');
+                if (lbl) { lbl.classList.remove('border-teal-400', 'bg-teal-50'); lbl.classList.add('border-slate-200'); }
+            });
+            const lbl = this.closest('.admin-diagnosis-radio-label');
+            if (lbl) { lbl.classList.add('border-teal-400', 'bg-teal-50'); lbl.classList.remove('border-slate-200'); }
+        });
+    });
+
+    // ── Show/hide the "Other" text input ──────────────────────────────────
+    const otherCheckbox = form.querySelector('.admin-diagnosis-other-checkbox');
+    const otherInput    = form.querySelector('.admin-diagnosis-other-input');
+    if (otherCheckbox && otherInput) {
+        otherCheckbox.checked ? otherInput.classList.remove('hidden') : otherInput.classList.add('hidden');
+        otherCheckbox.addEventListener('change', function () {
+            this.checked ? otherInput.classList.remove('hidden') : otherInput.classList.add('hidden');
+        });
+    }
+
+    _setReviewBtnLocked(card, 'impact', true);
+}
+
+function _diagnosisSetCbHighlight(cb) {
+    const label = cb.closest('.admin-diagnosis-cb-label');
+    if (!label) return;
+    if (cb.checked) {
+        label.classList.add('border-teal-400', 'bg-teal-50');
+        label.classList.remove('border-slate-200');
+    } else {
+        label.classList.remove('border-teal-400', 'bg-teal-50');
+        label.classList.add('border-slate-200');
+    }
+}
+
+function _diagnosisSetRadioHighlight(form, value, checked) {
+    const radio = form.querySelector(`.admin-diagnosis-radio[value="${value}"]`);
+    if (!radio) return;
+    const label = radio.closest('.admin-diagnosis-radio-label');
+    if (!label) return;
+    if (checked) {
+        label.classList.add('border-teal-400', 'bg-teal-50');
+        label.classList.remove('border-slate-200');
+    } else {
+        label.classList.remove('border-teal-400', 'bg-teal-50');
+        label.classList.add('border-slate-200');
+    }
 }
 
 function cancelDiagnosisEdit(button) {
     const card = _getCard(button);
     const form = _getForm(button, 'form-diagnosis-');
-    // Restore all fields to their data-original values so the next edit
-    // session starts clean. form.reset() is NOT used because it restores
-    // to the HTML value attribute, which may differ from data-original
-    // (e.g. mobile field was already stripped to bare digits).
+    _adminClearAllErrors(form);
     form.querySelectorAll('[data-original]').forEach(f => {
         if (f.type === 'checkbox' || f.type === 'radio') return;
         f.value = f.dataset.original ?? f.defaultValue;
@@ -459,9 +576,23 @@ function cancelDiagnosisEdit(button) {
         cb.checked = cb.defaultChecked;
     });
     form.querySelectorAll('.diagnosis-editable-field').forEach(f => f.disabled = true);
+
+    // Re-apply card highlights to match restored state
+    form.querySelectorAll('.admin-diagnosis-cb').forEach(cb => _diagnosisSetCbHighlight(cb));
+    form.querySelectorAll('.admin-diagnosis-radio').forEach(r => _diagnosisSetRadioHighlight(form, r.value, r.checked));
+
+    // Re-evaluate "Other" input visibility after checkbox restore
+    const otherCheckbox = form.querySelector('.admin-diagnosis-other-checkbox');
+    const otherInput    = form.querySelector('.admin-diagnosis-other-input');
+    if (otherCheckbox && otherInput) {
+        otherCheckbox.checked ? otherInput.classList.remove('hidden') : otherInput.classList.add('hidden');
+    }
+
     card.querySelector('.edit-diagnosis-btn').classList.remove('hidden');
     card.querySelector('.save-diagnosis-btn').classList.add('hidden');
     card.querySelector('.cancel-diagnosis-btn').classList.add('hidden');
+
+    _setReviewBtnLocked(card, 'impact', false);
 }
 
 // Engagement Edit
@@ -473,22 +604,56 @@ function toggleEngagementEdit(button) {
     card.querySelector('.save-engagement-btn').classList.remove('hidden');
     card.querySelector('.cancel-engagement-btn').classList.remove('hidden');
 
+    // ── Card highlight for LMI feature checkboxes ─────────────────────────
+    form.querySelectorAll('.admin-lmi-top2-cb').forEach(cb => {
+        _engagementSetCbHighlight(cb);
+        cb.addEventListener('change', function () { _engagementSetCbHighlight(this); });
+    });
+
+    // ── Top-2 enforcement ─────────────────────────────────────────────────
+    const top2Warning = form.querySelector('.admin-lmi-top2-warning');
+    form.querySelectorAll('.admin-lmi-top2-cb').forEach(cb => {
+        cb.addEventListener('change', function () {
+            const checkedCount = form.querySelectorAll('.admin-lmi-top2-cb:checked').length;
+            if (checkedCount > 2) {
+                this.checked = false;
+                _engagementSetCbHighlight(this);
+                if (top2Warning) top2Warning.classList.remove('hidden');
+            } else {
+                if (top2Warning) top2Warning.classList.add('hidden');
+            }
+        });
+    });
+
+    // ── Show/hide the "Other" text input ──────────────────────────────────
     const otherCheckbox = form.querySelector('.admin-lmi-other-checkbox');
-    const otherInput = form.querySelector('.admin-lmi-other-input');
+    const otherInput    = form.querySelector('.admin-lmi-other-input');
     if (otherCheckbox && otherInput) {
+        otherCheckbox.checked ? otherInput.classList.remove('hidden') : otherInput.classList.add('hidden');
         otherCheckbox.addEventListener('change', function () {
             this.checked ? otherInput.classList.remove('hidden') : otherInput.classList.add('hidden');
         });
+    }
+
+    _setReviewBtnLocked(card, 'engagement', true);
+}
+
+function _engagementSetCbHighlight(cb) {
+    const label = cb.closest('.admin-engagement-cb-label');
+    if (!label) return;
+    if (cb.checked) {
+        label.classList.add('border-teal-400', 'bg-teal-50');
+        label.classList.remove('border-slate-200');
+    } else {
+        label.classList.remove('border-teal-400', 'bg-teal-50');
+        label.classList.add('border-slate-200');
     }
 }
 
 function cancelEngagementEdit(button) {
     const card = _getCard(button);
     const form = _getForm(button, 'form-engagement-');
-    // Restore all fields to their data-original values so the next edit
-    // session starts clean. form.reset() is NOT used because it restores
-    // to the HTML value attribute, which may differ from data-original
-    // (e.g. mobile field was already stripped to bare digits).
+    _adminClearAllErrors(form);
     form.querySelectorAll('[data-original]').forEach(f => {
         if (f.type === 'checkbox' || f.type === 'radio') return;
         f.value = f.dataset.original ?? f.defaultValue;
@@ -500,9 +665,15 @@ function cancelEngagementEdit(button) {
     });
     form.querySelectorAll('.engagement-editable-field').forEach(f => f.disabled = true);
 
-    // Re-evaluate other input visibility after checkbox restore
+    // Re-apply card highlights to match restored state
+    form.querySelectorAll('.admin-lmi-top2-cb').forEach(cb => _engagementSetCbHighlight(cb));
+
+    // Hide top-2 warning and re-evaluate other input visibility
+    const top2Warning = form.querySelector('.admin-lmi-top2-warning');
+    if (top2Warning) top2Warning.classList.add('hidden');
+
     const otherCheckbox = form.querySelector('.admin-lmi-other-checkbox');
-    const otherInput = form.querySelector('.admin-lmi-other-input');
+    const otherInput    = form.querySelector('.admin-lmi-other-input');
     if (otherCheckbox && otherInput) {
         otherCheckbox.checked ? otherInput.classList.remove('hidden') : otherInput.classList.add('hidden');
     }
@@ -510,6 +681,215 @@ function cancelEngagementEdit(button) {
     card.querySelector('.edit-engagement-btn').classList.remove('hidden');
     card.querySelector('.save-engagement-btn').classList.add('hidden');
     card.querySelector('.cancel-engagement-btn').classList.add('hidden');
+
+    _setReviewBtnLocked(card, 'engagement', false);
+}
+
+// ─── Admin Form Validation ───────────────────────────────────────────────────
+// Mirrors the constraints enforced on the original user-facing form.
+// Returns true if valid, false if any rule fails (and shows inline errors).
+
+function _adminFieldError(field, message) {
+    // Remove any existing error on this field first
+    _adminFieldClearError(field);
+    field.classList.add('border-red-400', 'bg-red-50');
+    const err = document.createElement('p');
+    err.className = 'admin-field-error text-xs text-red-600 mt-1';
+    err.textContent = message;
+    field.insertAdjacentElement('afterend', err);
+}
+
+function _adminGroupError(anchorEl, message) {
+    // Remove existing group error if any
+    const existing = anchorEl.parentElement.querySelector('.admin-field-error');
+    if (existing) existing.remove();
+    const err = document.createElement('p');
+    err.className = 'admin-field-error text-xs text-red-600 mt-1';
+    err.textContent = message;
+    anchorEl.insertAdjacentElement('afterend', err);
+}
+
+function _adminFieldClearError(field) {
+    field.classList.remove('border-red-400', 'bg-red-50');
+    const next = field.nextElementSibling;
+    if (next && next.classList.contains('admin-field-error')) next.remove();
+}
+
+function _adminClearAllErrors(form) {
+    form.querySelectorAll('.admin-field-error').forEach(e => e.remove());
+    form.querySelectorAll('.border-red-400').forEach(f => {
+        f.classList.remove('border-red-400', 'bg-red-50');
+    });
+}
+
+function validateAdminForm(form, formType) {
+    _adminClearAllErrors(form);
+    let valid = true;
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // ── 1. Plain required / email / contact fields ───────────────────────
+    form.querySelectorAll('[data-required="true"]').forEach(field => {
+        // Skip fields inside a hidden contact wrapper (inactive type)
+        const contactWrapper = field.closest('[id^="admin-mobile-wrapper-"], [id^="admin-telephone-wrapper-"]');
+        if (contactWrapper && contactWrapper.classList.contains('hidden')) return;
+
+        const val = (field.value ?? '').trim();
+        const label = field.getAttribute('data-label') || 'This field';
+
+        if (!val) {
+            _adminFieldError(field, label + ' is required.');
+            valid = false;
+            return; // skip further checks on this field
+        }
+
+        // Email format
+        if (field.dataset.email === 'true' && !EMAIL_RE.test(val)) {
+            _adminFieldError(field, 'Please enter a valid email address.');
+            valid = false;
+            return;
+        }
+
+        // Mobile: must be exactly 10 digits
+        if (field.dataset.mobileDigits) {
+            const digits = val.replace(/\D/g, '');
+            const required = parseInt(field.dataset.mobileDigits, 10);
+            if (digits.length !== required) {
+                _adminFieldError(field, 'Mobile number must be ' + required + ' digits (excluding dial code).');
+                valid = false;
+            }
+            return;
+        }
+
+        // Telephone: PH format NXX-XXXX or NNNN-NNNN (7–10 digits total)
+        if (field.dataset.telephone === 'true') {
+            const digits = val.replace(/\D/g, '');
+            if (digits.length < 7 || digits.length > 10) {
+                _adminFieldError(field, 'Telephone number must be 7–10 digits.');
+                valid = false;
+            }
+            return;
+        }
+    });
+
+    // ── 2. Select: must not be blank ("")  ───────────────────────────────
+    form.querySelectorAll('select[data-required="true"]').forEach(sel => {
+        if (!sel.value) {
+            const label = sel.getAttribute('data-label') || 'This field';
+            _adminFieldError(sel, label + ' is required.');
+            valid = false;
+        }
+    });
+
+    // ── 3. Below-30k exact amount: required when salary = "Below ₱30,000" ─
+    form.querySelectorAll('[data-required-when-below30k]').forEach(input => {
+        const idx = input.getAttribute('data-required-when-below30k');
+        const salarySelect = form.querySelector('.salary-range-select-' + idx);
+        if (salarySelect && salarySelect.value === 'Below ₱30,000') {
+            const raw = (input.value || '').replace(/[^0-9]/g, '');
+            if (!raw) {
+                _adminFieldError(input, 'Please specify the exact salary amount.');
+                valid = false;
+            }
+        }
+    });
+
+    // ── 4. Conditional "Other specify" text inputs ───────────────────────
+    form.querySelectorAll('[data-required-when-checked]').forEach(input => {
+        const cbSelector = input.getAttribute('data-required-when-checked');
+        const cb = form.querySelector(cbSelector);
+        if (cb && cb.checked) {
+            if (!(input.value || '').trim()) {
+                const label = input.getAttribute('data-label') || 'This field';
+                _adminFieldError(input, label + ' is required when "Other" is selected.');
+                valid = false;
+            }
+        }
+    });
+
+    // ── 4b. Skill tag sections: if a skills checkbox is checked, it must have ≥1 tag ─
+    //       Covers both Technical and Soft/Employability sections across all role indices.
+    if (formType === 'roles') {
+        const allClasses = [...form.querySelectorAll('[class]')].flatMap(el => [...el.classList]);
+        const indices = new Set(
+            allClasses
+                .map(c => c.match(/^technical-tags-container-(\d+)$/))
+                .filter(Boolean)
+                .map(m => m[1])
+        );
+        indices.forEach(i => {
+            // Technical
+            const techCb        = form.querySelector(`.technical-checkbox-${i}`);
+            const techContainer = form.querySelector(`.technical-tags-container-${i}`);
+            if (techCb && techCb.checked && techContainer) {
+                const tags = techContainer.querySelectorAll('[data-tag]');
+                if (tags.length === 0) {
+                    // Anchor error to the text input so it scrolls into view
+                    const techInput = form.querySelector(`.technical-skill-input-${i}`);
+                    if (techInput) {
+                        _adminFieldError(techInput, 'Please add at least one technical skill, or uncheck this section.');
+                    }
+                    valid = false;
+                }
+            }
+            // Soft
+            const softCb        = form.querySelector(`.soft-checkbox-${i}`);
+            const softContainer = form.querySelector(`.soft-tags-container-${i}`);
+            if (softCb && softCb.checked && softContainer) {
+                const tags = softContainer.querySelectorAll('[data-tag]');
+                if (tags.length === 0) {
+                    const softInput = form.querySelector(`.soft-skill-input-${i}`);
+                    if (softInput) {
+                        _adminFieldError(softInput, 'Please add at least one soft skill/trait, or uncheck this section.');
+                    }
+                    valid = false;
+                }
+            }
+        });
+    }
+
+    // ── 5. Diagnosis: at least one rejection reason checked ──────────────
+    if (form.dataset.validateRejectionGroup === 'true') {
+        const checked = form.querySelectorAll('.admin-diagnosis-cb:checked');
+        if (checked.length === 0) {
+            const firstCb = form.querySelector('.admin-diagnosis-cb');
+            if (firstCb) {
+                _adminGroupError(firstCb.closest('label'), 'Please select at least one rejection reason.');
+            }
+            valid = false;
+        }
+    }
+
+    // ── 6. Diagnosis: coordination frequency — must have one selected ────
+    if (form.dataset.validateCoordinationGroup === 'true') {
+        const selected = form.querySelector('.admin-diagnosis-radio:checked');
+        if (!selected) {
+            const firstRadio = form.querySelector('.admin-diagnosis-radio');
+            if (firstRadio) {
+                _adminGroupError(firstRadio.closest('label'), 'Please select a coordination frequency.');
+            }
+            valid = false;
+        }
+    }
+
+    // ── 7. Engagement: exactly 2 LMI features must be checked ──────────────
+    if (form.dataset.validateLmiFeaturesGroup === 'true') {
+        const checked = form.querySelectorAll('.admin-lmi-top2-cb:checked');
+        if (checked.length < 2) {
+            const firstCb = form.querySelector('.admin-lmi-top2-cb');
+            if (firstCb) {
+                _adminGroupError(firstCb.closest('label'), 'Please select exactly 2 LMI features (top 2).');
+            }
+            valid = false;
+        }
+    }
+
+    // Scroll first error into view
+    if (!valid) {
+        const firstError = form.querySelector('.admin-field-error');
+        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    return valid;
 }
 
 // Modal Management Functions
@@ -520,7 +900,10 @@ let detectedChanges = [];
 // Form Submit Handler with Change Detection
 function handleFormSubmit(event, form, formType) {
     event.preventDefault();
-    
+
+    // ── Validate first — mirrors original user-facing form rules ──────────
+    if (!validateAdminForm(form, formType)) return false;
+
     // Detect changes
     detectedChanges = [];
     const fields = form.querySelectorAll('[data-original]');
@@ -535,6 +918,20 @@ function handleFormSubmit(event, form, formType) {
 
         const originalValue = field.getAttribute('data-original');
         const label         = field.getAttribute('data-label');
+
+        // FIX: Checkbox / radio — data-original is '1' or '0', current state is field.checked
+        if (field.type === 'checkbox' || field.type === 'radio') {
+            const originalChecked = originalValue === '1';
+            if (field.checked !== originalChecked) {
+                detectedChanges.push({
+                    label: label,
+                    old:   originalChecked ? 'Selected' : 'Not selected',
+                    new:   field.checked   ? 'Selected' : 'Not selected',
+                    value: field.checked ? '1' : '0'
+                });
+            }
+            return; // handled — skip text-value comparison below
+        }
 
         // FIX 1: Contact Number (mobile)
         // data-original now stores bare digits (dial code stripped server-side in Blade).

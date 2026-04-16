@@ -15,10 +15,7 @@ class DisciplineGraduateController extends Controller
     /**
      * Show the discipline graduate form
      */
-    public function showForm()
-    {
-        return view('admin.Module3.licensureRatesForm');
-    }
+
 
     /**
      * Get available enrollment years (for the dropdown)

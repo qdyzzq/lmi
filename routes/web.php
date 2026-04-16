@@ -10,6 +10,7 @@ use App\Http\Controllers\Module1\AnalysisTemplateController;
 use App\Http\Controllers\Module2\JobTitleController;
 use App\Http\Controllers\Module3\LicensureRateController;
 use App\Http\Controllers\Module3\DisciplineEnrollmentController;
+use App\Http\Controllers\Module3\GraduationRateController;
 use App\Http\Controllers\Module3\DisciplineGraduateController;
 use App\Http\Controllers\Module3\SupplySideAnalysisController;
 use App\Http\Controllers\Module4\ProgramsController;
@@ -187,22 +188,30 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admi
     Route::delete('/discipline-enrollment/delete/{year}', [DisciplineEnrollmentController::class, 'deleteYear'])
         ->name('discipline-enrollment.delete');
 
-    // ==================== DISCIPLINE GRADUATE Routes ====================
-    Route::get('/discipline-graduate/form', [DisciplineGraduateController::class, 'showForm'])
+      // ==================== GRADUATION RATE Routes ====================
+    Route::get('/discipline-graduate/form', [GraduationRateController::class, 'showForm'])
         ->name('discipline-graduate.form');
-    
-    Route::post('/discipline-graduate', [DisciplineGraduateController::class, 'store'])
-        ->name('discipline-graduate.store');
-    
-    Route::put('/discipline-graduate/{id}', [DisciplineGraduateController::class, 'update'])
-        ->name('discipline-graduate.update');
-    
-    Route::delete('/discipline-graduate/{id}', [DisciplineGraduateController::class, 'destroy'])
-        ->name('discipline-graduate.destroy');
-    
-    Route::delete('/discipline-graduate/delete/{year}', [DisciplineGraduateController::class, 'deleteYear'])
-        ->name('discipline-graduate.delete');
 
+    Route::get('/graduation-rates', [GraduationRateController::class, 'getAllGraduationRates'])
+    ->name('graduation-rates.index');
+
+    Route::get('/graduation-rates/check-year/{graduateYear}', [GraduationRateController::class, 'checkYear'])
+    ->name('graduation-rates.check-year');
+
+    Route::get('/graduation-rates/enrollment/{academicYear}', [GraduationRateController::class, 'getEnrollmentData'])
+    ->name('graduation-rates.enrollment');
+
+    Route::get('/graduation-rates/calculate', [GraduationRateController::class, 'calculateProjectedGraduates'])
+    ->name('graduation-rates.calculate');
+
+    Route::get('/graduation-rates/{graduateYear}', [GraduationRateController::class, 'getGraduationRate'])
+    ->name('graduation-rates.show');
+
+    Route::post('/graduation-rates/save', [GraduationRateController::class, 'saveGraduationRate'])
+    ->name('graduation-rates.save');
+
+    Route::delete('/graduation-rates/{graduateYear}', [GraduationRateController::class, 'deleteGraduationRate'])
+    ->name('graduation-rates.destroy');  
     // Live polling — returns submission counts for real-time badge updates
   
     Route::get('/lmi-submissions/counts', [LmiSubmissionController::class, 'counts'])

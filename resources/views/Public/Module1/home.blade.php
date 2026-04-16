@@ -249,7 +249,7 @@
             </div>
         </div>
             <a href="#kpi-section"
-                class="absolute bottom-6 sm:bottom-16 md:bottom-24 lg:bottom-32 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-20"
+                class="absolute bottom-8 sm:bottom-16 md:bottom-24 lg:bottom-32 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-80"
                 @click.prevent="document.getElementById('kpi-section').scrollIntoView({ behavior: 'smooth' })">
                 <div class="flex flex-col items-center">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

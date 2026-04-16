@@ -336,7 +336,7 @@ class JobMarketDemandsController extends Controller
     {
         $now              = Carbon::now();
         $ninetyDaysAgo    = $now->copy()->subDays(90);
-        $archiveThreshold = $now->copy()->subDays(20);
+        $archiveThreshold = $now->copy()->subDays(90);
 
         $filterYears  = array_filter((array) $request->input('archive_years', []));
         $filterMonths = array_filter((array) $request->input('archive_months', []));

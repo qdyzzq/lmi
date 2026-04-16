@@ -10,10 +10,11 @@ use Illuminate\Support\Facades\Auth;
 
 class LicensureRateController extends Controller
 {
-    public function showForm()
+     public function showForm()
     {
         return view('admin.Module3.licensureRatesForm');
     }
+    
 
     public function store(Request $request)
     {

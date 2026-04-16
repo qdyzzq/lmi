@@ -2458,3 +2458,4 @@ document.addEventListener('alpine:init', () => {
 // that needs window. exposure is defined inside the IIFE/Alpine blocks.
 // Expose the chart manager for any inline usage.
 window.cleanChartManager = window.cleanChartManager || {};
+window.getDeepBlueForDiscipline = getDeepBlueForDiscipline;
