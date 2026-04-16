@@ -44,6 +44,37 @@ class DisciplineEnrollmentsPublicRegionSeeder extends Seeder
             ],
         ];
 
+        $records = [
+            [
+                'academic_year'     => '2020-2021',
+                'province'          => 'Davao Region',
+                'institution_type'  => 'Public',
+                'agriculture'       => 8462,
+                'architecture'      => 225,
+                'business'          => 14240,
+                'criminal_justice'  => 2103,
+                'education'         => 14405,
+                'engineering'       => 2139,
+                'arts'              => 0,
+                'general'           => 500,
+                'home_economics'    => 0,
+                'humanities'        => 335,
+                'it'                => 2736,
+                'law'               => 85,
+                'maritime'          => 0,
+                'mass_comm'         => 116,
+                'mathematics'       => 439,
+                'medical'           => 191,
+                'natural_science'   => 623,
+                'other_disciplines' => 1219,
+                'religion'          => 0,
+                'service_trades'    => 915,
+                'social_sciences'   => 138,
+                'grand_total'       => 48871,
+            ],
+        ];
+
+
         DB::table('discipline_enrollments')->insert($records);
     }
 }
