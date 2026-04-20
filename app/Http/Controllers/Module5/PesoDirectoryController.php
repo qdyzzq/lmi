@@ -74,7 +74,10 @@ class PesoDirectoryController extends Controller
         $slides = PesoCarouselSlide::where('is_active', true)
             ->orderBy('sort_order')
             ->get()
-            ->map(fn($s) => asset('storage/' . $s->image_path))
+            ->map(fn($s) => str_starts_with($s->image_path, 'images/')
+        ? asset($s->image_path)
+        : asset('storage/' . $s->image_path)
+    )
             ->values()
             ->toArray();
 
@@ -338,15 +341,18 @@ class PesoDirectoryController extends Controller
         ]);
 
         // Resolve office type name → ID
-        $ot = OfficeType::where('name', strtoupper(trim($data['office_type'])))->first();
-        $data['office_type_id'] = $ot?->id;
+        // firstOrCreate ensures PESO/JPO are auto-added to office_types if missing
+        $ot = OfficeType::firstOrCreate(
+            ['name' => strtoupper(trim($data['office_type']))]
+        );
+        $data['office_type_id'] = $ot->id;
         unset($data['office_type']);
 
         // Resolve position title name → ID
         $data['position_title_id'] = null;
         if (!empty($data['position_title'])) {
-            $pt = PositionTitle::where('name', $data['position_title'])->first();
-            $data['position_title_id'] = $pt?->id;
+            $pt = PositionTitle::firstOrCreate(['name' => $data['position_title']]);
+            $data['position_title_id'] = $pt->id;
         }
         unset($data['position_title']);
 
@@ -368,15 +374,18 @@ class PesoDirectoryController extends Controller
         ]);
 
         // Resolve office type name → ID
-        $ot = OfficeType::where('name', strtoupper(trim($data['office_type'])))->first();
-        $data['office_type_id'] = $ot?->id;
+        // firstOrCreate ensures PESO/JPO are auto-added to office_types if missing
+        $ot = OfficeType::firstOrCreate(
+            ['name' => strtoupper(trim($data['office_type']))]
+        );
+        $data['office_type_id'] = $ot->id;
         unset($data['office_type']);
 
         // Resolve position title name → ID
         $data['position_title_id'] = null;
         if (!empty($data['position_title'])) {
-            $pt = PositionTitle::where('name', $data['position_title'])->first();
-            $data['position_title_id'] = $pt?->id;
+            $pt = PositionTitle::firstOrCreate(['name' => $data['position_title']]);
+            $data['position_title_id'] = $pt->id;
         }
         unset($data['position_title']);
 
@@ -447,8 +456,10 @@ class PesoDirectoryController extends Controller
             ->get()
             ->map(fn($s) => [
                 'id'         => $s->id,
-                'image'      => asset('storage/' . $s->image_path),
-                'sort_order' => $s->sort_order,
+                'image'      => str_starts_with($s->image_path, 'images/')
+                ? asset($s->image_path)
+                : asset('storage/' . $s->image_path),
+            'sort_order' => $s->sort_order,
             ])
             ->values()
             ->toArray();

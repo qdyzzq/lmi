@@ -14,9 +14,9 @@ class FieldOffice extends Model
     protected $fillable = [
         'province',
         'name',
-        'office_type',
-        'position_title_id',  // FK → position_titles.id
-        'persons_name',        // the actual person's name
+        'office_type_id',      // FK → office_types.id  ← FIXED (was 'office_type' string)
+        'position_title_id',   // FK → position_titles.id
+        'persons_name',
         'email',
         'address',
         'sort_order',
@@ -24,10 +24,16 @@ class FieldOffice extends Model
 
     protected $casts = [
         'sort_order'        => 'integer',
+        'office_type_id'    => 'integer',
         'position_title_id' => 'integer',
     ];
 
     // ── Relationships ──────────────────────────────────────────
+    public function officeType()
+    {
+        return $this->belongsTo(OfficeType::class, 'office_type_id');
+    }
+
     public function positionTitle()
     {
         return $this->belongsTo(PositionTitle::class, 'position_title_id');
@@ -41,15 +47,11 @@ class FieldOffice extends Model
 
     public function scopeByType($query, string $type)
     {
-        return $query->where('office_type', $type);
+        return $query->where('office_type_id', OfficeType::where('name', $type)->value('id'));
     }
 
     public function scopeOrdered($query)
     {
         return $query->orderBy('province')->orderBy('sort_order')->orderBy('name');
     }
-    public function officeType()
-{
-    return $this->belongsTo(OfficeType::class, 'office_type_id');
-}
 }

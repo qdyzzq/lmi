@@ -591,7 +591,16 @@ function pesoDirectory() {
         search: '',
         _fuseCache: {},
         async init() {
-            this.pesoData = window._pesoData ?? {};
+            // Normalize server data: DB column is `office_type` but JS/blade uses `entry.type`.
+            const raw = window._pesoData ?? {};
+            const normalized = {};
+            for (const province in raw) {
+                normalized[province] = raw[province].map(e => ({
+                    ...e,
+                    type: e.type ?? e.office_type ?? '',
+                }));
+            }
+            this.pesoData = normalized;
             try {
                 const res = await fetch('/admin/office-types', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                 if (res.ok) this.officeTypes = await res.json();
@@ -626,9 +635,20 @@ function pesoDirectory() {
             if (type === 'ALL') return entries.length;
             return entries.filter(e => e.type === type).length;
         },
+        // Sort entries: PESO first, then JPO, then alphabetically by name within each group
+        sortEntries(entries) {
+            return [...entries].sort((a, b) => {
+                const typeOrder = t => t === 'PESO' ? 0 : t === 'JPO' ? 1 : 2;
+                const tDiff = typeOrder(a.type) - typeOrder(b.type);
+                if (tDiff !== 0) return tDiff;
+                return (a.name ?? '').localeCompare(b.name ?? '');
+            });
+        },
         filteredEntries() {
             let entries = this.pesoData?.[this.province] ?? [];
             if (this.officeType !== 'ALL') entries = entries.filter(e => e.type === this.officeType);
+            // Always sort: PESO first, then JPO, then alphabetically by name
+            entries = this.sortEntries(entries);
             if (!this.search.trim()) return entries;
             const cacheKey = this.province + '|' + this.officeType;
             if (!this._fuseCache[cacheKey] || this._fuseCache[cacheKey]._list !== entries) {
@@ -720,8 +740,19 @@ function adminPesoPage() {
             };
             this.modal = { open: true, type: detail.type, title: titles[detail.type] ?? 'Edit', id: detail.id ?? null, loading: false, error: null, listKey: detail.listKey ?? null, listIndex: detail.listIndex ?? null };
             this.formErrors = {};
-            this.form = detail.data ? { ...detail.data } : {};
-            if (detail.type === 'add-peso' || detail.type === 'edit-peso') this.fetchPositionTitles();
+            // Mutate form in-place so Alpine's reactive proxy is preserved.
+            // Replacing this.form with a new object breaks x-model bindings.
+            const incoming = detail.data ? { ...detail.data } : {};
+            // Clear keys not present in incoming data
+            Object.keys(this.form).forEach(k => { if (!(k in incoming)) delete this.form[k]; });
+            Object.assign(this.form, incoming);
+            if (detail.type === 'add-peso' || detail.type === 'edit-peso') {
+                const savedPositionTitle = this.form.position_title ?? '';
+                this.fetchPositionTitles().then(() => {
+                    // Restore position_title after titles load (fetch resets allPositionTitles reactively)
+                    this.$nextTick(() => { this.form.position_title = savedPositionTitle; });
+                });
+            }
         },
 
         fail(msg) {
@@ -757,9 +788,14 @@ function adminPesoPage() {
             this.modal.loading = true;
             const isEdit = this.modal.type === 'edit-peso';
             const body = {
-                name: this.form.name, office_type: this.form.type, province: this.form.province,
-                persons_name: this.form.persons_name, position_title: this.form.position_title,
-                email: this.form.email, address: this.form.address
+                name: this.form.name,
+                office_type: this.form.type,  // used by controller
+                type: this.form.type,          // alias in case controller reads `type`
+                province: this.form.province,
+                persons_name: this.form.persons_name,
+                position_title: this.form.position_title,
+                email: this.form.email,
+                address: this.form.address
             };
             const res = await jsonRequest(isEdit ? 'PUT' : 'POST', isEdit ? `/admin/field-offices/${this.modal.id}` : '/admin/field-offices', body);
 

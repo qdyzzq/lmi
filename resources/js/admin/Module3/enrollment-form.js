@@ -174,6 +174,19 @@ async function checkAndLoadYear() {
             const isEmpty = Object.values(data.data.disciplines ?? data.data).every(v => !parseInt(v));
 
             if (isEmpty) {
+                // Delete the all-zero record from the DB, then treat as new
+                try {
+                    await fetch(`/api/discipline-enrollment/delete/${year}?province=${encodeURIComponent(province)}&institution_type=${encodeURIComponent(institutionType.value)}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+                    console.log(`Auto-deleted zero record: ${year} - ${province} - ${institutionType.value}`);
+                } catch (e) {
+                    console.error('Failed to delete zero record:', e);
+                }
                 loadNewYear(year, province, institutionType.value);
                 return;
             }
@@ -509,9 +522,20 @@ function showConfirmModal(data) {
     const deletionWarning = document.getElementById('deletionWarning');
 
     if (existingData) {
-        actionType.textContent = 'update';
-        confirmActionWarning.textContent = 'Update';
-        deletionWarning.classList.remove('hidden');
+        const grandTotalCheck = Object.values(data.disciplines).reduce((sum, v) => sum + (parseInt(v) || 0), 0);
+        const isAllZero = grandTotalCheck === 0;
+
+        if (isAllZero) {
+            actionType.textContent = 'delete';
+            confirmActionWarning.textContent = 'Delete';
+            document.getElementById('deletionWarningText').textContent = 'This will delete the existing data for this academic year!';
+            deletionWarning.classList.remove('hidden');
+        } else {
+            actionType.textContent = 'update';
+            confirmActionWarning.textContent = 'Update';
+            document.getElementById('deletionWarningText').textContent = 'This will replace the existing data for this academic year!';
+            deletionWarning.classList.remove('hidden');
+        }
     } else {
         actionType.textContent = 'create new';
         confirmActionWarning.textContent = 'Save';
@@ -593,9 +617,7 @@ function showSuccessModal(isUpdate = false) {
     document.getElementById('successModal').classList.remove('hidden');
 }
 
-function closeSuccessModal() {
-    document.getElementById('successModal').classList.add('hidden');
-
+function resetFormFully() {
     clearForm();
 
     document.getElementById('academicYear').value = '';
@@ -617,6 +639,11 @@ function closeSuccessModal() {
     existingData = null;
     oldYear = null;
     lockForm();
+}
+
+function closeSuccessModal() {
+    document.getElementById('successModal').classList.add('hidden');
+    resetFormFully();
 }
 
 // ─── Form Submit Handler ─────────────────────────────────────────────────────
@@ -654,10 +681,16 @@ async function confirmSubmit() {
         const result = await response.json();
 
         if (response.ok && result.success) {
-            const wasUpdate = !!existingData;
             oldYear = null;
             unlockSelections();
-            showSuccessModal(wasUpdate);
+            if (result.deleted) {
+                // All values were zero — record was removed, do a full reset
+                resetFormFully();
+                showToast('All values were zero, the record has been deleted.', 'warning');
+            } else {
+                const wasUpdate = !!existingData;
+                showSuccessModal(wasUpdate);
+            }
         } else {
             showToast('Error: ' + (result.message || 'An error occurred while saving the data.'), 'error');
         }

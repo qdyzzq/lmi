@@ -72,6 +72,22 @@ class DisciplineEnrollmentController extends Controller
             // Calculate grand total
             $grandTotal = array_sum(array_map(fn($val) => (int)($val ?? 0), $request->disciplines));
 
+            // If grand total is 0, delete the record instead of saving it
+            if ($grandTotal === 0) {
+                DisciplineEnrollment::where('academic_year', $academicYear)
+                    ->where('province', $province)
+                    ->where('institution_type', $institutionType)
+                    ->delete();
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'All values are zero — record has been removed.',
+                    'deleted' => true
+                ]);
+            }
+
             // Use updateOrCreate to handle both insert and update
             $enrollment = DisciplineEnrollment::updateOrCreate(
                 [

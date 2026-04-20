@@ -129,6 +129,12 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+        .line-clamp-4 {
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
         /* ===== DRAG & DROP UPLOAD ZONE ===== */
         .dropzone {
@@ -201,14 +207,18 @@
                 <h2 class="text-xl font-bold text-slate-800">PESO / JPO Directory • Admin</h2>
             </header>
 
-            {{-- ===== CAROUSEL SECTION ===== --}}
+              {{-- ===== CAROUSEL SECTION ===== --}}
             @php
                 $slidesJson = collect($slides ?? [])
-                    ->map(fn($s) => [
-                        'id'         => $s->id,
-                        'image'      => asset('storage/' . $s->image_path),
-                        'sort_order' => $s->sort_order,
-                    ])
+                    ->map(
+                        fn($s) => [
+                            'id' => $s->id,
+                            'image' => str_starts_with($s->image_path, 'images/')
+                                ? asset($s->image_path)
+                                : asset('storage/' . $s->image_path),
+                            'sort_order' => $s->sort_order,
+                        ],
+                    )
                     ->toJson();
             @endphp
 
@@ -938,17 +948,27 @@
                 @php
                     $pesoProvinces = $fieldOffices->groupBy('province')->map(fn($items) => $items->values());
                     $pesoJson = $pesoProvinces->map(
-                        fn($items) => $items->map(
-                            fn($o) => [
-                                'id' => $o->id,
-                                'name' => $o->name,
-                                'persons_name' => $o->persons_name ?? '',
+                        fn($items) => $items
+                            ->map(fn($o) => [
+                                'id'             => $o->id,
+                                'name'           => $o->name,
+                                'persons_name'   => $o->persons_name ?? '',
                                 'position_title' => $o->positionTitle?->name ?? '',
-                                'email' => $o->email ?? '',
-                                'address' => $o->address ?? '',
-                                'type' => $o->officeType?->name ?? '',
-                            ],
-                        ),
+                                'email'          => $o->email ?? '',
+                                'address'        => $o->address ?? '',
+                                'type'           => $o->officeType?->name ?? '',
+                            ])
+                            // Sort using a single composite key to guarantee stability:
+                            //   [0] type group   → PESO=0, JPO=1  (always dominant — no PESO ever appears after JPO)
+                            //   [1] clamp bucket → ceil(name_length / 25) — shorter names first within the group
+                            //   [2] id           → oldest first, latest added last within the same clamp bucket
+                            ->sortBy(fn($a) => sprintf(
+                                '%d-%04d-%010d',
+                                $a['type'] === 'PESO' ? 0 : 1,
+                                (int) ceil(mb_strlen($a['name']) / 25),
+                                $a['id']
+                            ))
+                            ->values(),
                     );
                 @endphp
 
@@ -1102,33 +1122,41 @@
                                 <template x-for="entry in filteredEntries()" :key="entry.id">
                                     <div x-data="pesoCard(entry.id)"
                                         class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
-                                        <div class="flex items-center gap-3 px-4 py-3 cursor-pointer select-none"
+
+                                        {{-- Card Header --}}
+                                        <div class="flex items-start gap-3 px-4 py-3 cursor-pointer select-none"
                                             @click.stop="toggleCard(entry.id)">
-                                            <div class="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center text-white font-bold text-sm"
+
+                                            {{-- Avatar --}}
+                                            <div class="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center text-white font-bold text-sm mt-0.5"
                                                 :style="entry.type === 'JPO' ? 'background:#3b82f6' : 'background:#22c55e'"
                                                 x-text="entry.name.charAt(0)"></div>
+
+                                            {{-- Name + subtitle --}}
                                             <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-semibold text-slate-800 truncate"
+                                                <p class="text-sm font-semibold text-slate-800 line-clamp-2 leading-snug"
                                                     style="text-transform: capitalize;"
-                                                    x-text="entry.name.toLowerCase().replace(/^(peso|jpo)\s+/i, '')">
-                                                </p>
-                                                <p class="text-xs text-slate-400 truncate font-semibold uppercase tracking-wide"
-                                                    x-text="(entry.position_title || '') + (entry.persons_name ? ' · ' + entry.persons_name : '')">
-                                                </p>
+                                                    x-text="entry.name"></p>
+                                                <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide mt-0.5 line-clamp-1"
+                                                    x-text="(entry.position_title || '') + (entry.persons_name ? ' · ' + entry.persons_name : '')"></p>
                                             </div>
-                                            <span
-                                                class="inline-flex items-center text-xs font-bold px-2 py-0.5 rounded flex-shrink-0"
-                                                :style="entry.type === 'JPO' ?
-                                                    'background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe' :
-                                                    'background:#f0fdf4; color:#22c55e; border:1px solid #bbf7d0'"
-                                                x-text="entry.type"></span>
-                                            <svg class="w-4 h-4 text-slate-400 flex-shrink-0"
-                                                style="transition: transform 0.2s ease;"
-                                                :style="isOpen(entry.id) ? 'transform:rotate(180deg)' : 'transform:rotate(0deg)'"
-                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 9l-7 7-7-7" />
-                                            </svg>
+
+                                            {{-- Type badge + chevron stacked so they don't fight the name --}}
+                                            <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                                <span
+                                                    class="inline-flex items-center text-xs font-bold px-2 py-0.5 rounded"
+                                                    :style="entry.type === 'JPO' ?
+                                                        'background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe' :
+                                                        'background:#f0fdf4; color:#22c55e; border:1px solid #bbf7d0'"
+                                                    x-text="entry.type"></span>
+                                                <svg class="w-4 h-4 text-slate-400"
+                                                    style="transition: transform 0.2s ease;"
+                                                    :style="isOpen(entry.id) ? 'transform:rotate(180deg)' : 'transform:rotate(0deg)'"
+                                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </div>
                                         </div>
 
                                         <div x-show="isOpen(entry.id)"

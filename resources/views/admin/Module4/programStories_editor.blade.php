@@ -432,7 +432,9 @@
                 $slidesJson = $carouselSlides
                     ->map(
                         fn($s) => [
-                            'image' => asset($s->image_path),
+                            'image' => str_starts_with($s->image_path, 'images/')
+                                ? asset($s->image_path)
+                                : asset('storage/' . $s->image_path),
                             'title' => $s->title,
                             'excerpt' => html_entity_decode(strip_tags($s->excerpt), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
                             'link' => $s->link,
@@ -867,7 +869,7 @@
                                                                         stroke-linejoin="round" stroke-width="2"
                                                                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                                 </svg>
-                                                                {{ ucfirst($type) }}s
+                                                                {{ ucfirst($type) }}
                                                             </h4>
                                                             <button
                                                                 @click="$dispatch('open-modal', { type: 'delete-item', id: {{ $items->first()->id }}, programId: {{ $program->id }}, endpoint: '/admin/qualifications/type/{{ urlencode($type) }}/program/{{ $program->id }}' })"

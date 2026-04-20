@@ -267,14 +267,16 @@
     <div x-data="{ activeProgram: null }">
         @include('partials.navbar')
 
-        <!-- ===== CAROUSEL ===== -->
+           <!-- ===== CAROUSEL ===== -->
         @php
             // Only allow http/https URLs to prevent javascript: open-redirect attacks
             $sanitizeUrl = fn($url) => preg_match('/^https?:\/\//i', $url ?? '') ? $url : '#';
             $carouselSlidesJson = $carouselSlides
                 ->map(
                     fn($s) => [
-                        'image' => asset($s->image_path),
+                        'image' => str_starts_with($s->image_path, 'images/')
+                            ? asset($s->image_path)
+                            : asset('storage/' . $s->image_path),
                         'title' => $s->title,
                         'excerpt' => strip_tags($s->excerpt ?? ''),
                         'link' => $sanitizeUrl($s->link),
@@ -335,7 +337,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                             </svg>
-                            <p class="text-white text-sm mt-2 font-medium">Scroll to explore programs</p>
+                            <p class="text-white text-sm mt-2 font-medium">Scroll to explore</p>
                         </div>
                     </a>
                 </div>

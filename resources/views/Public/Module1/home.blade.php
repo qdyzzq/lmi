@@ -231,7 +231,7 @@
 
         <div class="relative w-full h-[55vh] sm:h-[65vh] md:h-[75vh] lg:h-[900px] overflow-hidden">
             <div class="absolute inset-0">
-                <img src="{{ asset('images/navbar-bg.jpg') }}" alt="Background"
+                <img src="{{ asset('images/JobFair.webp') }}" alt="Background"
                     class="w-full h-full object-cover object-top">
                 <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-100"></div>
             </div>
@@ -244,21 +244,40 @@
                 </h1>
                 <p class="text-slate-200 font-medium mt-2"
                     style="font-size: clamp(0.75rem, 1.5vw, 1.125rem); text-shadow: 0 1px 8px rgba(0,0,0,1);">
-                    Regional Labor Market Intelligence & Trends
+                    Regional Labor Market Information & Trends
                 </p>
             </div>
         </div>
-            <a href="#kpi-section"
-                class="absolute bottom-8 sm:bottom-16 md:bottom-24 lg:bottom-32 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-80"
-                @click.prevent="document.getElementById('kpi-section').scrollIntoView({ behavior: 'smooth' })">
-                <div class="flex flex-col items-center">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            <!-- Scroll Indicator -->
+            <div class="absolute bottom-6 sm:bottom-16 left-1/2 transform -translate-x-1/2 z-20 scroll-indicator animate-bounce transition-opacity duration-200"
+                 x-data="{ menuOpen: false }"
+                 @menu-toggled.window="menuOpen = $event.detail.open"
+                 :class="{ 'opacity-0 pointer-events-none': menuOpen }">
+                <a href="#kpi-section"
+                   class="flex flex-col items-center cursor-pointer group"
+                   @click.prevent="() => {
+                       const element = document.getElementById('kpi-section');
+                       if (element) {
+                           element.scrollIntoView({ 
+                               behavior: 'smooth', 
+                               block: 'start' 
+                           });
+                       }
+                   }">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white group-hover:text-blue-300 transition-colors" 
+                         fill="none" 
+                         stroke="currentColor" 
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" 
+                              stroke-linejoin="round" 
+                              stroke-width="2"
+                              d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                     </svg>
-                    <p class="text-white text-sm mt-2 font-medium">Scroll to explore</p>
-                </div>
-            </a>
+                    <p class="text-white text-xs sm:text-sm mt-1 sm:mt-2 font-medium group-hover:text-blue-300 transition-colors">
+                        Scroll to explore
+                    </p>
+                </a>
+            </div>
         </div>
 
         <div class="flex-1 flex flex-col overflow-y-auto mt-10 relative z-30">

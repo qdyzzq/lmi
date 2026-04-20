@@ -185,8 +185,7 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admi
     Route::delete('/discipline-enrollment/{id}', [DisciplineEnrollmentController::class, 'destroy'])
         ->name('discipline-enrollment.destroy');
     
-    Route::delete('/discipline-enrollment/delete/{year}', [DisciplineEnrollmentController::class, 'deleteYear'])
-        ->name('discipline-enrollment.delete');
+    Route::delete('/discipline-enrollment/delete/{academicYear}', [DisciplineEnrollmentController::class, 'delete']);
 
       // ==================== GRADUATION RATE Routes ====================
     Route::get('/discipline-graduate/form', [GraduationRateController::class, 'showForm'])

@@ -186,7 +186,7 @@
         <div class="space-y-3 overflow-y-auto max-h-[420px] pr-1" id="disciplineList">
             <!-- Agriculture, Forestry, Fisheries -->
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                <label class="text-sm font-medium text-gray-900">Agriculture, Forestry, Fisheries</label>
+                <label class="text-sm font-medium text-gray-900">Agricultural, Forestry, and Fisheries</label>
                 <input 
                     type="text" 
                     name="agriculture" 
@@ -219,7 +219,7 @@
 
             <!-- Criminal Justice -->
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                <label class="text-sm font-medium text-gray-900">Criminal Justice</label>
+                <label class="text-sm font-medium text-gray-900">Criminal Justice / Criminology</label>
                 <input 
                     type="text" 
                     name="criminal_justice" 
@@ -241,7 +241,7 @@
 
             <!-- Engineering -->
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                <label class="text-sm font-medium text-gray-900">Engineering and Engineering Trades</label>
+                <label class="text-sm font-medium text-gray-900">Engineering and Technology</label>
                 <input 
                     type="text" 
                     name="engineering" 
@@ -263,7 +263,7 @@
 
             <!-- General -->
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                <label class="text-sm font-medium text-gray-900">General Programs</label>
+                <label class="text-sm font-medium text-gray-900">General</label>
                 <input 
                     type="text" 
                     name="general" 
@@ -296,7 +296,7 @@
 
             <!-- Information Technology -->
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                <label class="text-sm font-medium text-gray-900">Information Technology</label>
+                <label class="text-sm font-medium text-gray-900">IT-Related Disciplines</label>
                 <input 
                     type="text" 
                     name="it" 
@@ -307,7 +307,7 @@
 
             <!-- Law -->
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                <label class="text-sm font-medium text-gray-900">Law</label>
+                <label class="text-sm font-medium text-gray-900">Law and Jurisprudence</label>
                 <input 
                     type="text" 
                     name="law" 
@@ -318,7 +318,7 @@
 
             <!-- Maritime -->
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                <label class="text-sm font-medium text-gray-900">Maritime Education</label>
+                <label class="text-sm font-medium text-gray-900">Maritime</label>
                 <input 
                     type="text" 
                     name="maritime" 
@@ -340,7 +340,7 @@
 
             <!-- Mathematics -->
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                <label class="text-sm font-medium text-gray-900">Mathematics and Statistics</label>
+                <label class="text-sm font-medium text-gray-900">Mathematics</label>
                 <input 
                     type="text" 
                     name="mathematics" 
@@ -351,7 +351,7 @@
 
             <!-- Medical and Health -->
             <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3 items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                <label class="text-sm font-medium text-gray-900">Medical and Health Related</label>
+                <label class="text-sm font-medium text-gray-900">Medical and Allied</label>
                 <input 
                     type="text" 
                     name="medical" 
@@ -622,7 +622,7 @@
 
                 <div id="deletionWarning" class="hidden bg-red-50 border-l-4 border-red-500 p-4 mb-6">
                     <p class="text-sm font-semibold text-red-800">
-                        <svg class="w-4 h-4 inline-block mr-1 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> This will replace the existing data for this academic year!
+                        <svg class="w-4 h-4 inline-block mr-1 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> <span id="deletionWarningText">This will replace the existing data for this academic year!</span>
                     </p>
                 </div>
                 

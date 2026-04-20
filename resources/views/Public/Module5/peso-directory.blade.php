@@ -34,20 +34,30 @@
         .peso-howto-content * {
             color: white !important;
         }
-
-        /* ── PESO Carousel ── */
-        #peso-carousel-section {
-            height: 55vw;
-            min-height: 280px;
-            max-height: 100vh;
-            position: relative;
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        @media (min-width: 768px) {
-            #peso-carousel-section {
-                height: 100vh;
-            }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-4 {
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        /* ── PESO Carousel ── */
+        #peso-carousel-section {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
         }
 
         .peso-carousel-slide {
@@ -103,14 +113,6 @@
             }
         }
 
-        /* ── Carousel arrows smaller on very small screens ── */
-        @media (max-width: 360px) {
-            #peso-carousel-section .carousel-arrow {
-                width: 2rem !important;
-                height: 2rem !important;
-            }
-        }
-
         /* ── Prevent horizontal overflow on all screens ── */
         body {
             overflow-x: hidden;
@@ -155,7 +157,7 @@
             </template>
 
             {{-- Carousel Title Overlay — bottom-left, avoids covering faces --}}
-            <div class="absolute bottom-12 sm:bottom-20 md:bottom-24 left-4 sm:left-6 md:left-12 z-20 pointer-events-none">
+            <div class="absolute bottom-36 sm:bottom-44 md:bottom-48 left-4 sm:left-6 md:left-12 z-20 pointer-events-none">
                 <p class="text-blue-200 text-xs font-bold uppercase tracking-[0.25em] mb-1"
                     style="text-shadow: 0 1px 8px rgba(0,0,0,1);">DOLE · Region XI</p>
                 <h2 class="text-white font-black leading-tight tracking-tight"
@@ -198,22 +200,27 @@
 
             {{-- Dot indicators --}}
             <div
-                class="absolute bottom-14 sm:bottom-20 md:bottom-24 left-0 right-0 z-20
+                class="absolute bottom-24 sm:bottom-32 left-0 right-0 z-20
                     flex items-center justify-center gap-2 sm:gap-3">
                 <template x-for="(src, index) in slides" :key="index">
                     <button @click="goTo(index)"
-                        class="transition-all duration-300 rounded-full backdrop-blur-md border-2"
+                        class="transition-all duration-300"
                         :class="current === index ?
-                            'w-8 h-3 sm:w-14 sm:h-4 bg-white border-white' :
-                            'w-3 h-3 sm:w-4 sm:h-4 bg-white/40 border-white/60'"
+                            'w-16 h-4' :
+                            'w-4 h-4'"
                         :aria-label="'Go to slide ' + (index + 1)">
+                        <div class="w-full h-full rounded-full backdrop-blur-md border-2"
+                            :class="current === index ?
+                                'bg-white border-white' :
+                                'bg-white/40 border-white/60'">
+                        </div>
                     </button>
                 </template>
             </div>
 
             {{-- Scroll down arrow --}}
             <a href="#peso-directory-content"
-                class="absolute bottom-4 sm:bottom-5 md:bottom-7 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-20"
+                class="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-20"
                 @click.prevent="document.getElementById('peso-directory-content').scrollIntoView({ behavior: 'smooth' })">
                 <div class="flex flex-col items-center">
                     <svg class="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor"
@@ -246,6 +253,15 @@
                             'type' => $o['type'] ?? ($o['office_type'] ?? ''),
                         ],
                     )
+                    // Sort: PESO group first, JPO group second.
+                    // Within each group: shorter names (fewer clamp lines) first, longer names last.
+                    // Within the same clamp bucket: oldest first, latest added last.
+                    ->sortBy(fn($a) => sprintf(
+                        '%d-%04d-%010d',
+                        ($a['type'] === 'PESO' ? 0 : 1),
+                        (int) ceil(mb_strlen($a['name']) / 25),
+                        $a['id']
+                    ))
                     ->values(),
             );
         @endphp
@@ -600,8 +616,9 @@
                                         :style="`background:${typeColor(entry.type,'main')}`"
                                         x-text="entry.name.charAt(0)"></div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-bold text-slate-800 truncate uppercase"
-                                            x-text="entry.name.replace(/^(PESO|JPO)\s+/i, '')"></p>
+                                        <p class="text-sm font-bold text-slate-800 line-clamp-2 uppercase"
+                                        :title="entry.name"
+                                        x-text="entry.name"></p>
                                         {{-- FIX 2: Show position_title · persons_name instead of entry.manager --}}
                                         <p class="text-xs truncate mt-0.5 font-semibold"
                                             :style="`color:${typeColor(entry.type,'main')}`"

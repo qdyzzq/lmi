@@ -50,6 +50,37 @@ class LmiSubmissionController extends Controller
             'rejected' => LmiSubmission::where('status', 'rejected')->count(),
         ]);
     }
+
+    /**
+     * Normalize a salary value to a consistently formatted string with ₱ sign.
+     * - If it's a standard range option (already has ₱), return as-is.
+     * - If it's "Below ₱30,000", use the exact amount instead.
+     * - If it's a plain number, format it as ₱XX,XXX.
+     */
+    private function formatSalaryRange(?string $salaryRange, ?string $exactAmount = null): ?string
+    {
+        if (empty($salaryRange)) {
+            return null;
+        }
+
+        // "Below ₱30,000" selected — use the exact amount field
+        if ($salaryRange === 'Below ₱30,000') {
+            if (empty($exactAmount)) {
+                return null;
+            }
+            $numeric = (int) preg_replace('/[^0-9]/', '', $exactAmount);
+            return $numeric ? '₱' . number_format($numeric) : null;
+        }
+
+        // Already a properly formatted range (e.g. "₱30,000 - ₱59,999") — return as-is
+        if (str_contains($salaryRange, '₱')) {
+            return $salaryRange;
+        }
+
+        // Plain numeric string (e.g. "25000" or "25,000") — add ₱ and format
+        $numeric = (int) preg_replace('/[^0-9]/', '', $salaryRange);
+        return $numeric ? '₱' . number_format($numeric) : null;
+    }
     
     public function updateEngagement(Request $request, $id)
     {
@@ -170,17 +201,11 @@ class LmiSubmissionController extends Controller
                     ? array_map('trim', explode(',', $roleData['soft_skills_missing']))
                     : [];
                 
-                $salaryRange = $roleData['salary_range'] ?? null;
-
-                // If "Below ₱30,000" was selected, use the exact amount field instead
-                if ($salaryRange === 'Below ₱30,000') {
-                    $exactAmount = isset($roleData['below_30k_salary'])
-                        ? (int) preg_replace('/[^0-9]/', '', $roleData['below_30k_salary'])
-                        : null;
-                    $salaryRange = $exactAmount ?: null;
-                } elseif (is_numeric(str_replace(',', '', $salaryRange ?? ''))) {
-                    $salaryRange = (int) str_replace(',', '', $salaryRange);
-                }
+                // Format salary with ₱ sign consistently
+                $salaryRange = $this->formatSalaryRange(
+                    $roleData['salary_range'] ?? null,
+                    $roleData['below_30k_salary'] ?? null
+                );
                 
                 $role->update([
                     'job_title'               => $roleData['job_title'],
@@ -281,7 +306,7 @@ class LmiSubmissionController extends Controller
                 'respondent'     => 'required|string|max:255',
                 'position'       => 'required|string|max:255',
                 'contact_number' => 'required|string|min:9|max:20',
-                'contact_type'   => 'required|in:mobile,telephone', // ← ADDED
+                'contact_type'   => 'required|in:mobile,telephone',
                 'email'          => 'required|email|max:255',
                 'industrySelector' => 'required|string',
                 'companySize'    => 'required|string',
@@ -371,16 +396,11 @@ class LmiSubmissionController extends Controller
                     $jobDifficultyReasons = [$jobDifficultyReasons];
                 }
 
-                $salaryRange = $request->salary_range[$index];
-
-                // If "Below ₱30,000" was selected, use the exact amount field instead
-                if ($salaryRange === 'Below ₱30,000') {
-                    $rawBelow = $request->input("below_30k_salary.{$index}");
-                    $exactAmount = $rawBelow ? (int) preg_replace('/[^0-9]/', '', $rawBelow) : null;
-                    $salaryRange = $exactAmount ?: null;
-                } elseif (is_numeric(str_replace(',', '', $salaryRange ?? ''))) {
-                    $salaryRange = (int) str_replace(',', '', $salaryRange);
-                }
+                // Format salary with ₱ sign consistently
+                $salaryRange = $this->formatSalaryRange(
+                    $request->salary_range[$index] ?? null,
+                    $request->input("below_30k_salary.{$index}")
+                );
 
                 $hardToFillRole = LmiHardToFillRole::create([
                     'lmi_submission_id'        => $submission->id,

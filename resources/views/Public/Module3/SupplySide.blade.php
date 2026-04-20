@@ -275,7 +275,7 @@
                 </h1>
                 <p class="text-slate-200 font-medium mt-2"
                     style="font-size: clamp(0.75rem, 1.5vw, 1.125rem); text-shadow: 0 1px 8px rgba(0,0,0,1);">
-                    Regional Labor Market Intelligence & Trends
+                    Regional Labor Market Information & Trends
                 </p>
             </div>
         </div>

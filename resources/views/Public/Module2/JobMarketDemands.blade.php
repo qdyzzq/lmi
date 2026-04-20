@@ -673,8 +673,8 @@ textarea[name="specific_inputs"] {
         
         <div class="relative w-full h-[500px] md:h-[700px] lg:h-[900px] overflow-hidden">
             <div class="absolute inset-0">
-                <img src="{{ asset('images/navbar-bg.jpg') }}" alt="Job Market Background"
-                    class="w-full h-full object-cover object-top">
+                <img src="{{ asset('images/RD.webp') }}" alt="Job Market Background"
+                    class="w-full h-full object-cover object-center">
                 <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-100"></div>
             </div>
             
@@ -686,7 +686,7 @@ textarea[name="specific_inputs"] {
                 </h1>
                 <p class="text-slate-200 font-medium mt-2"
                     style="font-size: clamp(0.75rem, 1.5vw, 1.125rem); text-shadow: 0 1px 8px rgba(0,0,0,1);">
-                    Regional Labor Market Intelligence & Trends
+                    Regional Labor Market Information & Trends
                 </p>
             </div>
         </div>
@@ -1120,7 +1120,7 @@ textarea[name="specific_inputs"] {
     
         <div class="md:border-r border-gray-200 md:pr-6">
         <h4 class="text-xs font-bold text-gray-400 mb-4 uppercase bg-white pb-2">
-            🔍 In demand Technical Skills 
+             In demand Technical Skills 
         </h4>
         <div class="skills-scroll-wrapper" id="tech-skills-scroll-wrapper">
         <div class="flex flex-wrap gap-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar" 
@@ -1146,7 +1146,7 @@ textarea[name="specific_inputs"] {
         </div>
     <div class="md:pl-6">
         <h4 class="text-xs font-bold text-gray-400 mb-4 uppercase bg-white pb-2">
-            🚫 In demand Soft Skills 
+             In demand Soft Skills 
         </h4>
         <div class="skills-scroll-wrapper" id="soft-skills-scroll-wrapper">
         <div class="flex flex-wrap gap-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar" 
@@ -1541,7 +1541,7 @@ textarea[name="specific_inputs"] {
                                     <div class="flex items-center gap-2 mb-4">
                                         <div>
                                             <span class="text-sm font-bold text-gray-900 uppercase tracking-wide block">Missing Soft Skills</span>
-                                            <span class="text-xs text-gray-600 font-medium">(Critical Gaps)</span>
+                                            
                                         </div>
                                     </div>
                                     <template x-if="result.soft_skills && result.soft_skills.length > 0">
@@ -2261,7 +2261,7 @@ textarea[name="specific_inputs"] {
                     <label class="flex items-start cursor-pointer">
                         <input type="checkbox" name="consent" value="1" required class="consent-checkbox mt-1 w-4 h-4 text-teal-600">
                         <span class="ml-3 text-l text-gray-700">
-                            By proceeding, I signify my consent to the processing of my personal data for labor market intelligence purposes, in accordance with RA 10173 (Data Privacy Act of 2012) and its IRR. <span class="text-red-500">*</span>
+                            By proceeding, I signify my consent to the processing of my personal data for labor market Information purposes, in accordance with RA 10173 (Data Privacy Act of 2012) and its IRR. <span class="text-red-500">*</span>
                         </span>
                     </label>
                 </div>
@@ -2319,7 +2319,7 @@ textarea[name="specific_inputs"] {
             </div>
             <h3 class="text-lg font-bold text-gray-900 mb-2">Successfully Submitted!</h3>
             <p class="text-sm text-gray-500 mb-6">
-                Your Industry Skills Need Survey has been submitted successfully. Thank you for your contribution to the Labor Market Intelligence system.
+                Your Industry Skills Need Survey has been submitted successfully. Thank you for your contribution to the Labor Market Information system.
             </p>
             <button type="button" id="close-success-btn"
                     class="w-full px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition">

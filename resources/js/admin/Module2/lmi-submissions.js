@@ -1127,6 +1127,14 @@ function markTabReviewed(tabKey, submissionId) {
     _clReviewed[tabKey] = !isCurrentlyReviewed;
     if (!_clSubId) _clSubId = submissionId;
 
+    // ── Persist so reviewed state survives a page reload after saving edits ──
+    try {
+        const stored = JSON.parse(sessionStorage.getItem('lmi_reviewed') || '{}');
+        if (!stored[submissionId]) stored[submissionId] = {};
+        stored[submissionId][tabKey] = _clReviewed[tabKey];
+        sessionStorage.setItem('lmi_reviewed', JSON.stringify(stored));
+    } catch (_) {}
+
     const bar = document.getElementById('tab-review-bar-' + tabKey + '-' + submissionId);
     const btn = document.getElementById('tab-review-btn-' + tabKey + '-' + submissionId);
 
@@ -1983,6 +1991,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 document.addEventListener("DOMContentLoaded", function () {
+
+    // ── Restore "Mark as Reviewed" state that was saved before last page reload ──
+    // Reads from sessionStorage and re-applies the green "Reviewed" appearance to
+    // every bar + button that was marked before the reload happened.
+    try {
+        const stored = JSON.parse(sessionStorage.getItem('lmi_reviewed') || '{}');
+        Object.keys(stored).forEach(function (subId) {
+            const tabStates = stored[subId];
+            Object.keys(tabStates).forEach(function (tabKey) {
+                if (!tabStates[tabKey]) return; // only restore the "reviewed" ones
+
+                const bar = document.getElementById('tab-review-bar-' + tabKey + '-' + subId);
+                const btn = document.getElementById('tab-review-btn-' + tabKey + '-' + subId);
+
+                if (!bar && !btn) return; // submission not on this page
+
+                // Sync the in-memory flag so openChecklistModal / _updateProgressHint are correct
+                _clReviewed[tabKey] = true;
+
+                if (bar) bar.classList.add('is-reviewed');
+                if (btn) {
+                    btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Reviewed \u2014 click to undo';
+                    btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all bg-green-100 border-green-400 text-green-700 hover:bg-red-50 hover:border-red-300 hover:text-red-600';
+                }
+
+                // Refresh the progress hint for this submission
+                _updateProgressHint(subId);
+            });
+        });
+    } catch (_) {}
+    // ─────────────────────────────────────────────────────────────────────────
+
     document.querySelectorAll(".admin-telephone-field").forEach(function(telInput) {
         // Extract submission ID from input id: "admin-telephone-input-{id}"
         const id          = telInput.id.replace("admin-telephone-input-", "");

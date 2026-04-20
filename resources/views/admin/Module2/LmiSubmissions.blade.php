@@ -941,7 +941,6 @@
                             <textarea name="specific_inputs" rows="4" 
                                       data-original="{{ $submission->engagement->specific_inputs }}"
                                       data-label="Specific Inputs Needed"
-                                      data-required="true"
                                       class="engagement-editable-field w-full border border-slate-300 rounded px-3 py-2 text-sm" 
                                       disabled>{{ $submission->engagement->specific_inputs }}</textarea>
                         </td>
