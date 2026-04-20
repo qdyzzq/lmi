@@ -405,7 +405,7 @@ class ProgramAdminController extends Controller
             'image'         => 'required|image|max:5120',
         ]);
 
-        $data['image_path'] = 'images/' . $this->storeImage($request->file('image'), 'carousel');
+        $data['image_path'] = $this->storeImage($request->file('image'), 'carousel', 'public');
         $data['sort_order'] = CarouselSlide::max('sort_order') + 1;
         $data['is_active']  = true;
         unset($data['image']);
@@ -417,24 +417,24 @@ class ProgramAdminController extends Controller
     public function updateSlide(Request $request, CarouselSlide $slide)
     {
         $data = $request->validate([
-            'title'         => 'required|string',
-            'excerpt'       => 'required|string',
-            'link'          => 'nullable|url',
-            'program_label' => 'required|string',
-            'image'         => 'nullable|image|max:5120',
-        ]);
+        'title'         => 'required|string',
+        'excerpt'       => 'required|string',
+        'link'          => 'nullable|url',
+        'program_label' => 'required|string',
+        'image'         => 'nullable|image|max:5120',
+    ]);
 
-        if ($request->hasFile('image')) {
-            // Delete the old slide image if one exists
-            if ($slide->image_path) {
-                Storage::disk('public_images')->delete(str_replace('images/', '', $slide->image_path));
-            }
-            $data['image_path'] = 'images/' . $this->storeImage($request->file('image'), 'carousel');
+    if ($request->hasFile('image')) {
+        // Only delete old image if it was an uploaded one (not a seeded public image)
+        if ($slide->image_path && !str_starts_with($slide->image_path, 'images/')) {
+            Storage::disk('public')->delete($slide->image_path);
         }
+        $data['image_path'] = $this->storeImage($request->file('image'), 'carousel', 'public');
+    }
 
-        unset($data['image']);
-        $slide->update($data);
-        return response()->json(['success' => true]);
+    unset($data['image']);
+    $slide->update($data);
+    return response()->json(['success' => true]);
     }
 
     public function destroySlide(CarouselSlide $slide)

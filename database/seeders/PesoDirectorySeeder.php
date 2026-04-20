@@ -940,7 +940,7 @@ class PesoDirectorySeeder extends Seeder
             ],
             [
                 'province'        => 'DAVAO CITY',
-                'name'            => 'JPO Mapa Malayan Colleges Mindanao',
+                'name'            => 'JPO Mapúa Malayan Colleges Mindanao',
                 'office_type_id'  => $JPO,
                 'position_title'  => 'JPO MANAGER',
                 'persons_name'    => 'TRISHA MAE A. MENOY',
@@ -971,17 +971,17 @@ class PesoDirectorySeeder extends Seeder
 
         $slides = [
             [
-                'image_path' => 'peso-carousel\enMnrZjTLLNdMyIFuhjeEpf406NdQh2ZT7kSmBEk.webp',
+                'image_path' => 'images/carousel-peso/peso-carousel1.webp',
                 'sort_order' => 1,
                 'is_active'  => 1,
             ],
             [
-                'image_path' => 'peso-carousel\OLsFMwpen1kt7u7VnCbbKBV43HsFFyJZ852ia8CI.webp',
+                'image_path' => 'images/carousel-peso/peso-carousel2.webp',
                 'sort_order' => 2,
                 'is_active'  => 1,
             ],
             [
-                'image_path' => 'peso-carousel\xoSmUUahtj5hi59idJEdeMXozVyy2CvmgUoE8c7Q.webp',
+                'image_path' => 'images/carousel-peso/peso-carousel3.webp',
                 'sort_order' => 3,
                 'is_active'  => 1,
             ],

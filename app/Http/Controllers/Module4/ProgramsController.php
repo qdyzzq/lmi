@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Module4\Program;
 use App\Models\Module4\CarouselSlide;
 use App\Models\Module4\CtaSection;
+use App\Models\Module4\ProgramQualification;
 use App\Models\Module5\FieldOffice;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -51,7 +52,7 @@ class ProgramsController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        $qualificationTypes = \App\Models\ProgramQualification::distinct()
+        $qualificationTypes = \App\Models\Module4\ProgramQualification::distinct()
             ->pluck('type')
             ->sort()
             ->values();

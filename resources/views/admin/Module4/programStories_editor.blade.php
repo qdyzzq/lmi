@@ -432,7 +432,9 @@
                 $slidesJson = $carouselSlides
                     ->map(
                         fn($s) => [
-                            'image' => asset($s->image_path),
+                            'image' => str_starts_with($s->image_path, 'images/')
+                                ? asset($s->image_path)
+                                : asset('storage/' . $s->image_path),
                             'title' => $s->title,
                             'excerpt' => html_entity_decode(strip_tags($s->excerpt), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
                             'link' => $s->link,
@@ -1782,7 +1784,7 @@
                     ctaHasDraft: {{ $ctaHasDraft ? 'true' : 'false' }},
                     ctaIsPublished: {{ $ctaIsPublished ? 'true' : 'false' }},
                     ctaPublishing: false
-                    }"
+                }"
                 @cta-updated.window="ctaTitle = $event.detail.title; ctaSubtitle = $event.detail.subtitle; ctaHasDraft = true">
 
                 <div class="w-full mx-auto px-6 text-center">
@@ -1876,7 +1878,7 @@
                         <div x-show="modal.type === 'add-slide' || modal.type === 'edit-slide'" x-cloak
                             class="space-y-4">
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Story Title 
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Story Title
                                     <span class="text-red-500">*</span></label>
                                 <input type="text" x-model="form.title"
                                     :class="formErrors.title ? 'border-red-500 ring-2 ring-red-200' :
@@ -1889,8 +1891,12 @@
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Short Excerpt
                                     <span class="text-red-500">*</span></label>
-                                <div id="quill-excerpt" :class="formErrors.excerpt ? 'rounded-lg border-2 border-red-500' : 'rounded-lg border border-slate-300'"></div>
-                                <p x-show="formErrors.excerpt" class="mt-1 text-xs text-red-500 font-semibold" x-cloak>This field is required.</p>
+                                <div id="quill-excerpt"
+                                    :class="formErrors.excerpt ? 'rounded-lg border-2 border-red-500' :
+                                        'rounded-lg border border-slate-300'">
+                                </div>
+                                <p x-show="formErrors.excerpt" class="mt-1 text-xs text-red-500 font-semibold"
+                                    x-cloak>This field is required.</p>
                                 <div class="mt-1 text-xs text-slate-400"><span id="quill-excerpt-wordcount">0</span>
                                     words
                                 </div>
@@ -1903,9 +1909,12 @@
                                         list="slide-program-label-options" placeholder="e.g. GIP"
                                         @input="syncProgramColor(form, $event.target.value, {{ json_encode($programColorMap) }}); formErrors.program_label = false"
                                         @change="syncProgramColor(form, $event.target.value, {{ json_encode($programColorMap) }}); formErrors.program_label = false"
-                                        :class="formErrors.program_label ? 'border-red-500 ring-2 ring-red-200' : 'border-slate-300 focus:ring-indigo-400'"
+                                        :class="formErrors.program_label ? 'border-red-500 ring-2 ring-red-200' :
+                                            'border-slate-300 focus:ring-indigo-400'"
                                         class="w-full border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none" />
-                                    <p x-show="formErrors.program_label" class="mt-1 text-xs text-red-500 font-semibold" x-cloak>This field is required.</p>
+                                    <p x-show="formErrors.program_label"
+                                        class="mt-1 text-xs text-red-500 font-semibold" x-cloak>This field is required.
+                                    </p>
                                     <datalist id="slide-program-label-options">
                                         @foreach ($programs as $p)
                                             <option value="{{ $p->name }}">{{ $p->name }}</option>
@@ -1978,7 +1987,8 @@
                             "
                                     :class="formErrors.image ? 'border-red-500 ring-2 ring-red-200' : 'border-slate-300'"
                                     class="w-full border rounded-lg px-4 py-2.5 text-sm" />
-                                <p class="mt-1 text-xs text-slate-400">Accepted: JPG, PNG, WebP, GIF · Auto-converted to WebP</p>
+                                <p class="mt-1 text-xs text-slate-400">Accepted: JPG, PNG, WebP, GIF · Auto-converted
+                                    to WebP</p>
                                 <p x-show="formErrors.image" class="mt-1 text-xs text-red-500 font-semibold" x-cloak>
                                     Please upload an image.</p>
                             </div>
@@ -2027,8 +2037,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Program
-                                    Description <span
-                                        class="text-red-500">*</span></label>
+                                    Description <span class="text-red-500">*</span></label>
                                 <div id="quill-program" class="rounded-lg border border-slate-300"></div>
                                 <div class="mt-1 text-xs text-slate-400"><span id="quill-program-wordcount">0</span>
                                     words
@@ -2120,7 +2129,8 @@
                                 img.src = objectUrl;
                             "
                                     class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm" />
-                                <p class="mt-1 text-xs text-slate-400">Accepted: JPG, PNG, WebP, GIF · Auto-converted to WebP</p>
+                                <p class="mt-1 text-xs text-slate-400">Accepted: JPG, PNG, WebP, GIF · Auto-converted
+                                    to WebP</p>
                             </div>
                             <div class="flex gap-3 justify-end pt-4 border-t border-slate-200">
                                 <button type="button" @click="modal.open = false"
@@ -2264,8 +2274,9 @@
                                         Thumbnail Image <span x-show="modal.type === 'edit-story'"
                                             class="text-slate-400 font-normal">(leave blank to keep current)</span>
                                     </label>
-                                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" x-init="$el.value = '';
-                                    form.image = null;"
+                                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+                                        x-init="$el.value = '';
+                                        form.image = null;"
                                         @change="
                                 const file = $event.target.files[0];
                                 if (!file) return;
@@ -2303,7 +2314,8 @@
                             "
                                         :class="formErrors.image ? 'border-red-500 ring-2 ring-red-200' : 'border-slate-300'"
                                         class="w-full border rounded-lg px-4 py-2.5 text-sm" />
-                                    <p class="mt-1 text-xs text-slate-400">Accepted: JPG, PNG, WebP, GIF · Auto-converted to WebP</p>
+                                    <p class="mt-1 text-xs text-slate-400">Accepted: JPG, PNG, WebP, GIF ·
+                                        Auto-converted to WebP</p>
                                     <p x-show="formErrors.image" class="mt-1 text-xs text-red-500 font-semibold"
                                         x-cloak>Please upload a thumbnail image.</p>
                                 </div>
@@ -3050,13 +3062,13 @@
 
 
 
-    {{-- Blade data passed to JS --}}
-    <script>
-        window._pesoInitData = {
-            directoryHasDraft:  @json($directoryHasDraft),
-            directoryChangelog: @json($directoryChangelog),
-        };
-    </script>
+            {{-- Blade data passed to JS --}}
+            <script>
+                window._pesoInitData = {
+                    directoryHasDraft: @json($directoryHasDraft),
+                    directoryChangelog: @json($directoryChangelog),
+                };
+            </script>
 
 </body>
 

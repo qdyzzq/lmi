@@ -32,6 +32,18 @@ class UserSeeder extends Seeder
                 'created_at' => '2026-01-20 08:18:43',
                 'updated_at' => '2026-01-20 08:18:43',
             ],
+
+            [
+                'id'         => 3,
+                'name'       => 'Admin User',
+                'email'      => 'admin@lmi.com',
+                'phone_number'=> '639182870233',
+                'role'       => 'admin',
+                'department' => 'Administration',
+                'password'   => '$2y$12$jYGGxbK9b2BS/GZntTGd/uHA5Av3HTPWNa.qoTDl6YSSjf38U3CZa',
+                'created_at' => '2026-04-20 09:30:08',
+                'updated_at' => '2026-04-20 09:30:09',
+            ],
         ]);
     }
 }

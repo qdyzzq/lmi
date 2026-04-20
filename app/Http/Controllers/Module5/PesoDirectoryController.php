@@ -74,7 +74,10 @@ class PesoDirectoryController extends Controller
         $slides = PesoCarouselSlide::where('is_active', true)
             ->orderBy('sort_order')
             ->get()
-            ->map(fn($s) => asset('storage/' . $s->image_path))
+            ->map(fn($s) => str_starts_with($s->image_path, 'images/')
+        ? asset($s->image_path)
+        : asset('storage/' . $s->image_path)
+    )
             ->values()
             ->toArray();
 
@@ -447,8 +450,10 @@ class PesoDirectoryController extends Controller
             ->get()
             ->map(fn($s) => [
                 'id'         => $s->id,
-                'image'      => asset('storage/' . $s->image_path),
-                'sort_order' => $s->sort_order,
+                'image'      => str_starts_with($s->image_path, 'images/')
+                ? asset($s->image_path)
+                : asset('storage/' . $s->image_path),
+            'sort_order' => $s->sort_order,
             ])
             ->values()
             ->toArray();

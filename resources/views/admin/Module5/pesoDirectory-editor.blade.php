@@ -79,41 +79,108 @@
             line-height: 1.6;
         }
 
-        .ql-editor::-webkit-scrollbar { width: 8px; }
-        .ql-editor::-webkit-scrollbar-track { background: #f1f5f9; }
-        .ql-editor::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .ql-editor::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .ql-editor::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .ql-editor::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .ql-editor::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .ql-editor::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
 
         .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="8pt"]::before,
-        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="8pt"]::before { content: '8'; }
-        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="10pt"]::before,
-        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="10pt"]::before { content: '10'; }
-        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="11pt"]::before,
-        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="11pt"]::before { content: '11'; }
-        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12pt"]::before,
-        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12pt"]::before { content: '12'; }
-        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="14pt"]::before,
-        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="14pt"]::before { content: '14'; }
-        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="16pt"]::before,
-        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="16pt"]::before { content: '16'; }
-        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="18pt"]::before,
-        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18pt"]::before { content: '18'; }
-        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="24pt"]::before,
-        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24pt"]::before { content: '24'; }
-        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="36pt"]::before,
-        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="36pt"]::before { content: '36'; }
-        .ql-snow .ql-picker.ql-size .ql-picker-label:not([data-value])::before,
-        .ql-snow .ql-picker.ql-size .ql-picker-item:not([data-value])::before { content: '11'; }
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="8pt"]::before {
+            content: '8';
+        }
 
-        .ql-editor .ql-size-8pt  { font-size: 8pt;  }
-        .ql-editor .ql-size-10pt { font-size: 10pt; }
-        .ql-editor .ql-size-11pt { font-size: 11pt; }
-        .ql-editor .ql-size-12pt { font-size: 12pt; }
-        .ql-editor .ql-size-14pt { font-size: 14pt; }
-        .ql-editor .ql-size-16pt { font-size: 16pt; }
-        .ql-editor .ql-size-18pt { font-size: 18pt; }
-        .ql-editor .ql-size-24pt { font-size: 24pt; }
-        .ql-editor .ql-size-36pt { font-size: 36pt; }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="10pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="10pt"]::before {
+            content: '10';
+        }
+
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="11pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="11pt"]::before {
+            content: '11';
+        }
+
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12pt"]::before {
+            content: '12';
+        }
+
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="14pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="14pt"]::before {
+            content: '14';
+        }
+
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="16pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="16pt"]::before {
+            content: '16';
+        }
+
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="18pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18pt"]::before {
+            content: '18';
+        }
+
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="24pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24pt"]::before {
+            content: '24';
+        }
+
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="36pt"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="36pt"]::before {
+            content: '36';
+        }
+
+        .ql-snow .ql-picker.ql-size .ql-picker-label:not([data-value])::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item:not([data-value])::before {
+            content: '11';
+        }
+
+        .ql-editor .ql-size-8pt {
+            font-size: 8pt;
+        }
+
+        .ql-editor .ql-size-10pt {
+            font-size: 10pt;
+        }
+
+        .ql-editor .ql-size-11pt {
+            font-size: 11pt;
+        }
+
+        .ql-editor .ql-size-12pt {
+            font-size: 12pt;
+        }
+
+        .ql-editor .ql-size-14pt {
+            font-size: 14pt;
+        }
+
+        .ql-editor .ql-size-16pt {
+            font-size: 16pt;
+        }
+
+        .ql-editor .ql-size-18pt {
+            font-size: 18pt;
+        }
+
+        .ql-editor .ql-size-24pt {
+            font-size: 24pt;
+        }
+
+        .ql-editor .ql-size-36pt {
+            font-size: 36pt;
+        }
 
         /* ===== CAROUSEL ===== */
         .line-clamp-2 {
@@ -139,16 +206,19 @@
             cursor: pointer;
             position: relative;
         }
+
         .dropzone:hover {
             border-color: #6366f1;
             background: #eef2ff;
         }
+
         .dropzone.drag-over {
             border-color: #6366f1;
             background: #eef2ff;
             transform: scale(1.01);
-            box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
         }
+
         .dropzone.has-preview {
             border-style: solid;
             border-color: #a5b4fc;
@@ -156,16 +226,18 @@
             padding: 0;
             overflow: hidden;
         }
+
         .dropzone-preview-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
         }
+
         .dropzone-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(0,0,0,0.45);
+            background: rgba(0, 0, 0, 0.45);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -174,9 +246,11 @@
             transition: opacity 0.2s ease;
             border-radius: 10px;
         }
+
         .dropzone.has-preview:hover .dropzone-overlay {
             opacity: 1;
         }
+
         .dropzone-hidden-input {
             position: absolute;
             inset: 0;
@@ -204,41 +278,43 @@
             {{-- ===== CAROUSEL SECTION ===== --}}
             @php
                 $slidesJson = collect($slides ?? [])
-                    ->map(fn($s) => [
-                        'id'         => $s->id,
-                        'image'      => asset('storage/' . $s->image_path),
-                        'sort_order' => $s->sort_order,
-                    ])
+                    ->map(
+                        fn($s) => [
+                            'id' => $s->id,
+                            'image' => str_starts_with($s->image_path, 'images/')
+                                ? asset($s->image_path)
+                                : asset('storage/' . $s->image_path),
+                            'sort_order' => $s->sort_order,
+                        ],
+                    )
                     ->toJson();
             @endphp
 
             <div id="carousel-section" class="relative w-full shrink-0 overflow-hidden"
-                style="height: calc(100vh - 64px);"
-                x-data="pesoCarouselSection({{ $slidesJson }})"
-                x-init="startAutoplay()"
-                @mouseenter="stopAutoplay()"
-                @mouseleave="startAutoplay()">
+                style="height: calc(100vh - 64px);" x-data="pesoCarouselSection({{ $slidesJson }})" x-init="startAutoplay()"
+                @mouseenter="stopAutoplay()" @mouseleave="startAutoplay()">
 
                 <template x-for="(slide, index) in slides" :key="index">
-                    <div x-show="currentSlide === index"
-                        x-transition:enter="transition ease-out duration-700"
+                    <div x-show="currentSlide === index" x-transition:enter="transition ease-out duration-700"
                         x-transition:enter-start="opacity-0 transform translate-x-full"
                         x-transition:enter-end="opacity-100 transform translate-x-0"
                         x-transition:leave="transition ease-in duration-700"
                         x-transition:leave-start="opacity-100 transform translate-x-0"
-                        x-transition:leave-end="opacity-0 transform -translate-x-full"
-                        class="absolute inset-0">
+                        x-transition:leave-end="opacity-0 transform -translate-x-full" class="absolute inset-0">
 
                         {{-- Background image + overlay --}}
                         <div class="absolute inset-0">
                             <img :src="slide.image" alt="Carousel Slide"
                                 class="w-full h-full object-cover object-center">
-                            <div class="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-slate-900/20 to-slate-900/50"></div>
+                            <div
+                                class="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-slate-900/20 to-slate-900/50">
+                            </div>
                         </div>
 
                         {{-- Per-slide admin buttons (Edit / Delete) --}}
                         <div class="absolute top-6 right-6 z-30 flex gap-2">
-                            <button @click="Alpine.$data(document.getElementById('carouselModalRoot')).handleOpen({ type: 'edit-slide', id: slide.id, data: { id: slide.id, image: slide.image, sort_order: slide.sort_order } })"
+                            <button
+                                @click="Alpine.$data(document.getElementById('carouselModalRoot')).handleOpen({ type: 'edit-slide', id: slide.id, data: { id: slide.id, image: slide.image, sort_order: slide.sort_order } })"
                                 class="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-lg transition">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -246,7 +322,8 @@
                                 </svg>
                                 Edit Slide
                             </button>
-                            <button @click="Alpine.$data(document.getElementById('carouselModalRoot')).handleOpen({ type: 'delete-slide', id: slide.id })"
+                            <button
+                                @click="Alpine.$data(document.getElementById('carouselModalRoot')).handleOpen({ type: 'delete-slide', id: slide.id })"
                                 class="flex items-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-lg transition">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -288,10 +365,12 @@
 
                 {{-- Add Slide button --}}
                 <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
-                    <button @click="Alpine.$data(document.getElementById('carouselModalRoot')).handleOpen({ type: 'add-slide' })"
+                    <button
+                        @click="Alpine.$data(document.getElementById('carouselModalRoot')).handleOpen({ type: 'add-slide' })"
                         class="plus-btn flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-full shadow-2xl transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M12 4v16m8-8H4" />
                         </svg>
                         Add Carousel Slide
                     </button>
@@ -300,9 +379,7 @@
             {{-- ===== END CAROUSEL SECTION ===== --}}
 
             {{-- ===== CAROUSEL MODALS ===== --}}
-            <div id="carouselModalRoot"
-                x-data="pesoCarouselModals()"
-                x-init="init()"
+            <div id="carouselModalRoot" x-data="pesoCarouselModals()" x-init="init()"
                 @open-modal.window="handleOpen($event.detail)">
 
                 {{-- ── ADD SLIDE MODAL ── --}}
@@ -311,37 +388,42 @@
                     @keydown.escape.window="close()">
                     <div @click.stop class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
                         x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 scale-95"
-                        x-transition:enter-end="opacity-100 scale-100">
+                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
                         <div class="bg-gradient-to-r from-amber-500 to-amber-600 px-6 pt-7 pb-5 text-center">
                             <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center mx-auto mb-3">
-                                <svg class="w-7 h-7 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                                <svg class="w-7 h-7 text-amber-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M12 4v16m8-8H4" />
                                 </svg>
                             </div>
                             <h3 class="text-lg font-bold text-white">Add Carousel Slide</h3>
                         </div>
                         <div class="px-6 py-5 space-y-4">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-2">Slide Image <span class="text-red-500">*</span></label>
+                                <label class="block text-xs font-semibold text-slate-600 mb-2">Slide Image <span
+                                        class="text-red-500">*</span></label>
 
                                 {{-- Drag & Drop Zone --}}
-                                <div class="dropzone h-44"
-                                    :class="addPreview ? 'has-preview' : ''"
-                                    id="add-dropzone"
+                                <div class="dropzone h-44" :class="addPreview ? 'has-preview' : ''" id="add-dropzone"
                                     @dragover.prevent="$el.classList.add('drag-over')"
                                     @dragleave.prevent="$el.classList.remove('drag-over')"
                                     @drop.prevent="$el.classList.remove('drag-over'); handleDropAdd($event)">
 
                                     {{-- Empty state --}}
-                                    <div x-show="!addPreview" class="flex flex-col items-center justify-center h-full gap-2 px-4 text-center pointer-events-none select-none">
-                                        <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-1">
-                                            <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    <div x-show="!addPreview"
+                                        class="flex flex-col items-center justify-center h-full gap-2 px-4 text-center pointer-events-none select-none">
+                                        <div
+                                            class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-1">
+                                            <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                         </div>
                                         <p class="text-sm font-semibold text-slate-700">Drag & drop your image here</p>
-                                        <p class="text-xs text-slate-400">or <span class="text-indigo-600 font-bold">click to browse</span></p>
+                                        <p class="text-xs text-slate-400">or <span
+                                                class="text-indigo-600 font-bold">click to browse</span></p>
                                         <p class="text-xs text-slate-400 mt-1">JPG, PNG, WebP, GIF · Max 5 MB</p>
                                     </div>
 
@@ -350,32 +432,40 @@
                                         <div class="w-full h-full relative">
                                             <img :src="addPreview" class="dropzone-preview-img">
                                             <div class="dropzone-overlay">
-                                                <span class="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-lg">Click to change image</span>
+                                                <span
+                                                    class="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-lg">Click
+                                                    to change image</span>
                                             </div>
                                         </div>
                                     </template>
 
                                     {{-- Hidden file input --}}
                                     <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
-                                        class="dropzone-hidden-input"
-                                        @change="previewFile($event, 'add')">
+                                        class="dropzone-hidden-input" @change="previewFile($event, 'add')">
                                 </div>
 
                                 {{-- File info row --}}
-                                <div x-show="addFile" class="mt-2 flex items-center gap-2 text-xs text-slate-500" x-cloak>
-                                    <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                <div x-show="addFile" class="mt-2 flex items-center gap-2 text-xs text-slate-500"
+                                    x-cloak>
+                                    <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M5 13l4 4L19 7" />
                                     </svg>
                                     <span x-text="addFile?.name"></span>
-                                    <span class="text-slate-400" x-text="addFile ? '(' + (addFile.size / 1024).toFixed(1) + ' KB)' : ''"></span>
-                                    <button type="button" @click.stop="addFile = null; addPreview = null; addError = ''"
+                                    <span class="text-slate-400"
+                                        x-text="addFile ? '(' + (addFile.size / 1024).toFixed(1) + ' KB)' : ''"></span>
+                                    <button type="button"
+                                        @click.stop="addFile = null; addPreview = null; addError = ''"
                                         class="ml-auto text-red-400 hover:text-red-600 transition font-semibold">Remove</button>
                                 </div>
                             </div>
-                            <p x-show="addError" x-text="addError" class="text-red-500 text-xs font-semibold" x-cloak></p>
+                            <p x-show="addError" x-text="addError" class="text-red-500 text-xs font-semibold"
+                                x-cloak></p>
                         </div>
                         <div class="flex gap-3 px-6 pb-6">
-                            <button @click="close()" class="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 font-semibold rounded-lg text-sm hover:bg-slate-50 transition">Cancel</button>
+                            <button @click="close()"
+                                class="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 font-semibold rounded-lg text-sm hover:bg-slate-50 transition">Cancel</button>
                             <button @click="submitAdd()" :disabled="saving"
                                 class="flex-1 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold rounded-lg text-sm transition">
                                 <span x-text="saving ? 'Uploading...' : 'Add Slide'"></span>
@@ -390,13 +480,13 @@
                     @keydown.escape.window="close()">
                     <div @click.stop class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
                         x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 scale-95"
-                        x-transition:enter-end="opacity-100 scale-100">
+                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
                         <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 px-6 pt-7 pb-5 text-center">
                             <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center mx-auto mb-3">
-                                <svg class="w-7 h-7 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-7 h-7 text-indigo-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </div>
                             <h3 class="text-lg font-bold text-white">Edit Slide</h3>
@@ -404,24 +494,29 @@
                         <div class="px-6 py-5 space-y-4">
                             {{-- Current image preview --}}
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-2">Current / New Image</label>
+                                <label class="block text-xs font-semibold text-slate-600 mb-2">Current / New
+                                    Image</label>
 
                                 {{-- Drag & Drop Zone --}}
-                                <div class="dropzone h-44"
-                                    :class="editPreview || editData.image ? 'has-preview' : ''"
+                                <div class="dropzone h-44" :class="editPreview || editData.image ? 'has-preview' : ''"
                                     @dragover.prevent="$el.classList.add('drag-over')"
                                     @dragleave.prevent="$el.classList.remove('drag-over')"
                                     @drop.prevent="$el.classList.remove('drag-over'); handleDropEdit($event)">
 
                                     {{-- Empty state (no current image at all) --}}
-                                    <div x-show="!editPreview && !editData.image" class="flex flex-col items-center justify-center h-full gap-2 px-4 text-center pointer-events-none select-none">
-                                        <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-1">
-                                            <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    <div x-show="!editPreview && !editData.image"
+                                        class="flex flex-col items-center justify-center h-full gap-2 px-4 text-center pointer-events-none select-none">
+                                        <div
+                                            class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-1">
+                                            <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                         </div>
                                         <p class="text-sm font-semibold text-slate-700">Drag & drop your image here</p>
-                                        <p class="text-xs text-slate-400">or <span class="text-indigo-600 font-bold">click to browse</span></p>
+                                        <p class="text-xs text-slate-400">or <span
+                                                class="text-indigo-600 font-bold">click to browse</span></p>
                                     </div>
 
                                     {{-- Image preview (new or existing) --}}
@@ -429,8 +524,10 @@
                                         <div class="w-full h-full relative">
                                             <img :src="editPreview || editData.image" class="dropzone-preview-img">
                                             <div class="dropzone-overlay">
-                                                <span class="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-lg">
-                                                    <span x-text="editFile ? 'New image selected — click to change' : 'Click or drag to replace image'"></span>
+                                                <span
+                                                    class="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-lg">
+                                                    <span
+                                                        x-text="editFile ? 'New image selected — click to change' : 'Click or drag to replace image'"></span>
                                                 </span>
                                             </div>
                                         </div>
@@ -438,27 +535,34 @@
 
                                     {{-- Hidden file input --}}
                                     <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
-                                        class="dropzone-hidden-input"
-                                        @change="previewFile($event, 'edit')">
+                                        class="dropzone-hidden-input" @change="previewFile($event, 'edit')">
                                 </div>
 
                                 {{-- File info row (only when a NEW file is selected) --}}
-                                <div x-show="editFile" class="mt-2 flex items-center gap-2 text-xs text-slate-500" x-cloak>
-                                    <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                <div x-show="editFile" class="mt-2 flex items-center gap-2 text-xs text-slate-500"
+                                    x-cloak>
+                                    <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M5 13l4 4L19 7" />
                                     </svg>
                                     <span x-text="editFile?.name"></span>
-                                    <span class="text-slate-400" x-text="editFile ? '(' + (editFile.size / 1024).toFixed(1) + ' KB)' : ''"></span>
-                                    <button type="button" @click.stop="editFile = null; editPreview = null; editError = ''"
+                                    <span class="text-slate-400"
+                                        x-text="editFile ? '(' + (editFile.size / 1024).toFixed(1) + ' KB)' : ''"></span>
+                                    <button type="button"
+                                        @click.stop="editFile = null; editPreview = null; editError = ''"
                                         class="ml-auto text-red-400 hover:text-red-600 transition font-semibold">Revert</button>
                                 </div>
 
-                                <p class="mt-1.5 text-xs text-slate-400">JPG, PNG, WebP, GIF · Max 5 MB · Leave unchanged to keep current image</p>
+                                <p class="mt-1.5 text-xs text-slate-400">JPG, PNG, WebP, GIF · Max 5 MB · Leave
+                                    unchanged to keep current image</p>
                             </div>
-                            <p x-show="editError" x-text="editError" class="text-red-500 text-xs font-semibold" x-cloak></p>
+                            <p x-show="editError" x-text="editError" class="text-red-500 text-xs font-semibold"
+                                x-cloak></p>
                         </div>
                         <div class="flex gap-3 px-6 pb-6">
-                            <button @click="close()" class="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 font-semibold rounded-lg text-sm hover:bg-slate-50 transition">Cancel</button>
+                            <button @click="close()"
+                                class="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 font-semibold rounded-lg text-sm hover:bg-slate-50 transition">Cancel</button>
                             <button @click="submitEdit()" :disabled="saving"
                                 class="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-lg text-sm transition">
                                 <span x-text="saving ? 'Saving...' : 'Save Changes'"></span>
@@ -473,21 +577,23 @@
                     @keydown.escape.window="close()">
                     <div @click.stop class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
                         x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 scale-95"
-                        x-transition:enter-end="opacity-100 scale-100">
+                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
                         <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 pt-7 pb-5 text-center">
                             <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center mx-auto mb-3">
-                                <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                             </div>
                             <h3 class="text-lg font-bold text-white">Delete Slide?</h3>
                         </div>
                         <div class="px-6 py-5 text-center">
-                            <p class="text-sm text-slate-600 mb-5">This slide will be permanently removed from the carousel. This action cannot be undone.</p>
+                            <p class="text-sm text-slate-600 mb-5">This slide will be permanently removed from the
+                                carousel. This action cannot be undone.</p>
                             <div class="flex gap-3">
-                                <button @click="close()" class="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 font-semibold rounded-lg text-sm hover:bg-slate-50 transition">Cancel</button>
+                                <button @click="close()"
+                                    class="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 font-semibold rounded-lg text-sm hover:bg-slate-50 transition">Cancel</button>
                                 <button @click="submitDelete()" :disabled="saving"
                                     class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold rounded-lg text-sm transition">
                                     <span x-text="saving ? 'Deleting...' : 'Yes, Delete'"></span>
@@ -520,7 +626,8 @@
                             </div>
                             <div>
                                 <p class="text-sm font-bold text-slate-700">PESO Info Section Editor</p>
-                                <p class="text-xs text-slate-400 mt-0.5">Edit the "What is PESO?" content block shown on
+                                <p class="text-xs text-slate-400 mt-0.5">Edit the "What is PESO?" content block shown
+                                    on
                                     the public page</p>
                             </div>
                         </div>
@@ -1327,7 +1434,8 @@
                                     class="w-full border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none bg-white cursor-pointer">
                                     <option value="" disabled selected hidden>— Select position —</option>
                                     <template x-for="t in filteredPositionTitles" :key="t">
-                                        <option :value="t" x-text="t" :selected="form.position_title === t"></option>
+                                        <option :value="t" x-text="t"
+                                            :selected="form.position_title === t"></option>
                                     </template>
                                 </select>
                                 <p x-show="formErrors.position_title" class="mt-1 text-xs text-red-500 font-semibold"
@@ -1688,16 +1796,16 @@
         window._pesoData = @json($pesoJson);
 
         window._pesoInitData = {
-            pesoInfoHasDraft:   @json($pesoInfoHasDraft),
-            pesoInfoChangelog:  @json($pesoInfoChangelog),
-            directoryHasDraft:  @json($directoryHasDraft),
+            pesoInfoHasDraft: @json($pesoInfoHasDraft),
+            pesoInfoChangelog: @json($pesoInfoChangelog),
+            directoryHasDraft: @json($directoryHasDraft),
             directoryChangelog: @json($directoryChangelog),
             pesoInfo: {
-                description:    @json($pesoInfo['description']    ?? ''),
-                objective:      @json($pesoInfo['objective']      ?? ''),
-                how_to_avail:   @json($pesoInfo['how_to_avail']   ?? ''),
-                core_services:  @json($pesoInfo['core_services']  ?? []),
-                beneficiaries:  @json($pesoInfo['beneficiaries']  ?? []),
+                description: @json($pesoInfo['description'] ?? ''),
+                objective: @json($pesoInfo['objective'] ?? ''),
+                how_to_avail: @json($pesoInfo['how_to_avail'] ?? ''),
+                core_services: @json($pesoInfo['core_services'] ?? []),
+                beneficiaries: @json($pesoInfo['beneficiaries'] ?? []),
                 extra_sections: @json($pesoInfo['extra_sections'] ?? []),
             },
         };

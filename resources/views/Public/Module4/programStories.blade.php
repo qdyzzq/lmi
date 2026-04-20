@@ -274,7 +274,9 @@
             $carouselSlidesJson = $carouselSlides
                 ->map(
                     fn($s) => [
-                        'image' => asset($s->image_path),
+                        'image' => str_starts_with($s->image_path, 'images/')
+                            ? asset($s->image_path)
+                            : asset('storage/' . $s->image_path),
                         'title' => $s->title,
                         'excerpt' => strip_tags($s->excerpt ?? ''),
                         'link' => $sanitizeUrl($s->link),
@@ -571,7 +573,7 @@
                                         {{ $snapSubtitle }}</p>
                                 </div>
                             </div>
-                                <div class="flex items-center gap-3 flex-shrink-0 ml-4">
+                            <div class="flex items-center gap-3 flex-shrink-0 ml-4">
                                 <span class="text-xs md:text-sm font-semibold hidden xs:hidden sm:block"
                                     :style="open ? 'color:{{ $c['600'] }}' : 'color:#94a3b8'">
                                     <span x-show="!open">Click to expand</span>
