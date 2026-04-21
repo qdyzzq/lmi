@@ -299,7 +299,8 @@
             </p>
 
             <!-- PESO / JPO Directory -->
-            <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true"
+            <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" 
+                @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2"
                 @mouseleave="hovered = false">
                 <a href="{{ route('admin.peso-directory.index') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
