@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Module3;
 
 use App\Models\Module3\DisciplineEnrollment;
+use App\Models\Module3\SupplySideAnalysis;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class DisciplineEnrollmentController extends Controller
@@ -78,6 +80,25 @@ class DisciplineEnrollmentController extends Controller
                     ->where('province', $province)
                     ->where('institution_type', $institutionType)
                     ->delete();
+
+                // ── Cascade: hard-delete supply side analysis if no enrollment
+                // data remains for this province + year (both Public and Private gone).
+                // We delete rather than deactivate so that re-entering the same year
+                // later starts clean with no duplicate records.
+                $remainingEnrollments = DisciplineEnrollment::where('academic_year', $academicYear)
+                    ->where('province', $province)
+                    ->count();
+
+                if ($remainingEnrollments === 0) {
+                    SupplySideAnalysis::where('academic_year', $academicYear)
+                        ->where('province', $province)
+                        ->delete();
+
+                    Log::info('SupplySideAnalysis deleted due to enrollment deletion', [
+                        'province'      => $province,
+                        'academic_year' => $academicYear,
+                    ]);
+                }
 
                 DB::commit();
 

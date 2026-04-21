@@ -190,6 +190,8 @@ function adminSupplySideEditor() {
         },
 
         async loadDefaultText(markChanged = true) {
+            // Only allowed when there is no pending submission and no published analysis
+            if (this.pendingSubmission || this.publishedExists) return;
             try {
                 const res  = await fetch('/api/supply-side-analysis/reset');
                 const data = await res.json();

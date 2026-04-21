@@ -55,7 +55,7 @@ class SupplySideAnalysisController extends Controller
                 return response()->json([
                     'success'        => true,
                     'provinces'      => ['Davao Region'],
-                    'academic_years' => ['2022-2023', '2021-2022'],
+                    'academic_years' => [],
                 ]);
             }
 
@@ -89,7 +89,7 @@ class SupplySideAnalysisController extends Controller
             return response()->json([
                 'success'        => true,
                 'provinces'      => ['Davao Region'],
-                'academic_years' => ['2022-2023'],
+                'academic_years' => [],
             ]);
         }
     }
@@ -137,8 +137,11 @@ class SupplySideAnalysisController extends Controller
     /**
      * Return distinct academic years for the given province.
      *
-     * - Davao Region → only rows where institution_type = 'Total'
+     * - Davao Region → all rows where province = 'Davao Region' (Public + Private)
      * - Any other province → all rows for that province (Private + Public)
+     *
+     * Returns an empty array if no enrollment data exists for the given province,
+     * ensuring deleted enrollment years never surface as valid options.
      */
     private function fetchYearsForProvince(string $tableName, string $province): array
     {
@@ -148,34 +151,17 @@ class SupplySideAnalysisController extends Controller
             ->where('academic_year', '!=', '');
 
         if ($this->isAllProvinces($province)) {
-            $query->where('province', 'Davao Region')
-                  ->where('institution_type', 'Total');
+            $query->where('province', 'Davao Region');
         } else {
             $query->where('province', $province);
         }
 
-        $years = $query->distinct()
+        return $query->distinct()
             ->orderByDesc('academic_year')
             ->pluck('academic_year')
             ->unique()
             ->values()
             ->toArray();
-
-        // Fallback: return all years if nothing found for this province
-        if (empty($years)) {
-            $years = DB::table($tableName)
-                ->select('academic_year')
-                ->whereNotNull('academic_year')
-                ->where('academic_year', '!=', '')
-                ->distinct()
-                ->orderByDesc('academic_year')
-                ->pluck('academic_year')
-                ->unique()
-                ->values()
-                ->toArray();
-        }
-
-        return $years;
     }
 
     /**
