@@ -34,6 +34,7 @@
         .peso-howto-content * {
             color: white !important;
         }
+
         .line-clamp-2 {
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -47,12 +48,14 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+
         .line-clamp-4 {
             display: -webkit-box;
             -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+
         /* ── PESO Carousel ── */
         #peso-carousel-section {
             height: 100vh;
@@ -99,6 +102,7 @@
             .office-type-grid {
                 grid-template-columns: repeat(2, 1fr) !important;
             }
+
             /* Tighten office type card padding on very small screens */
             .office-type-grid button {
                 padding: 0.625rem !important;
@@ -125,6 +129,7 @@
                 align-items: center !important;
                 text-align: center !important;
             }
+
             .peso-hero-flex .peso-description-content {
                 text-align: left !important;
             }
@@ -142,7 +147,6 @@
     @endphp
 
     @if (count($pesoCarouselImages) > 0)
-
         <div id="peso-carousel-section" x-data="pesoPhotoCarousel({{ json_encode($pesoCarouselImages) }})" x-init="startAutoplay()" @mouseenter="stopAutoplay()"
             @mouseleave="startAutoplay()">
 
@@ -157,7 +161,8 @@
             </template>
 
             {{-- Carousel Title Overlay — bottom-left, avoids covering faces --}}
-            <div class="absolute bottom-36 sm:bottom-44 md:bottom-48 left-4 sm:left-6 md:left-12 z-20 pointer-events-none">
+            <div
+                class="absolute bottom-36 sm:bottom-44 md:bottom-48 left-4 sm:left-6 md:left-12 z-20 pointer-events-none">
                 <p class="text-blue-200 text-xs font-bold uppercase tracking-[0.25em] mb-1"
                     style="text-shadow: 0 1px 8px rgba(0,0,0,1);">DOLE · Region XI</p>
                 <h2 class="text-white font-black leading-tight tracking-tight"
@@ -203,8 +208,7 @@
                 class="absolute bottom-24 sm:bottom-32 left-0 right-0 z-20
                     flex items-center justify-center gap-2 sm:gap-3">
                 <template x-for="(src, index) in slides" :key="index">
-                    <button @click="goTo(index)"
-                        class="transition-all duration-300"
+                    <button @click="goTo(index)" class="transition-all duration-300"
                         :class="current === index ?
                             'w-16 h-4' :
                             'w-4 h-4'"
@@ -223,13 +227,13 @@
                 class="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-20"
                 @click.prevent="document.getElementById('peso-directory-content').scrollIntoView({ behavior: 'smooth' })">
                 <div class="flex flex-col items-center">
-                    <svg class="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white drop-shadow-lg" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                     </svg>
                     <p class="text-white text-xs sm:text-sm mt-0.5 sm:mt-2 font-medium"
-                       style="text-shadow: 0 1px 6px rgba(0,0,0,0.8);">Scroll to explore</p>
+                        style="text-shadow: 0 1px 6px rgba(0,0,0,0.8);">Scroll to explore</p>
                 </div>
             </a>
 
@@ -256,12 +260,14 @@
                     // Sort: PESO group first, JPO group second.
                     // Within each group: shorter names (fewer clamp lines) first, longer names last.
                     // Within the same clamp bucket: oldest first, latest added last.
-                    ->sortBy(fn($a) => sprintf(
-                        '%d-%04d-%010d',
-                        ($a['type'] === 'PESO' ? 0 : 1),
-                        (int) ceil(mb_strlen($a['name']) / 25),
-                        $a['id']
-                    ))
+                    ->sortBy(
+                        fn($a) => sprintf(
+                            '%d-%04d-%010d',
+                            $a['type'] === 'PESO' ? 0 : 1,
+                            (int) ceil(mb_strlen($a['name']) / 25),
+                            $a['id'],
+                        ),
+                    )
                     ->values(),
             );
         @endphp
@@ -367,7 +373,8 @@
             </div>
 
             {{-- How to avail footer --}}
-            <div class="mx-3 sm:mx-6 md:mx-8 mb-4 sm:mb-6 bg-blue-600 rounded-xl px-4 sm:px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div
+                class="mx-3 sm:mx-6 md:mx-8 mb-4 sm:mb-6 bg-blue-600 rounded-xl px-4 sm:px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div class="flex items-center gap-3 flex-1">
                     <svg class="w-5 h-5 text-blue-200 flex-shrink-0" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
@@ -444,34 +451,33 @@
                     {{-- Custom dropdown: avoids overflow-clipping & off-screen issues on mobile --}}
                     <div class="relative w-full" x-data="{ open: false }" @keydown.escape.window="open = false">
                         {{-- Trigger button --}}
-                        <button type="button"
-                            @click="open = !open"
+                        <button type="button" @click="open = !open"
                             class="w-full flex items-center justify-between bg-white border-2 rounded-xl px-4 py-3 pr-4 text-sm font-semibold outline-none transition-all cursor-pointer text-left"
-                            :class="province ? 'border-orange-400 shadow-[0_0_0_3px_rgba(251,146,60,0.15)] text-slate-800' : 'border-slate-200 text-slate-400 hover:border-slate-300'">
+                            :class="province ? 'border-orange-400 shadow-[0_0_0_3px_rgba(251,146,60,0.15)] text-slate-800' :
+                                'border-slate-200 text-slate-400 hover:border-slate-300'">
                             <span x-text="province || 'Select Province'"></span>
                             <svg class="w-4 h-4 flex-shrink-0 transition-transform duration-200 text-slate-400"
-                                :class="open ? 'rotate-180' : ''"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
 
                         {{-- Dropdown panel --}}
-                        <div x-show="open"
-                            @click.outside="open = false"
+                        <div x-show="open" @click.outside="open = false"
                             x-transition:enter="transition ease-out duration-150"
                             x-transition:enter-start="opacity-0 -translate-y-1"
                             x-transition:enter-end="opacity-100 translate-y-0"
                             x-transition:leave="transition ease-in duration-100"
                             x-transition:leave-start="opacity-100 translate-y-0"
-                            x-transition:leave-end="opacity-0 -translate-y-1"
-                            x-cloak
+                            x-transition:leave-end="opacity-0 -translate-y-1" x-cloak
                             style="position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:9999; background:white; border:2px solid #e2e8f0; border-radius:0.75rem; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:min(260px, 45vh); overflow-y:auto;">
                             @foreach ($pesoProvinceKeys as $prov)
-                                <button type="button"
-                                    @click="selectProvince('{{ $prov }}'); open = false"
+                                <button type="button" @click="selectProvince('{{ $prov }}'); open = false"
                                     class="w-full text-left px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-orange-50 hover:text-orange-600"
-                                    :class="province === '{{ $prov }}' ? 'bg-orange-50 text-orange-600' : 'text-slate-700'">
+                                    :class="province === '{{ $prov }}' ? 'bg-orange-50 text-orange-600' :
+                                        'text-slate-700'">
                                     {{ $prov }}
                                 </button>
                             @endforeach
@@ -542,7 +548,8 @@
                     <div class="rounded-xl px-4 sm:px-5 py-3 sm:py-4 mb-4 sm:mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
                         style="background:#f0fdf4; border:1.5px solid #bbf7d0;">
                         <div>
-                            <p class="text-base sm:text-lg font-extrabold text-slate-800 uppercase" x-text="province"></p>
+                            <p class="text-base sm:text-lg font-extrabold text-slate-800 uppercase" x-text="province">
+                            </p>
                             <p class="text-xs sm:text-sm mt-0.5 text-slate-500">
                                 <strong class="text-green-600"
                                     x-text="countFor(province,'PESO') + ' PESO Offices'"></strong>
@@ -603,39 +610,40 @@
                         <p class="text-xs mt-1">Try a different search term</p>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 items-start" x-data="{ openId: null }">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 items-start"
+                        x-data="{ openId: null }">
                         <template x-for="entry in filteredEntries()" :key="entry.id">
                             <div class="rounded-xl border-2 overflow-hidden transition-all duration-200"
                                 :style="openId === entry.id ?
                                     `border-color:${typeColor(entry.type,'border')}; background:${typeColor(entry.type,'bg')}; box-shadow:0 4px 16px rgba(0,0,0,0.08)` :
                                     'border-color:#e2e8f0; background:white; box-shadow:0 1px 4px rgba(0,0,0,0.04)'">
 
-                                <div class="flex items-center gap-3 px-4 py-3 cursor-pointer select-none"
+                                <div class="flex items-start gap-3 px-4 py-3 cursor-pointer select-none"
                                     @click="openId = (openId === entry.id) ? null : entry.id">
-                                    <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-white font-bold text-sm"
+                                    <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-white font-bold text-sm mt-0.5"
                                         :style="`background:${typeColor(entry.type,'main')}`"
                                         x-text="entry.name.charAt(0)"></div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-bold text-slate-800 line-clamp-2 uppercase"
-                                        :title="entry.name"
-                                        x-text="entry.name"></p>
+                                        <p class="text-sm font-bold text-slate-800 line-clamp-2 uppercase leading-snug"
+                                            :title="entry.name" x-text="entry.name"></p>
                                         {{-- FIX 2: Show position_title · persons_name instead of entry.manager --}}
                                         <p class="text-xs truncate mt-0.5 font-semibold"
                                             :style="`color:${typeColor(entry.type,'main')}`"
                                             x-text="(entry.position_title ? entry.position_title + ' · ' : '') + (entry.persons_name || '—')">
                                         </p>
                                     </div>
-                                    <span
-                                        class="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-lg flex-shrink-0"
-                                        :style="`background:${typeColor(entry.type,'bg')}; color:${typeColor(entry.type,'main')}; border:1.5px solid ${typeColor(entry.type,'border')}`"
-                                        x-text="entry.type"></span>
-                                    <svg class="w-4 h-4 flex-shrink-0 transition-transform duration-200"
-                                        :class="openId === entry.id ? 'rotate-180' : ''"
-                                        :style="`color:${typeColor(entry.type,'main')}`" fill="none"
-                                        stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                            d="M19 9l-7 7-7-7" />
-                                    </svg>
+                                    <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                        <span class="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-lg"
+                                            :style="`background:${typeColor(entry.type,'bg')}; color:${typeColor(entry.type,'main')}; border:1.5px solid ${typeColor(entry.type,'border')}`"
+                                            x-text="entry.type"></span>
+                                        <svg class="w-4 h-4 transition-transform duration-200"
+                                            :class="openId === entry.id ? 'rotate-180' : ''"
+                                            :style="`color:${typeColor(entry.type,'main')}`" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
                                 </div>
 
                                 <div x-show="openId === entry.id" x-cloak

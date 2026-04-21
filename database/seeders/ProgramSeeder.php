@@ -1,11 +1,12 @@
 <?php
 namespace Database\Seeders;
-use App\Models\Program;
-use App\Models\ProgramQualification;
-use App\Models\ProgramStory;
-use App\Models\ProgramTestimonial;
+use App\Models\Module4\Program;
+use App\Models\Module4\ProgramQualification;
+use App\Models\Module4\ProgramStory;
+use App\Models\Module4\ProgramTestimonial;
+use App\Models\Module4\ProgramHowToApply;
 use Illuminate\Database\Seeder;
-use App\Models\CarouselSlide;
+use App\Models\Module4\CarouselSlide;
 
 
 class ProgramSeeder extends Seeder
@@ -19,7 +20,7 @@ class ProgramSeeder extends Seeder
         'link'          => 'https://ro11.dole.gov.ph/news/from-dole-gip-beneficiary-to-city-hr-leader-a-youth-employment-success-story/',
         'image_path'    => 'images/testimonials/GIP.jpg',
         'program_label' => 'GIP',
-        'color'         => 'green',
+      
         'sort_order'    => 1,
         'is_active'     => 1,
         'created_at'    => now(),
@@ -31,7 +32,7 @@ class ProgramSeeder extends Seeder
         'link'          => 'https://ro11.dole.gov.ph/news/the-success-story-of-camp-holidays-jobstart-graduates-from-interns-to-full-fledged-employees/',
         'image_path'    => 'images/testimonials/jobstart.jpg',
         'program_label' => 'JobStart',
-        'color'         => 'red',
+     
         'sort_order'    => 2,
         'is_active'     => 1,
         'created_at'    => now(),
@@ -43,7 +44,6 @@ class ProgramSeeder extends Seeder
         'link'          => 'https://ro11.dole.gov.ph/news/spes-grantee-achieves-latin-honors-and-graduation-success-khacley-marinos-inspiring-journey/',
         'image_path'    => 'images/testimonials/spes.jpeg',
         'program_label' => 'SPES',
-        'color'         => 'blue',
         'sort_order'    => 3,
         'is_active'     => 1,
         'created_at'    => now(),
@@ -55,7 +55,7 @@ class ProgramSeeder extends Seeder
         'link'          => 'https://ro11.dole.gov.ph/news/the-courage-to-begin-philip-tecsons-journey-fresh-out-of-college-with-doles-career-development-service-program/',
         'image_path'    => 'images/testimonials/CDSP.jpg',
         'program_label' => 'CDSP',
-        'color'         => 'yellow',
+     
         'sort_order'    => 4,
         'is_active'     => 1,
         'created_at'    => now(),
@@ -66,7 +66,6 @@ class ProgramSeeder extends Seeder
         $gip = Program::create([
             'name'        => 'Government Internship Program',
             'acronym'     => 'GIP',
-            'subtitle'    => '3–6 month internship opportunity in government',
             'description' => 'A youth employability program which aims to provide 3–6 months internship opportunity in the government for high school, technical-vocational or college graduates to build their capabilities and make them more employable.',
             'color'       => 'green',
             'logo_path'   => 'images/logo-programs/gip_logo.png',
@@ -77,6 +76,10 @@ class ProgramSeeder extends Seeder
             ['program_id' => $gip->id, 'type' => 'qualification', 'content' => 'Individuals aged 31+ may qualify under specific conditions (no/intermittent work experience, laid off, or displaced by disasters)', 'sort_order' => 2],
             ['program_id' => $gip->id, 'type' => 'requirement',   'content' => 'High school / Senior High School Graduate or equivalent, or technical-vocational graduate', 'sort_order' => 1],
             ['program_id' => $gip->id, 'type' => 'requirement',   'content' => 'Victims of armed conflicts, rebel returnees, PWDs and Indigenous Peoples also eligible', 'sort_order' => 2],
+        ]);
+        ProgramHowToApply::insert([
+            ['program_id' => $gip->id, 'content' => 'Visit the GIP system for Region 11 to register.', 'link' => 'https://gip.dole11portal.org', 'sort_order' => 1],
+            ['program_id' => $gip->id, 'content' => 'Wait for correspondence on approval/acceptance.', 'link' => null, 'sort_order' => 2],
         ]);
         ProgramTestimonial::create([
             'program_id'  => $gip->id,
@@ -98,7 +101,6 @@ class ProgramSeeder extends Seeder
         $jobstart = Program::create([
             'name'        => 'JobStart Program',
             'acronym'     => 'JobStart',
-            'subtitle'    => 'Youth employment initiative with career coaching & training',
             'description' => 'A youth employability program which aims to shorten the school-to-work transition of youth not in education, employment, or training by providing them with career coaching, life skills and technical training, and internships with employers.',
             'color'       => 'red',
             'logo_path'   => 'images/logo-programs/jobstart_logo.png',
@@ -110,6 +112,9 @@ class ProgramSeeder extends Seeder
             ['program_id' => $jobstart->id, 'type' => 'requirement',   'content' => 'Reached at least Grade 7 or first year high school', 'sort_order' => 1],
             ['program_id' => $jobstart->id, 'type' => 'requirement',   'content' => '0–12 months work experience', 'sort_order' => 2],
             ['program_id' => $jobstart->id, 'type' => 'requirement',   'content' => 'Actively looking for work', 'sort_order' => 3],
+        ]);
+        ProgramHowToApply::insert([
+            ['program_id' => $jobstart->id, 'content' => 'Registration takes place at participating Public Employment Service Office (PESO) on a first-come, first-served basis at JobStart implementation sites: Davao City, Panabo City, Tagum City, Island Garden City of Samal (IGACOS), Davao del Sur, and Davao Oriental.', 'link' => null, 'sort_order' => 1],
         ]);
         ProgramTestimonial::create([
             'program_id'  => $jobstart->id,
@@ -131,7 +136,6 @@ class ProgramSeeder extends Seeder
         $spes = Program::create([
             'name'        => 'Special Program for Employment of Students',
             'acronym'     => 'SPES',
-            'subtitle'    => 'Short-term employment for underprivileged students',
             'description' => 'A youth employability program which aims to provide short-term employment to underprivileged students, out-of-school youth, and dependents of displaced or would-be displaced workers. The program helps augment the family\'s income and ensures beneficiaries are able to pursue their education.',
             'color'       => 'blue',
             'logo_path'   => 'images/logo-programs/spes_logo.png',
@@ -142,6 +146,9 @@ class ProgramSeeder extends Seeder
             ['program_id' => $spes->id, 'type' => 'qualification', 'content' => 'Combined net income after tax of parents does not exceed the regional poverty threshold', 'sort_order' => 2],
             ['program_id' => $spes->id, 'type' => 'requirement',   'content' => 'Must have obtained a passing general weighted average during the last semester or school year attended', 'sort_order' => 1],
             ['program_id' => $spes->id, 'type' => 'requirement',   'content' => 'Must be certified by the barangay or local SWDO as OSY', 'sort_order' => 2],
+        ]);
+        ProgramHowToApply::insert([
+            ['program_id' => $spes->id, 'content' => 'Registration takes place at participating Public Employment Service Offices (PESO) on a first-come, first-served basis.', 'link' => null, 'sort_order' => 1],
         ]);
         ProgramTestimonial::create([
             'program_id'  => $spes->id,
@@ -162,7 +169,6 @@ class ProgramSeeder extends Seeder
         $cdsp = Program::create([
             'name'        => 'Career Development Support Program',
             'acronym'     => 'CDSP',
-            'subtitle'    => 'Career counseling & employment support services',
             'description' => 'CDSP is a public employment service which aims to address gaps in employability dimensions — personal and environmental factors, job objectives, skills and requirements to perform the job, job search skills, and ability to maintain a job — through career, vocational, and employment counseling. The objective is to assist individuals to find the right job, identify appropriate upskilling or reskilling interventions, and progress in their chosen career path.',
             'color'       => 'yellow',
             'logo_path'   => 'images/logo-programs/cdsp_logo.png',
@@ -178,6 +184,9 @@ class ProgramSeeder extends Seeder
             ['program_id' => $cdsp->id, 'type' => 'service',     'content' => 'Career Counseling',       'sort_order' => 1],
             ['program_id' => $cdsp->id, 'type' => 'service',     'content' => 'Vocational Counseling',   'sort_order' => 2],
             ['program_id' => $cdsp->id, 'type' => 'service',     'content' => 'Employment Counseling',   'sort_order' => 3],
+        ]);
+        ProgramHowToApply::insert([
+            ['program_id' => $cdsp->id, 'content' => 'Registration takes place at participating Public Employment Service Offices (PESO) and Partner Job Placement Offices for Students.', 'link' => null, 'sort_order' => 1],
         ]);
         ProgramTestimonial::create([
             'program_id'  => $cdsp->id,
@@ -199,7 +208,6 @@ class ProgramSeeder extends Seeder
         $jobfair = Program::create([
             'name'        => 'Job Fairs',
             'acronym'     => 'Job Fair',
-            'subtitle'    => 'Employment facilitation — connecting jobseekers & employers in one venue',
             'description' => 'An employment facilitation strategy aimed to fast-track the meeting of jobseekers and employers/recruitment agencies in one venue at a specific date to reduce cost, time, and effort particularly on the part of the applicants. This is open to all unemployed, skilled and unskilled workers, college and senior high school graduates, graduates of training institutions, displaced workers, and employees seeking advancement.',
             'color'       => 'cyan',
             'logo_path'   => 'images/logo-programs/jobfair_logo.jpg',
@@ -214,6 +222,9 @@ class ProgramSeeder extends Seeder
             ['program_id' => $jobfair->id, 'type' => 'service',   'content' => 'Training and Referral Services', 'sort_order' => 3],
             ['program_id' => $jobfair->id, 'type' => 'service',   'content' => 'Livelihood Assistance', 'sort_order' => 4],
             ['program_id' => $jobfair->id, 'type' => 'service',   'content' => 'Assistance on the Issuance of Pre-Employment Requirements', 'sort_order' => 5],
+        ]);
+        ProgramHowToApply::insert([
+            ['program_id' => $jobfair->id, 'content' => 'See the list of upcoming Job Fairs to find a schedule near you.', 'link' => 'https://ro11.dole.gov.ph/job-fair-schedules/', 'sort_order' => 1],
         ]);
         ProgramTestimonial::create([
             'program_id'  => $jobfair->id,

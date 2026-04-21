@@ -523,14 +523,38 @@ function toggleDiagnosisEdit(button) {
         });
     });
 
-    // ── Show/hide the "Other" text input ──────────────────────────────────
+    // ── Show/hide the "Other" text input (rejection reasons checkbox) ──────
     const otherCheckbox = form.querySelector('.admin-diagnosis-other-checkbox');
     const otherInput    = form.querySelector('.admin-diagnosis-other-input');
     if (otherCheckbox && otherInput) {
         otherCheckbox.checked ? otherInput.classList.remove('hidden') : otherInput.classList.add('hidden');
         otherCheckbox.addEventListener('change', function () {
             this.checked ? otherInput.classList.remove('hidden') : otherInput.classList.add('hidden');
+            if (!this.checked) {
+                const txt = otherInput.querySelector('input, textarea');
+                if (txt) txt.value = '';
+            }
         });
+    }
+
+    // ── Show/hide the coord "Other" text input (coordination frequency radio) ──
+    form.querySelectorAll('.admin-diagnosis-radio').forEach(radio => {
+        radio.addEventListener('change', function () {
+            const wrap = form.querySelector('[id^="admin-coord-other-wrap-"]');
+            if (wrap) {
+                wrap.classList.toggle('hidden', this.value !== 'Other');
+                if (this.value !== 'Other') {
+                    const txt = wrap.querySelector('input, textarea');
+                    if (txt) txt.value = '';
+                }
+            }
+        });
+    });
+    // On edit open: show wrap immediately if "Other" is already selected
+    const coordOtherRadio = form.querySelector('.admin-diagnosis-radio[value="Other"]');
+    const coordOtherWrap  = form.querySelector('[id^="admin-coord-other-wrap-"]');
+    if (coordOtherRadio && coordOtherWrap) {
+        coordOtherWrap.classList.toggle('hidden', !coordOtherRadio.checked);
     }
 
     _setReviewBtnLocked(card, 'impact', true);
@@ -588,6 +612,13 @@ function cancelDiagnosisEdit(button) {
         otherCheckbox.checked ? otherInput.classList.remove('hidden') : otherInput.classList.add('hidden');
     }
 
+    // Re-evaluate coord "Other" wrap visibility after radio restore
+    const coordOtherRadio = form.querySelector('.admin-diagnosis-radio[value="Other"]');
+    const coordOtherWrap  = form.querySelector('[id^="admin-coord-other-wrap-"]');
+    if (coordOtherRadio && coordOtherWrap) {
+        coordOtherWrap.classList.toggle('hidden', !coordOtherRadio.checked);
+    }
+
     card.querySelector('.edit-diagnosis-btn').classList.remove('hidden');
     card.querySelector('.save-diagnosis-btn').classList.add('hidden');
     card.querySelector('.cancel-diagnosis-btn').classList.add('hidden');
@@ -632,6 +663,10 @@ function toggleEngagementEdit(button) {
         otherCheckbox.checked ? otherInput.classList.remove('hidden') : otherInput.classList.add('hidden');
         otherCheckbox.addEventListener('change', function () {
             this.checked ? otherInput.classList.remove('hidden') : otherInput.classList.add('hidden');
+            if (!this.checked) {
+                const txt = otherInput.querySelector('input, textarea');
+                if (txt) txt.value = '';
+            }
         });
     }
 
@@ -868,6 +903,13 @@ function validateAdminForm(form, formType) {
                 _adminGroupError(firstRadio.closest('label'), 'Please select a coordination frequency.');
             }
             valid = false;
+        } else if (selected.value === 'Other') {
+            // ── 6a. If "Other" is selected, the specify text input must not be empty ──
+            const otherInput = form.querySelector('.admin-coord-other-field');
+            if (otherInput && otherInput.value.trim() === '') {
+                _adminGroupError(otherInput, 'Please specify the coordination frequency.');
+                valid = false;
+            }
         }
     }
 
@@ -1044,7 +1086,36 @@ function confirmEditChanges() {
 
     const url    = form.action;
     const method = (form.querySelector('input[name="_method"]')?.value || form.method).toUpperCase();
+
+    // ── Clear stale "Other" text values whose controlling checkbox/radio is unchecked ──
+    // 1. rejection_reasons_other (controlled by .admin-diagnosis-other-checkbox)
+    const rejOtherCb = form.querySelector('.admin-diagnosis-other-checkbox');
+    const rejOtherTxt = form.querySelector('[name="rejection_reasons_other"]');
+    if (rejOtherCb && rejOtherTxt && !rejOtherCb.checked) rejOtherTxt.value = '';
+
+    // 2. coordination_frequency_other (controlled by coord radio value="Other")
+    const coordOtherCb2 = form.querySelector('.admin-diagnosis-radio[value="Other"]');
+    const coordOtherTxt = form.querySelector('[name="coordination_frequency_other"]');
+    if (coordOtherCb2 && coordOtherTxt && !coordOtherCb2.checked) coordOtherTxt.value = '';
+
+    // 3. lmi_features_other (controlled by .admin-lmi-other-checkbox)
+    const lmiOtherCb = form.querySelector('.admin-lmi-other-checkbox');
+    const lmiOtherTxt = form.querySelector('[name="lmi_features_other"]');
+    if (lmiOtherCb && lmiOtherTxt && !lmiOtherCb.checked) lmiOtherTxt.value = '';
+
     const fd     = new FormData(form);
+
+    // FIX: Explicitly include coordination_frequency_other when "Other" radio is selected,
+    // because disabled fields are excluded from FormData.
+    if (form.id && form.id.startsWith('form-diagnosis-')) {
+        const coordOtherRadio = form.querySelector('.admin-diagnosis-radio[value="Other"]');
+        if (coordOtherRadio && coordOtherRadio.checked) {
+            const coordOtherInput = form.querySelector('.admin-coord-other-field');
+            if (coordOtherInput) {
+                fd.set('coordination_frequency_other', coordOtherInput.value.trim());
+            }
+        }
+    }
 
     // FIX 3: Explicitly set the assembled contact number in FormData.
     // The form has TWO inputs named "contact_number" (mobile + telephone),

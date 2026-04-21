@@ -229,10 +229,10 @@
     }" class="w-full h-full">
         @include('partials.navbar')
 
-        <div class="relative w-full h-[55vh] sm:h-[65vh] md:h-[75vh] lg:h-[900px] overflow-hidden">
+        <div class="relative w-full h-[500px] md:h-[700px] lg:h-[900px] overflow-hidden">
             <div class="absolute inset-0">
                 <img src="{{ asset('images/JobFair.webp') }}" alt="Background"
-                    class="w-full h-full object-cover object-top">
+                    class="w-full h-full object-cover object-center">
                 <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-100"></div>
             </div>
 
@@ -249,7 +249,7 @@
             </div>
         </div>
             <!-- Scroll Indicator -->
-            <div class="absolute bottom-6 sm:bottom-16 left-1/2 transform -translate-x-1/2 z-20 scroll-indicator animate-bounce transition-opacity duration-200"
+            <div class="absolute bottom-6 sm:bottom-16 md:bottom-24 lg:bottom-32 left-1/2 transform -translate-x-1/2 z-20 animate-bounce"
                  x-data="{ menuOpen: false }"
                  @menu-toggled.window="menuOpen = $event.detail.open"
                  :class="{ 'opacity-0 pointer-events-none': menuOpen }">

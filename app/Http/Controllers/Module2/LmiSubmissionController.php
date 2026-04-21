@@ -128,7 +128,7 @@ class LmiSubmissionController extends Controller
                 'rejection_reasons'          => $request->rejection_reasons ?? [],
                 'rejection_reasons_other'    => $request->rejection_reasons_other,
                 'coordination_frequency'     => $request->coordination_frequency === 'Other' 
-                    ? $request->coordination_frequency_other 
+                    ? 'Other: ' . $request->coordination_frequency_other 
                     : $request->coordination_frequency,
                 'coordination_frequency_other' => $request->coordination_frequency_other,
             ]);
@@ -428,7 +428,9 @@ class LmiSubmissionController extends Controller
                     }
                     $diagnosisData['rejection_reasons']          = $rejectionReasons;
                     $diagnosisData['rejection_reasons_other']    = $request->rejection_reasons_other;
-                    $diagnosisData['coordination_frequency']     = $request->coordination_frequency;
+                    $diagnosisData['coordination_frequency']     = $request->coordination_frequency === 'Other'
+                        ? 'Other: ' . $request->coordination_frequency_other
+                        : $request->coordination_frequency;
                     $diagnosisData['coordination_frequency_other'] = $request->coordination_frequency_other;
                 }
 
