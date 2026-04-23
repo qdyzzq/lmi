@@ -41,7 +41,7 @@
                 <img src="{{ asset('images/dole_logo.png') }}" alt="DOLE Logo" class="w-full h-full object-contain">
             </div>
             <div class="min-w-0">
-                <p class="font-semibold text-[13px] text-slate-900 tracking-tight truncate">Labor Market Intelligence</p>
+                <p class="font-semibold text-[13px] text-slate-900 tracking-tight truncate">Labor Market Information</p>
                 <p class="text-[10px] text-slate-400 italic mt-0.5 truncate">Bridging Education & Industry</p>
             </div>
         </div>
@@ -92,7 +92,7 @@
                         {{ request()->routeIs('admin.template-editor')   {{-- ← changed --}}
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
-                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.stemplate-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"   {{-- ← changed --}}
+                    <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.template-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"   {{-- ← changed --}}
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.073a2.25 2.25 0 01-2.25 2.25H5.25a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 015.25 4.5h7.5M9 4.5V3a.75.75 0 01.75-.75h4.5A.75.75 0 0115 3v1.5m-5.25 6h6M3.75 10.5h7.5"/>
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5l1.5-1.5a1.06 1.06 0 00-1.5-1.5L18 9l1.5 1.5zm0 0l-4.5 4.5-2 .5.5-2 4-3z"/>
@@ -270,7 +270,7 @@
             <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
                 <a href="{{ route('admin.program-stories-editor') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
-                        {{ request()->routeIs('admin.program-stories')
+                        {{ request()->routeIs('admin.program-stories-editor')
                             ? 'text-blue-700 bg-blue-50 border-blue-500'
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.program-stories-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"

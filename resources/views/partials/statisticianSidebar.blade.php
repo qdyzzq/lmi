@@ -1,21 +1,16 @@
-<aside
-    x-data="{
-        sidebarExpanded: JSON.parse(localStorage.getItem('sidebarExpanded') ?? 'true'),
-        toggleSidebar() {
-            this.sidebarExpanded = !this.sidebarExpanded;
-            localStorage.setItem('sidebarExpanded', this.sidebarExpanded);
-        }
-    }"
-    x-init="
-        $el.classList.remove('w-64', 'w-16');
-        $el.classList.remove('transition-all', 'duration-300', 'ease-in-out');
-        $el.classList.add(sidebarExpanded ? 'w-64' : 'w-16');
-        $nextTick(() => {
-            $el.style.visibility = 'visible';
-            setTimeout(() => $el.classList.add('transition-all', 'duration-300', 'ease-in-out'), 50);
-        });
-    "
-    :class="sidebarExpanded ? 'w-64' : 'w-16'"
+<aside x-data="{
+    sidebarExpanded: JSON.parse(localStorage.getItem('sidebarExpanded') ?? 'true'),
+    toggleSidebar() {
+        this.sidebarExpanded = !this.sidebarExpanded;
+        localStorage.setItem('sidebarExpanded', this.sidebarExpanded);
+    }
+}" x-init="$el.classList.remove('w-64', 'w-16');
+$el.classList.remove('transition-all', 'duration-300', 'ease-in-out');
+$el.classList.add(sidebarExpanded ? 'w-64' : 'w-16');
+$nextTick(() => {
+    $el.style.visibility = 'visible';
+    setTimeout(() => $el.classList.add('transition-all', 'duration-300', 'ease-in-out'), 50);
+});" :class="sidebarExpanded ? 'w-64' : 'w-16'"
     style="visibility: hidden;"
     class="bg-white text-slate-700 flex flex-col shadow-sm z-10 h-screen overflow-visible shrink-0 transition-all duration-300 ease-in-out border-r border-slate-200 relative">
 
@@ -37,18 +32,20 @@
     <div class="pt-5 pb-4 border-b border-slate-100" :class="sidebarExpanded ? 'px-3' : 'px-2'">
         <!-- Expanded state -->
         <div x-show="sidebarExpanded" class="flex items-center gap-2 min-w-0">
-            <div class="w-9 h-9 flex items-center justify-center shrink-0 bg-slate-50 border border-slate-200 rounded-xl p-1.5 shadow-sm">
+            <div
+                class="w-9 h-9 flex items-center justify-center shrink-0 bg-slate-50 border border-slate-200 rounded-xl p-1.5 shadow-sm">
                 <img src="{{ asset('images/dole_logo.png') }}" alt="DOLE Logo" class="w-full h-full object-contain">
             </div>
             <div class="min-w-0">
-                <p class="font-semibold text-[13px] text-slate-900 tracking-tight truncate">Labor Market Intelligence</p>
+                <p class="font-semibold text-[13px] text-slate-900 tracking-tight truncate">Labor Market Information</p>
                 <p class="text-[10px] text-slate-400 italic mt-0.5 truncate">Bridging Education & Industry</p>
             </div>
         </div>
 
         <!-- Collapsed state — just logo centered -->
         <div x-show="!sidebarExpanded" class="flex justify-center">
-            <div class="w-9 h-9 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl p-1.5 shadow-sm">
+            <div
+                class="w-9 h-9 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl p-1.5 shadow-sm">
                 <img src="{{ asset('images/dole_logo.png') }}" alt="DOLE Logo" class="w-full h-full object-contain">
             </div>
         </div>
@@ -73,14 +70,18 @@
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('statistician.review') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5h4.5v7.5H3zM9.75 9h4.5v12h-4.5zM16.5 4.5H21V21h-4.5z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 13.5h4.5v7.5H3zM9.75 9h4.5v12h-4.5zM16.5 4.5H21V21h-4.5z" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Regional Statistics Pending</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Regional
+                        Statistics Pending</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     Regional Statistics Pending
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
 
@@ -93,14 +94,19 @@
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('statistician.templates') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="font-medium text-[13.5px] whitespace-normal leading-tight">JobMarketDemands <br> Analysis Pending</span>
+                    <span x-show="sidebarExpanded"
+                        class="font-medium text-[13.5px] whitespace-normal leading-tight">JobMarketDemands <br> Analysis
+                        Pending</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     JobMarketDemands Analysis Pending
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
         </div>
@@ -124,14 +130,18 @@
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('statistician.job-titles.pending') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Job Titles Pending</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Job Titles
+                        Pending</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     Job Titles Pending
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
         </div>
@@ -147,7 +157,8 @@
             </p>
 
             <!-- Supply Side Pending -->
-            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
+            <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true"
+                @mouseleave="hovered = false">
                 <a href="{{ route('statistician.supply-side-editor') }}"
                     class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
                         {{ request()->routeIs('statistician.supply-side-editor')
@@ -155,14 +166,18 @@
                             : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
                     <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('statistician.supply-side-editor') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
                     </svg>
-                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Supply Side Pending</span>
+                    <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Supply Side
+                        Pending</span>
                 </a>
                 <div x-show="!sidebarExpanded && hovered"
                     class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                     Supply Side Pending
-                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                    <div
+                        class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                    </div>
                 </div>
             </div>
         </div>
@@ -178,17 +193,22 @@
 
         <!-- User Manual -->
         <div class="relative" x-data="{ hovered: false }" @mouseenter="hovered = true" @mouseleave="hovered = false">
-            <a href="https://drive.google.com/file/d/1IO99JFXqkQ4DE4JFqlVZo71lAFh4tIJ1/view?usp=sharing" target="_blank"
+            <a href="https://drive.google.com/file/d/1IO99JFXqkQ4DE4JFqlVZo71lAFh4tIJ1/view?usp=sharing"
+                target="_blank"
                 class="flex items-center gap-3 px-2.5 py-2.5 w-full text-left text-slate-700 hover:text-blue-600 hover:bg-blue-50 border-l-[3px] border-transparent hover:border-blue-400 rounded-r-lg transition-all group">
-                <svg class="w-[18px] h-[18px] shrink-0 opacity-50 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+                <svg class="w-[18px] h-[18px] shrink-0 opacity-50 group-hover:opacity-100" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                 </svg>
                 <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">User Manual</span>
             </a>
             <div x-show="!sidebarExpanded && hovered"
                 class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                 User Manual
-                <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                <div
+                    class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                </div>
             </div>
         </div>
 
@@ -198,8 +218,10 @@
                 @csrf
                 <button type="submit"
                     class="flex items-center gap-3 px-2.5 py-2.5 w-full text-left text-slate-700 hover:text-red-500 hover:bg-red-50 border-l-[3px] border-transparent hover:border-red-400 rounded-r-lg transition-all group">
-                    <svg class="w-[18px] h-[18px] shrink-0 opacity-50 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+                    <svg class="w-[18px] h-[18px] shrink-0 opacity-50 group-hover:opacity-100" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
                     </svg>
                     <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Logout</span>
                 </button>
@@ -207,7 +229,9 @@
             <div x-show="!sidebarExpanded && hovered"
                 class="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap pointer-events-none">
                 Logout
-                <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+                <div
+                    class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800">
+                </div>
             </div>
         </div>
     </div>

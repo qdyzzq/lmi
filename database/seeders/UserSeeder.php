@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
                 'id'         => 1,
                 'name'       => 'Admin User',
                 'email'      => 'admin@lmi.com',
-                'phone_number'=> '639182870233',
+                'phone_number'=> '639127404378',
                 'role'       => 'admin',
                 'department' => 'Administration',
                 'password'   => '$2y$12$qnv.xCy7vNc8SCukLoG3YuikOyjh/U/8HWtQh8xclpnllrBlC79SG',
