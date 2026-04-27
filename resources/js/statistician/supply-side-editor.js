@@ -13,6 +13,7 @@ function supplySideEditor() {
         loading:              false,
         hasChanges:           false,
         quill:                null,
+        _loadingContent:      false,  // suppresses text-change during programmatic loads
 
         // Pending submission from admin
         pendingSubmission:     null,
@@ -443,7 +444,23 @@ function supplySideEditor() {
                 placeholder: 'Enter executive analysis for supply side...',
             });
 
+            // ── Fix: preserve selection when toolbar buttons steal focus ─────
+            // Clicking a toolbar <button> fires mousedown → editor blurs → Quill
+            // wipes its selection → click fires with nothing selected.
+            // Calling preventDefault on mousedown for buttons ONLY stops the focus
+            // shift while leaving picker dropdowns (font/size/color) unaffected.
+            const toolbar = this.quill.getModule('toolbar');
+            if (toolbar && toolbar.container) {
+                toolbar.container.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('button')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+            // ────────────────────────────────────────────────────────────────
+
             this.quill.on('text-change', () => {
+                if (this._loadingContent) return;
                 this.analysisText = this.quill.root.innerHTML;
                 this.hasChanges   = true;
             });
@@ -453,9 +470,29 @@ function supplySideEditor() {
 
         setQuillContent(html) {
             if (!this.quill) return;
+
+            this._loadingContent = true;
+
+            // Step 1: Write HTML directly to the editor DOM
             this.quill.root.innerHTML = html || '';
+
+            // Step 2: Re-sync Quill's internal Delta from the DOM silently
             this.quill.update('silent');
+
+            // Step 3: Clear cursor position
             this.quill.setSelection(null);
+
+            // Step 4: Reset all cursor-format keys so no format bleeds into next edit
+            const formatsToClear = [
+                'size', 'font', 'bold', 'italic', 'underline', 'strike',
+                'color', 'background', 'header', 'list', 'align', 'link'
+            ];
+            formatsToClear.forEach(fmt => {
+                try { this.quill.format(fmt, false, 'silent'); } catch(e) {}
+            });
+
+            this._loadingContent = false;
+
             this._syncToolbarSize(html);
         },
 

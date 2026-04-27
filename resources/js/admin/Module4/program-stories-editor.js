@@ -530,6 +530,7 @@ function adminPage() {
             quill.on('text-change', () => {
                 this.form[formField] = quill.root.innerHTML;
                 updateWordCount();
+                this.formErrors[formField] = false
             });
         },
 
@@ -622,6 +623,11 @@ function adminPage() {
                     label: 'Program Label',
                     check: !!this.form.program_label?.trim()
                 },
+                 {
+                    key: 'link',              
+                    label: 'Full Story Link',
+                    check: !!this.form.link?.trim()
+                 },
                 ...(!isEdit ? [{
                     key: 'image',
                     label: 'Slide Image',
@@ -655,6 +661,11 @@ function adminPage() {
                     label: 'Theme Color',
                     check: !!this.form.color
                 },
+                {
+                    key: 'description',
+                    label: 'Program Description',
+                    check: !!this.form.description?.trim() && this.form.description !== '<p><br></p>'
+             },
             ];
             if (!this.validateFields(rules)) return;
             this.modal.loading = true;
@@ -754,6 +765,11 @@ function adminPage() {
                     check: !!this.form.title?.trim()
                 },
                 {
+                    key: 'link',           
+                    label: 'Story Link',
+                    check: !!this.form.link?.trim()
+                 },
+                {
                     key: 'story_year',
                     label: 'Year',
                     check: !!this.form.story_year
@@ -781,7 +797,8 @@ function adminPage() {
         },
 
         async submitTestimonial() {
-            const rules = [{
+            const rules = [
+                {
                     key: 'quote',
                     label: 'Quote',
                     check: !!this.form.quote?.trim()
@@ -790,6 +807,11 @@ function adminPage() {
                     key: 'author_name',
                     label: 'Author Name',
                     check: !!this.form.author_name?.trim()
+                },
+                {
+                    key: 'author_role',        // ← add this
+                    label: 'Role / Program',
+                    check: !!this.form.author_role?.trim()
                 },
             ];
             if (!this.validateFields(rules)) return;

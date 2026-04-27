@@ -239,8 +239,8 @@ class JobTitleController extends Controller
     {
         $year = $request->query('year');
 
-        $exists = JobTitle::where('year', (int) $year)
-            ->where('status', 'pending')
+        $exists = JobTitle::where('year', $year)
+            ->whereIn('status', ['pending', 'approved'])
             ->exists();
 
         return response()->json(['exists' => $exists]);

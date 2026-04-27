@@ -282,7 +282,8 @@ async function checkYearOnBlur(input) {
         if (data.exists) {
             input.style.borderColor = '#ef4444';
             input.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
-            errorEl.textContent = `Year ${year} already has a pending submission.`;
+            const statusLabel = data.status ? data.status : 'pending or approved';
+            errorEl.textContent = `Year ${year} already has a ${statusLabel} submission.`;
             errorEl.classList.remove('hidden');
         } else {
             input.style.borderColor = '#22c55e';
@@ -305,12 +306,9 @@ function switchTab(tab) {
     document.getElementById('panel-history').classList.toggle('hidden', isSubmit);
 
     const submitBtn = document.getElementById('tab-submit');
-    if (isSubmit) {
-        submitBtn.className = 'header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border transition border-blue-200 bg-blue-50 text-blue-700';
-        return;
-    } else {
-        submitBtn.className = 'header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border transition border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700';
-    }
+    submitBtn.className = isSubmit
+        ? 'header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border transition border-blue-200 bg-blue-50 text-blue-700'
+        : 'header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border transition border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700';
 
     const tabConfig = {
         pending: {
@@ -345,14 +343,19 @@ function switchTab(tab) {
         rejected: { active: 'bg-red-500 text-white',     inactive: 'bg-red-100 text-red-600'        },
     };
 
+    // Always reset all history tabs — active only if we're NOT on submit AND it matches
     ['pending', 'approved', 'rejected'].forEach(t => {
         const btn   = document.getElementById(`tab-${t}`);
         const badge = document.getElementById(`badge-${t}`);
         const cfg   = tabConfig[t];
         const bc    = badgeClasses[t];
-        btn.className   = `header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border transition ${t === tab ? cfg.active : cfg.inactive}`;
-        badge.className = `text-[11px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center ${t === tab ? bc.active : bc.inactive}`;
+        const isActive = !isSubmit && t === tab;
+        btn.className   = `header-tab flex items-center gap-2 px-4 py-1.5 rounded-full text-[13px] font-semibold border transition ${isActive ? cfg.active : cfg.inactive}`;
+        badge.className = `text-[11px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center ${isActive ? bc.active : bc.inactive}`;
     });
+
+    // Early return AFTER resetting tabs, so Submit going active always clears history tabs
+    if (isSubmit) return;
 
     const cfg = tabConfig[tab];
     document.getElementById('histAccentBar').className =
