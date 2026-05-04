@@ -1143,12 +1143,12 @@
                         </div>
                     </div>
                 </div>
-                <!-- Footer -->
+            </div>
+            <!-- Footer -->
                 <div class="p-4 bg-slate-50 border-t border-slate-200 text-center">
                     <p class="text-xs text-slate-500">Source: Philippine Statistics Authority; Labor
                         Force Survey</p>
                 </div>
-            </div>
         </div>
     </div>
 

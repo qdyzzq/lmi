@@ -217,6 +217,8 @@ function pesoInfoEditor() {
         collapsed: false,
         saving: false,
         publishing: false,
+        csEmptyError: false,
+        bnEmptyError: false,
         pesoInfoHasDraft:  d.pesoInfoHasDraft  ?? false,
         pesoInfoChangelog: d.pesoInfoChangelog  ?? [],
 
@@ -364,14 +366,12 @@ function pesoInfoEditor() {
             try {
                 const value = this.getValueForKey(key);
 
-                const stripHtmlText = html => {
-                    const t = document.createElement('div');
-                    t.innerHTML = html || '';
-                    return t.innerText.trim();
-                };
+                // Compare raw HTML for Quill fields so formatting-only changes
+                // (font size, colour, bold, alignment, etc.) are always detected.
+                const normalizeHtml = html => (html || '').replace(/\s+/g, ' ').trim();
                 const isTextKey  = ['description', 'objective', 'how_to_avail'].includes(key);
                 const hasChanged = isTextKey
-                    ? stripHtmlText(value) !== stripHtmlText(this._saved[key] ?? '')
+                    ? normalizeHtml(value) !== normalizeHtml(this._saved[key] ?? '')
                     : value !== (this._saved[key] ?? '');
                 if (!hasChanged) {
                     this.showToast(true, `No changes to save for "${label}".`);
@@ -422,6 +422,7 @@ function pesoInfoEditor() {
         openSaveAllConfirm() {
             const changes = [];
             const stripHtml = html => { const t = document.createElement('div'); t.innerHTML = html || ''; return t.innerText.trim(); };
+            const normalizeHtml = html => (html || '').replace(/\s+/g, ' ').trim();
             const wordCount = str => str.trim().split(/\s+/).filter(Boolean).length;
             const listDiff  = (nowJson, savedJson, label) => {
                 const nowArr   = JSON.parse(nowJson   || '[]');
@@ -431,26 +432,20 @@ function pesoInfoEditor() {
                 return `${label}: item(s) edited (${nowArr.length} total)`;
             };
 
-            const descNow   = stripHtml(this.form.description);
-            const descSaved = stripHtml(this._saved.description);
-            if (descNow !== descSaved) {
-                const wNow = wordCount(descNow), wSaved = wordCount(descSaved);
+            if (normalizeHtml(this.form.description) !== normalizeHtml(this._saved.description)) {
+                const wNow = wordCount(stripHtml(this.form.description)), wSaved = wordCount(stripHtml(this._saved.description));
                 const diff = wNow - wSaved;
-                changes.push({ icon: 'doc', text: `Description updated — ${diff > 0 ? '+'+diff+' words added' : diff < 0 ? Math.abs(diff)+' words removed' : 'text edited'} (${wNow} words total)` });
+                changes.push({ icon: 'doc', text: `Description updated — ${diff > 0 ? '+'+diff+' words added' : diff < 0 ? Math.abs(diff)+' words removed' : 'formatting edited'} (${wNow} words total)` });
             }
-            const objNow   = stripHtml(this.form.objective);
-            const objSaved = stripHtml(this._saved.objective);
-            if (objNow !== objSaved) {
-                const wNow = wordCount(objNow), wSaved = wordCount(objSaved);
+            if (normalizeHtml(this.form.objective) !== normalizeHtml(this._saved.objective)) {
+                const wNow = wordCount(stripHtml(this.form.objective)), wSaved = wordCount(stripHtml(this._saved.objective));
                 const diff = wNow - wSaved;
-                changes.push({ icon: 'doc', text: `Objective updated — ${diff > 0 ? '+'+diff+' words added' : diff < 0 ? Math.abs(diff)+' words removed' : 'text edited'} (${wNow} words total)` });
+                changes.push({ icon: 'doc', text: `Objective updated — ${diff > 0 ? '+'+diff+' words added' : diff < 0 ? Math.abs(diff)+' words removed' : 'formatting edited'} (${wNow} words total)` });
             }
-            const htaNow   = stripHtml(this.form.how_to_avail);
-            const htaSaved = stripHtml(this._saved.how_to_avail);
-            if (htaNow !== htaSaved) {
-                const wNow = wordCount(htaNow), wSaved = wordCount(htaSaved);
+            if (normalizeHtml(this.form.how_to_avail) !== normalizeHtml(this._saved.how_to_avail)) {
+                const wNow = wordCount(stripHtml(this.form.how_to_avail)), wSaved = wordCount(stripHtml(this._saved.how_to_avail));
                 const diff = wNow - wSaved;
-                changes.push({ icon: 'doc', text: `How to Avail updated — ${diff > 0 ? '+'+diff+' words added' : diff < 0 ? Math.abs(diff)+' words removed' : 'text edited'} (${wNow} words total)` });
+                changes.push({ icon: 'doc', text: `How to Avail updated — ${diff > 0 ? '+'+diff+' words added' : diff < 0 ? Math.abs(diff)+' words removed' : 'formatting edited'} (${wNow} words total)` });
             }
             const csNow = JSON.stringify(this.form.core_services.filter(v => v.name?.trim()));
             if (csNow !== this._saved.core_services) changes.push({ icon: 'list', text: listDiff(csNow, this._saved.core_services, 'Core Services') });
@@ -471,6 +466,7 @@ function pesoInfoEditor() {
             this.saving = true;
             try {
                 const stripHtml = html => { const t = document.createElement('div'); t.innerHTML = html || ''; return t.innerText.trim(); };
+                const normalizeHtml = html => (html || '').replace(/\s+/g, ' ').trim();
                 const now = new Date().toISOString();
 
                 const csNow = JSON.stringify(this.form.core_services.filter(v => v.name?.trim()));
@@ -479,9 +475,9 @@ function pesoInfoEditor() {
 
                 const fieldLabels = { description: 'Description', objective: 'Objective', how_to_avail: 'How to Avail', core_services: 'Core Services', beneficiaries: 'Beneficiaries', extra_sections: 'Additional Sections' };
                 const changedFields = [];
-                if (stripHtml(this.form.description)  !== stripHtml(this._saved.description))  changedFields.push('description');
-                if (stripHtml(this.form.objective)    !== stripHtml(this._saved.objective))    changedFields.push('objective');
-                if (stripHtml(this.form.how_to_avail) !== stripHtml(this._saved.how_to_avail)) changedFields.push('how_to_avail');
+                if (normalizeHtml(this.form.description)  !== normalizeHtml(this._saved.description))  changedFields.push('description');
+                if (normalizeHtml(this.form.objective)    !== normalizeHtml(this._saved.objective))    changedFields.push('objective');
+                if (normalizeHtml(this.form.how_to_avail) !== normalizeHtml(this._saved.how_to_avail)) changedFields.push('how_to_avail');
                 if (csNow !== this._saved.core_services)  changedFields.push('core_services');
                 if (bnNow !== this._saved.beneficiaries)  changedFields.push('beneficiaries');
                 if (exNow !== this._saved.extra_sections) changedFields.push('extra_sections');

@@ -529,11 +529,11 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm font-bold text-slate-700">PESO Info Section Editor</p>
-                                <p class="text-xs text-slate-400 mt-0.5">Edit the "What is PESO?" content block shown on
+                                <p class="text-sm font-bold text-slate-700">PESO/JPO Info Section Editor</p>
+                                <p class="text-xs text-slate-400 mt-0.5">Edit the "What is PESO/JPO?" content block shown on
                                     the public page</p>
                             </div>
-                        </div>
+                        </div>  
                         <div class="flex items-center gap-2">
 
                             {{-- Draft badge — visible when there are unpublished PESO Info changes --}}
@@ -735,7 +735,14 @@
                                         <h4 class="text-xs font-bold text-slate-600 uppercase tracking-widest">Core
                                             Services</h4>
                                     </div>
-                                    <button @click="saveKeyDraft('core_services', 'Core Services')" type="button"
+                                    <button @click="
+                                        if (form.core_services.some(s => !s.name.trim())) {
+                                            csEmptyError = true;
+                                        } else {
+                                            csEmptyError = false;
+                                            saveKeyDraft('core_services', 'Core Services');
+                                        }
+                                    " type="button"
                                         class="flex items-center gap-1 px-2.5 py-1 text-xs font-bold bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 rounded-lg transition">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -751,7 +758,11 @@
                                         <div class="flex items-center gap-2">
                                             <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>
                                             <input type="text" x-model="form.core_services[index].name"
-                                                class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-300 bg-white transition" />
+                                                @input="if (form.core_services[index].name.trim()) csEmptyError = false"
+                                                :class="csEmptyError && !form.core_services[index].name.trim()
+                                                    ? 'border-red-400 ring-2 ring-red-200 bg-red-50'
+                                                    : 'border-slate-200 focus:ring-2 focus:ring-blue-300 bg-white'"
+                                                class="flex-1 rounded-lg px-3 py-2 text-sm outline-none border transition" />
                                             <button
                                                 @click="$dispatch('open-modal', { type: 'delete-list-item', listKey: 'core_services', listIndex: index })"
                                                 type="button"
@@ -793,7 +804,14 @@
                                         <h4 class="text-xs font-bold text-slate-600 uppercase tracking-widest">
                                             Beneficiaries</h4>
                                     </div>
-                                    <button @click="saveKeyDraft('beneficiaries', 'Beneficiaries')" type="button"
+                                    <button @click="
+                                        if (form.beneficiaries.some(b => !b.name.trim())) {
+                                            bnEmptyError = true;
+                                        } else {
+                                            bnEmptyError = false;
+                                            saveKeyDraft('beneficiaries', 'Beneficiaries');
+                                        }
+                                    " type="button"
                                         class="flex items-center gap-1 px-2.5 py-1 text-xs font-bold bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 rounded-lg transition">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -808,7 +826,11 @@
                                         <div class="flex items-center gap-2">
                                             <span class="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span>
                                             <input type="text" x-model="form.beneficiaries[index].name"
-                                                class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-300 bg-white transition" />
+                                                @input="if (form.beneficiaries[index].name.trim()) bnEmptyError = false"
+                                                :class="bnEmptyError && !form.beneficiaries[index].name.trim()
+                                                    ? 'border-red-400 ring-2 ring-red-200 bg-red-50'
+                                                    : 'border-slate-200 focus:ring-2 focus:ring-blue-300 bg-white'"
+                                                class="flex-1 rounded-lg px-3 py-2 text-sm outline-none border transition" />
                                             <button
                                                 @click="$dispatch('open-modal', { type: 'delete-list-item', listKey: 'beneficiaries', listIndex: index })"
                                                 type="button"
@@ -981,15 +1003,15 @@
 
                         {{-- STEP 1 --}}
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">1 ·
-                                Select Province</label>
+                            <label class="block text-xs font-bold text-slate-400  tracking-widest mb-2">1 ·
+                                SELECT PROVINCE</label>
                             <div class="relative w-full">
                                 <select @change="selectProvince($event.target.value)" :value="province"
                                     class="w-full appearance-none bg-white border-2 rounded-xl px-4 py-3 pr-10 text-sm font-semibold outline-none transition-all cursor-pointer"
                                     :class="province ?
                                         'border-orange-400 shadow-[0_0_0_3px_rgba(251,146,60,0.15)] text-slate-800' :
                                         'border-slate-200 text-slate-400 hover:border-slate-300'">
-                                    <option value="">— Choose a province —</option>
+                                    <option value="" disabled>— Choose a province —</option>
                                     @foreach ($pesoProvinces->keys() as $province)
                                         <option value="{{ $province }}">{{ $province }}</option>
                                     @endforeach

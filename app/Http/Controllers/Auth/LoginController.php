@@ -29,6 +29,7 @@ class LoginController extends Controller
             ])->onlyInput('email');
         }
 
+
         // Generate OTP
         $otp = rand(100000, 999999);
 
@@ -55,7 +56,7 @@ class LoginController extends Controller
 
         // Redirect to OTP page (AuthenticatedSessionController handles the rest)
         return redirect()->route('otp');
-    }
+    }   
 
     public function logout(Request $request)
     {

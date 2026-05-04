@@ -25,15 +25,61 @@
             }
         }
 
-        .peso-description-content,
-        .peso-description-content * {
-            color: white !important;
+        /* ── Quill output: default text colour per section (no !important so inline colors from the editor win) ── */
+        .peso-description-content { color: white; }
+        .peso-howto-content       { color: white; }
+
+        /* ── Quill output: font sizes ── */
+        .ql-size-8pt  { font-size: 8pt;  }
+        .ql-size-10pt { font-size: 10pt; }
+        .ql-size-11pt { font-size: 11pt; }
+        .ql-size-12pt { font-size: 12pt; }
+        .ql-size-14pt { font-size: 14pt; }
+        .ql-size-16pt { font-size: 16pt; }
+        .ql-size-18pt { font-size: 18pt; }
+        .ql-size-24pt { font-size: 24pt; }
+        .ql-size-36pt { font-size: 36pt; }
+
+        /* ── Quill output: alignment ── */
+        .ql-align-center  { text-align: center;  }
+        .ql-align-right   { text-align: right;   }
+        .ql-align-justify { text-align: justify; }
+
+        /* ── Quill output: inline formats ── */
+        .peso-description-content strong, .peso-howto-content strong, .peso-objective-content strong { font-weight: 700; }
+        .peso-description-content em,     .peso-howto-content em,     .peso-objective-content em     { font-style: italic; }
+        .peso-description-content u,      .peso-howto-content u,      .peso-objective-content u      { text-decoration: underline; }
+        .peso-description-content s,      .peso-howto-content s,      .peso-objective-content s      { text-decoration: line-through; }
+
+        /* ── Quill output: blockquote & code ── */
+        .peso-description-content blockquote,
+        .peso-howto-content blockquote,
+        .peso-objective-content blockquote {
+            border-left: 4px solid rgba(255,255,255,0.4);
+            padding-left: 1em;
+            margin: 0.5em 0;
+            font-style: italic;
+            opacity: 0.85;
+        }
+        .peso-description-content pre,
+        .peso-howto-content pre,
+        .peso-objective-content pre {
+            background: rgba(0,0,0,0.15);
+            border-radius: 4px;
+            padding: 0.5em 0.75em;
+            font-family: monospace;
+            white-space: pre-wrap;
         }
 
-        .peso-howto-content,
-        .peso-howto-content * {
-            color: white !important;
-        }
+        /* ── Quill output: lists ── */
+        .peso-description-content ol, .peso-howto-content ol, .peso-objective-content ol { list-style-type: decimal; padding-left: 1.5em; margin: 0.25em 0; }
+        .peso-description-content ul, .peso-howto-content ul, .peso-objective-content ul { list-style-type: disc;    padding-left: 1.5em; margin: 0.25em 0; }
+        .peso-description-content li, .peso-howto-content li, .peso-objective-content li { margin: 0.15em 0; }
+
+        /* ── Quill output: indent levels ── */
+        .peso-description-content .ql-indent-1, .peso-howto-content .ql-indent-1, .peso-objective-content .ql-indent-1 { padding-left: 3em; }
+        .peso-description-content .ql-indent-2, .peso-howto-content .ql-indent-2, .peso-objective-content .ql-indent-2 { padding-left: 6em; }
+        .peso-description-content .ql-indent-3, .peso-howto-content .ql-indent-3, .peso-objective-content .ql-indent-3 { padding-left: 9em; }
 
         .line-clamp-2 {
             display: -webkit-box;
@@ -77,24 +123,23 @@
             display: block;
         }
 
-        /* Subtle dark vignette so arrows/dots are always visible */
+        /* Vignette — matches other tab hero gradient for readable centered text */
         .peso-carousel-slide::after {
             content: '';
             position: absolute;
             inset: 0;
             background: linear-gradient(to bottom,
-                    rgba(0, 0, 0, 0.15) 0%,
-                    rgba(0, 0, 0, 0.05) 40%,
-                    rgba(0, 0, 0, 0.05) 60%,
-                    rgba(0, 0, 0, 0.35) 100%);
+                    rgba(15, 23, 42, 0.60) 0%,
+                    rgba(15, 23, 42, 0.40) 50%,
+                    rgba(248, 250, 252, 1.00) 100%);
             pointer-events: none;
         }
 
-        .peso-objective-content,
-        .peso-objective-content * {
-            font-size: 0.75rem !important;
-            line-height: 1.5 !important;
-            color: #475569 !important;
+        /* Objective section: default styles — no !important so Quill inline styles win */
+        .peso-objective-content {
+            font-size: 0.75rem;
+            line-height: 1.5;
+            color: #475569;
         }
 
         /* ── Mobile: office type grid ── */
@@ -160,19 +205,17 @@
                 </div>
             </template>
 
-            {{-- Carousel Title Overlay — bottom-left, avoids covering faces --}}
-            <div
-                class="absolute bottom-36 sm:bottom-44 md:bottom-48 left-4 sm:left-6 md:left-12 z-20 pointer-events-none">
-                <p class="text-blue-200 text-xs font-bold uppercase tracking-[0.25em] mb-1"
-                    style="text-shadow: 0 1px 8px rgba(0,0,0,1);">DOLE · Region XI</p>
-                <h2 class="text-white font-black leading-tight tracking-tight"
-                    style="font-size: clamp(1.25rem, 4vw, 3.5rem); text-shadow: 0 2px 16px rgba(0,0,0,1), 0 0 40px rgba(0,0,0,0.7);">
-                    Davao Region
-                </h2>
-                <h2 class="font-bold leading-tight tracking-tight"
-                    style="color: #93c5fd; font-size: clamp(0.9rem, 2.5vw, 2.25rem); text-shadow: 0 2px 12px rgba(0,0,0,1);">
-                    PESO / JPO
-                </h2>
+            
+            <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+                <div class="text-center text-white px-4" style="margin-top: 20vh;">
+                    <h2 class="text-white font-black leading-tight tracking-tight"
+                        style="font-size: clamp(1.25rem, 3vw, 3.5rem); text-shadow: 0 2px 16px rgba(0,0,0,1), 0 0 40px rgba(0,0,0,0.7);">
+                        Public Employment Service Office and Job Placement Offices
+                    </h2>
+                    <p style="color:#93c5fd; font-size: clamp(0.9rem, 2.5vw, 2.25rem); font-weight:700; text-shadow: 0 2px 12px rgba(0,0,0,1);">
+                        Davao Region
+                    </p>
+                </div>
             </div>
 
             {{-- Prev arrow --}}
@@ -297,7 +340,6 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-amber-300 text-xs font-bold uppercase tracking-[0.2em] mb-1">What is PESO?</p>
                         <div class="text-sm sm:text-base leading-relaxed peso-description-content"
                             style="text-align: justify;">
                             {!! $pesoInfo['description'] ?? '' !!}
@@ -338,10 +380,10 @@
                         <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wide">Core Services</h3>
                     </div>
                     <ul class="space-y-1.5">
-                        @foreach ($pesoInfo['core_services'] as $service)
-                            <li class="flex items-start gap-2 text-xs text-slate-600">
+                       @foreach ($pesoInfo['core_services'] as $service)
+                            <li class="flex items-start gap-2 text-xs ">
                                 <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1 flex-shrink-0"></span>
-                                {{ $service['name'] }}
+                                <span class="font-semibold">{{ $service['name'] }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -382,7 +424,7 @@
                             d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 016 0z" />
                     </svg>
                     <div class="text-sm peso-howto-content">
-                        <strong style="color: #bfdbfe !important;">How to Avail:</strong>
+                        <strong style="color: #bfdbfe;">How to Avail:</strong>
                         {!! $pesoInfo['how_to_avail'] ?? '' !!}
                     </div>
                 </div>
