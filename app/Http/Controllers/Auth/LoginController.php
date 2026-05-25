@@ -28,8 +28,37 @@ class LoginController extends Controller
                 'email' => 'The provided credentials do not match our records.',
             ])->onlyInput('email');
         }
+            // Generate OTP
+$otp = rand(100000, 999999);
 
+// Store OTP and user info in session (user is NOT logged in yet)
+session([
+    'otp'              => $otp,
+    'otp_pending'      => true,
+    'user_id'          => $user->id,
+    'otp_generated_at' => now(),
+]);
 
+// Send OTP via SMS (only in production)
+if (app()->environment('production')) {
+    $username    = config('sms.username');
+    $password    = config('sms.password');
+    $phoneNumber = $user->phone_number;
+    $message     = "Your OTP for Labor Market Intelligence System is {$otp}. This OTP is valid for 10 minutes. Do not share it with anyone. If you did not request this, please contact support.";
+
+    Http::withoutVerifying()->get('https://messagingsuite.smart.com.ph/cgphttp/servlet/sendmsg', [
+        'username'    => $username,
+        'password'    => $password,
+        'destination' => $phoneNumber,
+        'text'        => $message,
+    ]);
+} else {
+    // Locally, just log the OTP — no SMS sent
+    \Log::info("[DEV] OTP for {$user->phone_number}: {$otp}");
+}
+        return redirect()->route('otp');
+    }
+/*
         // Generate OTP
         $otp = rand(100000, 999999);
 
@@ -56,7 +85,7 @@ class LoginController extends Controller
 
         // Redirect to OTP page (AuthenticatedSessionController handles the rest)
         return redirect()->route('otp');
-    }   
+    }   */
 
     public function logout(Request $request)
     {

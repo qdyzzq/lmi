@@ -11,17 +11,20 @@ use App\Http\Controllers\Module2\JobTitleController;
 use App\Http\Controllers\Module3\LicensureRateController;
 use App\Http\Controllers\Module3\DisciplineEnrollmentController;
 use App\Http\Controllers\Module3\GraduationRateController;
-use App\Http\Controllers\Module3\DisciplineGraduateController;
 use App\Http\Controllers\Module3\SupplySideAnalysisController;
 use App\Http\Controllers\Module4\ProgramsController;
 use App\Http\Controllers\Module4\ProgramAdminController;
 use App\Http\Controllers\Module5\PesoDirectoryController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController; // <-- added for OTP
+use App\Http\Controllers\Module6\LmiPublicationController;
+use App\Http\Controllers\Module6\WeeklyIssueController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController; 
 
 
 
 
 // ==================== PUBLIC ROUTES (No login required) ====================
+Route::view('/lmi-publication', 'Public.Module6.publication')
+    ->name('Public.Module6.publication');
 Route::get('/programs-stories', [ProgramsController::class, 'index'])
     ->name('Public.Module4.programStories');
 
@@ -260,6 +263,25 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admi
     Route::get('/stories/years',   [ProgramAdminController::class, 'storyYears'])  ->name('stories.years');
     Route::get('/stories/export',  [ProgramAdminController::class, 'exportStories'])->name('stories.export');
 
+    // ==================== LMI PUBLICATIONS ====================
+    Route::get('/lmi-publication/data', [LmiPublicationController::class, 'data'])->name('lmi-publication.data');
+    Route::get('/lmi-publication',         [LmiPublicationController::class, 'adminIndex'])->name('lmi-publications.index');
+    Route::get('/lmi-publication/preview', [LmiPublicationController::class, 'preview'])->name('lmi-publication.preview');
+    
+    // Issues CRUD
+    Route::post('/lmi-publication/issues',        [LmiPublicationController::class, 'store'])->name('lmi-publication.issues.store');
+    Route::put('/lmi-publication/issues/{id}',    [LmiPublicationController::class, 'update'])->name('lmi-publication.issues.update');
+    Route::delete('/lmi-publication/issues/{id}', [LmiPublicationController::class, 'destroy'])->name('lmi-publication.issues.destroy');
+    
+    // Publish / Unpublish / Republish per group
+    Route::patch('/lmi-publication/{groupId}/toggle-publish', [LmiPublicationController::class, 'togglePublish'])->name('lmi-publication.toggle-publish');
+    Route::patch('/lmi-publication/{groupId}/republish',      [LmiPublicationController::class, 'republish'])->name('lmi-publication.republish');
+
+    Route::get('/lmi-weekly/data', [WeeklyIssueController::class, 'data'])->name('lmi-weekly.data');
+    Route::post('/lmi-weekly',           [WeeklyIssueController::class, 'store'])->name('lmi-weekly.store');
+    Route::post('/lmi-weekly/{id}',      [WeeklyIssueController::class, 'update'])->name('lmi-weekly.update');
+    Route::delete('/lmi-weekly/{id}',    [WeeklyIssueController::class, 'destroy'])->name('lmi-weekly.destroy');
+
     // ==================== PROGRAM ADMIN CRUD ====================
     Route::post('/programs', [ProgramAdminController::class, 'storeProgram'])->name('programs.store');
     Route::put('/programs/{program}', [ProgramAdminController::class, 'updateProgram'])->name('programs.update');
@@ -267,7 +289,7 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admi
     Route::put('/programs/{program}/description', [ProgramAdminController::class, 'updateDescription'])->name('programs.description');
     Route::delete('/programs/{program}/description', [ProgramAdminController::class, 'destroyDescription'])->name('programs.description.destroy');
     Route::patch('/programs/{program}/toggle-publish', [ProgramAdminController::class, 'togglePublish'])->name('programs.toggle-publish');
-    Route::get('/programs/{program}/fragment', [ProgramController::class, 'fragment']);
+    Route::get('/programs/{program}/fragment', [ProgramAdminController::class, 'fragment']);
     Route::patch('/programs/{program}/republish', [ProgramAdminController::class, 'republish']);
     Route::post('/qualifications', [ProgramAdminController::class, 'storeQualification'])->name('qualifications.store');
     Route::put('/qualifications/{qualification}', [ProgramAdminController::class, 'updateQualification'])->name('qualifications.update');
