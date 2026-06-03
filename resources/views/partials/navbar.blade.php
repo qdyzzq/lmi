@@ -140,6 +140,21 @@
                     <span>PESO/JPO Directory</span>
                 </a>
 
+                <a href="{{ route('Public.Module6.publication') }}"
+                    class="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap rounded-lg font-medium transition-all duration-300
+                          {{ request()->routeIs('Public.Module6.publication')
+                              ? 'bg-white/30 text-white shadow-lg backdrop-blur-sm'
+                              : 'text-white hover:bg-white/20' }}"
+                    :class="isScrolled ? 'gap-1 px-2 py-1.5 text-xs' : 'gap-1.5 px-3 py-2 text-xs'">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"
+                        class="w-5 h-5 shrink-0 transition-all duration-300"
+                        :class="isScrolled ? 'w-3.5 h-3.5' : 'w-5 h-5'">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>LMI Publication</span>
+                </a>
+
             </div>
 
             <!-- Mobile Menu Button -->
@@ -219,6 +234,14 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
                 PESO/JPO Directory
+            </a>
+            <a href="{{ route('Public.Module6.publication') }}"
+                @click="mobileMenuOpen = false"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium {{ request()->routeIs('Public.Module6.peso.publication') ? 'bg-white/20 text-white' : 'text-slate-200 hover:bg-white/10' }}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" class="w-5 h-5 shrink-0">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                LMI Publication
             </a>
         </div>
     </div>

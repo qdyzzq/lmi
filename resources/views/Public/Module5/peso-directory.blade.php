@@ -319,8 +319,8 @@
         <div class="mt-4 mb-6 bg-white border border-slate-200 rounded-2xl shadow-md overflow-hidden">
 
             {{-- Hero banner with PESO logo integrated --}}
-            <div class="relative overflow-hidden px-4 sm:px-6 md:px-8 py-5 sm:py-7"
-                style="background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 60%, #1e40af 100%);">
+            <div class="relative overflow-hidden px-4 sm:px-6 md:px-8 py-5 sm:py-7 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
+               
                 <div class="absolute inset-0 overflow-hidden pointer-events-none">
                     <div class="absolute -top-10 right-10 w-48 h-48 rounded-full opacity-10"
                         style="background: radial-gradient(circle, #fbbf24 0%, transparent 70%);"></div>
@@ -353,14 +353,14 @@
                 {{-- Objectives — compact --}}
                 <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
                     <div class="flex items-center gap-2 mb-2">
-                        <div class="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+                        <div class="w-6 h-6 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
                             <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                             </svg>
                         </div>
-                        <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wide">Objective</h3>
+                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Objective</h3>
                     </div>
                     <p class="text-xs text-slate-600 leading-relaxed peso-objective-content">
                         {!! $pesoInfo['objective'] ?? '' !!}
@@ -392,20 +392,20 @@
                 {{-- Beneficiaries --}}
                 <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
                     <div class="flex items-center gap-2 mb-2">
-                        <div class="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+                        <div class="w-6 h-6 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
                             <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                         </div>
-                        <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wide">Beneficiaries</h3>
+                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Beneficiaries</h3>
                     </div>
                     <div class="flex flex-wrap gap-1.5">
                         @foreach ($pesoInfo['beneficiaries'] as $ben)
                             <span
-                                class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                                <span class="w-1 h-1 rounded-full bg-blue-400 flex-shrink-0"></span>
+                                class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-slate-700 border border-blue-200">
+                                <span class="w-1 h-1 rounded-full bg-blue-500 flex-shrink-0"></span>
                                 {{ $ben['name'] }}
                             </span>
                         @endforeach
@@ -416,7 +416,7 @@
 
             {{-- How to avail footer --}}
             <div
-                class="mx-3 sm:mx-6 md:mx-8 mb-4 sm:mb-6 bg-blue-600 rounded-xl px-4 sm:px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                class="mx-3 sm:mx-6 md:mx-8 mb-4 sm:mb-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-xl px-4 sm:px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div class="flex items-center gap-3 flex-1">
                     <svg class="w-5 h-5 text-blue-200 flex-shrink-0" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
@@ -470,15 +470,14 @@
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200" x-data="pesoDirectory()">
 
             {{-- Directory card top bar --}}
-            <div class="flex flex-wrap items-center gap-3 px-4 sm:px-6 md:px-8 py-4 border-b border-slate-100"
-                style="background: linear-gradient(90deg, #f8fafc 0%, #eff6ff 100%);">
+            <div class="flex flex-wrap items-center gap-3 px-4 sm:px-6 md:px-8 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-t-2xl">
                 <img src="{{ asset('images/PESO.png') }}" alt="PESO"
                     class="w-8 h-8 object-contain flex-shrink-0">
                 <div class="flex-1">
-                    <p class="text-sm font-bold text-slate-700">PESO / JPO Directory</p>
-                    <p class="text-xs text-slate-400">Select a province, then filter by Office Type</p>
+                    <p class="text-sm font-bold text-slate-50">PESO / JPO Directory</p>
+                    <p class="text-xs text-slate-100">Select a province, then filter by Office Type</p>
                 </div>
-                <span class="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full">
+                <span class="text-xs font-bold text-slate-600 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full">
                     {{ count($pesoProvinceKeys ?? []) }} Province{{ count($pesoProvinceKeys ?? []) !== 1 ? 's' : '' }}
                 </span>
             </div>

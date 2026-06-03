@@ -47,8 +47,8 @@
                 <h1 class="font-dole-display text-3xl font-bold text-dole-dark mb-2 leading-tight">
                     OTP Verification
                 </h1>
-                <p class="text-slate-500 text-sm font-medium">
-                    A 6-digit OTP has been sent to your registered phone number. It is valid for <span class="font-semibold text-dole-blue">10 minutes</span>.
+                <p class="text-slate-500 text-sm font-medium" id="otpSubtitle">
+                    A 6-digit OTP has been sent to your registered <span id="channelLabel" class="font-semibold text-dole-blue">phone number</span>. It is valid for <span class="font-semibold text-dole-blue">10 minutes</span>.
                 </p>
             </div>
 
@@ -100,22 +100,44 @@
                 </button>
             </form>
 
-            <!-- Resend OTP -->
-            <div class="mt-6 text-center">
-                <p class="text-slate-500 text-sm mb-3">Didn't receive the OTP?</p>
-                <form method="POST" action="{{ route('otp.resend') }}" id="resendForm">
+            <!-- Resend / Channel Options -->
+            <div class="mt-6 text-center space-y-3">
+                <p class="text-slate-500 text-sm">Didn't receive the OTP?</p>
+
+                <!-- Resend via SMS (default) -->
+                <form method="POST" action="{{ route('otp.resend') }}" id="resendSmsForm">
                     @csrf
+                    <input type="hidden" name="via" value="sms">
                     <button
                         type="submit"
                         class="text-dole-blue font-semibold text-sm hover:text-dole-red hover:underline transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Resend OTP
+                         Resend OTP via SMS
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="flex items-center gap-3 px-4">
+                    <div class="flex-1 h-px bg-slate-200"></div>
+                    <span class="text-slate-400 text-xs font-medium">or</span>
+                    <div class="flex-1 h-px bg-slate-200"></div>
+                </div>
+
+                <!-- Send via Email (alternative) -->
+                <form method="POST" action="{{ route('otp.resend') }}" id="resendEmailForm">
+                    @csrf
+                    <input type="hidden" name="via" value="email">
+                    <button
+                        type="submit"
+                        class="inline-flex items-center gap-2 text-sm font-semibold text-white bg-gradient-to-r from-slate-600 to-slate-800 hover:from-dole-blue hover:to-dole-blue px-5 py-2.5 rounded-xl shadow hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Receive OTP via Email instead
                     </button>
                 </form>
             </div>
 
             <!-- Back to Login -->
-            <div class="mt-4 text-center">
+            <div class="mt-5 text-center">
                 <a href="{{ route('login') }}" class="text-slate-400 text-sm hover:text-dole-dark transition-colors duration-300">
                     ← Back to Login
                 </a>
@@ -131,11 +153,24 @@
                 btn.textContent = 'Verifying...';
             });
 
-            // Add loading state on resend submit
-            document.getElementById('resendForm').addEventListener('submit', function () {
+            // SMS resend loading state
+            document.getElementById('resendSmsForm').addEventListener('submit', function () {
                 const btn = this.querySelector('button[type="submit"]');
                 btn.disabled = true;
                 btn.textContent = 'Sending...';
+                // Disable the email button too so only one request fires
+                document.getElementById('resendEmailForm').querySelector('button').disabled = true;
+            });
+
+            // Email resend: update subtitle + loading state
+            document.getElementById('resendEmailForm').addEventListener('submit', function () {
+                const btn = this.querySelector('button[type="submit"]');
+                btn.disabled = true;
+                btn.textContent = 'Sending...';
+                // Disable the SMS button too
+                document.getElementById('resendSmsForm').querySelector('button').disabled = true;
+                // Update the subtitle so they know where to look
+                document.getElementById('channelLabel').textContent = 'email address';
             });
 
             // Only allow numeric input in OTP field

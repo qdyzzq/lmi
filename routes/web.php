@@ -16,6 +16,9 @@ use App\Http\Controllers\Module3\SupplySideAnalysisController;
 use App\Http\Controllers\Module4\ProgramsController;
 use App\Http\Controllers\Module4\ProgramAdminController;
 use App\Http\Controllers\Module5\PesoDirectoryController;
+use App\Http\Controllers\Module6\LmiPublicationController;
+use App\Http\Controllers\Module6\WeeklyIssueController;
+use App\Http\Controllers\Module6\WeeklyCardSettingController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController; // <-- added for OTP
 
 
@@ -58,6 +61,9 @@ Route::get('/JobMarketOverview', function () {
 Route::get('/SupplySide', function(){
     return view('Public.Module3.SupplySide');
 })->name('Public.Module3.supply.side');
+
+Route::get('/LMIpublication', [LmiPublicationController::class, 'publicIndex'])
+    ->name('Public.Module6.publication');
 
 // ==================== OTP ROUTES (No auth required — user not logged in yet) ====================
 Route::get('/otp', [AuthenticatedSessionController::class, 'otp'])->name('otp')->middleware('no.back');
@@ -325,4 +331,32 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admi
     Route::get('/cta-section',     [ProgramAdminController::class, 'getCtaSection'])    ->name('cta-section.show');
     Route::put('/cta-section',     [ProgramAdminController::class, 'updateCtaSection']);
     Route::post('/cta-section/publish', [ProgramAdminController::class, 'publishCtaSection']) ->name('cta-section.publish');
+
+    // ==================== LMI PUBLICATIONS ====================
+    Route::get('/lmi-publication/data', [LmiPublicationController::class, 'data'])->name('lmi-publication.data');
+    Route::get('/lmi-publication',         [LmiPublicationController::class, 'adminIndex'])->name('lmi-publications.index');
+    Route::get('/lmi-publication/preview', [LmiPublicationController::class, 'preview'])->name('lmi-publication.preview');
+    
+     // Publish / Unpublish / Republish per group
+    Route::patch('/lmi-publication/{groupId}/toggle-publish', [LmiPublicationController::class, 'togglePublish'])->name('lmi-publication.toggle-publish');
+    Route::patch('/lmi-publication/{groupId}/republish',      [LmiPublicationController::class, 'republish'])->name('lmi-publication.republish');
+    // Issues CRUD
+    Route::post('/lmi-publication/issues',        [LmiPublicationController::class, 'store'])->name('lmi-publication.issues.store');
+    Route::put('/lmi-publication/issues/{id}',    [LmiPublicationController::class, 'update'])->name('lmi-publication.issues.update');
+    Route::delete('/lmi-publication/issues/{id}', [LmiPublicationController::class, 'destroy'])->name('lmi-publication.issues.destroy');
+    
+
+    Route::get('/lmi-weekly/data', [WeeklyIssueController::class, 'data'])->name('lmi-weekly.data');
+    Route::post('/lmi-weekly',           [WeeklyIssueController::class, 'store'])->name('lmi-weekly.store');
+    Route::post('/lmi-weekly/{id}',      [WeeklyIssueController::class, 'update'])->name('lmi-weekly.update');
+    Route::delete('/lmi-weekly/{id}',    [WeeklyIssueController::class, 'destroy'])->name('lmi-weekly.destroy');
+
+    Route::patch('/lmi-weekly/toggle-publish', [WeeklyCardSettingController::class, 'togglePublish']);
+    Route::patch('/lmi-weekly/republish',      [WeeklyCardSettingController::class, 'republish']);
+    //WeeklyCard
+    Route::get('/lmi-weekly-card',  [WeeklyCardSettingController::class, 'show']);
+    Route::post('/lmi-weekly-card', [WeeklyCardSettingController::class, 'update']);
+    Route::post('/lmi-weekly-card/text',  [WeeklyCardSettingController::class, 'updateText']);
+    Route::post('/lmi-weekly-card/media', [WeeklyCardSettingController::class, 'updateMedia']);
+    
 });

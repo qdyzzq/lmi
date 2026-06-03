@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Mail\OtpMail;
 use App\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -9,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -85,7 +87,7 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Resend the OTP to the user's registered phone number.
+     * Resend the OTP — via SMS (default) or email (on request).
      */
     public function resendOtp(Request $request): RedirectResponse
     {
@@ -104,23 +106,27 @@ class AuthenticatedSessionController extends Controller
         // Generate new OTP
         $otp = rand(100000, 999999);
 
-        // Update session
         session([
             'otp'              => $otp,
             'otp_pending'      => true,
             'otp_generated_at' => now(),
         ]);
 
-        // Send OTP via SMS
-        $username    = config('sms.username');
-        $password    = config('sms.password');
-        $phoneNumber = $user->phone_number;
-        $message     = "Your OTP for Labor Market Intelligence System is {$otp}. This OTP is valid for 10 minutes. Do not share it with anyone. If you did not request this, please contact support.";
+        $via = $request->input('via', 'sms');
+
+        // Send via Email
+        if ($via === 'email') {
+            Mail::to($user->email)->send(new OtpMail($otp));
+            return back()->with('success', 'A new OTP has been sent to your email address.');
+        }
+
+        // Default: Send via SMS
+        $message = "Your OTP for Labor Market Intelligence System is {$otp}. This OTP is valid for 10 minutes. Do not share it with anyone. If you did not request this, please contact support.";
 
         Http::withoutVerifying()->get('https://messagingsuite.smart.com.ph/cgphttp/servlet/sendmsg', [
-            'username'    => $username,
-            'password'    => $password,
-            'destination' => $phoneNumber,
+            'username'    => config('sms.username'),
+            'password'    => config('sms.password'),
+            'destination' => $user->phone_number,
             'text'        => $message,
         ]);
 

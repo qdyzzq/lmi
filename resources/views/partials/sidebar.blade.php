@@ -325,6 +325,41 @@
             </div>
         </div>
 
+        {{-- ── Divider ── --}}
+        <div class="border-t border-slate-200 my-2 mx-2"></div>
+
+       {{-- ── Module 6 ── --}}
+<div class="mb-1">
+    <p x-show="sidebarExpanded"
+        class="text-[9px] uppercase tracking-[0.14em] text-slate-400 font-semibold font-mono mb-2 px-2 whitespace-nowrap mt-2">
+        Module 6
+    </p>
+
+    <!-- LMI Publications -->
+    <div class="relative" x-data="{ hovered: false, tooltipY: 0 }"
+        @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2"
+        @mouseleave="hovered = false">
+        <a href="{{ route('admin.lmi-publications.index') }}"
+            class="flex items-center gap-3 px-2.5 py-2.5 rounded-r-lg transition-all group border-l-[3px]
+                {{ request()->routeIs('admin.lmi-publications.index')
+                    ? 'text-blue-700 bg-blue-50 border-blue-500'
+                    : 'text-slate-800 border-transparent hover:text-blue-700 hover:bg-blue-50 hover:border-blue-500' }}">
+            <svg class="w-[18px] h-[18px] shrink-0 transition-opacity {{ request()->routeIs('admin.lmi-publications.index') ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 12h6m-4 4h2" />
+            </svg>
+            <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">LMI Publications</span>
+        </a>
+        <div x-show="!sidebarExpanded && hovered"
+            :style="{ top: tooltipY + 'px' }"
+            class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
+            LMI Publications
+            <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+        </div>
+    </div>
+</div>
+
     </nav>
 
     <!-- Account Section (pinned to bottom) -->
