@@ -44,7 +44,7 @@ export default defineConfig({
                 'resources/js/public/peso-directory.js',
                 'resources/js/public/program-stories.js',
                 'resources/js/public/supply-side.js',
-                'resource/js/public/publication.js',
+                'resources/js/public/publication.js',
 
 
                'resources/css/app.css',
