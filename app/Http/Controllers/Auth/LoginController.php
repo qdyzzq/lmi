@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class LoginController extends Controller
@@ -39,14 +38,8 @@ class LoginController extends Controller
             'otp_generated_at' => now(),
         ]);
 
-        if (app()->environment('production')) {
-            // Production: Send via SMS
-            $this->sendOtpViaSms($user->phone_number, $otp);
-        } else {
-            // Local: Just log the OTP — no SMS sent
-            Log::info("[DEV] OTP for {$user->email}: {$otp}");
-        }
-        //$this->sendOtpViaSms($user->phone_number, $otp);
+        $this->sendOtpViaSms($user->phone_number, $otp);
+
         return redirect()->route('otp');
     }
 
@@ -80,11 +73,7 @@ class LoginController extends Controller
         }
 
         // Default: SMS
-        if (app()->environment('production')) {
-            $this->sendOtpViaSms($user->phone_number, $otp);
-        } else {
-            Log::info("[DEV] Resend OTP for {$user->email}: {$otp}");
-        }
+        $this->sendOtpViaSms($user->phone_number, $otp);
 
         return back()->with('success', 'A new OTP has been sent to your phone number.');
     }
@@ -106,17 +95,18 @@ class LoginController extends Controller
     // ─────────────────────────────────────────────
 
     private function sendOtpViaSms(string $phoneNumber, int $otp): void
-    {
-        $message = "Your OTP for Labor Market Intelligence System is {$otp}. "
-                 . "This OTP is valid for 10 minutes. "
-                 . "Do not share it with anyone. "
-                 . "If you did not request this, please contact support.";
+{
+    $message = "Your OTP for Labor Market Information System is {$otp}. "
+             . "This OTP is valid for 10 minutes. "
+             . "Do not share it with anyone. "
+             . "If you did not request this, please contact support.";
 
-        Http::withoutVerifying()->get('https://messagingsuite.smart.com.ph/cgphttp/servlet/sendmsg', [
-            'username'    => config('sms.username'),
-            'password'    => config('sms.password'),
-            'destination' => $phoneNumber,
-            'text'        => $message,
-        ]);
-    }
+    $response = Http::withoutVerifying()->get('https://messagingsuite.smart.com.ph/cgphttp/servlet/sendmsg', [
+        'username'    => config('sms.username'),
+        'password'    => config('sms.password'),
+        'destination' => $phoneNumber,
+        'text'        => $message,
+    ]);
+
+}
 }
