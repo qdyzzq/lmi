@@ -15,7 +15,7 @@
 {{-- ── Hero Banner ── --}}
 <div class="relative w-full h-[500px] md:h-[700px] lg:h-[900px] overflow-hidden">
     <div class="absolute inset-0">
-        <img src="{{ asset('images/publication.jpg') }}"
+        <img src="{{ asset('images/lmipublication.JPG') }}"
              alt="RDC XI Communicator Banner"
              class="w-full h-full object-cover object-center">
         <div class="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/40 to-slate-100 dark:to-slate-900"></div>
