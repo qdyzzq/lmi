@@ -866,7 +866,7 @@
 
         <div class="relative w-full h-[500px] md:h-[700px] lg:h-[900px] overflow-hidden">
             <div class="absolute inset-0">
-                <img src="{{ asset('images/RD.webp') }}" alt="Job Market Background"
+                <img src="{{ asset('images/labordemand.JPG') }}" alt="Job Market Background"
                     class="w-full h-full object-cover object-center">
                 <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-100"></div>
             </div>
