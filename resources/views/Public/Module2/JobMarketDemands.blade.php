@@ -941,7 +941,7 @@
                             <div class="p-6 pb-4">
                                 <div class="flex justify-between mb-3">
                                     <div>
-                                        <h3 class="font-bold text-gray-800">Hard-to-Fill Roles</h3>
+                                        <h3 class="font-bold text-gray-800">Hard-to-Fill Roles / Skill Requirements</h3>
                                         <p class="text-xs text-gray-500 mt-1">Jobs that are consistently difficult to
                                             recruit for</p>
                                     </div>
@@ -1055,7 +1055,7 @@
 
                             @if (isset($groupedRoles) && count($groupedRoles) > 0)
                                 <div id="htfRolesList" class="max-h-96 overflow-y-auto px-6 pb-6">
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-start">
                                         @foreach ($groupedRoles as $normalizedTitle => $roleGroup)
                                             @foreach ($roleGroup as $item)
                                                 @php
@@ -1204,9 +1204,8 @@
                                                 <div class="role-card border border-slate-200 rounded-lg overflow-hidden hover:border-blue-400 transition cursor-pointer"
                                                     onclick="toggleRoleDetails({{ $submission->id }}, {{ $index }})">
 
-                                                    <div id="htfRolesList" class="max-h-96 overflow-y-auto px-6 pb-6">
-                                                        <div
-                                                            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                    <div class="p-3 bg-white hover:bg-slate-50 transition">
+                                                        <div class="flex items-start justify-between">
                                                             <div class="flex-1">
                                                                 <p class="font-bold text-sm text-slate-800">
                                                                     {{ $role->formatted_job_title }}</p>
@@ -2398,7 +2397,7 @@
                                                     </svg>
                                                 </div>
                                                 <div class="text-sm font-bold text-gray-800 uppercase tracking-wide">
-                                                    Part II: Hard-to-Fill Roles</div>
+                                                    Part II: Hard-to-Fill Roles / Skill Requirements</div>
                                             </div>
                                             <div class="h-px bg-gray-100 mb-4"></div>
                                             <p class="text-teal-700 text-xs font-medium mb-4">
