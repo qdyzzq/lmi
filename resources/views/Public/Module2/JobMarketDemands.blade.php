@@ -935,72 +935,13 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="mb-8">
 
-                        <div
-                            class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                            <div
-                                class="flex flex-wrap justify-between items-start gap-3 p-4 sm:p-6 pb-4 border-b border-gray-100">
-                                <div>
-                                    <h3 class="font-bold text-gray-800">Top 10 High-Volume Job Titles</h3>
-
-                                    @if ($selected_year && isset($selected_year))
-                                        <p class="text-xs text-gray-500 mt-1" id="chartSubtitle"
-                                            style="{{ collect($comparison_data ?? [])->some(fn($d) => $d['previous_count'] > 0) ? '' : 'display:none' }}">
-                                            <span id="prevYearLabel"
-                                                class="text-emerald-600 font-medium">{{ $selected_year - 1 }}</span> vs
-                                            <span id="currentYearLabel"
-                                                class="text-indigo-600 font-medium">{{ $selected_year }}</span>
-                                        </p>
-                                    @endif
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    @if (isset($available_years) && count($available_years) > 0)
-                                        <select id="yearSelector"
-                                            class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                                            onchange="updateChart(this.value)">
-                                            @foreach ($available_years as $year)
-                                                <option value="{{ $year }}"
-                                                    {{ $year == $selected_year ? 'selected' : '' }}>
-                                                    {{ $year }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    @endif
-
-                                    <button onclick="expandChart()" class="p-2 hover:bg-gray-100 rounded-lg transition"
-                                        title="Expand chart">
-                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                                        </svg>
-                                    </button>
-
-                                    <span class="text-gray-300 cursor-help"
-                                        title="Job titles with highest demand">ⓘ</span>
-                                </div>
-                            </div>
-
-                            <div class="p-4 sm:p-6" id="chartContainer">
-                                <div class="chart-responsive">
-                                    <canvas id="highVolumeHorizontalChart"></canvas>
-                                </div>
-                            </div>
-                            <div class="px-6 pb-4 pt-2 border-t border-gray-100">
-                                <p class="text-xs text-gray-500 text-center italic">
-                                    Source: PhilJobNet
-                                </p>
-                            </div>
-
-                        </div>
-
-                        <div
-                            class="lg:col-span-1 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                             <div class="p-6 pb-4">
                                 <div class="flex justify-between mb-3">
                                     <div>
-                                        <h3 class="font-bold text-gray-800">Hard-to-Fill Roles</h3>
+                                        <h3 class="font-bold text-gray-800">Hard-to-Fill Roles / Skill Requirements</h3>
                                         <p class="text-xs text-gray-500 mt-1">Jobs that are consistently difficult to
                                             recruit for</p>
                                     </div>
@@ -1012,8 +953,8 @@
                                         <div class="relative" id="htfFilterWrapper">
 
                                             <button id="htfFilterTrigger" type="button" onclick="htfPanelToggle()">
-                                                <svg class="w-3 h-3 flex-shrink-0" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2.5" d="M3 4h18M7 12h10M11 20h2" />
                                                 </svg>
@@ -1037,7 +978,8 @@
                                                     </div>
                                                     <p class="mfp-mode-hint" id="htfModeHint">Select
                                                         <strong>From</strong> &amp; <strong>To</strong> year — all years
-                                                        &amp; months in between will be included</p>
+                                                        &amp; months in between will be included
+                                                    </p>
                                                     <div class="htfp-chips" id="htfpYearChips">
                                                         <span class="htfp-chip htfp-placeholder">No archived
                                                             data</span>
@@ -1113,7 +1055,7 @@
 
                             @if (isset($groupedRoles) && count($groupedRoles) > 0)
                                 <div id="htfRolesList" class="max-h-96 overflow-y-auto px-6 pb-6">
-                                    <div class="space-y-3">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-start">
                                         @foreach ($groupedRoles as $normalizedTitle => $roleGroup)
                                             @foreach ($roleGroup as $item)
                                                 @php
@@ -1754,7 +1696,7 @@
                                                                 class="grid grid-cols-12 gap-3 px-4 sm:px-8 py-4 sm:py-6 items-center lmi-row-grid"
                                                                 :class="((result.hard_skills && result.hard_skills.length >
                                                                     0) || (result.soft_skills && result.soft_skills
-                                                                        .length > 0)) ? 'cursor-pointer' :
+                                                                    .length > 0)) ? 'cursor-pointer' :
                                                                 'cursor-default'">
 
                                                                 <div
@@ -2455,7 +2397,7 @@
                                                     </svg>
                                                 </div>
                                                 <div class="text-sm font-bold text-gray-800 uppercase tracking-wide">
-                                                    Part II: Hard-to-Fill Roles</div>
+                                                    Part II: Hard-to-Fill Roles / Skill Requirements</div>
                                             </div>
                                             <div class="h-px bg-gray-100 mb-4"></div>
                                             <p class="text-teal-700 text-xs font-medium mb-4">
