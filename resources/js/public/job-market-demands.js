@@ -3280,6 +3280,11 @@ document.addEventListener("DOMContentLoaded", function () {
             const json = await res.json();
 
             // Update banner
+            // NOTE: previously this only rebuilt 2 lines (title + date range), permanently
+            // dropping the 3rd "Some data is archived..." warning line that the server-rendered
+            // version includes. That line only applies to the default "Last 90 Days" state —
+            // it doesn't show while actively viewing an archived period — so it's added here
+            // conditionally on `!json.is_archive`, matching the original Blade markup.
             if (banner) {
                 banner.className = `bg-blue-50 border-l-4 ${json.is_archive ? 'border-amber-400' : 'border-blue-500'} p-3 rounded-md`;
                 banner.innerHTML = `
@@ -3290,6 +3295,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <div>
                             <p class="text-xs font-semibold ${json.is_archive ? 'text-amber-900' : 'text-blue-900'}">${json.is_archive ? 'Archived Quarter' : 'Last 90 Days'}</p>
                             <p class="text-xs ${json.is_archive ? 'text-amber-700' : 'text-blue-700'}">${json.quarter_text}</p>
+                            ${!json.is_archive ? '<p class="text-xs font-semibold text-amber-700">Some data is archived and won\'t show by default. Use the year or month filter above to view it.</p>' : ''}
                         </div>
                     </div>`;
             }
@@ -3299,7 +3305,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (json.roles.length === 0) {
                     rolesList.innerHTML = '<p class="text-center text-gray-400 text-sm py-8">No roles found for this period.</p>';
                 } else {
-                    rolesList.innerHTML = '<div class="space-y-3">' +
+                    // NOTE: was previously wrapped in `space-y-3` (old single-column stacked list),
+                    // which no longer matches the current server-rendered layout. The default
+                    // (unfiltered) view uses a responsive 3-column grid — this now matches it,
+                    // so Apply/Reset produce the same layout as the initial page load.
+                    rolesList.innerHTML = '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-start">' +
                         json.roles.map(role => `
                             <div class="role-card border border-slate-200 rounded-lg overflow-hidden hover:border-blue-400 transition cursor-pointer"
                                  onclick="toggleRoleDetails(${role.submission_id}, ${role.index})">
@@ -3382,7 +3392,9 @@ document.addEventListener("DOMContentLoaded", function () {
     let pendingMode   = 'range'; // 'range' | 'exact'
 
     // Last applied selections (used for trigger label after Apply)
-    let appliedYears  = [];
+    // Default to the current selected year, since that's what the server-rendered
+    // matrix_results are actually scoped to on first load (see JobMarketDemandsController).
+    let appliedYears  = window._jobMarketData.matrixSelectedYear ? [String(window._jobMarketData.matrixSelectedYear)] : [];
     let appliedMonths = [];
     let appliedMode   = 'range';
 
@@ -3401,6 +3413,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         buildYearChips();
+        updateTriggerLabel(); // reflect the default year scope in the button immediately
 
         // Close panel when clicking outside wrapper
         document.addEventListener('click', function (e) {
@@ -3742,6 +3755,364 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 })();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Critical Skill Gaps Per Sector — "Filter by Period" (mirrors the matrix filter above)
+(function () {
+    const MONTH_SHORT = ['','Jan','Feb','Mar','Apr','May','Jun',
+                         'Jul','Aug','Sep','Oct','Nov','Dec'];
+    const MONTH_FULL  = ['','January','February','March','April','May','June',
+                         'July','August','September','October','November','December'];
+
+    // Reuses the same date options as the matrix filter — same underlying data source
+    // (LmiSubmission), so a separate endpoint isn't needed just for this.
+    let sgpDateOptions = window._jobMarketData.matrixDateOptions;
+
+    let pendingYears  = [];
+    let pendingMonths = [];
+    let pendingMode   = 'range';
+
+    // Defaults to the latest year with real submission data — same as the matrix table.
+    let appliedYears  = window._jobMarketData.matrixSelectedYear ? [String(window._jobMarketData.matrixSelectedYear)] : [];
+    let appliedMonths = [];
+    let appliedMode   = 'range';
+
+    /* ════════════════════════════════════════
+       BOOT
+    ════════════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            const res  = await fetch('/api/job-market/matrix-date-options');
+            const json = await res.json();
+            if (json.options && json.options.length) sgpDateOptions = json.options;
+        } catch (e) {
+            console.warn('Sector skill gaps date options fetch failed, using server fallback.');
+        }
+
+        buildYearChips();
+        updateTriggerLabel();
+
+        document.addEventListener('click', function (e) {
+            const wrapper = document.getElementById('sectorFilterWrapper');
+            if (wrapper && !wrapper.contains(e.target)) sgpClose();
+        });
+    });
+
+    /* ════════════════════════════════════════
+       BUILD YEAR CHIPS
+    ════════════════════════════════════════ */
+    function buildYearChips() {
+        const container = document.getElementById('sgpYearChips');
+        const yearHint  = document.getElementById('sgpYearHint');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (yearHint) {
+            yearHint.textContent = pendingMode === 'range'
+                ? 'select From & To'
+                : 'pick any years';
+        }
+
+        const years = [...new Set(sgpDateOptions.map(o => String(o.year)))]
+            .sort((a, b) => Number(b) - Number(a));
+
+        if (!years.length) {
+            container.innerHTML = '<span class="mfp-chip mfp-disabled mfp-placeholder">No data available</span>';
+            return;
+        }
+
+        years.forEach(yr => {
+            const btn = document.createElement('button');
+            btn.type        = 'button';
+            btn.className   = 'mfp-chip' + (pendingYears.includes(yr) ? ' mfp-selected' : '');
+            btn.textContent = yr;
+            btn.dataset.val = yr;
+            btn.onclick     = () => toggleYear(btn, yr);
+            container.appendChild(btn);
+        });
+    }
+
+    /* ════════════════════════════════════════
+       BUILD MONTH CHIPS
+    ════════════════════════════════════════ */
+    function buildMonthChips() {
+        const container = document.getElementById('sgpMonthChips');
+        const hint      = document.getElementById('sgpMonthHint');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (!pendingYears.length) {
+            if (hint) hint.textContent = 'select a year first';
+            container.innerHTML = '<span class="mfp-chip mfp-placeholder">Select a year to see months</span>';
+            return;
+        }
+
+        let yearsForMonths;
+        if (pendingMode === 'range' && pendingYears.length === 2) {
+            const minY = Math.min(...pendingYears.map(Number));
+            const maxY = Math.max(...pendingYears.map(Number));
+            yearsForMonths = [];
+            for (let y = minY; y <= maxY; y++) yearsForMonths.push(String(y));
+        } else {
+            yearsForMonths = pendingYears.slice();
+        }
+
+        const available = new Set(
+            sgpDateOptions
+                .filter(o => yearsForMonths.includes(String(o.year)))
+                .map(o => o.month)
+        );
+
+        if (hint) hint.textContent = pendingMode === 'range'
+            ? 'select From & To month (optional)'
+            : 'pick any specific months';
+
+        for (let m = 1; m <= 12; m++) {
+            const btn = document.createElement('button');
+            btn.type        = 'button';
+            btn.dataset.val = String(m);
+
+            if (available.has(m)) {
+                btn.className   = 'mfp-chip' + (pendingMonths.includes(String(m)) ? ' mfp-selected' : '');
+                btn.textContent = MONTH_SHORT[m];
+                btn.onclick     = () => toggleMonth(btn, String(m));
+            } else {
+                btn.className   = 'mfp-chip mfp-disabled';
+                btn.textContent = MONTH_SHORT[m];
+            }
+            container.appendChild(btn);
+        }
+    }
+
+    /* ════════════════════════════════════════
+       TOGGLE HELPERS
+    ════════════════════════════════════════ */
+    function toggleYear(btn, yr) {
+        if (pendingYears.includes(yr)) {
+            pendingYears = pendingYears.filter(y => y !== yr);
+            btn.classList.remove('mfp-selected');
+        } else {
+            if (pendingMode === 'range' && pendingYears.length >= 2) {
+                const evicted = pendingYears.shift();
+                document.querySelector(`#sgpYearChips [data-val="${evicted}"]`)
+                    ?.classList.remove('mfp-selected');
+            }
+            pendingYears.push(yr);
+            btn.classList.add('mfp-selected');
+        }
+        pendingMonths = [];
+        buildMonthChips();
+    }
+
+    function toggleMonth(btn, m) {
+        if (pendingMonths.includes(m)) {
+            pendingMonths = pendingMonths.filter(x => x !== m);
+            btn.classList.remove('mfp-selected');
+        } else {
+            if (pendingMode === 'range' && pendingMonths.length >= 2) {
+                const evicted = pendingMonths.shift();
+                document.querySelector(`#sgpMonthChips [data-val="${evicted}"]`)
+                    ?.classList.remove('mfp-selected');
+            }
+            pendingMonths.push(m);
+            btn.classList.add('mfp-selected');
+        }
+    }
+
+    /* ════════════════════════════════════════
+       MODE TOGGLE (Range vs Exact)
+    ════════════════════════════════════════ */
+    window.sgpSetMode = function (mode) {
+        pendingMode = mode;
+        document.getElementById('sgpModeRange')?.classList.toggle('mfp-mode-active', mode === 'range');
+        document.getElementById('sgpModeExact')?.classList.toggle('mfp-mode-active', mode === 'exact');
+        const hint = document.getElementById('sgpModeHint');
+        if (hint) {
+            hint.innerHTML = mode === 'range'
+                ? 'Select <strong>From</strong> &amp; <strong>To</strong> year — all years &amp; months in between will be included'
+                : 'Select up to <strong>2 specific years</strong> — then pick <strong>any months</strong> you want';
+        }
+        pendingYears  = [];
+        pendingMonths = [];
+        buildYearChips();
+        buildMonthChips();
+    };
+
+    window.sgpToggle = function () {
+        const panel = document.getElementById('sectorFilterPanel');
+        if (panel.classList.contains('mfp-open')) {
+            sgpClose();
+        } else {
+            pendingYears  = appliedYears.slice();
+            pendingMonths = appliedMonths.slice();
+            pendingMode   = appliedMode;
+            document.getElementById('sgpModeRange')?.classList.toggle('mfp-mode-active', pendingMode === 'range');
+            document.getElementById('sgpModeExact')?.classList.toggle('mfp-mode-active', pendingMode === 'exact');
+            const modeHint = document.getElementById('sgpModeHint');
+            if (modeHint) {
+                modeHint.innerHTML = pendingMode === 'range'
+                    ? 'Select <strong>From</strong> &amp; <strong>To</strong> year — all years &amp; months in between will be included'
+                    : 'Select up to <strong>2 specific years</strong> — then pick <strong>any months</strong> you want';
+            }
+            buildYearChips();
+            buildMonthChips();
+            panel.classList.add('mfp-open');
+            document.getElementById('sectorFilterTrigger').classList.add('mft-open');
+        }
+    };
+
+    function sgpClose() {
+        document.getElementById('sectorFilterPanel')?.classList.remove('mfp-open');
+        document.getElementById('sectorFilterTrigger')?.classList.remove('mft-open');
+    }
+
+    /* ════════════════════════════════════════
+       APPLY / RESET
+    ════════════════════════════════════════ */
+    window.sgpApply = async function () {
+        if (!pendingYears.length) {
+            sgpReset();
+            return;
+        }
+        appliedYears  = pendingYears.slice();
+        appliedMonths = pendingMonths.slice();
+        appliedMode   = pendingMode;
+        sgpClose();
+        updateTriggerLabel();
+        await sgpFetch(appliedYears, appliedMonths);
+    };
+
+    window.sgpReset = function () {
+        pendingYears  = [];
+        pendingMonths = [];
+        appliedYears  = [];
+        appliedMonths = [];
+        pendingMode   = 'range';
+        appliedMode   = 'range';
+        sgpClose();
+        updateTriggerLabel();
+        sgpFetch([], []); // "All" — full archive, all years
+    };
+
+    /* ════════════════════════════════════════
+       TRIGGER LABEL
+    ════════════════════════════════════════ */
+    function updateTriggerLabel() {
+        const trigger = document.getElementById('sectorFilterTrigger');
+        const text    = document.getElementById('sgpTriggerText');
+        if (!text) return;
+
+        if (!appliedYears.length) {
+            text.textContent = 'Filter by Period';
+            trigger.classList.remove('mft-active');
+        } else {
+            const yLabel = (appliedMode === 'range' && appliedYears.length === 2)
+                ? (() => { const mn = Math.min(...appliedYears.map(Number)), mx = Math.max(...appliedYears.map(Number)); return mn === mx ? String(mn) : `${mn} – ${mx}`; })()
+                : appliedYears.join(' & ');
+            const mLabel = appliedMonths.length === 0
+                ? 'All Months'
+                : (appliedMode === 'range' && appliedMonths.length === 2)
+                    ? (() => {
+                        const mn = Math.min(...appliedMonths.map(Number)), mx = Math.max(...appliedMonths.map(Number));
+                        return mn === mx ? MONTH_SHORT[mn] : `${MONTH_SHORT[mn]} – ${MONTH_SHORT[mx]}`;
+                    })()
+                    : appliedMonths.map(m => MONTH_SHORT[Number(m)]).join(' & ');
+            text.textContent = `${yLabel} — ${mLabel}`;
+            trigger.classList.add('mft-active');
+        }
+    }
+
+    /* ════════════════════════════════════════
+       CORE FETCH
+    ════════════════════════════════════════ */
+    async function sgpFetch(years, months) {
+        const spinner = document.getElementById('sectorSpinner');
+        if (spinner) spinner.style.display = 'inline-block';
+
+        try {
+            const params = new URLSearchParams();
+
+            let yearsToFetch;
+            if (appliedMode === 'range' && years.length === 2) {
+                const minY = Math.min(...years.map(Number));
+                const maxY = Math.max(...years.map(Number));
+                yearsToFetch = [];
+                for (let y = minY; y <= maxY; y++) yearsToFetch.push(String(y));
+            } else {
+                yearsToFetch = years.slice();
+            }
+            yearsToFetch.forEach(y => params.append('years[]', y));
+
+            let monthsToFetch;
+            if (appliedMode === 'range' && months.length === 2) {
+                const minM = Math.min(...months.map(Number));
+                const maxM = Math.max(...months.map(Number));
+                monthsToFetch = [];
+                for (let m = minM; m <= maxM; m++) monthsToFetch.push(String(m));
+            } else {
+                monthsToFetch = months.slice();
+            }
+            monthsToFetch.forEach(m => params.append('months[]', m));
+
+            const res  = await fetch(`/api/job-market/sector-skills-data?${params}`);
+            const json = await res.json();
+
+            renderSkillTags('tech-skills-container', json.tech_skills || [], 'tech-skill', 'bg-blue-100', 'bg-blue-200');
+            renderSkillTags('soft-skills-container', json.soft_skills || [], 'soft-skill', 'bg-red-100', 'bg-red-200');
+
+            // Re-apply whichever sector tab is currently active so the new tags respect it
+            const activeTab = document.querySelector('.sector-tab.bg-gray-900')?.dataset.sector || 'All';
+            if (typeof window.filterSkills === 'function') window.filterSkills(activeTab);
+
+        } catch (e) {
+            console.error('Sector skill gaps filter fetch failed:', e);
+        }
+
+        if (spinner) spinner.style.display = 'none';
+    }
+
+    /* ════════════════════════════════════════
+       RENDER SKILL TAGS
+       Rebuilds the tag containers from JSON. Uses textContent (not innerHTML with
+       string interpolation) for skill/sector names since they're user-submitted data.
+    ════════════════════════════════════════ */
+    function renderSkillTags(containerId, skills, tagClass, bgClass, countBgClass) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+
+        skills.forEach(skill => {
+            const tag = document.createElement('div');
+            tag.className = `skill-tag ${tagClass} ${bgClass} text-gray-800 font-semibold px-3 py-2 rounded-lg text-sm h-fit flex flex-col gap-0.5`;
+            tag.setAttribute('data-sector', skill.sector);
+
+            const row = document.createElement('div');
+            row.className = 'flex items-center gap-1';
+            row.append(document.createTextNode(skill.name));
+
+            if (skill.count && skill.count > 1) {
+                const badge = document.createElement('span');
+                badge.className = `px-1.5 py-0.5 ${countBgClass} rounded-full text-[9px] font-bold`;
+                badge.textContent = `${skill.count}×`;
+                row.appendChild(badge);
+            }
+
+            const sectorLabel = document.createElement('span');
+            sectorLabel.className = 'text-[11px] opacity-60 font-normal';
+            sectorLabel.textContent = `(${skill.sector})`;
+
+            tag.appendChild(row);
+            tag.appendChild(sectorLabel);
+            container.appendChild(tag);
+        });
+
+        setTimeout(() => {
+            if (typeof window._techScrollUpdate === 'function') window._techScrollUpdate();
+            if (typeof window._softScrollUpdate === 'function') window._softScrollUpdate();
+        }, 50);
+    }
+})();
+
 
 
 // ─── Global Exports ───────────────────────────────────────────────────────────
