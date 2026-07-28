@@ -1131,7 +1131,7 @@
                                                 <p class="text-xs {{ ($htf_is_archive ?? false) ? 'text-amber-700' : 'text-blue-700' }}">{{ $quarter_info['display_text'] }}
                                                 </p>
                                                 @unless ($htf_is_archive ?? false)
-                                                    <p class="text-xs font-semibold text-amber-700">Some data is archived and won't show by default. Use the year or month filter above to view it.</p>
+                                                    <p class="text-xs font-semibold text-amber-700">Some data are archived and are not displayed by default. Use the Year or Month filter to view archived records.</p>
                                                 @endunless
                                             </div>
                                         </div>
@@ -1371,7 +1371,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <div>
                             <h3 class="font-bold text-lg">Critical Skill Gaps Per Sector</h3>
-                            <p class="text-xs font-bold text-amber-700">Some data is archived and won't show by default. Use the year or month filter above to view it.</p>
+                            <p class="text-xs font-bold text-amber-700">Some data are archived and are not displayed by default. Use the Year or Month filter to view archived records.</p>
                             </div>
                             <div class="flex items-center gap-2">
                                 <div class="relative" id="sectorFilterWrapper">
