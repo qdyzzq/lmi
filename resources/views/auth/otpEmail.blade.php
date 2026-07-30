@@ -43,6 +43,7 @@
                 If you did not request this, please contact support immediately.
             </p>
         </div>
+        
 
         <div class="footer">
             <p>© {{ date('Y') }} DOLE Region XI &mdash; This is an automated message, please do not reply.</p>
