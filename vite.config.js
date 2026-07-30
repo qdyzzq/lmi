@@ -19,11 +19,18 @@ export default defineConfig({
                 'resources/js/admin/Module3/graduate-form.js',
                 'resources/js/admin/Module3/licensure-rates-form.js',
                 'resources/js/admin/Module3/supply-side-editor.js',
+
                                     //Module4   
                 'resources/js/admin/Module4/program-stories-editor.js',
+
                                     //Module5
                 'resources/js/admin/Module5/peso-directory-editor.js',
+
+                                    //Module6
+                'resources/js/admin/Module6/lmi-publication-editor.js',
+                'resources/js/admin/Module6/lmi-weekly-editor.js',
                 
+
 
                 //statistician js
                 'resources/js/statistician/job-title-pending.js',
@@ -36,8 +43,10 @@ export default defineConfig({
                 'resources/js/public/job-market-demands.js',
                 'resources/js/public/peso-directory.js',
                 'resources/js/public/program-stories.js',
-                'resources/js/public/supply-side',
-                
+                'resources/js/public/supply-side.js',
+                'resources/js/public/publication.js',
+
+
                'resources/css/app.css',
                'resources/js/bootstrap.js',
             
@@ -52,7 +61,7 @@ export default defineConfig({
         port: 5173,
         strictPort: true,
         hmr: {
-            //host: '192.168.1.42', // 🔥 THIS IS THE KEY FIX
+            //host: '192.168.1.42', 
             host: '10.15.8.42',
             
         },*/

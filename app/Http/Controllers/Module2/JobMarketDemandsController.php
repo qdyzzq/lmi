@@ -64,10 +64,57 @@ class JobMarketDemandsController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        // Critical Skills Requirements table defaults to the FULL current year,
+        // independent of the 90-day "recent activity" window used for Hard-to-Fill Roles above.
+        // Previously this table silently inherited the 90-day scope from $approvedSubmissions,
+        // which made it look like it was defaulting to "this month" instead of the full year.
+        //
+        // IMPORTANT: the default year for THIS table must come from the matrix's own data
+        // source (LmiSubmission), NOT from $selectedYear (which is derived from the JobTitle
+        // table for the unrelated High Volume Jobs comparison chart, and can contain years —
+        // e.g. stray/future-dated rows — that have no corresponding submission data at all).
+        $matrixAvailableYears = collect($this->getMatrixDateOptions())
+            ->pluck('year')
+            ->unique()
+            ->values()
+            ->toArray();
+        $matrixSelectedYear = !empty($matrixAvailableYears) ? max($matrixAvailableYears) : (int) date('Y');
+
+        $matrixSubmissions = LmiSubmission::with(['hardToFillRoles', 'diagnoses'])
+            ->where('status', 'approved')
+            ->whereYear('created_at', $matrixSelectedYear)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // ================================================
+        // FALLBACK: if the live 90-day window has no data (e.g. right after the
+        // calendar rolls into a new year and nothing's been submitted yet), fall back
+        // to showing all data for the latest year that actually HAS submissions,
+        // instead of an empty state. The moment a new submission lands within the
+        // live 90-day window again, this fallback stops being used automatically —
+        // no manual re-check needed.
+        // ================================================
+        $htfIsArchiveFallback = false;
+        $htfArchiveLabel      = null;
+
+        if ($approvedSubmissions->isEmpty() && $matrixSubmissions->isNotEmpty()) {
+            $htfIsArchiveFallback = true;
+            $htfArchiveLabel      = (string) $matrixSelectedYear;
+            $approvedSubmissions  = $matrixSubmissions; // reuse already-loaded latest-year data
+        }
+
         // ================================================
         // CALCULATE QUARTER INFO BASED ON ACTIVE DATA
         // ================================================
-        $quarterInfo = $this->getQuarterInfo($approvedSubmissions);
+        $quarterInfo = $htfIsArchiveFallback
+            ? [
+                'has_data'           => true,
+                'display_text'       => 'Archived data for ' . $htfArchiveLabel,
+                'start_date'         => null,
+                'end_date'           => null,
+                'total_submissions'  => $approvedSubmissions->count(),
+            ]
+            : $this->getQuarterInfo($approvedSubmissions);
 
         // ================================================
         // GROUP ROLES BY NORMALIZED TITLE
@@ -94,97 +141,24 @@ class JobMarketDemandsController extends Controller
         ksort($groupedRoles);
 
         // ================================================
-        // AGGREGATE SKILLS FROM APPROVED SUBMISSIONS
+        // AGGREGATE SKILLS FROM SUBMISSIONS
         // ================================================
-        $dynamicTechSkills = [];
-        $dynamicSoftSkills = [];
-        $allSectors = [];
-
-        foreach ($approvedSubmissions as $submission) {
-            foreach ($submission->hardToFillRoles as $role) {
-                $sector = $role->job_classification;
-                
-                if (!in_array($sector, $allSectors)) {
-                    $allSectors[] = $sector;
-                }
-                
-                // Technical skills
-                $techSkills = $role->technical_skills_missing;
-                if (is_string($techSkills)) {
-                    $techSkills = json_decode($techSkills, true) ?? [];
-                }
-                if (is_array($techSkills)) {
-                    foreach ($techSkills as $skill) {
-                        if (!empty($skill)) {
-                            $dynamicTechSkills[] = [
-                                'name' => mb_strtoupper(trim($skill), 'UTF-8'),
-                                'sector' => $sector,
-                                'job_title' => $role->job_title
-                            ];
-                        }
-                    }
-                }
-                
-                // Soft skills
-                $softSkills = $role->soft_skills_missing;
-                if (is_string($softSkills)) {
-                    $softSkills = json_decode($softSkills, true) ?? [];
-                }
-                if (is_array($softSkills)) {
-                    foreach ($softSkills as $skill) {
-                        if (!empty($skill)) {
-                            $dynamicSoftSkills[] = [
-                                'name' => mb_strtoupper(trim($skill), 'UTF-8'),
-                                'sector' => $sector,
-                                'job_title' => $role->job_title
-                            ];
-                        }
-                    }
-                }
-            }
-        }
-
-        // Count skills
-        $techSkillsCounts = [];
-        foreach ($dynamicTechSkills as $skill) {
-            $key = $skill['name'] . '|' . $skill['sector'];
-            if (!isset($techSkillsCounts[$key])) {
-                $techSkillsCounts[$key] = [
-                    'name' => $skill['name'],
-                    'sector' => $skill['sector'],
-                    'count' => 0
-                ];
-            }
-            $techSkillsCounts[$key]['count']++;
-        }
-
-        $softSkillsCounts = [];
-        foreach ($dynamicSoftSkills as $skill) {
-            $key = $skill['name'] . '|' . $skill['sector'];
-            if (!isset($softSkillsCounts[$key])) {
-                $softSkillsCounts[$key] = [
-                    'name' => $skill['name'],
-                    'sector' => $skill['sector'],
-                    'count' => 0
-                ];
-            }
-            $softSkillsCounts[$key]['count']++;
-        }
-
-        usort($techSkillsCounts, function($a, $b) {
-            return $b['count'] - $a['count'];
-        });
-        
-        usort($softSkillsCounts, function($a, $b) {
-            return $b['count'] - $a['count'];
-        });
+        // IMPORTANT: this now uses $matrixSubmissions (full latest-year data) instead of
+        // $approvedSubmissions (90-day rolling window). Previously "Critical Skill Gaps Per
+        // Sector" silently inherited the 90-day scope, so it only ever showed recent/"latest"
+        // data and never any archived (older-year) submissions. This now matches the same
+        // full-year default used by the Critical Skills Requirements table below it.
+        $sectorSkills     = $this->buildSectorSkills($matrixSubmissions);
+        $techSkillsCounts = $sectorSkills['tech_skills'];
+        $softSkillsCounts = $sectorSkills['soft_skills'];
+        $allSectors       = $sectorSkills['sectors'];
 
         // ================================================
         // BUILD DYNAMIC MATRIX RESULTS
         // ================================================
         $matrixResults = [];
 
-        foreach ($approvedSubmissions as $submission) {
+        foreach ($matrixSubmissions as $submission) {
             foreach ($submission->hardToFillRoles as $role) {
                 $techSkills = $role->technical_skills_missing;
                 if (is_string($techSkills)) {
@@ -309,6 +283,8 @@ class JobMarketDemandsController extends Controller
             
             // QUARTER INFO
             'quarter_info' => $quarterInfo,
+            'htf_is_archive'    => $htfIsArchiveFallback,
+            'htf_archive_label' => $htfArchiveLabel,
             
             'tech_skills' => $techSkillsCounts,
             'soft_skills' => $softSkillsCounts,
@@ -325,6 +301,7 @@ class JobMarketDemandsController extends Controller
             'total_matrix_results' => count($matrixResults),
             // ↓ INSERTED: date options for Critical Skills Requirements year/month filter
             'matrix_date_options' => $this->buildMatrixDateOptions(),
+            'matrix_selected_year' => $matrixSelectedYear,
             // ↑ END INSERTED
         ]);
     }
@@ -377,6 +354,30 @@ class JobMarketDemandsController extends Controller
                 ->where('created_at', '>=', $ninetyDaysAgo)
                 ->orderBy('created_at', 'desc')
                 ->get();
+
+            // FALLBACK: mirrors the same fallback in jobMarket() — if the live 90-day
+            // window is empty, fall back to the latest year that actually has data
+            // instead of showing an empty state. Keeps Reset consistent with the
+            // initial page load.
+            if ($submissions->isEmpty()) {
+                $fallbackYears = LmiSubmission::where('status', 'approved')
+                    ->selectRaw('YEAR(created_at) as yr')
+                    ->distinct()
+                    ->pluck('yr')
+                    ->toArray();
+
+                if (!empty($fallbackYears)) {
+                    $fallbackYear = max($fallbackYears);
+                    $submissions  = LmiSubmission::with(['hardToFillRoles'])
+                        ->where('status', 'approved')
+                        ->whereYear('created_at', $fallbackYear)
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+
+                    $isArchive   = true;
+                    $filterYears = [$fallbackYear];
+                }
+            }
         }
 
         // Build archive label for the banner
@@ -743,6 +744,140 @@ class JobMarketDemandsController extends Controller
         return response()->json([
             'results'       => $matrixResults,
             'total'         => count($matrixResults),
+            'filter_years'  => $filterYears,
+            'filter_months' => $filterMonths,
+        ]);
+    }
+    // ↑ END INSERTED
+
+    // ↓ INSERTED: shared aggregation logic for "Critical Skill Gaps Per Sector"
+    // Takes any collection of LmiSubmission (with hardToFillRoles eager-loaded) and
+    // returns the same shape the Blade view / AJAX endpoint both need.
+    private function buildSectorSkills($submissions): array
+    {
+        $dynamicTechSkills = [];
+        $dynamicSoftSkills = [];
+        $allSectors = [];
+
+        foreach ($submissions as $submission) {
+            foreach ($submission->hardToFillRoles as $role) {
+                $sector = $role->job_classification;
+
+                if (!in_array($sector, $allSectors)) {
+                    $allSectors[] = $sector;
+                }
+
+                // Technical skills
+                $techSkills = $role->technical_skills_missing;
+                if (is_string($techSkills)) {
+                    $techSkills = json_decode($techSkills, true) ?? [];
+                }
+                if (is_array($techSkills)) {
+                    foreach ($techSkills as $skill) {
+                        if (!empty($skill)) {
+                            $dynamicTechSkills[] = [
+                                'name' => mb_strtoupper(trim($skill), 'UTF-8'),
+                                'sector' => $sector,
+                                'job_title' => $role->job_title
+                            ];
+                        }
+                    }
+                }
+
+                // Soft skills
+                $softSkills = $role->soft_skills_missing;
+                if (is_string($softSkills)) {
+                    $softSkills = json_decode($softSkills, true) ?? [];
+                }
+                if (is_array($softSkills)) {
+                    foreach ($softSkills as $skill) {
+                        if (!empty($skill)) {
+                            $dynamicSoftSkills[] = [
+                                'name' => mb_strtoupper(trim($skill), 'UTF-8'),
+                                'sector' => $sector,
+                                'job_title' => $role->job_title
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        $techSkillsCounts = [];
+        foreach ($dynamicTechSkills as $skill) {
+            $key = $skill['name'] . '|' . $skill['sector'];
+            if (!isset($techSkillsCounts[$key])) {
+                $techSkillsCounts[$key] = [
+                    'name' => $skill['name'],
+                    'sector' => $skill['sector'],
+                    'count' => 0
+                ];
+            }
+            $techSkillsCounts[$key]['count']++;
+        }
+
+        $softSkillsCounts = [];
+        foreach ($dynamicSoftSkills as $skill) {
+            $key = $skill['name'] . '|' . $skill['sector'];
+            if (!isset($softSkillsCounts[$key])) {
+                $softSkillsCounts[$key] = [
+                    'name' => $skill['name'],
+                    'sector' => $skill['sector'],
+                    'count' => 0
+                ];
+            }
+            $softSkillsCounts[$key]['count']++;
+        }
+
+        usort($techSkillsCounts, fn($a, $b) => $b['count'] - $a['count']);
+        usort($softSkillsCounts, fn($a, $b) => $b['count'] - $a['count']);
+
+        return [
+            'tech_skills' => array_values($techSkillsCounts),
+            'soft_skills' => array_values($softSkillsCounts),
+            'sectors'     => $allSectors,
+        ];
+    }
+
+    // ↓ INSERTED: API endpoint — returns Critical Skill Gaps Per Sector data filtered by year/month
+    // Mirrors matrixData()'s filtering exactly, so both widgets stay in sync for the same period.
+    public function sectorSkillsData(Request $request)
+    {
+        $filterYears  = array_filter((array) $request->input('years', []));
+        $filterMonths = array_filter((array) $request->input('months', []));
+
+        $query = LmiSubmission::with(['hardToFillRoles'])
+            ->where('status', 'approved');
+
+        if (!empty($filterYears) && !empty($filterMonths)) {
+            $query->where(function ($q) use ($filterYears, $filterMonths) {
+                foreach ($filterYears as $year) {
+                    foreach ($filterMonths as $month) {
+                        $start = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+                        $end   = $start->copy()->endOfMonth();
+                        $q->orWhereBetween('created_at', [$start, $end]);
+                    }
+                }
+            });
+        } elseif (!empty($filterYears)) {
+            $query->where(function ($q) use ($filterYears) {
+                foreach ($filterYears as $year) {
+                    $start = Carbon::createFromDate($year, 1, 1)->startOfYear();
+                    $end   = Carbon::createFromDate($year, 12, 31)->endOfYear();
+                    $q->orWhereBetween('created_at', [$start, $end]);
+                }
+            });
+        }
+        // If neither years nor months are given, no date constraint is applied — i.e. "All" data,
+        // archived years included, same behavior as the matrix filter's Reset/All state.
+
+        $submissions = $query->orderBy('created_at', 'desc')->get();
+        $sectorSkills = $this->buildSectorSkills($submissions);
+
+        return response()->json([
+            'tech_skills'   => $sectorSkills['tech_skills'],
+            'soft_skills'   => $sectorSkills['soft_skills'],
+            'sectors'       => $sectorSkills['sectors'],
             'filter_years'  => $filterYears,
             'filter_months' => $filterMonths,
         ]);

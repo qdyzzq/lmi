@@ -412,6 +412,89 @@
             transform: rotate(180deg);
         }
 
+        /* ── Sector Skill Gaps filter trigger (mirrors #matrixFilterTrigger) ── */
+        #sectorFilterTrigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.85rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 0.55rem;
+            background: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            font-family: inherit;
+            line-height: 1.4;
+            max-width: 260px;
+            overflow: hidden;
+        }
+
+        #sectorFilterTrigger #sgpTriggerText {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        #sectorFilterTrigger:hover {
+            border-color: #93c5fd;
+            color: #2563eb;
+        }
+
+        #sectorFilterTrigger.mft-active {
+            border-color: #2563eb;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+
+        #sectorFilterTrigger .mft-arrow {
+            font-size: 0.6rem;
+            opacity: 0.55;
+            transition: transform 0.18s;
+            margin-left: 0.1rem;
+        }
+
+        #sectorFilterTrigger.mft-open .mft-arrow {
+            transform: rotate(180deg);
+        }
+
+        #sectorFilterPanel {
+            position: absolute;
+            top: calc(100% + 0.35rem);
+            right: 0;
+            z-index: 200;
+            width: 300px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.875rem;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.05);
+            padding: 1rem;
+            padding-bottom: 1.25rem;
+            display: none;
+            overflow: visible;
+        }
+
+        @media (max-width: 639px) {
+            #sectorFilterPanel {
+                right: auto;
+                left: 0;
+                width: calc(100vw - 3rem);
+                max-width: 320px;
+                padding-bottom: 1.5rem;
+            }
+        }
+
+        #sectorFilterPanel.mfp-open {
+            display: block;
+            animation: mfpDrop 0.14s ease;
+        }
+        /* ── End Sector Skill Gaps filter trigger ── */
+
         /* ── Dropdown panel ── */
         #matrixFilterPanel {
             position: absolute;
@@ -866,7 +949,7 @@
 
         <div class="relative w-full h-[500px] md:h-[700px] lg:h-[900px] overflow-hidden">
             <div class="absolute inset-0">
-                <img src="{{ asset('images/RD.webp') }}" alt="Job Market Background"
+                <img src="{{ asset('images/labordemand.JPG') }}" alt="Job Market Background"
                     class="w-full h-full object-cover object-center">
                 <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-100"></div>
             </div>
@@ -935,72 +1018,13 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="mb-8">
 
-                        <div
-                            class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                            <div
-                                class="flex flex-wrap justify-between items-start gap-3 p-4 sm:p-6 pb-4 border-b border-gray-100">
-                                <div>
-                                    <h3 class="font-bold text-gray-800">Top 10 High-Volume Job Titles</h3>
-
-                                    @if ($selected_year && isset($selected_year))
-                                        <p class="text-xs text-gray-500 mt-1" id="chartSubtitle"
-                                            style="{{ collect($comparison_data ?? [])->some(fn($d) => $d['previous_count'] > 0) ? '' : 'display:none' }}">
-                                            <span id="prevYearLabel"
-                                                class="text-emerald-600 font-medium">{{ $selected_year - 1 }}</span> vs
-                                            <span id="currentYearLabel"
-                                                class="text-indigo-600 font-medium">{{ $selected_year }}</span>
-                                        </p>
-                                    @endif
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    @if (isset($available_years) && count($available_years) > 0)
-                                        <select id="yearSelector"
-                                            class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                                            onchange="updateChart(this.value)">
-                                            @foreach ($available_years as $year)
-                                                <option value="{{ $year }}"
-                                                    {{ $year == $selected_year ? 'selected' : '' }}>
-                                                    {{ $year }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    @endif
-
-                                    <button onclick="expandChart()" class="p-2 hover:bg-gray-100 rounded-lg transition"
-                                        title="Expand chart">
-                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                                        </svg>
-                                    </button>
-
-                                    <span class="text-gray-300 cursor-help"
-                                        title="Job titles with highest demand">ⓘ</span>
-                                </div>
-                            </div>
-
-                            <div class="p-4 sm:p-6" id="chartContainer">
-                                <div class="chart-responsive">
-                                    <canvas id="highVolumeHorizontalChart"></canvas>
-                                </div>
-                            </div>
-                            <div class="px-6 pb-4 pt-2 border-t border-gray-100">
-                                <p class="text-xs text-gray-500 text-center italic">
-                                    Source: PhilJobNet
-                                </p>
-                            </div>
-
-                        </div>
-
-                        <div
-                            class="lg:col-span-1 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden min-h-[450px]">
                             <div class="p-6 pb-4">
                                 <div class="flex justify-between mb-3">
                                     <div>
-                                        <h3 class="font-bold text-gray-800">Hard-to-Fill Roles</h3>
+                                        <h3 class="font-bold text-gray-800">Hard-to-Fill Roles / Skill Requirements</h3>
                                         <p class="text-xs text-gray-500 mt-1">Jobs that are consistently difficult to
                                             recruit for</p>
                                     </div>
@@ -1012,8 +1036,8 @@
                                         <div class="relative" id="htfFilterWrapper">
 
                                             <button id="htfFilterTrigger" type="button" onclick="htfPanelToggle()">
-                                                <svg class="w-3 h-3 flex-shrink-0" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2.5" d="M3 4h18M7 12h10M11 20h2" />
                                                 </svg>
@@ -1037,7 +1061,8 @@
                                                     </div>
                                                     <p class="mfp-mode-hint" id="htfModeHint">Select
                                                         <strong>From</strong> &amp; <strong>To</strong> year — all years
-                                                        &amp; months in between will be included</p>
+                                                        &amp; months in between will be included
+                                                    </p>
                                                     <div class="htfp-chips" id="htfpYearChips">
                                                         <span class="htfp-chip htfp-placeholder">No archived
                                                             data</span>
@@ -1083,28 +1108,31 @@
                                     </div>
                                     <p id="htfArchiveBadge"
                                         class="mt-2 text-xs text-amber-700 font-medium items-center gap-1"
-                                        style="display:none">
+                                        style="display:{{ ($htf_is_archive ?? false) ? 'flex' : 'none' }}">
                                         <svg class="w-3 h-3 inline-block flex-shrink-0 mr-1" fill="none"
                                             stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                                         </svg>
-                                        <span id="htfArchiveLabel"></span>
+                                        <span id="htfArchiveLabel">{{ ($htf_is_archive ?? false) ? 'Viewing archived: ' . $htf_archive_label : '' }}</span>
                                     </p>
                                 </div>
                                 @if (isset($quarter_info))
-                                    <div id="htfBanner" class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-md">
+                                    <div id="htfBanner" class="bg-blue-50 border-l-4 {{ ($htf_is_archive ?? false) ? 'border-amber-400' : 'border-blue-500' }} p-3 rounded-md">
                                         <div class="flex items-center">
-                                            <svg class="h-4 w-4 text-blue-500 mr-2 flex-shrink-0" fill="none"
+                                            <svg class="h-4 w-4 {{ ($htf_is_archive ?? false) ? 'text-amber-500' : 'text-blue-500' }} mr-2 flex-shrink-0" fill="none"
                                                 stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                                                 </path>
                                             </svg>
                                             <div>
-                                                <p class="text-xs font-semibold text-blue-900">Last 90 Days</p>
-                                                <p class="text-xs text-blue-700">{{ $quarter_info['display_text'] }}
+                                                <p class="text-xs font-semibold {{ ($htf_is_archive ?? false) ? 'text-amber-900' : 'text-blue-900' }}">{{ ($htf_is_archive ?? false) ? 'Archived Quarter' : 'Last 90 Days' }}</p>
+                                                <p class="text-xs {{ ($htf_is_archive ?? false) ? 'text-amber-700' : 'text-blue-700' }}">{{ $quarter_info['display_text'] }}
                                                 </p>
+                                                @unless ($htf_is_archive ?? false)
+                                                    <p class="text-xs font-semibold text-amber-700">Some data are archived and are not displayed by default. Use the Year or Month filter to view archived records.</p>
+                                                @endunless
                                             </div>
                                         </div>
                                     </div>
@@ -1113,7 +1141,7 @@
 
                             @if (isset($groupedRoles) && count($groupedRoles) > 0)
                                 <div id="htfRolesList" class="max-h-96 overflow-y-auto px-6 pb-6">
-                                    <div class="space-y-3">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-start">
                                         @foreach ($groupedRoles as $normalizedTitle => $roleGroup)
                                             @foreach ($roleGroup as $item)
                                                 @php
@@ -1340,7 +1368,76 @@
                         </div>
                     </div>
                     <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
-                        <h3 class="font-bold text-lg mb-4">Critical Skill Gaps Per Sector</h3>
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                            <div>
+                            <h3 class="font-bold text-lg">Critical Skill Gaps Per Sector</h3>
+                            <p class="text-xs font-bold text-amber-700">Some data are archived and are not displayed by default. Use the Year or Month filter to view archived records.</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="relative" id="sectorFilterWrapper">
+                                    <button id="sectorFilterTrigger" type="button" onclick="sgpToggle()">
+                                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                d="M3 4h18M7 12h10M11 20h2" />
+                                        </svg>
+                                        <span id="sgpTriggerText">Filter by Period</span>
+                                        <span class="mft-arrow">▾</span>
+                                    </button>
+                                    <div id="sectorFilterPanel">
+                                        <div class="mfp-section">
+                                            <div class="mfp-section-head">
+                                                <span class="mfp-section-title">Year</span>
+                                                <span class="mfp-section-hint" id="sgpYearHint">select From &
+                                                    To</span>
+                                            </div>
+                                            <div class="mfp-mode-toggle">
+                                                <button type="button" class="mfp-mode-btn mfp-mode-active"
+                                                    id="sgpModeRange" onclick="sgpSetMode('range')">Range</button>
+                                                <button type="button" class="mfp-mode-btn" id="sgpModeExact"
+                                                    onclick="sgpSetMode('exact')">Exact</button>
+                                            </div>
+                                            <p class="mfp-mode-hint" id="sgpModeHint">Select <strong>From</strong>
+                                                &amp; <strong>To</strong> year — all years &amp; months in between will
+                                                be included</p>
+                                            <div class="mfp-chips" id="sgpYearChips">
+                                            </div>
+                                        </div>
+
+                                        <div class="mfp-divider"></div>
+                                        <div class="mfp-section">
+                                            <div class="mfp-section-head">
+                                                <span class="mfp-section-title">Month</span>
+                                                <span class="mfp-section-hint" id="sgpMonthHint">select a year
+                                                    first</span>
+                                            </div>
+                                            <div class="mfp-chips" id="sgpMonthChips">
+                                                <span class="mfp-chip mfp-placeholder">Select a year to see
+                                                    months</span>
+                                            </div>
+                                        </div>
+                                        <div class="mfp-footer">
+                                            <button class="mfp-btn-apply" type="button" onclick="sgpApply()">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                Apply Filter
+                                            </button>
+                                            <button class="mfp-btn-reset" type="button"
+                                                onclick="sgpReset()">Reset</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <svg id="sectorSpinner" class="w-5 h-5 text-blue-400 animate-spin flex-shrink-0"
+                                    fill="none" viewBox="0 0 24 24" style="display:none">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                            </div>
+                        </div>
 
                         <div class="mb-8 pb-5 border-b border-gray-100">
                             <div class="flex items-center gap-2">
@@ -1409,7 +1506,7 @@
                                         @endforeach
                                     </div>
                                 </div>
-                                <p class="skills-scroll-hint" id="tech-scroll-hint">
+                                <p class="skills-scroll-hint font-bold" id="tech-scroll-hint">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 9l-7 7-7-7" />
@@ -1440,7 +1537,7 @@
                                         @endforeach
                                     </div>
                                 </div>
-                                <p class="skills-scroll-hint" id="soft-scroll-hint">
+                                <p class="skills-scroll-hint font-bold" id="soft-scroll-hint">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 9l-7 7-7-7" />
@@ -1754,7 +1851,7 @@
                                                                 class="grid grid-cols-12 gap-3 px-4 sm:px-8 py-4 sm:py-6 items-center lmi-row-grid"
                                                                 :class="((result.hard_skills && result.hard_skills.length >
                                                                     0) || (result.soft_skills && result.soft_skills
-                                                                        .length > 0)) ? 'cursor-pointer' :
+                                                                    .length > 0)) ? 'cursor-pointer' :
                                                                 'cursor-default'">
 
                                                                 <div
@@ -2455,7 +2552,7 @@
                                                     </svg>
                                                 </div>
                                                 <div class="text-sm font-bold text-gray-800 uppercase tracking-wide">
-                                                    Part II: Hard-to-Fill Roles</div>
+                                                    Part II: Hard-to-Fill Roles / Skill Requirements</div>
                                             </div>
                                             <div class="h-px bg-gray-100 mb-4"></div>
                                             <p class="text-teal-700 text-xs font-medium mb-4">
@@ -3176,6 +3273,7 @@
             matrixResults: @json($matrix_results),
             archiveOptions: @json($archive_options ?? []),
             matrixDateOptions: @json($matrix_date_options ?? []),
+            matrixSelectedYear: {{ $matrix_selected_year ?? 'null' }},
         };
     </script>
     @vite('resources/js/public/job-market-demands.js')

@@ -526,7 +526,7 @@ class AnalysisTemplateController extends Controller
             'employment'      => 'The employment rate in {current_period} was estimated at {current_rate}. This was {trend} than the recorded rate in {previous_period} of {previous_rate}.',
             'underemployment' => 'The underemployment rate in {current_period} {trend} to {current_rate}, from {previous_rate} in {previous_period}.',
             'unemployment'    => 'The unemployment rate {trend} to {current_rate} in {current_period}, from its rate in {previous_period} of {previous_rate}.',
-            'lfpr'            => 'The country\'s labor force participation rate (LFPR) in {current_period} was recorded at {current_rate}, {trend} than the estimated LFPR in {previous_period} at {previous_rate}.',
+            'lfpr'            => 'The Region\'s labor force participation rate (LFPR) in {current_period} was recorded at {current_rate}, {trend} than the estimated LFPR in {previous_period} at {previous_rate}.',
             default           => '',
         };
     }

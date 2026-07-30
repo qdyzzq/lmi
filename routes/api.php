@@ -45,6 +45,7 @@ Route::post('/labor-market/store', [LaborMarketController::class, 'store']);
 Route::get('/autocomplete-data', [AutocompleteController::class, 'getAutocompleteData']);
 Route::get('/autocomplete/search', [AutocompleteController::class, 'search']);
 Route::get('/job-titles/{year}', [JobTitleController::class, 'getByYear']);
+Route::get('/job-market/sector-skills-data', [JobMarketDemandsController::class, 'sectorSkillsData']);
 
 // ==================== ANALYSIS TEMPLATES ROUTES ====================
 Route::prefix('analysis-templates')->group(function () {
@@ -62,7 +63,7 @@ Route::prefix('analysis-templates')->group(function () {
     Route::get('/approved-all', [AnalysisTemplateController::class, 'allApproved']);
     Route::get('/approved-count', [AnalysisTemplateController::class, 'approvedCount']);
 
-    // ⚠️ Wildcard routes MUST stay last
+    // Wildcard routes 
     Route::get('/{key}', [AnalysisTemplateController::class, 'show']);
     Route::put('/{key}', [AnalysisTemplateController::class, 'update']);
     Route::post('/{key}/reset', [AnalysisTemplateController::class, 'reset']);
@@ -129,7 +130,7 @@ Route::prefix('graduation-rate')->name('graduation-rate.')->group(function () {
     Route::get('/', [GraduationRateController::class, 'getAllGraduationRates'])
         ->name('all');
 
-    // 🔥 MUST come BEFORE /{graduateYear} to avoid being swallowed by the wildcard
+    
     Route::get('/check/{graduateYear}', [GraduationRateController::class, 'checkYear'])
         ->name('check');
 
@@ -156,7 +157,7 @@ Route::prefix('supply-side-analysis')->group(function () {
     Route::post('/submit', [SupplySideAnalysisController::class, 'adminSubmit']);
 
     // ── NEW: Load the pending draft (used by both admin & statistician editors) ──
-    // ⚠️ Must be before any wildcard routes
+    
     Route::get('/pending-show', [SupplySideAnalysisController::class, 'showPending']);
     Route::get('/pending-all', [SupplySideAnalysisController::class, 'allPending']);
     // ── NEW: Badge count for statistician sidebar polling ──
