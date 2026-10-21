@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Module3;
 
+use App\Support\SafeError;
 use App\Http\Controllers\Controller;
 use App\Models\Module3\GraduationRate;
 use App\Models\Module3\DisciplineEnrollment; 
@@ -33,7 +34,7 @@ class GraduationRateController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching enrollment data: ' . $e->getMessage()
+                'message' => 'Error fetching enrollment data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -114,7 +115,7 @@ class GraduationRateController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error saving graduation rate: ' . $e->getMessage()
+                'message' => 'Error saving graduation rate: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -159,7 +160,7 @@ class GraduationRateController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching graduation rate: ' . $e->getMessage()
+                'message' => 'Error fetching graduation rate: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -183,7 +184,7 @@ class GraduationRateController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching graduation rates: ' . $e->getMessage()
+                'message' => 'Error fetching graduation rates: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -203,7 +204,7 @@ class GraduationRateController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting graduation rate: ' . $e->getMessage()
+                'message' => 'Error deleting graduation rate: ' . SafeError::message($e)
             ], 500);
         }
     }

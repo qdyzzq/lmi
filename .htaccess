@@ -1,0 +1,15 @@
+# Only public/ may ever be served. Every request is routed into public/, so
+# .env, storage/logs, vendor/, the source code and .git can never be downloaded
+# when a web server's document root points at this project folder instead of
+# public/ (e.g. XAMPP htdocs or a cPanel subdomain). Works either way.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(?!public/)(.*)$ public/$1 [L]
+</IfModule>
+
+# Without mod_rewrite, refuse everything rather than expose files.
+<IfModule !mod_rewrite.c>
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</IfModule>

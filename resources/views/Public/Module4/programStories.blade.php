@@ -614,7 +614,7 @@
                                                 Program Details
                                             </h4>
                                             <div class="text-slate-700 leading-relaxed prose prose-sm max-w-none">
-                                                {!! $snapDescription !!}</div>
+                                                @safehtml($snapDescription)</div>
                                         </div>
 
                                         @php $groupedQuals = $snapQualifications->groupBy('type'); @endphp

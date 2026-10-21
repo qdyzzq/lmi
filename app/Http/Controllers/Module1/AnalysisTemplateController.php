@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Module1;
 
+use App\Support\SafeError;
 use App\Models\Module1\AnalysisTemplate;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -109,7 +110,7 @@ class AnalysisTemplateController extends Controller
 
         } catch (\Exception $e) {
             Log::error('AnalysisTemplateController@index', ['error' => $e->getMessage(), 'line' => $e->getLine()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -153,7 +154,7 @@ class AnalysisTemplateController extends Controller
 
         } catch (\Exception $e) {
             Log::error('AnalysisTemplateController@previewData', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -244,7 +245,7 @@ class AnalysisTemplateController extends Controller
 
         } catch (\Exception $e) {
             Log::error('AnalysisTemplateController@update', ['key' => $key, 'error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -335,7 +336,7 @@ class AnalysisTemplateController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('AnalysisTemplateController@adminSubmit', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -397,7 +398,7 @@ class AnalysisTemplateController extends Controller
 
         } catch (\Exception $e) {
             Log::error('AnalysisTemplateController@allPending', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -451,7 +452,7 @@ class AnalysisTemplateController extends Controller
 
         } catch (\Exception $e) {
             Log::error('AnalysisTemplateController@pendingShow', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -503,7 +504,7 @@ class AnalysisTemplateController extends Controller
 
         } catch (\Exception $e) {
             Log::error('AnalysisTemplateController@allApproved', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Module3;
 
+use App\Support\SafeError;
 use App\Models\Module3\DisciplineGraduate;
 use App\Models\Module3\DisciplineEnrollment; // Assuming you have an enrollment model
 use Illuminate\Http\Request;
@@ -35,7 +36,7 @@ class DisciplineGraduateController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching enrollment years: ' . $e->getMessage()
+                'message' => 'Error fetching enrollment years: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -100,7 +101,7 @@ class DisciplineGraduateController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching enrollment data: ' . $e->getMessage()
+                'message' => 'Error fetching enrollment data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -198,7 +199,7 @@ class DisciplineGraduateController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while saving the data: ' . $e->getMessage()
+                'message' => 'An error occurred while saving the data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -271,7 +272,7 @@ class DisciplineGraduateController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error checking year: ' . $e->getMessage()
+                'message' => 'Error checking year: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -298,7 +299,7 @@ class DisciplineGraduateController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting data: ' . $e->getMessage()
+                'message' => 'Error deleting data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -370,7 +371,7 @@ class DisciplineGraduateController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching statistics: ' . $e->getMessage()
+                'message' => 'Error fetching statistics: ' . SafeError::message($e)
             ], 500);
         }
     }

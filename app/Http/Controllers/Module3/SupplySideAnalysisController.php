@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Module3;
 
+use App\Support\SafeError;
 use App\Models\Module3\SupplySideAnalysis;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -115,7 +116,7 @@ class SupplySideAnalysisController extends Controller
 
         } catch (\Exception $e) {
             Log::error('SupplySideAnalysisController@getYears', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -215,7 +216,7 @@ class SupplySideAnalysisController extends Controller
 
         } catch (\Exception $e) {
             Log::error('SupplySideAnalysisController@show', ['error' => $e->getMessage(), 'line' => $e->getLine()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -256,7 +257,7 @@ class SupplySideAnalysisController extends Controller
 
         } catch (\Exception $e) {
             Log::error('SupplySideAnalysisController@showPending', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -323,7 +324,7 @@ class SupplySideAnalysisController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('SupplySideAnalysisController@adminSubmit', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -379,7 +380,7 @@ class SupplySideAnalysisController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('SupplySideAnalysisController@save', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -445,7 +446,7 @@ class SupplySideAnalysisController extends Controller
 
         } catch (\Exception $e) {
             Log::error('SupplySideAnalysisController@getArchivedSis', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -476,7 +477,7 @@ class SupplySideAnalysisController extends Controller
 
         } catch (\Exception $e) {
             Log::error('SupplySideAnalysisController@delete', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 
@@ -519,7 +520,7 @@ class SupplySideAnalysisController extends Controller
 
         } catch (\Exception $e) {
             Log::error('SupplySideAnalysisController@allApproved', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'error' => SafeError::message($e)], 500);
         }
     }
 

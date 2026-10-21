@@ -342,7 +342,7 @@
                     <div>
                         <div class="text-sm sm:text-base leading-relaxed peso-description-content"
                             style="text-align: justify;">
-                            {!! $pesoInfo['description'] ?? '' !!}
+                            @safehtml($pesoInfo['description'] ?? '')
                         </div>
                     </div>
                 </div>
@@ -363,7 +363,7 @@
                         <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Objective</h3>
                     </div>
                     <p class="text-xs text-slate-600 leading-relaxed peso-objective-content">
-                        {!! $pesoInfo['objective'] ?? '' !!}
+                        @safehtml($pesoInfo['objective'] ?? '')
                     </p>
                 </div>
 
@@ -425,7 +425,7 @@
                     </svg>
                     <div class="text-sm peso-howto-content">
                         <strong style="color: #bfdbfe;">How to Avail:</strong>
-                        {!! $pesoInfo['how_to_avail'] ?? '' !!}
+                        @safehtml($pesoInfo['how_to_avail'] ?? '')
                     </div>
                 </div>
                 {{-- Scroll-to-directory indicator --}}

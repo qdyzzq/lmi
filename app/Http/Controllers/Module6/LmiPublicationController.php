@@ -172,7 +172,7 @@ class LmiPublicationController extends Controller
             'subtitle'    => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'year'        => $yearRule,
-            'drive_url'   => ['required', 'string', 'max:500'],
+            'drive_url'   => ['required', 'url:http,https', 'max:500'],
         ]);
 
         $driveFileId = PublicationIssue::extractDriveId($validated['drive_url']);
@@ -212,7 +212,7 @@ class LmiPublicationController extends Controller
             'subtitle'    => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'year'        => $yearRule,
-            'drive_url'   => ['required', 'string', 'max:500'],
+            'drive_url'   => ['required', 'url:http,https', 'max:500'],
         ]);
 
         $issue->update([

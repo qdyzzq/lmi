@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Module2;
 
+use App\Support\SafeError;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Module2\JobTitle;
@@ -55,7 +56,7 @@ class JobTitleController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error saving job titles: ' . $e->getMessage()
+                'message' => 'Error saving job titles: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -131,7 +132,7 @@ class JobTitleController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error approving job titles: ' . $e->getMessage()
+                'message' => 'Error approving job titles: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -165,7 +166,7 @@ class JobTitleController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error rejecting job titles: ' . $e->getMessage()
+                'message' => 'Error rejecting job titles: ' . SafeError::message($e)
             ], 500);
         }
     }

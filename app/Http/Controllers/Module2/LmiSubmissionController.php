@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Module2;
 
+use App\Support\SafeError;
 use App\Models\Module2\LmiSubmission;
 use App\Models\Module2\LmiHardToFillRole;
 use App\Models\Module2\LmiDiagnosis;
@@ -112,9 +113,9 @@ class LmiSubmissionController extends Controller
         } catch (\Exception $e) {
             Log::error('Update engagement error: ' . $e->getMessage());
             if ($request->expectsJson()) {
-                return response()->json(['success' => false, 'message' => 'Failed to update engagement: ' . $e->getMessage()], 500);
+                return response()->json(['success' => false, 'message' => 'Failed to update engagement: ' . SafeError::message($e)], 500);
             }
-            return redirect()->back()->with('error', 'Failed to update engagement: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update engagement: ' . SafeError::message($e));
         }
     }
     
@@ -141,9 +142,9 @@ class LmiSubmissionController extends Controller
         } catch (\Exception $e) {
             Log::error('Update diagnosis error: ' . $e->getMessage());
             if ($request->expectsJson()) {
-                return response()->json(['success' => false, 'message' => 'Failed to update diagnosis: ' . $e->getMessage()], 500);
+                return response()->json(['success' => false, 'message' => 'Failed to update diagnosis: ' . SafeError::message($e)], 500);
             }
-            return redirect()->back()->with('error', 'Failed to update diagnosis: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update diagnosis: ' . SafeError::message($e));
         }
     }
 
@@ -179,9 +180,9 @@ class LmiSubmissionController extends Controller
         } catch (\Exception $e) {
             Log::error('Update submission error: ' . $e->getMessage());
             if ($request->expectsJson()) {
-                return response()->json(['success' => false, 'message' => 'Failed to update submission: ' . $e->getMessage()], 500);
+                return response()->json(['success' => false, 'message' => 'Failed to update submission: ' . SafeError::message($e)], 500);
             }
-            return redirect()->back()->with('error', 'Failed to update submission: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update submission: ' . SafeError::message($e));
         }
     }
     
@@ -232,9 +233,9 @@ class LmiSubmissionController extends Controller
         } catch (\Exception $e) {
             Log::error('Update roles error: ' . $e->getMessage());
             if ($request->expectsJson()) {
-                return response()->json(['success' => false, 'message' => 'Failed to update roles: ' . $e->getMessage()], 500);
+                return response()->json(['success' => false, 'message' => 'Failed to update roles: ' . SafeError::message($e)], 500);
             }
-            return redirect()->back()->with('error', 'Failed to update roles: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update roles: ' . SafeError::message($e));
         }
     }
 
@@ -252,7 +253,7 @@ class LmiSubmissionController extends Controller
                              ->with('success', 'Submission approved successfully!');
         } catch (\Exception $e) {
             Log::error('Approve submission error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to approve submission: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to approve submission: ' . SafeError::message($e));
         }
     }
 
@@ -270,7 +271,7 @@ class LmiSubmissionController extends Controller
                              ->with('success', 'Submission rejected successfully!');
         } catch (\Exception $e) {
             Log::error('Reject submission error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to reject submission: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to reject submission: ' . SafeError::message($e));
         }
     }
 
@@ -288,7 +289,7 @@ class LmiSubmissionController extends Controller
                              ->with('success', 'Submission restored to pending status successfully!');
         } catch (\Exception $e) {
             Log::error('Restore pending error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to restore submission: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to restore submission: ' . SafeError::message($e));
         }
     }
     
@@ -308,29 +309,35 @@ class LmiSubmissionController extends Controller
                 'contact_number' => 'required|string|min:9|max:20',
                 'contact_type'   => 'required|in:mobile,telephone',
                 'email'          => 'required|email|max:255',
-                'industrySelector' => 'required|string',
-                'companySize'    => 'required|string',
+                'industrySelector' => 'required|string|max:255',
+                'companySize'    => 'required|string|max:100',
                 
                 // Part II: Hard-to-Fill Roles
-                'job_title'               => 'required|array|min:1',
+                'job_title'               => 'required|array|min:1|max:50',
                 'job_title.*'             => 'required|string|max:255',
-                'job_classification'      => 'required|array',
-                'job_classification.*'    => 'required|string',
-                'salary_range'            => 'required|array',
-                'vacancy_duration'        => 'required|array',
-                'vacancy_duration.*'      => 'required|string',
-                'technical_skills_missing' => 'nullable|array',
-                'soft_skills_missing'     => 'nullable|array',
+                'job_classification'      => 'required|array|max:50',
+                'job_classification.*'    => 'required|string|max:255',
+                'salary_range'            => 'required|array|max:50',
+                'salary_range.*'          => 'nullable|string|max:100',
+                'vacancy_duration'        => 'required|array|max:50',
+                'vacancy_duration.*'      => 'required|string|max:100',
+                'technical_skills_missing' => 'nullable|array|max:50',
+                'technical_skills_missing.*' => 'nullable|string|max:2000',
+                'soft_skills_missing'     => 'nullable|array|max:50',
+                'soft_skills_missing.*'   => 'nullable|string|max:2000',
                 
                 // Part III: Diagnosis
-                'rejection_reasons'          => 'nullable|array',
+                'rejection_reasons'          => 'nullable|array|max:30',
+                'rejection_reasons.*'        => 'nullable|string|max:255',
                 'rejection_reasons_other'    => 'nullable|string|max:500',
-                'coordination_frequency'     => 'nullable|string',
+                'coordination_frequency'     => 'nullable|string|max:255',
                 'coordination_frequency_other' => 'nullable|string|max:255',
                 
                 // Part IV: Engagement
-                'lmi_features'   => 'nullable|array',
-                'specific_inputs' => 'nullable|string',
+                'lmi_features'   => 'nullable|array|max:30',
+                'lmi_features.*' => 'nullable|string|max:255',
+                'lmi_features_other' => 'nullable|string|max:500',
+                'specific_inputs' => 'nullable|string|max:5000',
             ]);
             
             // Validate impact levels
@@ -482,10 +489,10 @@ class LmiSubmissionController extends Controller
             if ($request->ajax() || $request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'An error occurred: ' . $e->getMessage()
+                    'message' => 'An error occurred: ' . SafeError::message($e)
                 ], 500);
             }
-            return back()->withInput()->with('error', 'Error: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Error: ' . SafeError::message($e));
         }
     }
 }

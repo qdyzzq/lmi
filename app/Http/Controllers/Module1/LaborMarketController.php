@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Module1;
 
+use App\Support\SafeError;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Module1\RegionalLaborMarketStatistic;
@@ -59,7 +60,7 @@ class LaborMarketController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'exists' => true,
-                'message' => 'Error checking data: ' . $e->getMessage()
+                'message' => 'Error checking data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -119,7 +120,7 @@ class LaborMarketController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error submitting data: ' . $e->getMessage()
+                'message' => 'Error submitting data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -152,7 +153,7 @@ class LaborMarketController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'exists' => true,
-                'message' => 'Error checking data: ' . $e->getMessage()
+                'message' => 'Error checking data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -227,7 +228,7 @@ class LaborMarketController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error posting data: ' . $e->getMessage()
+                'message' => 'Error posting data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -260,7 +261,7 @@ class LaborMarketController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'exists' => true,
-                'message' => 'Error checking data: ' . $e->getMessage()
+                'message' => 'Error checking data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -335,7 +336,7 @@ class LaborMarketController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error posting data: ' . $e->getMessage()
+                'message' => 'Error posting data: ' . SafeError::message($e)
             ], 500);
         }
     }

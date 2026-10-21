@@ -22,7 +22,21 @@ use App\Http\Controllers\Module3\SupplySideAnalysisController;
 |--------------------------------------------------------------------------
 | These endpoints provide JSON data for charts, statistics, and data retrieval
 | Base URL: /api/... (Laravel adds this automatically)
+|
+| Read endpoints stay public so the public dashboard works without a login.
+| Anything that writes or deletes data carries $writeAccess below, and
+| unpublished drafts carry $staffRead. All /api routes are rate limited
+| ('api' limiter, see AppServiceProvider).
+| The 'web' group is required because API routes are stateless by default -
+| without it there is no session for 'auth' and 'otp.verified' to read, and
+| CSRF would not apply. The admin/statistician front-end already sends the
+| X-CSRF-TOKEN header on these calls.
 */
+
+$writeAccess = ['web', 'auth', 'otp.verified', 'no.duplicate', 'role:admin,statistician', 'throttle:staff-write', 'audit'];
+
+// Unpublished drafts (pending / approved-but-not-published) are only for staff.
+$staffRead = ['web', 'auth', 'otp.verified', 'role:admin,statistician'];
 
 // ==================== CHART ROUTES ====================
 Route::get('/quarterly/{year}', [ChartController::class, 'getQuarterlyData']);
@@ -41,32 +55,29 @@ Route::get('/kpi-cards', [KpiController::class, 'getKpiCards']);
 Route::get('/kpi-cards/periods', [KpiController::class, 'getAvailablePeriods']);
 
 // ==================== LABOR MARKET ROUTES ====================
-Route::post('/labor-market/store', [LaborMarketController::class, 'store']);
 Route::get('/autocomplete-data', [AutocompleteController::class, 'getAutocompleteData']);
 Route::get('/autocomplete/search', [AutocompleteController::class, 'search']);
 Route::get('/job-titles/{year}', [JobTitleController::class, 'getByYear']);
 Route::get('/job-market/sector-skills-data', [JobMarketDemandsController::class, 'sectorSkillsData']);
 
 // ==================== ANALYSIS TEMPLATES ROUTES ====================
-Route::prefix('analysis-templates')->group(function () {
+Route::prefix('analysis-templates')->group(function () use ($writeAccess, $staffRead) {
     Route::get('/', [AnalysisTemplateController::class, 'index']);
-    Route::get('/placeholders', [AnalysisTemplateController::class, 'placeholders']);
     Route::get('/preview-data', [AnalysisTemplateController::class, 'previewData']);
 
     // ── NEW: Pending workflow ──
-    Route::get('/pending-all', [AnalysisTemplateController::class, 'allPending']);
-    Route::get('/pending-count', [AnalysisTemplateController::class, 'pendingCount']);
-    Route::get('/pending-show', [AnalysisTemplateController::class, 'pendingShow']);
-    Route::post('/submit', [AnalysisTemplateController::class, 'adminSubmit']);
+    Route::get('/pending-all', [AnalysisTemplateController::class, 'allPending'])->middleware($staffRead);
+    Route::get('/pending-count', [AnalysisTemplateController::class, 'pendingCount'])->middleware($staffRead);
+    Route::get('/pending-show', [AnalysisTemplateController::class, 'pendingShow'])->middleware($staffRead);
+    Route::post('/submit', [AnalysisTemplateController::class, 'adminSubmit'])->middleware($writeAccess);
 
     // ── NEW: Approved workflow ──
-    Route::get('/approved-all', [AnalysisTemplateController::class, 'allApproved']);
-    Route::get('/approved-count', [AnalysisTemplateController::class, 'approvedCount']);
+    Route::get('/approved-all', [AnalysisTemplateController::class, 'allApproved'])->middleware($staffRead);
+    Route::get('/approved-count', [AnalysisTemplateController::class, 'approvedCount'])->middleware($staffRead);
 
     // Wildcard routes 
-    Route::get('/{key}', [AnalysisTemplateController::class, 'show']);
-    Route::put('/{key}', [AnalysisTemplateController::class, 'update']);
-    Route::post('/{key}/reset', [AnalysisTemplateController::class, 'reset']);
+    Route::put('/{key}', [AnalysisTemplateController::class, 'update'])->middleware($writeAccess);
+    Route::post('/{key}/reset', [AnalysisTemplateController::class, 'reset'])->middleware($writeAccess);
 });
 
 // ==================== LICENSURE RATES API ROUTES ====================
@@ -96,16 +107,11 @@ Route::prefix('discipline-enrollment')->name('discipline-enrollment.')->group(fu
 
 // ==================== DISCIPLINE GRADUATE API ROUTES ====================
 Route::prefix('discipline-graduate')->name('discipline-graduate.')->group(function () {
-    Route::get('/', [DisciplineGraduateController::class, 'index'])->name('index');
     Route::get('/stats/summary', [DisciplineGraduateController::class, 'statistics'])->name('statistics');
     Route::get('/meta/years', [DisciplineGraduateController::class, 'getYears'])->name('years');
     Route::get('/stats/top-disciplines', [DisciplineGraduateController::class, 'topDisciplines'])->name('top-disciplines');
     Route::get('/stats/trends', [DisciplineGraduateController::class, 'trends'])->name('trends');
-    Route::get('/stats/compare', [DisciplineGraduateController::class, 'compare'])->name('compare');
-    Route::get('/year/{academicYear}', [DisciplineGraduateController::class, 'getByYear'])->name('check-year');
-    // MUST be before /{id} wildcard or it gets swallowed
     Route::get('/check/{year}', [DisciplineGraduateController::class, 'checkYear'])->name('check');
-    Route::get('/{id}', [DisciplineGraduateController::class, 'show'])->name('show');
 });
 
 // ==================== PROVINCIAL PROGRESSION API ROUTES ====================
@@ -116,15 +122,18 @@ Route::prefix('provincial-progression')->name('provincial-progression.')->group(
 });
 
 // ==================== GRADUATION RATE API ROUTES ====================
-Route::prefix('graduation-rate')->name('graduation-rate.')->group(function () {
+Route::prefix('graduation-rate')->name('graduation-rate.')->group(function () use ($writeAccess, $staffRead) {
 
     Route::get('/enrollment-data/{academicYear}', [GraduationRateController::class, 'getEnrollmentData'])
         ->name('enrollment-data');
 
+    // Read-only calculation, but a POST: staff only so it gets session + CSRF like every other POST.
     Route::post('/calculate', [GraduationRateController::class, 'calculateProjectedGraduates'])
+        ->middleware($staffRead)
         ->name('calculate');
 
     Route::post('/save', [GraduationRateController::class, 'saveGraduationRate'])
+        ->middleware($writeAccess)
         ->name('save');
 
     Route::get('/', [GraduationRateController::class, 'getAllGraduationRates'])
@@ -138,32 +147,34 @@ Route::prefix('graduation-rate')->name('graduation-rate.')->group(function () {
         ->name('get');
 
     Route::delete('/{graduateYear}', [GraduationRateController::class, 'deleteGraduationRate'])
+        ->middleware($writeAccess)
         ->name('delete');
 });
 
 // ==================== SUPPLY SIDE ANALYSIS ROUTES ====================
-Route::prefix('supply-side-analysis')->group(function () {
+Route::prefix('supply-side-analysis')->group(function () use ($writeAccess, $staffRead) {
 
     // ── Existing routes (unchanged) ──
     Route::get('/options', [SupplySideAnalysisController::class, 'index']);
     Route::get('/show', [SupplySideAnalysisController::class, 'show']);
-    Route::post('/save', [SupplySideAnalysisController::class, 'save']);
-    Route::get('/reset', [SupplySideAnalysisController::class, 'reset']);
-    Route::delete('/delete', [SupplySideAnalysisController::class, 'delete']);
+    Route::post('/save', [SupplySideAnalysisController::class, 'save'])->middleware($writeAccess);
+    // Returns the default analysis text for the editors (read-only).
+    Route::get('/reset', [SupplySideAnalysisController::class, 'reset'])->middleware($staffRead);
+    Route::delete('/delete', [SupplySideAnalysisController::class, 'delete'])->middleware($writeAccess);
     Route::get('/archives', [SupplySideAnalysisController::class, 'getArchivedSis']);
     Route::get('/years', [SupplySideAnalysisController::class, 'getYears']);
 
     // ── NEW: Admin submits a draft (saved as 'pending') ──
-    Route::post('/submit', [SupplySideAnalysisController::class, 'adminSubmit']);
+    Route::post('/submit', [SupplySideAnalysisController::class, 'adminSubmit'])->middleware($writeAccess);
 
     // ── NEW: Load the pending draft (used by both admin & statistician editors) ──
     
-    Route::get('/pending-show', [SupplySideAnalysisController::class, 'showPending']);
-    Route::get('/pending-all', [SupplySideAnalysisController::class, 'allPending']);
+    Route::get('/pending-show', [SupplySideAnalysisController::class, 'showPending'])->middleware($staffRead);
+    Route::get('/pending-all', [SupplySideAnalysisController::class, 'allPending'])->middleware($staffRead);
     // ── NEW: Badge count for statistician sidebar polling ──
-    Route::get('/pending-count', [SupplySideAnalysisController::class, 'pendingCount']);
+    Route::get('/pending-count', [SupplySideAnalysisController::class, 'pendingCount'])->middleware($staffRead);
 
     // ── NEW: Approved workflow ──
-    Route::get('/approved-all', [SupplySideAnalysisController::class, 'allApproved']);
-    Route::get('/approved-count', [SupplySideAnalysisController::class, 'approvedCount']);
+    Route::get('/approved-all', [SupplySideAnalysisController::class, 'allApproved'])->middleware($staffRead);
+    Route::get('/approved-count', [SupplySideAnalysisController::class, 'approvedCount'])->middleware($staffRead);
 });

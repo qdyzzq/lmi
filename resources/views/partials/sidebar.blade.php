@@ -386,6 +386,23 @@
             </div>
         </div>
 
+        <!-- Change Password -->
+        <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
+            <a href="{{ route('password.change') }}"
+                class="flex items-center gap-3 px-2.5 py-2.5 w-full text-left text-slate-700 hover:text-blue-600 hover:bg-blue-50 border-l-[3px] border-transparent hover:border-blue-400 rounded-r-lg transition-all group">
+                <svg class="w-[18px] h-[18px] shrink-0 opacity-50 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+                </svg>
+                <span x-show="sidebarExpanded" class="whitespace-nowrap font-medium text-[13.5px]">Change Password</span>
+            </a>
+            <div x-show="!sidebarExpanded && hovered"
+                :style="{ top: tooltipY + 'px' }"
+                class="fixed left-16 ml-2 -translate-y-1/2 bg-slate-800 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg z-50 whitespace-nowrap">
+                Change Password
+                <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+            </div>
+        </div>
+
         <!-- Logout -->
         <div class="relative" x-data="{ hovered: false, tooltipY: 0 }" @mouseenter="hovered = true; tooltipY = $el.getBoundingClientRect().top + $el.getBoundingClientRect().height / 2" @mouseleave="hovered = false">
             <form method="POST" action="{{ route('logout') }}">

@@ -176,7 +176,7 @@ async function checkAndLoadYear() {
             if (isEmpty) {
                 // Delete the all-zero record from the DB, then treat as new
                 try {
-                    await fetch(`/api/discipline-enrollment/delete/${year}?province=${encodeURIComponent(province)}&institution_type=${encodeURIComponent(institutionType.value)}`, {
+                    await fetch(`/admin/discipline-enrollment/delete/${year}?province=${encodeURIComponent(province)}&institution_type=${encodeURIComponent(institutionType.value)}`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json',
@@ -656,7 +656,7 @@ async function confirmSubmit() {
             try {
                 const province = dataToSubmit.province;
                 const institutionType = dataToSubmit.institution_type;
-                await fetch(`/api/discipline-enrollment/delete/${oldYear}?province=${encodeURIComponent(province)}&institution_type=${encodeURIComponent(institutionType)}`, {
+                await fetch(`/admin/discipline-enrollment/delete/${oldYear}?province=${encodeURIComponent(province)}&institution_type=${encodeURIComponent(institutionType)}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',

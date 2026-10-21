@@ -17,6 +17,7 @@ use App\Models\Module5\PesoBeneficiary;
 use App\Models\Module5\PesoCarouselSlide;
 use App\Models\Module5\PesoDirectoryPublish;
 use Illuminate\Support\Facades\Storage;
+use App\Support\HtmlSanitizer;
 
 class PesoDirectoryController extends Controller
 {
@@ -144,8 +145,13 @@ class PesoDirectoryController extends Controller
             return response()->json(['success' => false, 'message' => 'Invalid key.'], 422);
         }
  
-        $request->validate(['value' => 'required|string']);
+        $request->validate(['value' => 'required|string|max:50000']);
         $value = $request->value;
+
+        // Rich-text sections are shown as HTML on the public page.
+        if (in_array($key, ['description', 'objective', 'how_to_avail'], true)) {
+            $value = HtmlSanitizer::clean($value);
+        }
  
         switch ($key) {
             case 'description':

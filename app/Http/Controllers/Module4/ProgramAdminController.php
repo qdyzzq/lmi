@@ -14,13 +14,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
+use App\Support\HtmlSanitizer;
 
 class ProgramAdminController extends Controller
 {
     // ===== HELPER: store uploaded image directly (browser handles WebP conversion) =====
     private function storeImage($file, string $folder, string $disk = 'public_images'): string
     {
-        $filename = uniqid() . '.' . $file->getClientOriginalExtension();
+        // Random name + extension detected from the file's content (never the client's
+        // filename), so an upload can never be saved as .php inside public/.
+        $filename = $file->hashName();
 
         if ($disk === 'public_images') {
             Storage::disk('public_images')->put($folder . '/' . $filename, file_get_contents($file));
@@ -100,11 +103,11 @@ class ProgramAdminController extends Controller
     public function storeProgram(Request $request)
     {
         $data = $request->validate([
-            'name'        => 'required|string',
+            'name'        => 'required|string|max:255',
             'acronym'     => 'nullable|string|max:50',
-            'subtitle'    => 'nullable|string',
-            'description' => 'required|string',
-            'color'       => 'required|string',
+            'subtitle'    => 'nullable|string|max:500',
+            'description' => 'required|string|max:20000',
+            'color'       => ['required', 'string', 'max:30', 'regex:/^[#a-zA-Z0-9\-]+$/'],
             'logo' => 'nullable|image|max:5120',
         ]);
 
@@ -112,6 +115,7 @@ class ProgramAdminController extends Controller
             $data['logo_path'] = 'images/' . $this->storeImage($request->file('logo'), 'logo-programs');
         }
 
+        $data['description'] = HtmlSanitizer::clean($data['description']);
         $data['sort_order'] = Program::max('sort_order') + 1;
         $data['is_active']  = true;
         unset($data['logo']);
@@ -123,11 +127,11 @@ class ProgramAdminController extends Controller
     public function updateProgram(Request $request, Program $program)
     {
         $data = $request->validate([
-            'name'        => 'required|string',
+            'name'        => 'required|string|max:255',
             'acronym'     => 'nullable|string|max:50',
-            'subtitle'    => 'nullable|string',
-            'description' => 'nullable|string',
-            'color'       => 'required|string',
+            'subtitle'    => 'nullable|string|max:500',
+            'description' => 'nullable|string|max:20000',
+            'color'       => ['required', 'string', 'max:30', 'regex:/^[#a-zA-Z0-9\-]+$/'],
             'logo'        => 'nullable|image|max:5120',
         ]);
 
@@ -140,6 +144,9 @@ class ProgramAdminController extends Controller
         }
 
         unset($data['logo']);
+        if (array_key_exists('description', $data) && $data['description'] !== null) {
+            $data['description'] = HtmlSanitizer::clean($data['description']);
+        }
         $program->update($data);
         $this->markDirty($program->id);
         return response()->json(['success' => true]);
@@ -153,8 +160,8 @@ class ProgramAdminController extends Controller
 
     public function updateDescription(Request $request, Program $program)
     {
-        $request->validate(['description' => 'required|string']);
-        $program->update(['description' => $request->description]);
+        $request->validate(['description' => 'required|string|max:20000']);
+        $program->update(['description' => HtmlSanitizer::clean($request->description)]);
         $this->markDirty($program->id);
         return response()->json(['success' => true]);
     }
@@ -172,8 +179,9 @@ class ProgramAdminController extends Controller
         $data = $request->validate([
             'program_id' => 'required|exists:programs,id',
             'type'       => 'required|string|max:50',
-            'content'    => 'required|string',
+            'content'    => 'required|string|max:5000',
         ]);
+        $data['content'] = HtmlSanitizer::clean($data['content']);
         $data['sort_order'] = ProgramQualification::where('program_id', $data['program_id'])->max('sort_order') + 1;
         $q = ProgramQualification::create($data);
         $this->markDirty($data['program_id']);
@@ -184,8 +192,9 @@ class ProgramAdminController extends Controller
     {
         $data = $request->validate([
             'type'    => 'required|string|max:50',
-            'content' => 'required|string',
+            'content' => 'required|string|max:5000',
         ]);
+        $data['content'] = HtmlSanitizer::clean($data['content']);
         $qualification->update($data);
         $this->markDirty($qualification->program_id);
         return response()->json(['success' => true]);
@@ -211,9 +220,10 @@ class ProgramAdminController extends Controller
 
         $data = $request->validate([
             'program_id' => 'required|exists:programs,id',
-            'content'    => 'required|string',
-            'link'       => 'nullable|string|max:500',
+            'content'    => 'required|string|max:5000',
+            'link'       => 'nullable|url:http,https|max:500',
         ]);
+        $data['content'] = HtmlSanitizer::clean($data['content']);
         $data['sort_order'] = ProgramHowToApply::where('program_id', $data['program_id'])->max('sort_order') + 1;
         $step = ProgramHowToApply::create($data);
         $this->markDirty($data['program_id']);
@@ -231,9 +241,10 @@ class ProgramAdminController extends Controller
         }
 
         $data = $request->validate([
-            'content' => 'required|string',
-            'link'    => 'nullable|string|max:500',
+            'content' => 'required|string|max:5000',
+            'link'    => 'nullable|url:http,https|max:500',
         ]);
+        $data['content'] = HtmlSanitizer::clean($data['content']);
         $step->update($data);
         $this->markDirty($step->program_id);
         return response()->json(['success' => true]);

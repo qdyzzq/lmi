@@ -20,6 +20,9 @@ use App\Http\Controllers\Module6\LmiPublicationController;
 use App\Http\Controllers\Module6\WeeklyIssueController;
 use App\Http\Controllers\Module6\WeeklyCardSettingController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController; // <-- added for OTP
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Module1\PendingLaborMarketController;
 
 
 
@@ -30,7 +33,10 @@ Route::get('/programs-stories', [ProgramsController::class, 'index'])
 
 Route::get('/peso-directory', [PesoDirectoryController::class, 'index'])->name('Public.Module5.peso.directory');
 
-Route::post('/lmi/submit', [LmiSubmissionController::class, 'store'])->name('lmi.submit');
+// Public survey: rate limited, and HTML is stripped because the answers are shown in the admin pages.
+Route::post('/lmi/submit', [LmiSubmissionController::class, 'store'])
+    ->middleware(['throttle:public-submit', 'strip.html'])
+    ->name('lmi.submit');
 
 Route::get('/login', function () {
     if (auth()->check()) {
@@ -42,21 +48,19 @@ Route::get('/login', function () {
     return view('auth.Login');
 })->name('login')->middleware('no.back');
 
-Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+Route::post('/login', [LoginController::class, 'login'])->name('login.post')->middleware('throttle:login');
 
-Route::get('/forgot-password', function () {
-    return view('auth.forgot-password');
-})->name('password.request');
+// ==================== PASSWORD RESET (No login required) ====================
+Route::get('/forgot-password', [PasswordResetController::class, 'request'])->name('password.request')->middleware('guest');
+Route::post('/forgot-password', [PasswordResetController::class, 'email'])->name('password.email')->middleware(['guest', 'throttle:password-mail']);
+Route::get('/reset-password/{token}', [PasswordResetController::class, 'edit'])->name('password.reset')->middleware('guest');
+Route::post('/reset-password', [PasswordResetController::class, 'update'])->name('password.update')->middleware(['guest', 'throttle:login']);
 
 // PUBLIC DASHBOARD - Anyone can view
 Route::get('/', [DashboardController::class, 'index'])->name('Public.Module1.home');
 
 // Public view pages (anyone can access)
 Route::get('/JobMarketDemands', [JobMarketDemandsController::class, 'jobMarket'])->name('Public.Module2.Job.Market.Demands');
-
-Route::get('/JobMarketOverview', function () {
-    return view('JobMarketOverview');
-})->name('Job.Market.Overview');
 
 Route::get('/SupplySide', function(){
     return view('Public.Module3.SupplySide');
@@ -67,12 +71,12 @@ Route::get('/LMIpublication', [LmiPublicationController::class, 'publicIndex'])
 
 // ==================== OTP ROUTES (No auth required — user not logged in yet) ====================
 Route::get('/otp', [AuthenticatedSessionController::class, 'otp'])->name('otp')->middleware('no.back');
-Route::post('/otp/verify', [AuthenticatedSessionController::class, 'verifyOtp'])->name('otp.verify')->middleware('no.back');
-Route::post('/otp/resend', [AuthenticatedSessionController::class, 'resendOtp'])->name('otp.resend');
+Route::post('/otp/verify', [AuthenticatedSessionController::class, 'verifyOtp'])->name('otp.verify')->middleware(['no.back', 'throttle:otp-verify']);
+Route::post('/otp/resend', [AuthenticatedSessionController::class, 'resendOtp'])->name('otp.resend')->middleware('throttle:otp-resend');
 
 
 //==================== PROTECTED ROUTES (Login required for updates) ====================
-Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:statistician'])->prefix('statistician')->name('statistician.')->group(function () {
+Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:statistician', 'throttle:staff-write', 'audit'])->prefix('statistician')->name('statistician.')->group(function () {
     
     // Statistician Review Page (Login required)
     Route::get('/review', [LaborMarketController::class, 'index'])
@@ -101,7 +105,7 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:stat
         ->name('job-titles.reject');
 
     // Live polling — returns pending labor market data count
-    Route::get('/labor-market/pending-count', [LaborMarketController::class, 'counts'])
+    Route::get('/labor-market/pending-count', [PendingLaborMarketController::class, 'counts'])
         ->name('labor-market.pending-count');
 
     // Analysis Templates Editor
@@ -114,7 +118,7 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:stat
 });
 
 // Routes accessible by both Admin and Statistician
-Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admin,statistician'])->group(function () {
+Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admin,statistician', 'throttle:staff-write', 'audit'])->group(function () {
     
     // Admin checks for duplicates before submitting to pending (Dashboard)
     Route::post('/labor-market/check-duplicate', [LaborMarketController::class, 'check'])
@@ -124,12 +128,16 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admi
     Route::post('/labor-market/submit-pending', [LaborMarketController::class, 'submitPending'])
         ->name('labor.market.submit.pending');
 
+    // Change own password
+    Route::get('/account/password', [PasswordController::class, 'edit'])->name('password.change');
+    Route::put('/account/password', [PasswordController::class, 'update'])->name('password.change.update');
+
     // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
 
 // Admin routes (protected by auth middleware)
-Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admin', 'throttle:staff-write', 'audit'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/JobMarketDemandsForm', function () {
         return view('admin.Module1.jobMarketDemandsForm');
@@ -185,13 +193,8 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admi
     Route::post('/discipline-enrollment', [DisciplineEnrollmentController::class, 'store'])
         ->name('discipline-enrollment.store');
     
-    Route::put('/discipline-enrollment/{id}', [DisciplineEnrollmentController::class, 'update'])
-        ->name('discipline-enrollment.update');
-    
-    Route::delete('/discipline-enrollment/{id}', [DisciplineEnrollmentController::class, 'destroy'])
-        ->name('discipline-enrollment.destroy');
-    
-    Route::delete('/discipline-enrollment/delete/{academicYear}', [DisciplineEnrollmentController::class, 'delete']);
+    Route::delete('/discipline-enrollment/delete/{academicYear}', [DisciplineEnrollmentController::class, 'deleteYear'])
+        ->name('discipline-enrollment.delete');
 
       // ==================== GRADUATION RATE Routes ====================
     Route::get('/discipline-graduate/form', [GraduationRateController::class, 'showForm'])
@@ -223,9 +226,6 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admi
         ->name('lmi-submissions.counts');
 
     // LMI Submissions Detail Routes
-    Route::get('/lmi-submissions/{id}', [LmiSubmissionController::class, 'adminShow'])
-        ->name('lmi-submissions.show');
-    
     Route::put('/lmi-submissions/{id}', [LmiSubmissionController::class, 'update'])
         ->name('lmi-submissions.update');
 
@@ -264,7 +264,6 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admi
 
     Route::get('/stories/filter',  [ProgramAdminController::class, 'filterStories'])->name('stories.filter');
     Route::get('/stories/years',   [ProgramAdminController::class, 'storyYears'])  ->name('stories.years');
-    Route::get('/stories/export',  [ProgramAdminController::class, 'exportStories'])->name('stories.export');
 
     // ==================== PROGRAM ADMIN CRUD ====================
     Route::post('/programs', [ProgramAdminController::class, 'storeProgram'])->name('programs.store');
@@ -273,14 +272,12 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admi
     Route::put('/programs/{program}/description', [ProgramAdminController::class, 'updateDescription'])->name('programs.description');
     Route::delete('/programs/{program}/description', [ProgramAdminController::class, 'destroyDescription'])->name('programs.description.destroy');
     Route::patch('/programs/{program}/toggle-publish', [ProgramAdminController::class, 'togglePublish'])->name('programs.toggle-publish');
-    Route::get('/programs/{program}/fragment', [ProgramController::class, 'fragment']);
     Route::patch('/programs/{program}/republish', [ProgramAdminController::class, 'republish']);
     Route::post('/qualifications', [ProgramAdminController::class, 'storeQualification'])->name('qualifications.store');
     Route::put('/qualifications/{qualification}', [ProgramAdminController::class, 'updateQualification'])->name('qualifications.update');
     Route::delete('/qualifications/{qualification}', [ProgramAdminController::class, 'destroyQualification'])->name('qualifications.destroy');
     Route::delete('/qualifications/type/{type}/program/{program}', [ProgramAdminController::class, 'destroyQualificationsByType'])
     ->name('qualifications.destroy-by-type');
-    Route::get('/stories/export', [ProgramAdminController::class, 'exportStories']);
 
     Route::post('/steps', [ProgramAdminController::class, 'storeStep'])->name('steps.store');
     Route::put('/steps/{step}', [ProgramAdminController::class, 'updateStep'])->name('steps.update');
@@ -355,7 +352,6 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admi
     Route::patch('/lmi-weekly/republish',      [WeeklyCardSettingController::class, 'republish']);
     //WeeklyCard
     Route::get('/lmi-weekly-card',  [WeeklyCardSettingController::class, 'show']);
-    Route::post('/lmi-weekly-card', [WeeklyCardSettingController::class, 'update']);
     Route::post('/lmi-weekly-card/text',  [WeeklyCardSettingController::class, 'updateText']);
     Route::post('/lmi-weekly-card/media', [WeeklyCardSettingController::class, 'updateMedia']);
     

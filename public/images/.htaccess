@@ -1,0 +1,6 @@
+# Uploaded images live here. Never let a script-type file be served or executed,
+# even if one ends up in this folder. (Uses mod_rewrite, which Laravel already needs.)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule \.(php[0-9]?|phtml|phar|pht|phps|cgi|pl|py|sh|asp|aspx|jsp)$ - [F,NC]
+</IfModule>
