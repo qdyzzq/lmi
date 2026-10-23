@@ -1,6 +1,14 @@
+// ─── Area selection (Regional / Province) shared by every section ───────────
+// Set by areaSelector(); every /api call below sends it as ?province=...
+window.currentProvince = 'Regional';
+function provinceQuery() {
+    return 'province=' + encodeURIComponent(window.currentProvince);
+}
+
 function statsFilter() {
             return {
                 tableExpanded: false,
+                province: 'Regional',
                 allData: window.AppData.regionalStats,
                 filteredData: [],
                 startYear: '',
@@ -35,9 +43,18 @@ function statsFilter() {
                     });
                 },
 
+                // Area changed (Regional / Province): reload like a first visit
+                async onProvinceChanged(province) {
+                    this.province = province;
+                    this.startYear = '';
+                    this.endYear = '';
+                    this.filteredData = [];
+                    await this.init();
+                },
+
                 async fetchAvailableYears() {
                     try {
-                        const response = await fetch('/api/available-years');
+                        const response = await fetch(`/api/available-years?${provinceQuery()}`);
                         const result = await response.json();
 
                         if (result.success) {
@@ -59,6 +76,7 @@ function statsFilter() {
                     if (!this.startYear || !this.endYear) return;
 
                     this.filteredData = this.allData.filter(stat => {
+                        if ((stat.province ?? 'Regional') !== this.province) return false;
                         const yearMatch = stat.period.match(/\d{4}/);
                         if (!yearMatch) return false;
                         const year = parseInt(yearMatch[0]);
@@ -114,6 +132,19 @@ function statsFilter() {
                     };
                 },
 
+                // Export names follow the selected area:
+                //   Regional   → "DAVAO REGIONAL LABOR MARKET SITUATION", davao-labor-statistics-…
+                //   Davao City → "DAVAO CITY LABOR MARKET SITUATION",     davao-city-labor-statistics-…
+                exportNames() {
+                    const isRegional = this.province === 'Regional';
+                    const slug = isRegional ? 'davao' : this.province.toLowerCase().replace(/\s+/g, '-');
+                    return {
+                        title:    isRegional ? 'DAVAO REGIONAL LABOR MARKET SITUATION' : `${this.province.toUpperCase()} LABOR MARKET SITUATION`,
+                        subtitle: isRegional ? 'Consolidated Regional Employment Statistics' : `Consolidated ${this.province} Employment Statistics`,
+                        file:     `${slug}-labor-statistics-${this.startYear}-${this.endYear}`,
+                    };
+                },
+
                 exportCSV() {
                     // ── Styled XLSX export (SheetJS already loaded in <head>) ──────────────
                     // Falls back to plain CSV if SheetJS is somehow unavailable.
@@ -135,7 +166,7 @@ function statsFilter() {
                         const url  = window.URL.createObjectURL(blob);
                         const a    = document.createElement('a');
                         a.href = url;
-                        a.download = `regional-statistics-${this.startYear}-${this.endYear}.csv`;
+                        a.download = `${this.exportNames().file}.csv`;
                         a.click();
                         window.URL.revokeObjectURL(url);
                         return;
@@ -208,11 +239,11 @@ function statsFilter() {
                     const COLS = 9; // A–I
 
                     // ── ROW 0: Main title (merged A1:I1) ──────────────────────────────────
-                    setCell(0, 0, 'DAVAO REGIONAL LABOR MARKET SITUATION', 's', titleStyle);
+                    setCell(0, 0, this.exportNames().title, 's', titleStyle);
                     for (let c = 1; c < COLS; c++) setCell(0, c, '', 's', titleStyle);
 
                     // ── ROW 1: Sub-title (merged A2:I2) ──────────────────────────────────
-                    setCell(1, 0, `Consolidated Regional Employment Statistics  |  ${this.startYear} – ${this.endYear}  |  In Thousands`, 's', subTitleStyle);
+                    setCell(1, 0, `${this.exportNames().subtitle}  |  ${this.startYear} – ${this.endYear}  |  In Thousands`, 's', subTitleStyle);
                     for (let c = 1; c < COLS; c++) setCell(1, c, '', 's', subTitleStyle);
 
                     // ── ROW 2: blank spacer ───────────────────────────────────────────────
@@ -292,9 +323,9 @@ function statsFilter() {
 
                     // ── Write & download ──────────────────────────────────────────────────
                     XLSX.utils.book_append_sheet(wb, ws, 'Employment Statistics');
-                    XLSX.writeFile(wb, `davao-labor-statistics-${this.startYear}-${this.endYear}.xlsx`);
+                    XLSX.writeFile(wb, `${this.exportNames().file}.xlsx`);
 
-                    showToast(`Export complete: davao-labor-statistics-${this.startYear}-${this.endYear}.xlsx`, 'success', 3500);
+                    showToast(`Export complete: ${this.exportNames().file}.xlsx`, 'success', 3500);
                 }
             }
         }
@@ -312,6 +343,7 @@ function statsFilter() {
                 pendingYear: '',
                 selectedPeriodLabel: 'Loading...',
                 loading: false,
+                province: 'Regional',
 
                 analysis: {
                     employment: '',
@@ -344,6 +376,29 @@ function statsFilter() {
                     }
                 },
 
+                // Area changed (Regional / Province): reload like a first visit
+                async onProvinceChanged(province) {
+                    this.province = province;
+                    this.allPeriods = [];
+                    this.availableYears = [];
+                    this.availableMonths = [];
+                    this.selectedYear = '';
+                    this.selectedMonth = '';
+                    this.pendingYear = '';
+                    this.pendingMonth = '';
+                    await this.init();
+                },
+
+                // For a province, "The Region's" / "The country's" in the analysis
+                // text becomes e.g. "Davao City's". Stored templates are not changed.
+                areaText(text) {
+                    if (!text || this.province === 'Regional') return text;
+                    return text.replace(
+                        /\b(?:the\s+)?(?:davao\s+)?(?:region|country)(?:['’]|&#39;|&rsquo;)s\b/gi,
+                        `${this.province}'s`
+                    );
+                },
+
                 async init() {
                     await this.fetchAvailableYears();
 
@@ -357,7 +412,7 @@ function statsFilter() {
 
                 async fetchAvailableYears() {
                     try {
-                        const response = await fetch('/api/kpi-cards/periods');
+                        const response = await fetch(`/api/kpi-cards/periods?${provinceQuery()}`);
                         const result = await response.json();
 
                         if (result.success && result.data && result.data.length > 0) {
@@ -401,7 +456,7 @@ function statsFilter() {
                 async loadLatestKpiData() {
                     this.loading = true;
                     try {
-                        const response = await fetch('/api/kpi-cards');
+                        const response = await fetch(`/api/kpi-cards?${provinceQuery()}`);
                         const result = await response.json();
                         if (result.success) {
                             this.kpiData = result.data;
@@ -423,7 +478,7 @@ function statsFilter() {
 
                     try {
                         const response = await fetch(
-                            `/api/kpi-cards?year=${this.selectedYear}&month=${this.selectedMonth}`
+                            `/api/kpi-cards?year=${this.selectedYear}&month=${this.selectedMonth}&${provinceQuery()}`
                         );
                         const result = await response.json();
 
@@ -442,6 +497,8 @@ function statsFilter() {
                     const currentYear = parseInt(this.selectedYear);
                     const prevYear = currentYear - 1;
                     const monthName = this.selectedPeriodLabel.split(' ')[0];
+                    // "April 2025" for quarters, just "2025" for annual (provincial) data
+                    const per = (y) => String(this.selectedMonth) === '0' ? `${y}` : `${monthName} ${y}`;
 
                     // ── Step 1: Try to load saved/published templates first ──
                     try {
@@ -464,24 +521,24 @@ function statsFilter() {
                                     // Fetch previous year data to resolve {previous_rate} and {trend}
                                     let prev = null;
                                     try {
-                                        const prevRes = await fetch(`/api/kpi-cards?year=${prevYear}&month=${this.selectedMonth}`);
+                                        const prevRes = await fetch(`/api/kpi-cards?year=${prevYear}&month=${this.selectedMonth}&${provinceQuery()}`);
                                         const prevResult = await prevRes.json();
                                         if (prevResult.success) prev = prevResult.data;
                                     } catch (_) {}
 
                                     // If no previous year data, skip templates entirely — show standalone sentences
                                     if (!prev) {
-                                        this.analysis.employment      = `The employment rate in ${b(monthName + ' ' + currentYear)} was estimated at ${b(cur.employment_rate.rate)}.`;
-                                        this.analysis.underemployment = `The underemployment rate in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.underemployment_rate.rate)}.`;
-                                        this.analysis.unemployment    = `The unemployment rate in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.unemployment_rate.rate)}.`;
-                                        this.analysis.lfpr            = `The country's labor force participation rate (LFPR) in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.participation_rate.rate)}.`;
+                                        this.analysis.employment      = `The employment rate in ${b(per(currentYear))} was estimated at ${b(cur.employment_rate.rate)}.`;
+                                        this.analysis.underemployment = `The underemployment rate in ${b(per(currentYear))} was recorded at ${b(cur.underemployment_rate.rate)}.`;
+                                        this.analysis.unemployment    = `The unemployment rate in ${b(per(currentYear))} was recorded at ${b(cur.unemployment_rate.rate)}.`;
+                                        this.analysis.lfpr            = `The country's labor force participation rate (LFPR) in ${b(per(currentYear))} was recorded at ${b(cur.participation_rate.rate)}.`;
                                         return;
                                     }
 
                                     const replacePlaceholders = (text, currentRate, previousRate, trendWord) => {
                                         return text
-                                            .replace(/\{current_period\}/g,  `<strong>${monthName} ${currentYear}</strong>`)
-                                            .replace(/\{previous_period\}/g, `<strong>${monthName} ${prevYear}</strong>`)
+                                            .replace(/\{current_period\}/g,  `<strong>${per(currentYear)}</strong>`)
+                                            .replace(/\{previous_period\}/g, `<strong>${per(prevYear)}</strong>`)
                                             .replace(/\{current_rate\}/g,    `<strong>${currentRate}</strong>`)
                                             .replace(/\{previous_rate\}/g,   `<strong>${previousRate}</strong>`)
                                             .replace(/\{trend\}/g,           `<strong>${trendWord}</strong>`);
@@ -537,7 +594,7 @@ function statsFilter() {
 
                     // ── Step 2: Fallback — auto-generate from raw KPI numbers ──
                     try {
-                        const response = await fetch(`/api/kpi-cards?year=${prevYear}&month=${this.selectedMonth}`);
+                        const response = await fetch(`/api/kpi-cards?year=${prevYear}&month=${this.selectedMonth}&${provinceQuery()}`);
                         const result = await response.json();
 
                         if (result.success) {
@@ -552,28 +609,28 @@ function statsFilter() {
                                 .raw_value);
                             let empWord = empHigher ? 'higher' : 'lower';
                             this.analysis.employment =
-                                `The employment rate in ${b(monthName + ' ' + currentYear)} was estimated at ${b(cur.employment_rate.rate)}. This was ${trendBold(empWord)} than the recorded rate in ${b(monthName + ' ' + prevYear)} of ${b(prev.employment_rate.rate)}.`;
+                                `The employment rate in ${b(per(currentYear))} was estimated at ${b(cur.employment_rate.rate)}. This was ${trendBold(empWord)} than the recorded rate in ${b(per(prevYear))} of ${b(prev.employment_rate.rate)}.`;
 
                             // 2. Underemployment Rate Analysis
                             let underHigher = parseFloat(cur.underemployment_rate.raw_value) >= parseFloat(prev
                                 .underemployment_rate.raw_value);
                             let underWord = underHigher ? 'went up' : 'went down';
                             this.analysis.underemployment =
-                                `The underemployment rate in ${b(monthName + ' ' + currentYear)} ${trendBold(underWord)} to ${b(cur.underemployment_rate.rate)}, from ${b(prev.underemployment_rate.rate)} in ${b(monthName + ' ' + prevYear)}.`;
+                                `The underemployment rate in ${b(per(currentYear))} ${trendBold(underWord)} to ${b(cur.underemployment_rate.rate)}, from ${b(prev.underemployment_rate.rate)} in ${b(per(prevYear))}.`;
 
                             // 3. Unemployment Rate Analysis
                             let unempHigher = parseFloat(cur.unemployment_rate.raw_value) >= parseFloat(prev
                                 .unemployment_rate.raw_value);
                             let unempWord = unempHigher ? 'rose' : 'dropped';
                             this.analysis.unemployment =
-                                `The unemployment rate ${trendBold(unempWord)} to ${b(cur.unemployment_rate.rate)} in ${b(monthName + ' ' + currentYear)}, from its rate in ${b(monthName + ' ' + prevYear)} of ${b(prev.unemployment_rate.rate)}.`;
+                                `The unemployment rate ${trendBold(unempWord)} to ${b(cur.unemployment_rate.rate)} in ${b(per(currentYear))}, from its rate in ${b(per(prevYear))} of ${b(prev.unemployment_rate.rate)}.`;
 
                             // 4. LFPR Analysis
                             let lfprHigher = parseFloat(cur.participation_rate.raw_value) >= parseFloat(prev
                                 .participation_rate.raw_value);
                             let lfprWord = lfprHigher ? 'higher' : 'lower';
                             this.analysis.lfpr =
-                                `The country's labor force participation rate (LFPR) in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.participation_rate.rate)}, ${trendBold(lfprWord)} than the estimated LFPR in ${b(monthName + ' ' + prevYear)} at ${b(prev.participation_rate.rate)}.`;
+                                `The country's labor force participation rate (LFPR) in ${b(per(currentYear))} was recorded at ${b(cur.participation_rate.rate)}, ${trendBold(lfprWord)} than the estimated LFPR in ${b(per(prevYear))} at ${b(prev.participation_rate.rate)}.`;
 
                         } else {
                             // No previous year data — show standalone analysis without comparison
@@ -581,16 +638,16 @@ function statsFilter() {
                             const b = (val) => `<span class="font-bold text-slate-900">${val}</span>`;
 
                             this.analysis.employment =
-                                `The employment rate in ${b(monthName + ' ' + currentYear)} was estimated at ${b(cur.employment_rate.rate)}.`;
+                                `The employment rate in ${b(per(currentYear))} was estimated at ${b(cur.employment_rate.rate)}.`;
 
                             this.analysis.underemployment =
-                                `The underemployment rate in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.underemployment_rate.rate)}.`;
+                                `The underemployment rate in ${b(per(currentYear))} was recorded at ${b(cur.underemployment_rate.rate)}.`;
 
                             this.analysis.unemployment =
-                                `The unemployment rate in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.unemployment_rate.rate)}.`;
+                                `The unemployment rate in ${b(per(currentYear))} was recorded at ${b(cur.unemployment_rate.rate)}.`;
 
                             this.analysis.lfpr =
-                                `The country's labor force participation rate (LFPR) in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.participation_rate.rate)}.`;
+                                `The country's labor force participation rate (LFPR) in ${b(per(currentYear))} was recorded at ${b(cur.participation_rate.rate)}.`;
                         }
                     } catch (e) {
                         // Network error fetching prev year — fall back to standalone analysis
@@ -598,21 +655,22 @@ function statsFilter() {
                         const b = (val) => `<span class="font-bold text-slate-900">${val}</span>`;
 
                         this.analysis.employment =
-                            `The employment rate in ${b(monthName + ' ' + currentYear)} was estimated at ${b(cur.employment_rate.rate)}.`;
+                            `The employment rate in ${b(per(currentYear))} was estimated at ${b(cur.employment_rate.rate)}.`;
 
                         this.analysis.underemployment =
-                            `The underemployment rate in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.underemployment_rate.rate)}.`;
+                            `The underemployment rate in ${b(per(currentYear))} was recorded at ${b(cur.underemployment_rate.rate)}.`;
 
                         this.analysis.unemployment =
-                            `The unemployment rate in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.unemployment_rate.rate)}.`;
+                            `The unemployment rate in ${b(per(currentYear))} was recorded at ${b(cur.unemployment_rate.rate)}.`;
 
                         this.analysis.lfpr =
-                            `The country's labor force participation rate (LFPR) in ${b(monthName + ' ' + currentYear)} was recorded at ${b(cur.participation_rate.rate)}.`;
+                            `The country's labor force participation rate (LFPR) in ${b(per(currentYear))} was recorded at ${b(cur.participation_rate.rate)}.`;
                     }
                 },
 
                 updatePeriodLabel() {
                     const quarterMonths = {
+                        '0': 'Annual',
                         '1': 'January',
                         '4': 'April',
                         '7': 'July',
@@ -636,10 +694,13 @@ function statsFilter() {
                         Q1: 'Jan',
                         Q2: 'Apr',
                         Q3: 'Jul',
-                        Q4: 'Oct'
+                        Q4: 'Oct',
+                        Annual: ''        // provincial annual data: label is just the year
                     };
-                    return map[q] || q;
+                    return map[q] ?? q;
                 },
+
+                province: 'Regional',   // provinces have annual data only (no quarters)
 
                 // Labor Chart State
                 laborAvailableYears: [],
@@ -663,6 +724,18 @@ function statsFilter() {
                     await this.fetchAvailableYears();
                     await this.initializeLaborChart();
                     await this.initializeUnempChart();
+                },
+
+                // Area changed (Regional / Province): back to first-load defaults, redraw
+                async onProvinceChanged(province) {
+                    this.province = province;
+                    this.laborStartQuarter = 'Q1';
+                    this.laborEndQuarter = 'Q4';
+                    this.unempStartQuarter = 'Q1';
+                    this.unempEndQuarter = 'Q4';
+                    await this.fetchAvailableYears();
+                    await this.updateLaborChart();
+                    await this.updateUnempChart();
                 },
 
                 // Modal 
@@ -1030,7 +1103,7 @@ function statsFilter() {
 
                 async fetchAvailableYears() {
                     try {
-                        const response = await fetch('/api/available-years');
+                        const response = await fetch(`/api/available-years?${provinceQuery()}`);
 
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
@@ -1085,15 +1158,17 @@ function statsFilter() {
                 updateLaborYearRange() {
                     const startMonth = this.quarterToMonth(this.laborStartQuarter);
                     const endMonth = this.quarterToMonth(this.laborEndQuarter);
-                    this.laborYearRange =
-                        `${this.laborStartYear} ${startMonth} - ${this.laborEndYear} ${endMonth}`;
+                    this.laborYearRange = this.province !== 'Regional'
+                        ? `${this.laborStartYear} - ${this.laborEndYear}`
+                        : `${this.laborStartYear} ${startMonth} - ${this.laborEndYear} ${endMonth}`;
                 },
 
                 updateUnempYearRange() {
                     const startMonth = this.quarterToMonth(this.unempStartQuarter);
                     const endMonth = this.quarterToMonth(this.unempEndQuarter);
-                    this.unempYearRange =
-                        `${this.unempStartYear} ${startMonth} - ${this.unempEndYear} ${endMonth}`;
+                    this.unempYearRange = this.province !== 'Regional'
+                        ? `${this.unempStartYear} - ${this.unempEndYear}`
+                        : `${this.unempStartYear} ${startMonth} - ${this.unempEndYear} ${endMonth}`;
                 },
 
                 async applyLaborFilter() {
@@ -1164,7 +1239,7 @@ function statsFilter() {
                     const endYear = parseInt(this.laborEndYear);
 
                     for (let year = startYear; year <= endYear; year++) {
-                        const response = await fetch(`/api/quarterly/${year}`);
+                        const response = await fetch(`/api/quarterly/${year}?${provinceQuery()}`);
                         if (!response.ok) continue;
 
                         const data = await response.json();
@@ -1375,7 +1450,7 @@ function statsFilter() {
                     let empRateData = [];
 
                     for (let year = startYear; year <= endYear; year++) {
-                        const response = await fetch(`/api/quarterly/${year}`);
+                        const response = await fetch(`/api/quarterly/${year}?${provinceQuery()}`);
                         if (!response.ok) continue;
 
                         const data = await response.json();
@@ -1419,7 +1494,7 @@ function statsFilter() {
                     const endYear = parseInt(this.unempEndYear);
 
                     for (let year = startYear; year <= endYear; year++) {
-                        const response = await fetch(`/api/quarterly/${year}`);
+                        const response = await fetch(`/api/quarterly/${year}?${provinceQuery()}`);
                         if (!response.ok) continue;
 
                         const data = await response.json();
@@ -1646,7 +1721,7 @@ function statsFilter() {
                         under = [],
                         unemp = [];
                     for (let year = startYear; year <= endYear; year++) {
-                        const response = await fetch(`/api/quarterly/${year}`);
+                        const response = await fetch(`/api/quarterly/${year}?${provinceQuery()}`);
                         if (!response.ok) continue;
                         const data = await response.json();
 
@@ -1748,6 +1823,21 @@ function statsFilter() {
         }, { passive: true });
 
 // ─── Global Exports (required for Alpine x-data and inline @click handlers) ──
+// ─── Regional / Provinces selector (above the Labor Force Survey bar) ───────
+function areaSelector() {
+    return {
+        mode: 'regional',          // 'regional' | 'provinces'
+        province: 'Davao City',    // default when "Provinces" is picked
+        apply() {
+            const area = this.mode === 'regional' ? 'Regional' : this.province;
+            if (area === window.currentProvince) return;
+            window.currentProvince = area;
+            window.dispatchEvent(new CustomEvent('province-changed', { detail: area }));
+        }
+    };
+}
+
+window.areaSelector     = areaSelector;
 window.statsFilter      = statsFilter;
 window.kpiPeriodFilter  = kpiPeriodFilter;
 window.chartFilters     = chartFilters;
