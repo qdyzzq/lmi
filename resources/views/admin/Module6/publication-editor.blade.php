@@ -96,8 +96,8 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-white font-bold text-[0.95rem] leading-snug">LMI Publications — Davao Region
-                                XI</h3>
+                            <h3 class="text-white font-bold text-[0.95rem] leading-snug"
+                                x-text="'LMI Publications — ' + ($store.lmiArea.annual === 'Regional' ? 'Davao Region XI' : $store.lmiArea.annual)">LMI Publications — Davao Region XI</h3>
                             <p class="text-slate-400 text-xs mt-0.5 leading-snug">Manage annual and weekly publications
                             </p>
                         </div>
@@ -111,7 +111,35 @@
                     <div class="px-5 sm:px-6 pb-6 pt-4 flex flex-col gap-4">
 
                         {{-- ── ANNUAL TAB CARDS + SHARED PANEL ── --}}
-                        <div x-data="{ activeTab: null }" class="flex flex-col gap-0">
+                        <div x-data="{ activeTab: null }" class="flex flex-col gap-0"
+                            x-init="$watch('$store.lmiArea.annualMode', mode => { if (mode === 'provinces' && activeTab && activeTab !== 'lmu') activeTab = null; })">
+
+                            {{-- ── AREA SELECTOR (annual): REGIONAL | PROVINCES | NATIONAL ── --}}
+                            <div class="flex flex-wrap items-center gap-3 mb-4" @click.stop>
+                                <div class="inline-flex bg-white rounded-lg shadow-sm border border-slate-200 p-1" role="radiogroup" aria-label="Publication coverage">
+                                    <button type="button" role="radio" :aria-checked="($store.lmiArea.annualMode === 'regional').toString()" @click="$store.lmiArea.annualMode = 'regional'"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-wider uppercase transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus:outline-none"
+                                    :class="$store.lmiArea.annualMode === 'regional' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">Regional</button>
+                                    <button type="button" role="radio" :aria-checked="($store.lmiArea.annualMode === 'provinces').toString()" @click="$store.lmiArea.annualMode = 'provinces'"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-wider uppercase transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus:outline-none"
+                                    :class="$store.lmiArea.annualMode === 'provinces' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">Provinces</button>
+                                    <button type="button" role="radio" :aria-checked="($store.lmiArea.annualMode === 'national').toString()" @click="$store.lmiArea.annualMode = 'national'"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-wider uppercase transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus:outline-none"
+                                    :class="$store.lmiArea.annualMode === 'national' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">National</button>
+                                </div>
+                                <select x-show="$store.lmiArea.annualMode === 'provinces'" style="display: none;"
+                                    x-model="$store.lmiArea.province" aria-label="Province"
+                                    class="bg-white border border-slate-200 rounded-lg shadow-sm px-4 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                    <option value="Davao City">Davao City</option>
+                                    <option value="Davao de Oro">Davao de Oro</option>
+                                    <option value="Davao del Norte">Davao del Norte</option>
+                                    <option value="Davao del Sur">Davao del Sur</option>
+                                    <option value="Davao Occidental">Davao Occidental</option>
+                                    <option value="Davao Oriental">Davao Oriental</option>
+                                </select>
+                                <span class="text-xs text-slate-500 italic">Showing and adding publications for
+                                    <strong class="not-italic text-slate-700" x-text="$store.lmiArea.annual"></strong></span>
+                            </div>
 
                             {{-- Tab Cards Row --}}
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-10 items-start">
@@ -178,14 +206,17 @@
                                         isPublished: {{ $isPublished ? 'true' : 'false' }},
                                         hasDraftChanges: {{ $hasDraftChanges ? 'true' : 'false' }},
                                         activeYear: '',
-                                        get years() { return [...new Set(this.issues.map(i => String(i.year)))].sort((a, b) => b.localeCompare(a)); },
-                                        get filtered() { return this.activeYear ? this.issues.filter(i => String(i.year) === this.activeYear) : this.issues; },
+                                        get areaIssues() { return this.issues.filter(i => (i.area ?? 'Regional') === Alpine.store('lmiArea').annual); },
+                                        get years() { return [...new Set(this.areaIssues.map(i => String(i.year)))].sort((a, b) => b.localeCompare(a)); },
+                                        get filtered() { return this.activeYear ? this.areaIssues.filter(i => String(i.year) === this.activeYear) : this.areaIssues; },
                                         init() { this.$nextTick(() => { if (this.years.length) this.activeYear = this.years[0]; }); },
                                     }"
                                         class="rounded-xl shadow-md cursor-pointer group select-none transition-all duration-200"
-                                        :class="activeTab === '{{ $groupId }}' ?
+                                        x-show="$store.lmiArea.annualMode !== 'provinces' || '{{ $groupId }}' === 'lmu'"
+                                        :class="(activeTab === '{{ $groupId }}' ?
                                             'ring-2 {{ $cardRing }} shadow-xl' :
-                                            'ring-1 ring-white/10 hover:shadow-xl hover:ring-blue-300/40'"
+                                            'ring-1 ring-white/10 hover:shadow-xl hover:ring-blue-300/40')
+                                            + ($store.lmiArea.annualMode === 'provinces' ? ' sm:col-span-3' : '')"
                                         @click="activeTab = activeTab === '{{ $groupId }}' ? null : '{{ $groupId }}';
                                                 if (activeTab === '{{ $groupId }}') { $nextTick(() => document.getElementById('annual-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' })) }">
 
@@ -193,12 +224,15 @@
                                         <div class="relative flex overflow-hidden rounded-t-xl bg-slate-800"
                                             style="height:250px;">
                                             <div class="w-1/3 flex-shrink-0 relative overflow-hidden">
-                                                @if ($bannerThumb)
-                                                    <img src="{{ $bannerThumb }}"
-                                                        class="absolute inset-0 w-full h-full object-cover scale-110 blur-[1px] opacity-80">
-                                                    <img src="{{ $bannerThumb }}"
-                                                        class="absolute inset-0 w-full h-full object-contain p-2">
-                                                @else
+                                                <template x-if="areaIssues[0]?.drive_file_id">
+                                                    <div class="absolute inset-0">
+                                                        <img :src="'https://drive.google.com/thumbnail?id=' + areaIssues[0].drive_file_id + '&sz=s500'"
+                                                            class="absolute inset-0 w-full h-full object-cover scale-110 blur-[1px] opacity-80">
+                                                        <img :src="'https://drive.google.com/thumbnail?id=' + areaIssues[0].drive_file_id + '&sz=s500'"
+                                                            class="absolute inset-0 w-full h-full object-contain p-2">
+                                                    </div>
+                                                </template>
+                                                <template x-if="!areaIssues[0]?.drive_file_id">
                                                     <div
                                                         class="absolute inset-0 bg-slate-700 flex items-center justify-center">
                                                         <svg class="w-10 h-10 text-slate-500" fill="none"
@@ -208,7 +242,7 @@
                                                                 d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                                                         </svg>
                                                     </div>
-                                                @endif
+                                                </template>
                                             </div>
 
                                             <div class="flex-1 flex flex-col justify-center px-5 py-4 transition-colors duration-200 {{ $cardPanel }} {{ $cardPanelHover }}"
@@ -237,15 +271,15 @@
                                                 </div>
                                                 <h2
                                                     class="text-white text-[20px] font-bold text-center tracking-widest leading-snug drop-shadow mb-2 mt-2"
-                                                    x-text="issues[0]?.title?.toUpperCase() ?? '{{ $cardTitle }}'">
+                                                    x-text="areaIssues[0]?.title?.toUpperCase() ?? '{{ $cardTitle }}'">
                                                 </h2>
                                                 <h3
                                                     class="text-slate-100 text-center text-[0.65rem] tracking-widest font-semibold"
-                                                    x-text="issues[0]?.subtitle?.toUpperCase() ?? '{{ $cardSubtitle }}'">
+                                                    x-text="areaIssues[0]?.subtitle?.toUpperCase() ?? '{{ $cardSubtitle }}'">
                                                 </h3>
                                                 <p
                                                     class="pt-3 text-slate-100 text-center text-[0.55rem] tracking-widest line-clamp-3"
-                                                    x-text="issues[0]?.description ?? '{{ $cardDesc }}'">
+                                                    x-text="areaIssues[0]?.description ?? '{{ $cardDesc }}'">
                                                 </p>
                                                 <div class="flex items-center gap-3 w-full max-w-m mt-2">
                                                     
@@ -320,12 +354,15 @@
                                         <div x-data="{
                                                         activeYear: '',
                                                         get cardState() { return Alpine.$data(document.getElementById('lmi-card-{{ $groupId }}')); },
-                                                        get issues() { return this.cardState?.issues ?? []; },
+                                                        get issues() { return this.cardState?.areaIssues ?? []; },
                                                         get isPublished() { return this.cardState?.isPublished ?? false; },
                                                         get hasDraftChanges() { return this.cardState?.hasDraftChanges ?? false; },
                                                         get years() { return [...new Set(this.issues.map(i => String(i.year)))].sort((a, b) => b.localeCompare(a)); },
                                                         get filtered() { return this.activeYear ? this.issues.filter(i => String(i.year) === this.activeYear) : this.issues; },
-                                                        init() { this.$nextTick(() => { if (this.years.length) this.activeYear = this.years[0]; }); },
+                                                        init() {
+                                                            this.$nextTick(() => { if (this.years.length) this.activeYear = this.years[0]; });
+                                                            this.$watch('$store.lmiArea.annual', () => { this.activeYear = this.years[0] ?? ''; });
+                                                        },
                                                     }">
 
                                             {{-- Panel header --}}
@@ -335,8 +372,7 @@
                                                     <span
                                                         class="inline-flex items-center gap-1.5 text-[0.62rem] font-bold tracking-widest uppercase text-rose-500">
                                                         <span
-                                                            class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Regional
-                                                        Archives
+                                                            class="w-1.5 h-1.5 rounded-full bg-rose-500"></span><span x-text="$store.lmiArea.archivesLabel($store.lmiArea.annual)">Regional Archives</span>
                                                     </span>
                                                     <h2 class="text-slate-800 font-black tracking-wide leading-tight"
                                                         style="font-size:clamp(1.1rem,2.2vw,1.6rem);">
@@ -398,6 +434,7 @@
                                                                             yearType: '{{ $yearType }}',
                                                                             issueId: issue.id,
                                                                             data: {
+                                                                                area: issue.area ?? 'Regional',
                                                                                 title: issue.title,
                                                                                 subtitle: issue.subtitle,
                                                                                 description: issue.description,
@@ -626,7 +663,8 @@
                                 return Object.values(map).sort((a, b) => a.order - b.order);
                             },
                             async refresh() {
-                                const res = await fetch('/admin/lmi-weekly/data', {
+                                const area = encodeURIComponent(Alpine.store('lmiArea').weekly);
+                                const res = await fetch(`/admin/lmi-weekly/data?area=${area}`, {
                                     headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }
                                 });
                                 if (!res.ok) return;
@@ -636,6 +674,23 @@
                                 if (this.years.length && !this.years.includes(Number(this.activeYear))) {
                                     this.activeYear = this.years[0];
                                 }
+                            },
+                            // REGIONAL | NATIONAL: load that area's card (text, image, publish state) and issues
+                            async setArea(area) {
+                                if (Alpine.store('lmiArea').weekly === area) return;
+                                Alpine.store('lmiArea').weekly = area;
+                                const res = await fetch(`/admin/lmi-weekly-card?area=${encodeURIComponent(area)}`, {
+                                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                                });
+                                if (res.ok) {
+                                    const json = await res.json();
+                                    if (json.success) {
+                                        this.cardSetting     = json.data;
+                                        this.isPublished     = json.data.is_published;
+                                        this.hasDraftChanges = json.data.has_draft_changes;
+                                    }
+                                }
+                                await this.refresh();
                             },
                             init() {
                                 window.addEventListener('weekly-refresh', () => this.refresh());
@@ -650,6 +705,20 @@
                                 });
                             },
                         }">
+
+{{-- ── AREA SELECTOR (weekly): REGIONAL | NATIONAL ── --}}
+                            <div class="flex flex-wrap items-center gap-3 mb-4" @click.stop>
+                                <div class="inline-flex bg-white rounded-lg shadow-sm border border-slate-200 p-1" role="radiogroup" aria-label="Weekly coverage">
+                                <button type="button" role="radio" :aria-checked="($store.lmiArea.weekly === 'Regional').toString()" @click="setArea('Regional')"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-wider uppercase transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus:outline-none"
+                                    :class="$store.lmiArea.weekly === 'Regional' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">Regional</button>
+                                <button type="button" role="radio" :aria-checked="($store.lmiArea.weekly === 'National').toString()" @click="setArea('National')"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-wider uppercase transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus:outline-none"
+                                    :class="$store.lmiArea.weekly === 'National' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">National</button>
+                                </div>
+                                <span class="text-xs text-slate-500 italic">Editing the
+                                    <strong class="not-italic text-slate-700" x-text="$store.lmiArea.weekly"></strong> weekly card and issues</span>
+                            </div>
 
                             {{-- Weekly Tab Card --}}
                             <div class="rounded-xl shadow-md cursor-pointer group select-none transition-all duration-200"
@@ -778,10 +847,11 @@
                                     <div class="flex flex-col gap-1 min-w-0">
                                         <span
                                             class="inline-flex items-center gap-1.5 text-[0.62rem] font-bold tracking-widest uppercase text-rose-500">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Regional Archives
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span><span x-text="$store.lmiArea.archivesLabel($store.lmiArea.weekly)">Regional Archives</span>
                                         </span>
                                         <h2 class="text-slate-800 font-black tracking-wide leading-tight"
-                                            style="font-size:clamp(1.1rem,2.2vw,1.6rem);">
+                                            style="font-size:clamp(1.1rem,2.2vw,1.6rem);"
+                                            x-text="$store.lmiArea.weekly === 'National' ? 'NATIONAL LMI WEEKLY' : 'REGIONAL LMI WEEKLY'">
                                             REGIONAL LMI WEEKLY
                                         </h2>
                                     </div>
@@ -1059,6 +1129,22 @@
                         {{-- ADD / EDIT ISSUE --}}
                         <div x-show="(modal.type === 'add-issue' || modal.type === 'edit-issue') && !modal.confirming" x-cloak
                             class="space-y-4">
+                            {{-- Area --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Area <span
+                                        class="text-red-500">*</span></label>
+                                <select x-model="form.area"
+                                    class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none bg-white">
+                                    <option value="Regional">Regional</option>
+                                    <option value="Davao City">Davao City</option>
+                                    <option value="Davao de Oro">Davao de Oro</option>
+                                    <option value="Davao del Norte">Davao del Norte</option>
+                                    <option value="Davao del Sur">Davao del Sur</option>
+                                    <option value="Davao Occidental">Davao Occidental</option>
+                                    <option value="Davao Oriental">Davao Oriental</option>
+                                    <option value="National">National</option>
+                                </select>
+                            </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Title <span
                                         class="text-red-500">*</span></label>
@@ -1138,6 +1224,7 @@
                                     <span x-text="modal.type === 'add-issue' ? 'Add this publication?' : 'Save changes to this publication?'"></span>
                                 </p>
                                 <div class="bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-left space-y-2 text-sm">
+                                    <div class="flex gap-2"><span class="text-slate-400 w-24 flex-shrink-0">Area</span><span class="font-semibold text-slate-800" x-text="form.area"></span></div>
                                     <div class="flex gap-2"><span class="text-slate-400 w-24 flex-shrink-0">Title</span><span class="font-semibold text-slate-800 truncate" x-text="form.title"></span></div>
                                     <div class="flex gap-2"><span class="text-slate-400 w-24 flex-shrink-0">Subtitle</span><span class="text-slate-600 truncate" x-text="form.subtitle"></span></div>
                                     <div class="flex gap-2"><span class="text-slate-400 w-24 flex-shrink-0">Year</span><span class="text-slate-600" x-text="form.year"></span></div>
@@ -1193,7 +1280,7 @@
                                 <p class="text-slate-800 font-bold text-lg">Publish "<span
                                         x-text="modal.groupName"></span>"?</p>
                                 <p class="text-slate-500 text-sm">This will make all publications in this group visible
-                                    to the public.</p>
+                                    to the public, for every area (Regional, provinces and National).</p>
                                 <div class="flex gap-3 justify-center">
                                     <button type="button" @click="modal.open = false"
                                         class="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-lg font-semibold text-sm hover:bg-slate-50 transition">Not
