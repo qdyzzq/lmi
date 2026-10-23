@@ -12,6 +12,7 @@ class PendingLaborMarketData extends Model
     protected $table = 'pending_labor_market_data';
 
     protected $fillable = [
+        'province',
         'year',
         'month',
         'household_population',
