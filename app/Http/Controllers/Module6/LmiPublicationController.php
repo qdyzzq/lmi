@@ -11,6 +11,9 @@ use Illuminate\Http\JsonResponse;
 
 class LmiPublicationController extends Controller
 {
+    // Allowed areas for annual publications (must match the admin dropdown)
+    private const AREAS = 'Regional,Davao City,Davao de Oro,Davao del Norte,Davao del Sur,Davao Occidental,Davao Oriental,National';
+
     const GROUPS = [
         'jlmf' => [
             'id'          => 'jlmf',
@@ -42,18 +45,33 @@ class LmiPublicationController extends Controller
 
     public function publicIndex()
     {
-        $groupData         = $this->buildPublicGroupData();
-        $weeklyCardSetting = \App\Models\Module6\WeeklyCardSetting::instance();
+        $groupData = $this->buildPublicGroupData();
 
-        // Weekly data comes from the published snapshot, not the live DB.
-        // If unpublished, pass empty data — the blade @if gates visibility.
-        $weeklyData = $weeklyCardSetting->is_published
-            ? $this->groupSnapshotIssues($weeklyCardSetting->published_snapshot ?? [])
-            : ['years' => [], 'issuesByYear' => []];
+        // Weekly: one card per area (Regional / National). Only PUBLISHED cards are shown,
+        // and their issues come from each card's published snapshot, not the live DB.
+        $cards = [
+            'Regional' => \App\Models\Module6\WeeklyCardSetting::instance('Regional'),
+            // National is not created from the public page — only shown once it exists and is published
+            'National' => \App\Models\Module6\WeeklyCardSetting::where('area', 'National')->first(),
+        ];
 
-        $weeklyCardSetting = $weeklyCardSetting->toFrontendArray();
+        $weeklyCards    = [];
+        $weeklySnapshot = [];
+        foreach ($cards as $area => $card) {
+            if (!$card || !$card->is_published) continue;
 
-        return view('Public.Module6.publication', compact('groupData', 'weeklyData', 'weeklyCardSetting'));
+            $weeklyCards[$area] = $card->toFrontendArray();
+
+            foreach ($card->published_snapshot ?? [] as $issue) {
+                $issue['area']    = $area;   // older snapshots have no area → they belong to this card
+                $weeklySnapshot[] = $issue;
+            }
+        }
+
+        $weeklyData        = $this->groupSnapshotIssues($weeklySnapshot);
+        $weeklyCardSetting = $weeklyCards['Regional'] ?? ($weeklyCards['National'] ?? ['is_published' => false]);
+
+        return view('Public.Module6.publication', compact('groupData', 'weeklyData', 'weeklyCardSetting', 'weeklyCards'));
     }
 
     // ── ADMIN PAGE ────────────────────────────────────────────────────────────
@@ -61,8 +79,8 @@ class LmiPublicationController extends Controller
    public function adminIndex()
     {
         $groupData          = $this->buildAdminGroupData();
-        $weeklyData         = $this->buildWeeklyData();
-        $weeklyCardSetting  = \App\Models\Module6\WeeklyCardSetting::instance()->toFrontendArray(); // ← add
+        $weeklyData         = $this->buildWeeklyData('Regional');   // weekly editor opens on Regional
+        $weeklyCardSetting  = \App\Models\Module6\WeeklyCardSetting::instance('Regional')->toFrontendArray();
 
         return view('admin.Module6.publication-editor', compact('groupData', 'weeklyData', 'weeklyCardSetting'));
     }
@@ -71,14 +89,23 @@ class LmiPublicationController extends Controller
 
     public function preview()
     {
-        $groupData         = $this->buildAdminGroupData();
-        $weeklyData        = $this->buildWeeklyData();
-        $weeklyCardSetting = \App\Models\Module6\WeeklyCardSetting::instance()->toFrontendArray();
+        $groupData   = $this->buildAdminGroupData();
+        $weeklyData  = $this->buildWeeklyData();   // all areas, each issue carries its area
 
-        // Force is_published true so the weekly section always shows in preview
-        $weeklyCardSetting['is_published'] = true;
+        // Preview shows every weekly card (published or not); National only if it exists
+        $weeklyCards = [
+            'Regional' => \App\Models\Module6\WeeklyCardSetting::instance('Regional')->toFrontendArray(),
+        ];
+        $national = \App\Models\Module6\WeeklyCardSetting::where('area', 'National')->first();
+        if ($national) {
+            $weeklyCards['National'] = $national->toFrontendArray();
+        }
+        foreach ($weeklyCards as $area => $card) {
+            $weeklyCards[$area]['is_published'] = true;   // force visible in preview
+        }
+        $weeklyCardSetting = $weeklyCards['Regional'];
 
-        return view('Public.Module6.publication', compact('groupData', 'weeklyData', 'weeklyCardSetting'));
+        return view('Public.Module6.publication', compact('groupData', 'weeklyData', 'weeklyCardSetting', 'weeklyCards'));
     }
 
     // ── JSON DATA ENDPOINTS ───────────────────────────────────────────────────
@@ -168,17 +195,19 @@ class LmiPublicationController extends Controller
 
         $validated = $request->validate([
             'group_id'    => ['required', 'string', 'in:lmp,jlmf,lmu'],
+            'area'        => ['nullable', 'string', 'in:' . self::AREAS],
             'title'       => ['required', 'string', 'max:255'],
             'subtitle'    => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'year'        => $yearRule,
-            'drive_url'   => ['required', 'url:http,https', 'max:500'],
+            'drive_url'   => ['required', 'string', 'max:500'],
         ]);
 
         $driveFileId = PublicationIssue::extractDriveId($validated['drive_url']);
 
         $issue = PublicationIssue::create([
             'group_id'      => $validated['group_id'],
+            'area'          => $validated['area'] ?? 'Regional',
             'title'         => $validated['title'],
             'subtitle'      => $validated['subtitle'],
             'description'   => $validated['description'],
@@ -208,14 +237,16 @@ class LmiPublicationController extends Controller
             : ['required', 'string', 'max:10', 'regex:/^\d{4}$/'];
 
         $validated = $request->validate([
+            'area'        => ['nullable', 'string', 'in:' . self::AREAS],
             'title'       => ['required', 'string', 'max:255'],
             'subtitle'    => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'year'        => $yearRule,
-            'drive_url'   => ['required', 'url:http,https', 'max:500'],
+            'drive_url'   => ['required', 'string', 'max:500'],
         ]);
 
         $issue->update([
+            'area'          => $validated['area'] ?? $issue->area ?? 'Regional',
             'title'         => $validated['title'],
             'subtitle'      => $validated['subtitle'],
             'description'   => $validated['description'],
@@ -302,13 +333,15 @@ class LmiPublicationController extends Controller
         return $groupData;
     }
 
-    private function buildWeeklyData(): array
+    private function buildWeeklyData(?string $area = null): array
     {
-        $years = WeeklyIssue::select('year')->distinct()->orderByDesc('year')->pluck('year')->toArray();
+        $years = WeeklyIssue::when($area, fn($q) => $q->where('area', $area))
+            ->select('year')->distinct()->orderByDesc('year')->pluck('year')->toArray();
 
         $issuesByYear = [];
         foreach ($years as $year) {
             $issuesByYear[$year] = WeeklyIssue::where('year', $year)
+                ->when($area, fn($q) => $q->where('area', $area))
                 ->orderBy('month_order')->orderBy('week_number')->get()
                 ->map(fn($i) => $i->toFrontendArray())->values()->toArray();
         }
@@ -320,6 +353,7 @@ class LmiPublicationController extends Controller
     {
         return [
             'id'            => $issue->id,
+            'area'          => $issue->area ?? 'Regional',
             'title'         => $issue->title,
             'subtitle'      => $issue->subtitle,
             'description'   => $issue->description,
