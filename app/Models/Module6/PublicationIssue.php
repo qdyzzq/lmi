@@ -8,6 +8,7 @@ class PublicationIssue extends Model
 {
     protected $fillable = [
         'group_id',
+        'area',
         'title',
         'subtitle',
         'description',
