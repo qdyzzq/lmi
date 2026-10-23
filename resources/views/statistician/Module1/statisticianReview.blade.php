@@ -52,9 +52,12 @@
                     @php $record = $pendingRecords->first(); @endphp
                     
                     <!-- Single Form Card -->
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden pending-record-card" data-id="{{ $record->id }}">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden pending-record-card" data-id="{{ $record->id }}" data-province="{{ $record->province }}">
                         <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
-                            <h3 class="text-lg font-bold text-slate-800">Submitted Labor Market Data</h3>
+                            <h3 class="text-lg font-bold text-slate-800">
+                                Submitted Labor Market Data
+                                <span class="ml-2 align-middle inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $record->province === 'Regional' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800' }}">{{ $record->province }}</span>
+                            </h3>
                             <p class="text-sm text-slate-600 mt-1">
                                 Submitted by <span class="font-semibold">{{ $record->submittedBy->name ?? 'Admin' }}</span> 
                                 on {{ $record->created_at->format('F d, Y \a\t h:i A') }}
@@ -76,6 +79,17 @@
                                         <td class="px-6 py-4 text-sm text-slate-600">{{ $record->year }}</td>
                                         <td class="px-6 py-4"><input type="number" value="{{ $record->year }}" class="border border-slate-300 rounded px-3 py-1 text-sm w-full max-w-[200px] font-bold" data-field="year"></td>
                                     </tr>
+                                    @if ((int) $record->month === 0)
+                                    {{-- Provincial data is annual only: nothing to choose --}}
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="px-6 py-4 text-sm font-bold text-blue-900">Period</td>
+                                        <td class="px-6 py-4 text-sm text-slate-600">Annual</td>
+                                        <td class="px-6 py-4 text-sm font-bold text-slate-800">
+                                            Annual
+                                            <input type="hidden" value="0" data-field="month">
+                                        </td>
+                                    </tr>
+                                    @else
                                     <tr class="hover:bg-slate-50">
                                         <td class="px-6 py-4 text-sm font-bold text-blue-900">Month</td>
                                         <td class="px-6 py-4 text-sm text-slate-600">{{ date('F', mktime(0, 0, 0, $record->month, 1)) }}</td>
@@ -87,6 +101,7 @@
                                             </select>
                                         </td>
                                     </tr>
+                                    @endif
 
                                     <tr class="hover:bg-slate-50">
                                         <td class="px-6 py-4 text-sm font-bold text-blue-900">Household Population</td>
