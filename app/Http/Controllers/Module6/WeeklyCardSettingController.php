@@ -12,13 +12,21 @@ use Illuminate\Support\Facades\Storage;
 class WeeklyCardSettingController extends Controller
 {
     /**
+     * Which card the request is for: 'Regional' (default) or 'National'.
+     * Read from the query string or the form body.
+     */
+    private function area(Request $request): string
+    {
+        return $request->input('area') === 'National' ? 'National' : 'Regional';
+    }
+    /**
      * GET /admin/lmi-weekly-card
      */
-    public function show(): JsonResponse
+    public function show(Request $request): JsonResponse
     {
         return response()->json([
             'success' => true,
-            'data'    => WeeklyCardSetting::instance()->toFrontendArray(),
+            'data'    => WeeklyCardSetting::instance($this->area($request))->toFrontendArray(),
         ]);
     }
 
@@ -33,7 +41,7 @@ class WeeklyCardSettingController extends Controller
             'description' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $setting = WeeklyCardSetting::instance();
+        $setting = WeeklyCardSetting::instance($this->area($request));
         $setting->title             = $validated['title']       ?? $setting->title;
         $setting->subtitle          = $validated['subtitle']    ?? $setting->subtitle;
         $setting->description       = $validated['description'] ?? $setting->description;
@@ -56,14 +64,14 @@ class WeeklyCardSettingController extends Controller
             'link_url' => ['nullable', 'url', 'max:500'],
         ]);
 
-        $setting = WeeklyCardSetting::instance();
+        $setting = WeeklyCardSetting::instance($this->area($request));
 
         if ($request->hasFile('image')) {
             if ($setting->image_path) {
                 Storage::disk('public')->delete($setting->image_path);
             }
-            // store() names the file randomly with an extension detected from its content.
-            $setting->image_path = $request->file('image')->store('weekly-card', 'public');
+            $setting->image_path = $request->file('image')
+                ->storeAs('weekly-card', uniqid() . '.' . $request->file('image')->getClientOriginalExtension(), 'public');
         }
 
         if (array_key_exists('link_url', $validated)) {
@@ -82,13 +90,14 @@ class WeeklyCardSettingController extends Controller
     /**
      * PATCH /admin/lmi-weekly/toggle-publish
      */
-    public function togglePublish(): JsonResponse
+    public function togglePublish(Request $request): JsonResponse
     {
-        $setting = WeeklyCardSetting::instance();
+        $area    = $this->area($request);
+        $setting = WeeklyCardSetting::instance($area);
         $setting->is_published = !$setting->is_published;
 
         if ($setting->is_published) {
-            $setting->published_snapshot = $this->buildSnapshot();
+            $setting->published_snapshot = $this->buildSnapshot($area);
             $setting->has_draft_changes  = false;
             $setting->published_at       = now();
         }
@@ -107,11 +116,12 @@ class WeeklyCardSettingController extends Controller
     /**
      * PATCH /admin/lmi-weekly/republish
      */
-    public function republish(): JsonResponse
+    public function republish(Request $request): JsonResponse
     {
-        $setting = WeeklyCardSetting::instance();
+        $area    = $this->area($request);
+        $setting = WeeklyCardSetting::instance($area);
         $setting->is_published       = true;
-        $setting->published_snapshot = $this->buildSnapshot();
+        $setting->published_snapshot = $this->buildSnapshot($area);
         $setting->has_draft_changes  = false;
         $setting->published_at       = now();
         $setting->save();
@@ -130,9 +140,10 @@ class WeeklyCardSettingController extends Controller
     /**
      * Snapshot all weekly issues at publish time.
      */
-    private function buildSnapshot(): array
+    private function buildSnapshot(string $area = 'Regional'): array
     {
-        return WeeklyIssue::orderByDesc('year')
+        return WeeklyIssue::where('area', $area)
+            ->orderByDesc('year')
             ->orderBy('month_order')
             ->orderBy('week_number')
             ->get()
