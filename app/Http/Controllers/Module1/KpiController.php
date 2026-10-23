@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Module1;
 
-use App\Support\SafeError;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
@@ -14,10 +13,11 @@ class KpiController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getAvailablePeriods()
+    public function getAvailablePeriods(Request $request)
     {
         try {
             $periods = DB::table('regional_labor_market_statistics')
+                ->where('province', $request->query('province', 'Regional'))
                 ->select('year', 'month')
                 ->orderBy('year', 'desc')
                 ->orderBy('month', 'desc')
@@ -26,7 +26,9 @@ class KpiController extends Controller
                     return [
                         'year' => $period->year,
                         'month' => $period->month,
-                        'label' => date('F Y', mktime(0, 0, 0, $period->month, 1, $period->year)),
+                        'label' => (int) $period->month === 0
+                            ? 'Annual ' . $period->year
+                            : date('F Y', mktime(0, 0, 0, $period->month, 1, $period->year)),
                         'value' => $period->year . '-' . str_pad($period->month, 2, '0', STR_PAD_LEFT)
                     ];
                 })
@@ -42,7 +44,7 @@ class KpiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching available periods',
-                'error' => SafeError::message($e)
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -60,6 +62,7 @@ class KpiController extends Controller
             // If year and month are provided, use table directly
             if ($request->has('year') && $request->has('month')) {
                 $kpiData = DB::table('regional_labor_market_statistics')
+                    ->where('province', $request->query('province', 'Regional'))
                     ->where('year', $request->year)
                     ->where('month', $request->month)
                     ->first();
@@ -73,6 +76,7 @@ class KpiController extends Controller
                 } else {
                     // Fallback to latest record from table
                     $kpiData = DB::table('regional_labor_market_statistics')
+                        ->where('province', $request->query('province', 'Regional'))
                         ->orderBy('year', 'desc')
                         ->orderBy('month', 'desc')
                         ->first();
@@ -124,7 +128,9 @@ class KpiController extends Controller
                         'period' => [
                             'year' => $kpiData->year,
                             'month' => $kpiData->month,
-                            'formatted' => date('F Y', mktime(0, 0, 0, $kpiData->month, 1, $kpiData->year))
+                            'formatted' => (int) $kpiData->month === 0
+                                ? 'Annual ' . $kpiData->year
+                                : date('F Y', mktime(0, 0, 0, $kpiData->month, 1, $kpiData->year))
                         ]
                     ]
                 ];
@@ -164,7 +170,9 @@ class KpiController extends Controller
                         'period' => [
                             'year' => $kpiData->year,
                             'month' => $kpiData->month,
-                            'formatted' => date('F Y', mktime(0, 0, 0, $kpiData->month, 1, $kpiData->year))
+                            'formatted' => (int) $kpiData->month === 0
+                                ? 'Annual ' . $kpiData->year
+                                : date('F Y', mktime(0, 0, 0, $kpiData->month, 1, $kpiData->year))
                         ]
                     ]
                 ];
@@ -176,7 +184,7 @@ class KpiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching KPI data',
-                'error' => SafeError::message($e)
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -267,7 +275,7 @@ class KpiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching KPI data',
-                'error' => SafeError::message($e)
+                'error' => $e->getMessage()
             ], 500);
         }
     }
