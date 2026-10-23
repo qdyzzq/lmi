@@ -3,6 +3,13 @@
 // PAGE: LMI Publication Admin Editor — Weekly Issues
 // =============================================================================
 
+// ── Request headers for the multipart posts ───────────────────────────────────
+// Asks Laravel to answer validation/server errors as JSON, so the toast shows the
+// real message instead of the page breaking on an HTML response.
+function lmiWeeklyHeaders() {
+    return { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+}
+
 // ── Weekly Modal Alpine Component ─────────────────────────────────────────────
 
 function weeklyModal() {
@@ -53,6 +60,8 @@ function weeklyModal() {
             this.errors     = {};
             this.imageFile  = null;
             this.previewUrl = null;
+            // Clear the file pickers too — otherwise they keep showing the last chosen file's name
+            this.$root.querySelectorAll('input[type="file"]').forEach(input => { input.value = ''; });
 
             if (detail.type === 'add-weekly') {
                 this.form = {
@@ -106,6 +115,7 @@ function weeklyModal() {
                 if (v !== null && v !== undefined) fd.append(k, v);
             });
             if (this.imageFile) fd.append('image', this.imageFile);
+            fd.append('area', Alpine.store('lmiArea').weekly);
             return fd;
         },
 
@@ -159,7 +169,7 @@ function weeklyModal() {
         // ── Submit: add ─────────────────────────────────────────────────────────
         async submitAdd() {
             this.loading = true;
-            const res  = await fetch('/admin/lmi-weekly', { method: 'POST', body: this.buildFormData() });
+            const res  = await fetch('/admin/lmi-weekly', { method: 'POST', body: this.buildFormData(), headers: lmiWeeklyHeaders() });
             const data = await res.json();
             this.loading = false;
 
@@ -175,7 +185,7 @@ function weeklyModal() {
         // ── Submit: edit ────────────────────────────────────────────────────────
         async submitEdit() {
             this.loading = true;
-            const res  = await fetch(`/admin/lmi-weekly/${this.issueId}`, { method: 'POST', body: this.buildFormData() });
+            const res  = await fetch(`/admin/lmi-weekly/${this.issueId}`, { method: 'POST', body: this.buildFormData(), headers: lmiWeeklyHeaders() });
             const data = await res.json();
             this.loading = false;
 
@@ -213,7 +223,7 @@ function weeklyModal() {
         // ── Submit: card text ───────────────────────────────────────────────────
         async submitCardText() {
             this.loading = true;
-            const res  = await fetch('/admin/lmi-weekly-card/text', { method: 'POST', body: this.buildFormData() });
+            const res  = await fetch('/admin/lmi-weekly-card/text', { method: 'POST', body: this.buildFormData(), headers: lmiWeeklyHeaders() });
             const data = await res.json();
             this.loading = false;
 
@@ -229,7 +239,7 @@ function weeklyModal() {
         // ── Submit: publish weekly ──────────────────────────────────────────────
         async submitWeeklyPublish() {
             this.loading = true;
-            const res  = await fetch('/admin/lmi-weekly/toggle-publish', {
+            const res  = await fetch(`/admin/lmi-weekly/toggle-publish?area=${encodeURIComponent(Alpine.store('lmiArea').weekly)}`, {
                 method: 'PATCH',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
@@ -251,7 +261,7 @@ function weeklyModal() {
         // ── Submit: unpublish weekly ────────────────────────────────────────────
         async submitWeeklyUnpublish() {
             this.loading = true;
-            const res  = await fetch('/admin/lmi-weekly/toggle-publish', {
+            const res  = await fetch(`/admin/lmi-weekly/toggle-publish?area=${encodeURIComponent(Alpine.store('lmiArea').weekly)}`, {
                 method: 'PATCH',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
@@ -273,7 +283,7 @@ function weeklyModal() {
         // ── Submit: republish weekly ────────────────────────────────────────────
         async submitWeeklyRepublish() {
             this.loading = true;
-            const res  = await fetch('/admin/lmi-weekly/republish', {
+            const res  = await fetch(`/admin/lmi-weekly/republish?area=${encodeURIComponent(Alpine.store('lmiArea').weekly)}`, {
                 method: 'PATCH',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
@@ -295,7 +305,7 @@ function weeklyModal() {
         // ── Submit: card media ──────────────────────────────────────────────────
         async submitCardMedia() {
             this.loading = true;
-            const res  = await fetch('/admin/lmi-weekly-card/media', { method: 'POST', body: this.buildFormData() });
+            const res  = await fetch('/admin/lmi-weekly-card/media', { method: 'POST', body: this.buildFormData(), headers: lmiWeeklyHeaders() });
             const data = await res.json();
             this.loading = false;
 
