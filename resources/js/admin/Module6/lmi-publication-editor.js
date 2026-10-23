@@ -3,6 +3,30 @@
 // PAGE: LMI Publication Admin Editor
 // =============================================================================
 
+// ── Area selection (shared by the annual + weekly editors) ────────────────────
+// Annual: REGIONAL | PROVINCES | NATIONAL   Weekly: REGIONAL | NATIONAL
+document.addEventListener('alpine:init', () => {
+    Alpine.store('lmiArea', {
+        annualMode: 'regional',     // 'regional' | 'provinces' | 'national'
+        province:   'Davao City',   // default when "Provinces" is picked
+        weekly:     'Regional',     // 'Regional' | 'National'
+
+        // The area value stored on annual issues
+        get annual() {
+            if (this.annualMode === 'national')  return 'National';
+            if (this.annualMode === 'provinces') return this.province;
+            return 'Regional';
+        },
+
+        // "Regional Archives" / "Provincial Archives" / "National Archives"
+        archivesLabel(area) {
+            if (area === 'Regional') return 'Regional Archives';
+            if (area === 'National') return 'National Archives';
+            return 'Provincial Archives';
+        },
+    });
+});
+
 // ── CSRF + fetch helpers ──────────────────────────────────────────────────────
 
 function lmiCsrf() {
@@ -117,7 +141,7 @@ async function lmiRefreshAllGroups() {
                     state.isPublished     = data[gId].is_published;
                     state.hasDraftChanges = data[gId].has_draft_changes;
 
-                    const years = [...new Set(state.issues.map(i => String(i.year)))].sort((a, b) => b.localeCompare(a));
+                    const years = state.years;
                     if (years.length && !years.includes(state.activeYear)) {
                         state.activeYear = years[0];
                     }
@@ -185,6 +209,7 @@ function lmiAdminPage() {
             };
             this.formErrors = {};
             this.form = detail.data ? { ...detail.data } : {};
+            if (!this.form.area) this.form.area = Alpine.store('lmiArea').annual;
         },
 
         // ── Validation ──────────────────────────────────────────────────────────
@@ -215,7 +240,7 @@ async done(returnedGroupData = null) {
             state.isPublished     = returnedGroupData[gId].is_published;
             state.hasDraftChanges = returnedGroupData[gId].has_draft_changes;
 
-            const years = [...new Set(state.issues.map(i => String(i.year)))].sort((a, b) => b.localeCompare(a));
+            const years = state.years;
             if (years.length && !years.includes(state.activeYear)) {
                 state.activeYear = years[0];
             }
@@ -292,6 +317,7 @@ async done(returnedGroupData = null) {
             this.modal.loading = true;
 
             const body = {
+                area:        this.form.area || 'Regional',
                 title:       this.form.title?.trim(),
                 subtitle:    this.form.subtitle?.trim() || null,
                 description: this.form.description?.trim() || null,
