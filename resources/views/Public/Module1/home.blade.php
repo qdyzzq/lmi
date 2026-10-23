@@ -239,7 +239,9 @@
             <div class="relative z-10 h-full flex items-center justify-center px-4">
             <div class="text-center text-white pointer-events-none">
                 <h1 class="text-white font-black leading-tight tracking-tight"
-                    style="font-size: clamp(1.25rem, 4vw, 3.5rem); text-shadow: 0 2px 16px rgba(0,0,0,1), 0 0 40px rgba(0,0,0,0.7);">
+                    style="font-size: clamp(1.25rem, 4vw, 3.5rem); text-shadow: 0 2px 16px rgba(0,0,0,1), 0 0 40px rgba(0,0,0,0.7);"
+                    x-data="{ area: 'Regional' }" @province-changed.window="area = $event.detail"
+                    x-text="area === 'Regional' ? 'Davao Regional Labor Market Situation' : area + ' Labor Market Situation'">
                     Davao Regional Labor Market Situation
                 </h1>
                 <p class="text-slate-200 font-medium mt-2"
@@ -283,8 +285,33 @@
         <div class="flex-1 flex flex-col overflow-y-auto mt-10 relative z-30">
             <div x-show="activeView === 'overview'" x-transition>
                 <div class="space-y-6 mx-2 my-3 sm:m-5">
-                    <div x-data="kpiPeriodFilter()" class="pt-10 relative z-20" id="kpi-section">
+                    <div x-data="kpiPeriodFilter()" @province-changed.window="onProvinceChanged($event.detail)" class="pt-10 relative z-20" id="kpi-section">
                         <div class="max-w-7xl mx-auto px-2 sm:px-6 space-y-6">
+                            <!-- Area selector: Regional / Provinces -->
+                            <div x-data="areaSelector()" class="flex flex-wrap items-center gap-3">
+                                <div class="inline-flex bg-white rounded-lg shadow-sm border border-slate-200 p-1" role="radiogroup" aria-label="Data coverage">
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="areaMode" value="regional" x-model="mode" @change="apply()" class="sr-only peer">
+                                        <span class="block px-4 py-2 rounded-md text-sm font-semibold transition peer-focus-visible:ring-2 peer-focus-visible:ring-slate-400"
+                                            :class="mode === 'regional' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">Regional</span>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="areaMode" value="provinces" x-model="mode" @change="apply()" class="sr-only peer">
+                                        <span class="block px-4 py-2 rounded-md text-sm font-semibold transition peer-focus-visible:ring-2 peer-focus-visible:ring-slate-400"
+                                            :class="mode === 'provinces' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">Provinces</span>
+                                    </label>
+                                </div>
+                                <select x-show="mode === 'provinces'" style="display: none;" x-model="province" @change="apply()" aria-label="Province"
+                                    class="bg-white border border-slate-200 rounded-lg shadow-sm px-4 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                                    <option value="Davao City">Davao City</option>
+                                    <option value="Davao de Oro">Davao de Oro</option>
+                                    <option value="Davao del Norte">Davao del Norte</option>
+                                    <option value="Davao del Sur">Davao del Sur</option>
+                                    <option value="Davao Occidental">Davao Occidental</option>
+                                    <option value="Davao Oriental">Davao Oriental</option>
+                                </select>
+                            </div>
+
                             <!-- Period Header KPI Cards -->
                             <div
                                 class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
@@ -299,7 +326,7 @@
                                     </div>
                                     <div>
                                         <h3 class="text-white font-bold text-lg">Labor Force Survey</h3>
-                                        <p class="text-slate-300 text-sm" x-text="selectedPeriodLabel">Loading...</p>
+                                        <p class="text-slate-300 text-sm" x-text="selectedPeriodLabel === 'Loading...' ? selectedPeriodLabel : `${province} ${selectedPeriodLabel}`">Loading...</p>
                                     </div>
                                 </div>
                             </div>
@@ -433,8 +460,7 @@
                                                 <h3 class="text-white font-bold text-lg">
                                                     Labor Force Analysis
                                                 </h3>
-                                                <p class="text-slate-300 text-sm" x-text="selectedPeriodLabel">
-                                                    Loading...</p>
+                                                <p class="text-slate-300 text-sm" x-text="selectedPeriodLabel === 'Loading...' ? selectedPeriodLabel : `${province} ${selectedPeriodLabel}`">Loading...</p>
                                             </div>
                                         </div>
 
@@ -458,13 +484,13 @@
                                                     Period</label>
 
                                                 <div class="grid grid-cols-2 gap-3 mb-4">
-                                                    <div>
+                                                    <div x-show="province === 'Regional'">
                                                         <label
                                                             class="text-[10px] text-slate-500 mb-1 block">Quarter</label>
                                                         <select x-model="pendingMonth"
                                                             class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
                                                             <template x-for="month in availableMonths" :key="month">
-                                                                <option :value="month.toString()" x-text="{1:'Jan',4:'Apr',7:'Jul',10:'Oct'}[month] ?? month"></option>
+                                                                <option :value="month.toString()" x-text="{0:'Annual',1:'Jan',4:'Apr',7:'Jul',10:'Oct'}[month] ?? month"></option>
                                                             </template>
                                                         </select>
                                                     </div>
@@ -509,7 +535,7 @@
                                                 <p class="text-xs font-bold text-[#023E8A] uppercase tracking-wide">
                                                     Participation Rate</p>
                                             </div>
-                                            <div x-html="analysis.lfpr"
+                                            <div x-html="areaText(analysis.lfpr)"
                                                 class="text-sm text-slate-700 leading-relaxed"></div>
                                         </div>
 
@@ -592,7 +618,7 @@
                         Chart.register(ChartDataLabels);
                     </script>
                     <!-- Charts Section -->
-                    <div x-data="{ ...chartFilters(), activeChart: 'labor', chartsExpanded: false }" class="max-w-7xl mx-auto px-6 space-y-4 mt-6">
+                    <div x-data="{ ...chartFilters(), activeChart: 'labor', chartsExpanded: false }" @province-changed.window="onProvinceChanged($event.detail)" class="max-w-7xl mx-auto px-6 space-y-4 mt-6">
                         <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
 
                             <!-- Dark Header with Icon -->
@@ -713,7 +739,7 @@
                                                                         </select>
                                                                     </div>
                                                                 </div>
-                                                                <div class="flex items-center gap-3 mt-3">
+                                                                <div class="flex items-center gap-3 mt-3" x-show="province === 'Regional'">
                                                                     <div class="flex-1">
                                                                         <label
                                                                             class="text-[10px] text-slate-500 mb-1 block">Quarter
@@ -809,7 +835,7 @@
                                                                         </select>
                                                                     </div>
                                                                 </div>
-                                                                <div class="flex items-center gap-3 mt-3">
+                                                                <div class="flex items-center gap-3 mt-3" x-show="province === 'Regional'">
                                                                     <div class="flex-1">
                                                                         <label
                                                                             class="text-[10px] text-slate-500 mb-1 block">Quarter
@@ -903,7 +929,7 @@
                             </div>
                         </div>
                         <!-- Table Section -->
-                        <div x-data="statsFilter()" class="mt-6">
+                        <div x-data="statsFilter()" @province-changed.window="onProvinceChanged($event.detail)" class="mt-6">
                             <!-- Section divider -->
                             <div class="flex items-center gap-3 mb-3 px-1">
                                 <div class="flex-1 h-px bg-slate-300"></div>
