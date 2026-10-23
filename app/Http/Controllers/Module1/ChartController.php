@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Module1;
 
-use App\Support\SafeError;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
@@ -14,10 +13,11 @@ class ChartController extends Controller
      * Used by: Labor Force Chart & Unemployment Chart
      * Route: GET /api/quarterly/{year}
      */
-    public function getQuarterlyData($year)
+    public function getQuarterlyData(Request $request, $year)
     {
         // Query the view created for quarterly trends
         $data = DB::table('view_quarterly_labor_metrics')
+            ->where('province', $request->query('province', 'Regional'))
             ->where('year', $year)
             ->orderBy('quarter', 'asc') // Sort Q1-Q4 for graph lines
             ->get();
@@ -36,6 +36,7 @@ class ChartController extends Controller
         $endYear = $request->query('end', 2025);
 
         $data = DB::table('view_quarterly_labor_metrics')
+            ->where('province', $request->query('province', 'Regional'))
             ->whereBetween('year', [$startYear, $endYear])
             ->orderBy('year', 'asc')
             ->orderBy('quarter', 'asc')
@@ -48,11 +49,12 @@ class ChartController extends Controller
      * Optional: Get all available years for dropdowns
      * Route: GET /api/available-years
      */
-    public function getAvailableYears()
+    public function getAvailableYears(Request $request)
 {
     try {
         // Get unique years from your main table
         $years = DB::table('regional_labor_market_statistics')
+            ->where('province', $request->query('province', 'Regional'))
             ->select('year')
             ->distinct()
             ->orderBy('year', 'desc')
@@ -67,7 +69,7 @@ class ChartController extends Controller
         return response()->json([
             'success' => false,
             'message' => 'Error fetching available years',
-            'error' => SafeError::message($e)
+            'error' => $e->getMessage()
         ], 500);
     }
 }
@@ -76,9 +78,10 @@ class ChartController extends Controller
      * Optional: Get latest quarter data (for KPI cards)
      * Route: GET /api/latest-quarter
      */
-    public function getLatestQuarter()
+    public function getLatestQuarter(Request $request)
     {
         $latest = DB::table('view_quarterly_labor_metrics')
+            ->where('province', $request->query('province', 'Regional'))
             ->orderBy('year', 'desc')
             ->orderBy('quarter', 'desc')
             ->first();
