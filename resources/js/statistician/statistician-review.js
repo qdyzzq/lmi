@@ -108,6 +108,7 @@ window.postVerifiedData = function (buttonElement) {
     const card = buttonElement.closest('.pending-record-card');
     const year = card.querySelector('[data-field="year"]').value;
     const month = card.querySelector('[data-field="month"]').value;
+    const province = card.getAttribute('data-province');
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
     window.currentPostButton = buttonElement;
@@ -121,7 +122,7 @@ window.postVerifiedData = function (buttonElement) {
             'X-CSRF-TOKEN': csrfToken,
             'Accept': 'application/json'
         },
-        body: JSON.stringify({ year: year, month: month })
+        body: JSON.stringify({ province: province, year: year, month: month })
     })
     .then(response => {
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
@@ -156,7 +157,7 @@ window.postVerifiedData = function (buttonElement) {
 // ─── Populate Confirm Summary Modal ──────────────────────────────────────────
 
 window.populateConfirmSummary = function (card) {
-    const monthNames = { 1: 'January', 4: 'April', 7: 'July', 10: 'October' };
+    const monthNames = { 0: 'Annual', 1: 'January', 4: 'April', 7: 'July', 10: 'October' };
 
     // Collect submitted values from the "Submitted Value" td (2nd column)
     const rows = card.querySelectorAll('tbody tr');
@@ -182,16 +183,17 @@ window.populateConfirmSummary = function (card) {
 
     // Reporting Period banner
     const periodEl = document.getElementById('summaryPeriod');
+    const province = card.getAttribute('data-province');
     if (yearChanged || monthChanged) {
         const oldPeriod = `${monthNames[submittedMonth] ?? submittedMonth} ${submittedYear}`;
         const newPeriod = `${monthNames[verifiedMonth]  ?? verifiedMonth} ${verifiedYear}`;
         periodEl.innerHTML = `
-            <span class="line-through text-blue-400 font-normal text-[13px]">${oldPeriod}</span>
+            ${province} — <span class="line-through text-blue-400 font-normal text-[13px]">${oldPeriod}</span>
             <svg class="inline w-3.5 h-3.5 text-amber-500 mx-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             <span class="text-amber-700">${newPeriod}</span>
         `;
     } else {
-        periodEl.textContent = `${monthNames[verifiedMonth] ?? verifiedMonth} ${verifiedYear}`;
+        periodEl.textContent = `${province} — ${monthNames[verifiedMonth] ?? verifiedMonth} ${verifiedYear}`;
     }
 
     // Numeric field definitions
@@ -248,7 +250,7 @@ window.populateConfirmSummary = function (card) {
     } else {
         monthRow.className = 'flex justify-between items-center px-3 py-2 rounded-lg bg-slate-50';
         monthRow.innerHTML = `
-            <span class="text-[12.5px] font-medium text-slate-600">Month</span>
+            <span class="text-[12.5px] font-medium text-slate-600">${verifiedMonth === 0 ? 'Period' : 'Month'}</span>
             <span class="text-[13px] font-bold text-slate-800">${monthNames[verifiedMonth] ?? verifiedMonth}</span>
         `;
     }

@@ -13,8 +13,12 @@ class CheckRole
             return redirect('login');
         }
 
-        // Check if user has any of the specified roles
-        if (!in_array($request->user()->role, $roles)) {
+        // Check if user has any of the specified roles.
+        // access_role (not role) so this works for both office-hierarchy
+        // accounts (JPO, Peso_City, Peso_Municipality, Peso_Province, FO, RO
+        // — where the raw `role` column is NULL) and non-office accounts
+        // (super_admin, admin, statistician — where `role` is set directly).
+        if (!in_array($request->user()->access_role, $roles)) {
             abort(403, 'Unauthorized access');
         }
 

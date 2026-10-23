@@ -273,7 +273,7 @@ Route::middleware(['auth', 'otp.verified', 'no.duplicate', 'no.back', 'role:admi
     Route::put('/programs/{program}/description', [ProgramAdminController::class, 'updateDescription'])->name('programs.description');
     Route::delete('/programs/{program}/description', [ProgramAdminController::class, 'destroyDescription'])->name('programs.description.destroy');
     Route::patch('/programs/{program}/toggle-publish', [ProgramAdminController::class, 'togglePublish'])->name('programs.toggle-publish');
-    Route::get('/programs/{program}/fragment', [ProgramController::class, 'fragment']);
+    Route::get('/programs/{program}/fragment', [ProgramsController::class, 'fragment']);
     Route::patch('/programs/{program}/republish', [ProgramAdminController::class, 'republish']);
     Route::post('/qualifications', [ProgramAdminController::class, 'storeQualification'])->name('qualifications.store');
     Route::put('/qualifications/{qualification}', [ProgramAdminController::class, 'updateQualification'])->name('qualifications.update');

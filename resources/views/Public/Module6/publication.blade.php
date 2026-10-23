@@ -27,7 +27,7 @@
         </h2>
         <p class="text-slate-200 font-medium drop-shadow-[0_1px_8px_rgba(0,0,0,1)]"
            style="font-size: clamp(0.7rem, 1.4vw, 0.95rem);">
-            The Official Newsletter of the Davao Region XI
+            The Official Newsletter of DOLE Region XI
         </p>
     </div>
     {{-- Scroll down arrow --}}
@@ -150,7 +150,8 @@
                 </svg>
             </div>
             <div>
-                <h3 class="text-white font-bold text-[0.95rem] leading-snug">LMI Publications — Davao Region XI</h3>
+                <h3 class="text-white font-bold text-[0.95rem] leading-snug"
+                    x-text="'LMI Publications — ' + (annualArea === 'Regional' ? 'Davao Region XI' : annualArea)">LMI Publications — Davao Region XI</h3>
                 <p class="text-slate-400 text-xs mt-0.5 leading-snug">Browse annual and weekly releases</p>
             </div>
         </div>
@@ -161,7 +162,32 @@
         <div class="px-5 sm:px-6 pb-6 pt-4 flex flex-col gap-4">
 
             
-            <div x-data="{ activeTab: null }" class="flex flex-col gap-0">
+            <div x-data="{ activeTab: null }" class="flex flex-col gap-0"
+                 x-init="$watch('annualMode', mode => { if (mode === 'provinces' && activeTab && activeTab !== 'lmu') activeTab = null; })">
+
+                {{-- ── Area selector (annual): REGIONAL | PROVINCES | NATIONAL ── --}}
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <div class="inline-flex bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-300 dark:border-slate-600 p-1" role="radiogroup" aria-label="Publication coverage">
+                    <button type="button" role="radio" :aria-checked="(annualMode === 'regional').toString()" @click="annualMode = 'regional'"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition focus-visible:ring-2 focus-visible:ring-[#023E8A]/40 focus:outline-none"
+                                    :class="annualMode === 'regional' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">Regional</button>
+                    <button type="button" role="radio" :aria-checked="(annualMode === 'provinces').toString()" @click="annualMode = 'provinces'"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition focus-visible:ring-2 focus-visible:ring-[#023E8A]/40 focus:outline-none"
+                                    :class="annualMode === 'provinces' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">Provinces</button>
+                    <button type="button" role="radio" :aria-checked="(annualMode === 'national').toString()" @click="annualMode = 'national'"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition focus-visible:ring-2 focus-visible:ring-[#023E8A]/40 focus:outline-none"
+                                    :class="annualMode === 'national' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">National</button>
+                    </div>
+                    <select x-show="annualMode === 'provinces'" style="display: none;" x-model="province" aria-label="Province"
+                        class="text-[0.8rem] font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2.5 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#023E8A]/30">
+                        <option value="Davao City">Davao City</option>
+                        <option value="Davao de Oro">Davao de Oro</option>
+                        <option value="Davao del Norte">Davao del Norte</option>
+                        <option value="Davao del Sur">Davao del Sur</option>
+                        <option value="Davao Occidental">Davao Occidental</option>
+                        <option value="Davao Oriental">Davao Oriental</option>
+                    </select>
+                </div>
 
                 {{-- ── Tab Cards Row ── --}}
                 {{-- Cards are fixed-height wrappers; overflow-hidden is only on the inner image area, NOT the card itself so the chevron bar below never clips --}}
@@ -169,6 +195,7 @@
 
                     {{-- ── TAB 1: Jobs & Labor Market Forecast ── --}}
                     <div class="rounded-xl shadow-md cursor-pointer group select-none transition-all duration-200"
+                         x-show="annualMode !== 'provinces'"
                          :class="activeTab === 'jlmf' ? 'ring-2 ring-blue-500 shadow-xl' : 'ring-1 ring-white/10 hover:shadow-xl hover:ring-blue-300/40'"
                          @click="activeTab = activeTab === 'jlmf' ? null : 'jlmf'; if(activeTab === 'jlmf' && groupYears['jlmf'] === undefined) { const y = getYearsForGroup('jlmf'); if(y.length) setGroupYear('jlmf', y[0]); } if(activeTab) { $nextTick(() => document.getElementById('annual-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' })) }">
                         {{-- Inner image+text area — overflow-hidden only here --}}
@@ -216,6 +243,7 @@
 
                     {{-- ── TAB 2: Jobs and Labor Market Profile ── --}}
                     <div class="rounded-xl shadow-md cursor-pointer group select-none transition-all duration-200"
+                         x-show="annualMode !== 'provinces'"
                          :class="activeTab === 'lmp' ? 'ring-2 ring-blue-400 shadow-xl' : 'ring-1 ring-white/10 hover:shadow-xl hover:ring-blue-300/40'"
                          @click="activeTab = activeTab === 'lmp' ? null : 'lmp'; if(activeTab === 'lmp' && groupYears['lmp'] === undefined) { const y = getYearsForGroup('lmp'); if(y.length) setGroupYear('lmp', y[0]); } if(activeTab) { $nextTick(() => document.getElementById('annual-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' })) }">
                         <div class="relative flex overflow-hidden rounded-t-xl bg-slate-800" style="height: 250px;">
@@ -261,7 +289,7 @@
 
                     {{-- ── TAB 3: Labor Market Updates ── --}}
                     <div class="rounded-xl shadow-md cursor-pointer group select-none transition-all duration-200"
-                         :class="activeTab === 'lmu' ? 'ring-2 ring-blue-400 shadow-xl' : 'ring-1 ring-white/10 hover:shadow-xl hover:ring-blue-300/40'"
+                         :class="(activeTab === 'lmu' ? 'ring-2 ring-blue-400 shadow-xl' : 'ring-1 ring-white/10 hover:shadow-xl hover:ring-blue-300/40') + (annualMode === 'provinces' ? ' sm:col-span-3' : '')"
                          @click="activeTab = activeTab === 'lmu' ? null : 'lmu'; if(activeTab === 'lmu' && groupYears['lmu'] === undefined) { const y = getYearsForGroup('lmu'); if(y.length) setGroupYear('lmu', y[0]); } if(activeTab) { $nextTick(() => document.getElementById('annual-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' })) }">
                         <div class="relative flex overflow-hidden rounded-t-xl bg-slate-800" style="height: 250px;">
                             <div class="w-1/3 flex-shrink-0 relative overflow-hidden">
@@ -323,7 +351,7 @@
                         <div class="flex flex-col gap-1 min-w-0">
                             <span class="inline-flex items-center gap-1.5 text-[0.62rem] font-bold tracking-widest uppercase text-rose-500">
                                 <span class="w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0"></span>
-                                Regional Archives
+                                <span x-text="archivesLabel(annualArea)">Regional Archives</span>
                             </span>
                             <h2 class="text-slate-800 dark:text-slate-100 font-black tracking-wide leading-tight" style="font-size: clamp(1.1rem, 2.2vw, 1.6rem);">
                                 <span x-show="activeTab === 'jlmf'">JOBS AND LABOR MARKET FORECAST</span>
@@ -536,8 +564,20 @@
             {{-- ══════════════════════════════════════════════════════════════ --}}
             {{-- ── WEEKLY CARD — only shown when WeeklyCardSetting is published ── --}}
             {{-- ══════════════════════════════════════════════════════════════ --}}
-            @if (!empty($weeklyCardSetting['is_published']))
+            @if (!empty($weeklyCards))
             <div class="flex flex-col pt-5 gap-0">
+
+                {{-- ── Area selector (weekly): REGIONAL | NATIONAL — only when both are published ── --}}
+                <div x-show="Object.keys(weeklyCards).length > 1" style="display: none;" class="flex flex-wrap items-center gap-3 mb-4">
+                    <div class="inline-flex bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-300 dark:border-slate-600 p-1" role="radiogroup" aria-label="Weekly coverage">
+                    <button type="button" role="radio" :aria-checked="(weeklyArea === 'Regional').toString()" @click="weeklyArea = 'Regional'"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition focus-visible:ring-2 focus-visible:ring-[#023E8A]/40 focus:outline-none"
+                                    :class="weeklyArea === 'Regional' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">Regional</button>
+                    <button type="button" role="radio" :aria-checked="(weeklyArea === 'National').toString()" @click="weeklyArea = 'National'"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition focus-visible:ring-2 focus-visible:ring-[#023E8A]/40 focus:outline-none"
+                                    :class="weeklyArea === 'National' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">National</button>
+                    </div>
+                </div>
 
                 {{-- ── Tab Card: Regional LMI Weekly (PESO Weekly Highlights) ── --}}
                 <div class="rounded-xl shadow-md cursor-pointer group select-none transition-all duration-200"
@@ -549,33 +589,17 @@
 
                         {{-- Left: static clickable image — driven by WeeklyCardSetting (admin-managed) --}}
                         <div class="w-2/5 flex-shrink-0 relative overflow-hidden group/img">
-                            @php
-                                $cardImageUrl = $weeklyCardSetting['image_url'] ?? null;
-                                $cardLinkUrl  = $weeklyCardSetting['link_url']  ?? 'https://philjobnet.gov.ph/';
-                                $cardTitle    = $weeklyCardSetting['title']       ?? 'REGIONAL LMI WEEKLY';
-                                $cardSubtitle = $weeklyCardSetting['subtitle']    ?? 'WEEKLY TRENDS BULLETIN';
-                                $cardDesc     = $weeklyCardSetting['description'] ?? 'Direct insights on weekly hiring trends and vacancy fluctuations in the Davao region. (Based on PhilJobNet)';
-                            @endphp
-                            <a href="{{ url($cardLinkUrl) }}"
+                            <a :href="weeklyCard.link_url || 'https://philjobnet.gov.ph/'"
                                target="_blank" rel="noopener noreferrer"
                                class="absolute inset-0 block">
                                 {{-- Blurred background layer --}}
-                                @if ($cardImageUrl)
-                                    <img src="{{ $cardImageUrl }}"
-                                         alt=""
-                                         class="absolute inset-0 w-full h-full object-cover scale-110 blur-[1px] opacity-80">
-                                    {{-- Sharp foreground image --}}
-                                    <img src="{{ $cardImageUrl }}"
-                                         alt="Regional LMI Weekly — Latest Issue"
-                                         class="absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-200 group-hover/img:opacity-80">
-                                @else
-                                    <img src="{{ asset('images/philjobnet.png') }}"
-                                         alt=""
-                                         class="absolute inset-0 w-full h-full object-cover scale-110 blur-[1px] opacity-80">
-                                    <img src="{{ asset('images/philjobnet.png') }}"
-                                         alt="Regional LMI Weekly — Latest Issue"
-                                         class="absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-200 group-hover/img:opacity-80">
-                                @endif
+                                <img :src="weeklyCard.image_url || '{{ asset('images/philjobnet.png') }}'"
+                                     alt=""
+                                     class="absolute inset-0 w-full h-full object-cover scale-110 blur-[1px] opacity-80">
+                                {{-- Sharp foreground image --}}
+                                <img :src="weeklyCard.image_url || '{{ asset('images/philjobnet.png') }}'"
+                                     :alt="(weeklyCard.title || 'LMI Weekly') + ' — Latest Issue'"
+                                     class="absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-200 group-hover/img:opacity-80">
                                 {{-- Hover overlay with link icon --}}
                                 <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity duration-200 bg-black/25">
                                     <svg class="w-8 h-8 text-white drop-shadow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -595,9 +619,9 @@
                                 
                             </div>
                             <div class="flex flex-col items-center gap-3">
-                                <h2 class="text-white font-black text-center tracking-widest leading-tight drop-shadow" style="font-size: clamp(1.6rem, 3.2vw, 2.6rem); letter-spacing: 0.15em; text-shadow: 0 2px 16px rgba(0,0,0,0.5);">{{ $cardTitle }}</h2>
-                                <h3 class="text-white text-center font-bold tracking-[0.3em]" style="font-size: clamp(0.6rem, 1vw, 1rem);">{{ $cardSubtitle }}</h3>
-                                <p class="text-slate-100 text-center font-semibold leading-relaxed italic max-w-2xl pt-2" style="font-size: clamp(0.75rem, 1.2vw, 0.95rem);">"{{ $cardDesc }}"</p>
+                                <h2 class="text-white font-black text-center tracking-widest leading-tight drop-shadow" style="font-size: clamp(1.6rem, 3.2vw, 2.6rem); letter-spacing: 0.15em; text-shadow: 0 2px 16px rgba(0,0,0,0.5);" x-text="weeklyCard.title || (weeklyArea === 'National' ? 'NATIONAL LMI WEEKLY' : 'REGIONAL LMI WEEKLY')"></h2>
+                                <h3 class="text-white text-center font-bold tracking-[0.3em]" style="font-size: clamp(0.6rem, 1vw, 1rem);" x-text="weeklyCard.subtitle || 'WEEKLY TRENDS BULLETIN'"></h3>
+                                <p class="text-slate-100 text-center font-semibold leading-relaxed italic max-w-2xl pt-2" style="font-size: clamp(0.75rem, 1.2vw, 0.95rem);" x-show="weeklyCard.description" x-text="'&quot;' + weeklyCard.description + '&quot;'"></p>
                             </div>
                             {{-- Bottom divider --}}
                             <div class="flex items-center gap-3 w-full">
@@ -639,9 +663,10 @@
                         <div class="flex flex-col gap-1 min-w-0">
                             <span class="inline-flex items-center gap-1.5 text-[0.62rem] font-bold tracking-widest uppercase text-rose-500">
                                 <span class="w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0"></span>
-                                Regional Archives
+                                <span x-text="archivesLabel(weeklyArea)">Regional Archives</span>
                             </span>
-                            <h2 class="text-slate-800 dark:text-slate-100 font-black tracking-wide leading-tight" style="font-size: clamp(1.1rem, 2.2vw, 1.6rem);">
+                            <h2 class="text-slate-800 dark:text-slate-100 font-black tracking-wide leading-tight" style="font-size: clamp(1.1rem, 2.2vw, 1.6rem);"
+                                x-text="weeklyArea === 'National' ? 'NATIONAL LMI WEEKLY' : 'REGIONAL LMI WEEKLY'">
                                 REGIONAL LMI WEEKLY
                             </h2>
                         </div>
@@ -777,6 +802,7 @@
                         'id'          => $issue['id'],
                         'year'        => $issue['year'],
                         'groupId'     => $groupId,
+                        'area'        => $issue['area'] ?? 'Regional',
                         'label'       => $issue['title'],
                         'subtitle'    => $issue['subtitle']    ?? '',
                         'description' => $issue['description'] ?? '',
@@ -787,13 +813,14 @@
 
             // ── Weekly issues — only if the card is published ──
             $weeklyIssuesJs = [];
-            if (!empty($weeklyCardSetting['is_published'])) {
+            if (!empty($weeklyCards)) {
                 foreach ($weeklyData['issuesByYear'] as $year => $issues) {
                     foreach ($issues as $issue) {
                         $weeklyIssuesJs[] = [
                             'id'         => $issue['id'],
                             'year'       => $issue['year'],
                             'groupId'    => 'peso-highlights',
+                            'area'       => $issue['area'] ?? 'Regional',
                             'month'      => $issue['month'],
                             'monthOrder' => $issue['monthOrder'],
                             'weekLabel'  => 'Week ' . $issue['weekNumber'],
@@ -809,6 +836,7 @@
         window._publicationData = {
             issues:       @json($flatIssues),
             weeklyIssues: @json($weeklyIssuesJs),
+            weeklyCards:  @json((object) ($weeklyCards ?? [])),
         };
     })();
 </script>

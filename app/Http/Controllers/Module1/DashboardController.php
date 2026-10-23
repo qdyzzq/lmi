@@ -19,6 +19,7 @@ class DashboardController extends Controller
         // ================================================
         $regionalStats = DB::table('regional_labor_market_statistics')
             ->select(
+                'province',
                 'year', 
                 'month', 
                 'labor_force', 
@@ -30,12 +31,12 @@ class DashboardController extends Controller
                 'underemployment_rate as underemp_rate',
                 'labor_force_participation_rate as particip_rate'
             )
-            ->whereIn('month', [1, 4, 7, 10])
+            ->whereIn('month', [0, 1, 4, 7, 10])   // 0 = annual (provincial)
             ->orderBy('year', 'desc')
             ->orderBy('month', 'desc')
             ->get()
             ->map(function($stat) {
-                $quarterNames = [1 => 'Jan', 4 => 'Apr', 7 => 'Jul', 10 => 'Oct'];
+                $quarterNames = [0 => 'Annual', 1 => 'Jan', 4 => 'Apr', 7 => 'Jul', 10 => 'Oct'];
                 $stat->period = $quarterNames[$stat->month] . ' ' . $stat->year;
                 return $stat;
             });

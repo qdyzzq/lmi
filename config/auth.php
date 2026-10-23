@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'sprs' => [
+            'driver' => 'session',
+            'provider' => 'sprs_users',
+    ],
     ],
 
     /*
@@ -64,12 +68,17 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
+        'sprs_users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Sprs\User::class, 
+    ],
+        ],
 
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
-    ],
+    
 
     /*
     |--------------------------------------------------------------------------

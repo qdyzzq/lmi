@@ -24,13 +24,15 @@ class WeeklyIssueController extends Controller
      * Returns all weekly issues grouped by year then month for the admin blade.
      * Shape: [ year => [ month => [ ...issues ] ] ]
      */
-    public static function buildAdminWeeklyData(): array
+    public static function buildAdminWeeklyData(string $area = 'Regional'): array
     {
-        $years = WeeklyIssue::select('year')->distinct()->orderByDesc('year')->pluck('year')->toArray();
+        $years = WeeklyIssue::where('area', $area)
+            ->select('year')->distinct()->orderByDesc('year')->pluck('year')->toArray();
 
         $data = [];
         foreach ($years as $year) {
             $issues = WeeklyIssue::forYear($year)
+                ->where('area', $area)
                 ->orderBy('month_order')
                 ->orderBy('week_number')
                 ->get()
@@ -55,6 +57,7 @@ class WeeklyIssueController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'area'        => ['nullable', 'string', 'in:Regional,National'],
             'year'        => ['required', 'integer', 'min:2000', 'max:2100'],
             'month'       => ['required', 'string', 'in:' . implode(',', array_keys(self::MONTHS))],
             'week_number' => ['required', 'integer', 'min:1', 'max:5'],
@@ -67,7 +70,10 @@ class WeeklyIssueController extends Controller
             $imagePath = $request->file('image')->store('weekly-issues', 'public');
         }
 
+        $area = $validated['area'] ?? 'Regional';
+
         $issue = WeeklyIssue::create([
+            'area'        => $area,
             'year'        => $validated['year'],
             'month'       => $validated['month'],
             'month_order' => self::MONTHS[$validated['month']],
@@ -76,7 +82,7 @@ class WeeklyIssueController extends Controller
             'image_path'  => $imagePath,
         ]);
 
-        WeeklyCardSetting::instance()->update(['has_draft_changes' => true]);
+        WeeklyCardSetting::instance($area)->update(['has_draft_changes' => true]);
 
         return response()->json(['success' => true, 'issue' => $issue->toFrontendArray()]);
     }
@@ -109,7 +115,7 @@ public function update(Request $request, int $id): JsonResponse
 
     $issue->save();
 
-    WeeklyCardSetting::instance()->update(['has_draft_changes' => true]);
+    WeeklyCardSetting::instance($issue->area ?? 'Regional')->update(['has_draft_changes' => true]);
 
     return response()->json(['success' => true, 'issue' => $issue->toFrontendArray()]);
 }
@@ -125,14 +131,16 @@ public function update(Request $request, int $id): JsonResponse
             Storage::disk('public')->delete($issue->image_path);
         }
 
+        $area = $issue->area ?? 'Regional';
         $issue->delete();
 
-        WeeklyCardSetting::instance()->update(['has_draft_changes' => true]);
+        WeeklyCardSetting::instance($area)->update(['has_draft_changes' => true]);
 
         return response()->json(['success' => true]);
     }
-    public function data(): JsonResponse
+    public function data(Request $request): JsonResponse
 {
-    return response()->json(self::buildAdminWeeklyData());
+    $area = $request->query('area') === 'National' ? 'National' : 'Regional';
+    return response()->json(self::buildAdminWeeklyData($area));
 }
 }

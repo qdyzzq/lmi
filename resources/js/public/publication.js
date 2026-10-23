@@ -3,7 +3,7 @@
 
 document.addEventListener('alpine:init', () => {
     Alpine.data('communicatorSection', () => {
-        const { issues, weeklyIssues } = window._publicationData;
+        const { issues, weeklyIssues, weeklyCards } = window._publicationData;
 
         return {
             // ─── State ────────────────────────────────────────────────────────
@@ -21,13 +21,59 @@ document.addEventListener('alpine:init', () => {
             // ─── Data (injected from blade) ───────────────────────────────────
             issues,
             weeklyIssues,
+            weeklyCards,                // { Regional: {...card}, National: {...card} } — published only
+
+            // ─── Area selection ───────────────────────────────────────────────
+            // Annual: REGIONAL | PROVINCES | NATIONAL   Weekly: REGIONAL | NATIONAL
+            annualMode: 'regional',     // 'regional' | 'provinces' | 'national'
+            province:   'Davao City',   // default when "Provinces" is picked
+            weeklyArea: weeklyCards.Regional ? 'Regional' : 'National',
+
+            get annualArea() {
+                if (this.annualMode === 'national')  return 'National';
+                if (this.annualMode === 'provinces') return this.province;
+                return 'Regional';
+            },
+
+            // Issues of the selected area (older published issues have no area → Regional)
+            get areaIssues() {
+                return this.issues.filter(i => (i.area ?? 'Regional') === this.annualArea);
+            },
+            get areaWeeklyIssues() {
+                return this.weeklyIssues.filter(i => (i.area ?? 'Regional') === this.weeklyArea);
+            },
+
+            // The weekly card (title, subtitle, description, image, link) of the selected area
+            get weeklyCard() {
+                return this.weeklyCards[this.weeklyArea] ?? {};
+            },
+
+            // "Regional Archives" / "Provincial Archives" / "National Archives"
+            archivesLabel(area) {
+                if (area === 'Regional') return 'Regional Archives';
+                if (area === 'National') return 'National Archives';
+                return 'Provincial Archives';
+            },
+
+            // When the area changes, each section goes back to its latest year
+            init() {
+                this.$watch('annualArea', () => {
+                    ['jlmf', 'lmp', 'lmu'].forEach(g => delete this.groupYears[g]);
+                    this.groupYears = { ...this.groupYears };
+                });
+                this.$watch('weeklyArea', () => {
+                    delete this.groupYears['peso-highlights'];
+                    this.groupYears = { ...this.groupYears };
+                    this.selectedMonth = '';
+                });
+            },
 
             // ─── Helpers ──────────────────────────────────────────────────────
 
             // Returns all years that have data for a given group (sorted descending)
             getYearsForGroup(groupId) {
-                const fromIssues = this.issues.filter(i => i.groupId === groupId).map(i => i.year);
-                const fromWeekly = this.weeklyIssues.filter(i => i.groupId === groupId).map(i => i.year);
+                const fromIssues = this.areaIssues.filter(i => i.groupId === groupId).map(i => i.year);
+                const fromWeekly = this.areaWeeklyIssues.filter(i => i.groupId === groupId).map(i => i.year);
                 return [...new Set([...fromIssues, ...fromWeekly])].sort((a, b) => String(b).localeCompare(String(a)));
             },
 
@@ -55,11 +101,11 @@ document.addEventListener('alpine:init', () => {
             },
 
             getIssues(year, groupId) {
-                return this.issues.filter(i => i.year === year && i.groupId === groupId);
+                return this.areaIssues.filter(i => i.year === year && i.groupId === groupId);
             },
 
             getMonthByYear(year, groupId) {
-                const filtered = this.weeklyIssues.filter(i => String(i.year) === String(year) && i.groupId === groupId);
+                const filtered = this.areaWeeklyIssues.filter(i => String(i.year) === String(year) && i.groupId === groupId);
                 const monthMap = {};
                 filtered.forEach(issue => {
                     if (!monthMap[issue.month]) {
@@ -72,7 +118,7 @@ document.addEventListener('alpine:init', () => {
 
             // Groups weekly issues by month, returns array of { month, issues[] }
             getWeeklyByMonth(year, groupId) {
-                const filtered = this.weeklyIssues.filter(i => String(i.year) === String(year) && i.groupId === groupId);
+                const filtered = this.areaWeeklyIssues.filter(i => String(i.year) === String(year) && i.groupId === groupId);
                 const monthMap = {};
                 filtered.forEach(issue => {
                     if (!monthMap[issue.month]) {
@@ -100,7 +146,7 @@ document.addEventListener('alpine:init', () => {
             getFirstIssue(groupId) {
                 const years = this.getYearsForGroup(groupId);
                 if (years.length === 0) return null;
-                return this.issues.find(i => i.groupId === groupId && i.year === years[0]) || null;
+                return this.areaIssues.find(i => i.groupId === groupId && i.year === years[0]) || null;
             },
 
             // Auto-picks the most recent issue's Drive thumbnail for the group banner.
@@ -110,7 +156,7 @@ document.addEventListener('alpine:init', () => {
                 if (years.length === 0) return '';
                 const latestYear = years[0];
                 if (frequency !== 'Weekly') {
-                    const issue = this.issues.find(i => i.groupId === groupId && i.year === latestYear);
+                    const issue = this.areaIssues.find(i => i.groupId === groupId && i.year === latestYear);
                     return issue ? this.driveThumbnailUrl(issue.driveFileId) : '';
                 } else {
                     const weeklies = this.weeklyIssues

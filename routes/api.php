@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Module1\ChartController;
 use App\Http\Controllers\Module1\DashboardController;
+use App\Http\Controllers\Module1\LaborMarketController;
 use App\Http\Controllers\Module2\JobMarketDemandsController;
 use App\Http\Controllers\Module1\KpiController;
 use App\Http\Controllers\Module1\PendingLaborMarketController;

@@ -283,6 +283,17 @@
         </div>
         {{-- ===== END PESO PHOTO CAROUSEL ===== --}}
     @endif
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-3">
+            <a href="{{ route('sprs.login') }}" title="User Login"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-600 hover:text-white bg-white hover:bg-slate-800 border border-slate-200 hover:border-slate-800 shadow-sm transition"
+                aria-label="User Login">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Sprs Login
+            </a>
+    </div>
 
     <div id="peso-directory-content" class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-8 sm:py-12 md:py-16">
 
@@ -465,7 +476,7 @@
                 pesoJson: @json($pesoJson),
             };
         </script>
-
+    
 
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200" x-data="pesoDirectory()">
 
@@ -481,6 +492,8 @@
                     {{ count($pesoProvinceKeys ?? []) }} Province{{ count($pesoProvinceKeys ?? []) !== 1 ? 's' : '' }}
                 </span>
             </div>
+
+            
 
             <div class="p-3 sm:p-4 md:p-6 lg:p-10 space-y-6 sm:space-y-8">
 

@@ -27,6 +27,7 @@
                 <div class="w-3 h-3 bg-dole-yellow star-shape"></div>
                 <div class="w-3 h-3 bg-dole-yellow star-shape"></div>
                 <div class="w-3 h-3 bg-dole-yellow star-shape"></div>
+                
             </div>
 
             <!-- Logo & Header -->

@@ -134,6 +134,7 @@
                         Receive OTP via Email instead
                     </button>
                 </form>
+                
             </div>
 
             <!-- Back to Login -->

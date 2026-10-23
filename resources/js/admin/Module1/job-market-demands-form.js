@@ -92,16 +92,18 @@ function doReset() {
         }
     });
     document.getElementById('month').value = '';
+    syncPeriodField();
 }
 
 // ─── Populate Confirm Summary Modal ──────────────────────────────────────────
 function populateConfirmSummary() {
-    const monthNames = { 1: 'January', 4: 'April', 7: 'July', 10: 'October' };
+    const monthNames = { 0: 'Annual', 1: 'January', 4: 'April', 7: 'July', 10: 'October' };
     const year = document.getElementById('year').value;
     const month = document.getElementById('month').value;
     const monthLabel = monthNames[parseInt(month)] || '—';
+    const province = document.getElementById('province').value;
 
-    document.getElementById('summaryPeriod').textContent = `${monthLabel} ${year}`;
+    document.getElementById('summaryPeriod').textContent = `${province} — ${monthLabel} ${year}`;
 
     const fields = [
         { label: 'Household Population',           id: 'householdPopulation', unit: '',  auto: false },
@@ -135,10 +137,28 @@ function populateConfirmSummary() {
     });
 }
 
+// ─── Period field: Regional = quarterly, provinces = annual only ─────────────
+function syncPeriodField() {
+    const province = document.getElementById('province');
+    const month    = document.getElementById('month');
+    if (!province || !month) return;
+
+    const isAnnual = province.value !== 'Regional';
+    month.disabled = isAnnual;
+    if (isAnnual) {
+        month.value = '0';                       // "Annual"
+    } else if (month.value === '0') {
+        month.value = '';                        // back to choosing a quarter
+    }
+}
+
 // ─── DOMContentLoaded Init ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
     const yearInput               = document.getElementById('year');
     const monthInput              = document.getElementById('month');
+    const provinceInput           = document.getElementById('province');
+    provinceInput.addEventListener('change', syncPeriodField);
+    syncPeriodField();
     const householdInput          = document.getElementById('householdPopulation');
     const lfprInput               = document.getElementById('lfpr');
     const employmentRateInput     = document.getElementById('employmentrate');
@@ -307,6 +327,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
+                province: provinceInput.value,
                 year: yearInput.value,
                 month: monthInput.value
             })
@@ -341,6 +362,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('confirmModal').classList.add('hidden');
 
         const data = {
+            province:                    provinceInput.value,
             year:                        parseInt(yearInput.value),
             month:                       parseInt(monthInput.value),
             household_population:        parseFloat(householdInput.value) || null,

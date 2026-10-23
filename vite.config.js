@@ -46,6 +46,9 @@ export default defineConfig({
                 'resources/js/public/supply-side.js',
                 'resources/js/public/publication.js',
 
+                //sprs
+                'resources/js/sprs/section-save.js',
+                'resources/js/sprs/accomplishment.js',
 
                'resources/css/app.css',
                'resources/js/bootstrap.js',

@@ -10,6 +10,7 @@ class WeeklyCardSetting extends Model
     protected $table = 'weekly_card_settings';
 
     protected $fillable = [
+        'area',
         'image_path',
         'link_url',
         'title',
@@ -38,14 +39,22 @@ class WeeklyCardSetting extends Model
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    public static function instance(): static
+    /**
+     * One card per area: 'Regional' (the original card) or 'National'.
+     * The National card is created on first use; the admin enters its text.
+     */
+    public static function instance(string $area = 'Regional'): static
     {
+        $area = $area === 'National' ? 'National' : 'Regional';
+
         return static::firstOrCreate(
-            ['id' => 1],
+            ['area' => $area],
             [
-                'title'             => 'REGIONAL LMI WEEKLY',
+                'title'             => $area === 'National' ? 'NATIONAL LMI WEEKLY' : 'REGIONAL LMI WEEKLY',
                 'subtitle'          => 'WEEKLY TRENDS BULLETIN',
-                'description'       => 'Direct insights on weekly hiring trends and vacancy fluctuations in the Davao region. (Based on PhilJobNet)',
+                'description'       => $area === 'National'
+                    ? ''
+                    : 'Direct insights on weekly hiring trends and vacancy fluctuations in the Davao region. (Based on PhilJobNet)',
                 'is_published'      => false,
                 'has_draft_changes' => false,
                 'published_snapshot'=> [],
@@ -63,6 +72,7 @@ class WeeklyCardSetting extends Model
     public function toFrontendArray(): array
     {
         return [
+            'area'              => $this->area ?? 'Regional',
             'image_url'         => $this->imageUrl(),
             'link_url'          => $this->link_url,
             'title'             => $this->title,

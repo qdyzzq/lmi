@@ -10,6 +10,15 @@ use Illuminate\Support\Facades\DB;
 
 class LaborMarketController extends Controller
 {
+    // Allowed values for the `province` column (must match the dropdown options)
+    private const PROVINCES = 'Regional,Davao City,Davao de Oro,Davao del Norte,Davao del Sur,Davao Occidental,Davao Oriental';
+
+    // "April 2026" for quarterly (Regional) data, "Annual 2026" for provincial annual data (month = 0)
+    private function periodLabel($month, $year): string
+    {
+        return ((int) $month === 0 ? 'Annual' : date('F', mktime(0, 0, 0, (int) $month, 1))) . ' ' . $year;
+    }
+
     public function index()
     {
         // Add pagination here - 10 items per page
@@ -24,31 +33,39 @@ class LaborMarketController extends Controller
     {
         try {
             $validated = $request->validate([
+                'province' => 'required|in:' . self::PROVINCES,
                 'year' => 'required|integer',
                 'month' => 'required|integer'
             ]);
 
+            // Provincial data is annual only (stored as month 0)
+            if ($validated['province'] !== 'Regional') {
+                $validated['month'] = 0;
+            }
+
             // Check if data already exists in PENDING table
-            $existsInPending = PendingLaborMarketData::where('year', $validated['year'])
+            $existsInPending = PendingLaborMarketData::where('province', $validated['province'])
+                ->where('year', $validated['year'])
                 ->where('month', $validated['month'])
                 ->exists();
 
             if ($existsInPending) {
                 return response()->json([
                     'exists' => true,
-                    'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' is already pending review.'
+                    'message' => 'Data for ' . $validated['province'] . ' — ' . $this->periodLabel($validated['month'], $validated['year']) . ' is already pending review.'
                 ]);
             }
 
             // Check if data already exists in FINAL database
-            $existsInFinal = RegionalLaborMarketStatistic::where('year', $validated['year'])
+            $existsInFinal = RegionalLaborMarketStatistic::where('province', $validated['province'])
+                ->where('year', $validated['year'])
                 ->where('month', $validated['month'])
                 ->exists();
 
             if ($existsInFinal) {
                 return response()->json([
                     'exists' => true,
-                    'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' already exists in the database.'
+                    'message' => 'Data for ' . $validated['province'] . ' — ' . $this->periodLabel($validated['month'], $validated['year']) . ' already exists in the database.'
                 ]);
             }
 
@@ -68,6 +85,7 @@ class LaborMarketController extends Controller
     {
         try {
             $validated = $request->validate([
+                'province' => 'required|in:' . self::PROVINCES,
                 'year' => 'required|integer',
                 'month' => 'required|integer',
                 'household_population' => 'nullable|numeric',
@@ -81,26 +99,33 @@ class LaborMarketController extends Controller
                 'unemployment_rate' => 'nullable|numeric'
             ]);
 
+            // Provincial data is annual only (stored as month 0)
+            if ($validated['province'] !== 'Regional') {
+                $validated['month'] = 0;
+            }
+
             // Double-check for duplicates
-            $existsInPending = PendingLaborMarketData::where('year', $validated['year'])
+            $existsInPending = PendingLaborMarketData::where('province', $validated['province'])
+                ->where('year', $validated['year'])
                 ->where('month', $validated['month'])
                 ->exists();
 
             if ($existsInPending) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' is already pending review.'
+                    'message' => 'Data for ' . $validated['province'] . ' — ' . $this->periodLabel($validated['month'], $validated['year']) . ' is already pending review.'
                 ], 422);
             }
 
-            $existsInFinal = RegionalLaborMarketStatistic::where('year', $validated['year'])
+            $existsInFinal = RegionalLaborMarketStatistic::where('province', $validated['province'])
+                ->where('year', $validated['year'])
                 ->where('month', $validated['month'])
                 ->exists();
 
             if ($existsInFinal) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' already exists in the database.'
+                    'message' => 'Data for ' . $validated['province'] . ' — ' . $this->periodLabel($validated['month'], $validated['year']) . ' already exists in the database.'
                 ], 422);
             }
 
@@ -129,19 +154,26 @@ class LaborMarketController extends Controller
     {
         try {
             $validated = $request->validate([
+                'province' => 'required|in:' . self::PROVINCES,
                 'year' => 'required|integer',
                 'month' => 'required|integer'
             ]);
 
+            // Provincial data is annual only (stored as month 0)
+            if ($validated['province'] !== 'Regional') {
+                $validated['month'] = 0;
+            }
+
             // Only check FINAL database (not pending)
-            $existsInFinal = RegionalLaborMarketStatistic::where('year', $validated['year'])
+            $existsInFinal = RegionalLaborMarketStatistic::where('province', $validated['province'])
+                ->where('year', $validated['year'])
                 ->where('month', $validated['month'])
                 ->exists();
 
             if ($existsInFinal) {
                 return response()->json([
                     'exists' => true,
-                    'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' already exists in the final database.'
+                    'message' => 'Data for ' . $validated['province'] . ' — ' . $this->periodLabel($validated['month'], $validated['year']) . ' already exists in the final database.'
                 ]);
             }
 
@@ -176,24 +208,32 @@ class LaborMarketController extends Controller
                 'unemployment_rate' => 'nullable|numeric'
             ]);
 
+            // Province comes from the pending record itself (not editable by the statistician)
+            $province = PendingLaborMarketData::where('id', $validated['pending_id'])->value('province');
+            if ($province !== 'Regional') {
+                $validated['month'] = 0;   // provincial data is annual only
+            }
+
             // Start transaction
             DB::beginTransaction();
 
             try {
                 // Double-check for duplicates in final database
-                $existsInFinal = RegionalLaborMarketStatistic::where('year', $validated['year'])
+                $existsInFinal = RegionalLaborMarketStatistic::where('province', $province)
+                    ->where('year', $validated['year'])
                     ->where('month', $validated['month'])
                     ->exists();
 
                 if ($existsInFinal) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' already exists in the final database.'
+                        'message' => 'Data for ' . $province . ' — ' . $this->periodLabel($validated['month'], $validated['year']) . ' already exists in the final database.'
                     ], 422);
                 }
 
                 // Create record in final database
                 $finalData = RegionalLaborMarketStatistic::create([
+                    'province' => $province,
                     'year' => $validated['year'],
                     'month' => $validated['month'],
                     'household_population' => $validated['household_population'],
@@ -249,7 +289,7 @@ class LaborMarketController extends Controller
             if ($existsInFinal) {
                 return response()->json([
                     'exists' => true,
-                    'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' already exists in the final database.'
+                    'message' => 'Data for ' . $this->periodLabel($validated['month'], $validated['year']) . ' already exists in the final database.'
                 ]);
             }
 
@@ -296,7 +336,7 @@ class LaborMarketController extends Controller
                 if ($existsInFinal) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Data for ' . date('F', mktime(0, 0, 0, $validated['month'], 1)) . ' ' . $validated['year'] . ' already exists in the final database.'
+                        'message' => 'Data for ' . $this->periodLabel($validated['month'], $validated['year']) . ' already exists in the final database.'
                     ], 422);
                 }
 
