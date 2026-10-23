@@ -162,7 +162,19 @@
 
                 <!-- Year and Month Section -->
                 <p class="lm-section-label">Reporting Period</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <p class="lm-label">Area <span class="text-red-500">*</span></p>
+                        <select id="province" required>
+                            <option value="Regional">Regional</option>
+                            <option value="Davao City">Davao City</option>
+                            <option value="Davao de Oro">Davao de Oro</option>
+                            <option value="Davao del Norte">Davao del Norte</option>
+                            <option value="Davao del Sur">Davao del Sur</option>
+                            <option value="Davao Occidental">Davao Occidental</option>
+                            <option value="Davao Oriental">Davao Oriental</option>
+                        </select>
+                    </div>
                     <div>
                         <p class="lm-label">Year <span class="text-red-500">*</span></p>
                         <input
@@ -178,6 +190,7 @@
                         <p class="lm-label">Month <span class="text-red-500">*</span></p>
                         <select id="month" required>
                             <option value="">Select Month</option>
+                            <option value="0" hidden>Annual</option>{{-- provinces: set automatically --}}
                             <option value="1">January</option>
                             <option value="4">April</option>
                             <option value="7">July</option>
