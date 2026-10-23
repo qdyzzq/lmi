@@ -10,6 +10,7 @@ class WeeklyIssue extends Model
     protected $table = 'weekly_issues';
 
     protected $fillable = [
+        'area',
         'year',
         'month',
         'month_order',
@@ -59,6 +60,7 @@ class WeeklyIssue extends Model
     {
         return [
             'id'          => $this->id,
+            'area'        => $this->area ?? 'Regional',
             'year'        => $this->year,
             'month'       => $this->month,
             'monthOrder'  => $this->month_order,
