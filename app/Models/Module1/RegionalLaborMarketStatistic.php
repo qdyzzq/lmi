@@ -9,7 +9,7 @@ class RegionalLaborMarketStatistic extends Model
     protected $table = 'regional_labor_market_statistics';
 
     protected $fillable = [
-        'year', 'month', 'household_population', 'labor_force', 
+        'province', 'year', 'month', 'household_population', 'labor_force', 
         'employed', 'underemployed', 'unemployed', 
         'labor_force_participation_rate', 'employment_rate', 
         'underemployment_rate', 'unemployment_rate'
