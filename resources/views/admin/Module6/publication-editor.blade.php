@@ -61,7 +61,7 @@
                     <h2 class="text-white font-black tracking-tight leading-none drop-shadow-[0_2px_16px_rgba(0,0,0,1)]"
                         style="font-size: clamp(1.4rem, 3.5vw, 2.75rem);">LMI Publication</h2>
                     <p class="text-slate-200 font-medium drop-shadow-[0_1px_8px_rgba(0,0,0,1)]"
-                        style="font-size: clamp(0.7rem, 1.4vw, 0.95rem);">The Official Newsletter of the Davao Region XI
+                        style="font-size: clamp(0.7rem, 1.4vw, 0.95rem);">The Official Newsletter of DOLE Region XI
                     </p>
                 </div>
                 <div
@@ -117,15 +117,15 @@
                             {{-- ── AREA SELECTOR (annual): REGIONAL | PROVINCES | NATIONAL ── --}}
                             <div class="flex flex-wrap items-center gap-3 mb-4" @click.stop>
                                 <div class="inline-flex bg-white rounded-lg shadow-sm border border-slate-200 p-1" role="radiogroup" aria-label="Publication coverage">
+                                    <button type="button" role="radio" :aria-checked="($store.lmiArea.annualMode === 'national').toString()" @click="$store.lmiArea.annualMode = 'national'"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-wider uppercase transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus:outline-none"
+                                    :class="$store.lmiArea.annualMode === 'national' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">National</button>
                                     <button type="button" role="radio" :aria-checked="($store.lmiArea.annualMode === 'regional').toString()" @click="$store.lmiArea.annualMode = 'regional'"
                                     class="px-4 py-2 rounded-md text-xs font-bold tracking-wider uppercase transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus:outline-none"
                                     :class="$store.lmiArea.annualMode === 'regional' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">Regional</button>
                                     <button type="button" role="radio" :aria-checked="($store.lmiArea.annualMode === 'provinces').toString()" @click="$store.lmiArea.annualMode = 'provinces'"
                                     class="px-4 py-2 rounded-md text-xs font-bold tracking-wider uppercase transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus:outline-none"
-                                    :class="$store.lmiArea.annualMode === 'provinces' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">Provinces</button>
-                                    <button type="button" role="radio" :aria-checked="($store.lmiArea.annualMode === 'national').toString()" @click="$store.lmiArea.annualMode = 'national'"
-                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-wider uppercase transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus:outline-none"
-                                    :class="$store.lmiArea.annualMode === 'national' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">National</button>
+                                    :class="$store.lmiArea.annualMode === 'provinces' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">Provincial</button>
                                 </div>
                                 <select x-show="$store.lmiArea.annualMode === 'provinces'" style="display: none;"
                                     x-model="$store.lmiArea.province" aria-label="Province"
@@ -709,12 +709,12 @@
 {{-- ── AREA SELECTOR (weekly): REGIONAL | NATIONAL ── --}}
                             <div class="flex flex-wrap items-center gap-3 mb-4" @click.stop>
                                 <div class="inline-flex bg-white rounded-lg shadow-sm border border-slate-200 p-1" role="radiogroup" aria-label="Weekly coverage">
-                                <button type="button" role="radio" :aria-checked="($store.lmiArea.weekly === 'Regional').toString()" @click="setArea('Regional')"
-                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-wider uppercase transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus:outline-none"
-                                    :class="$store.lmiArea.weekly === 'Regional' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">Regional</button>
                                 <button type="button" role="radio" :aria-checked="($store.lmiArea.weekly === 'National').toString()" @click="setArea('National')"
                                     class="px-4 py-2 rounded-md text-xs font-bold tracking-wider uppercase transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus:outline-none"
                                     :class="$store.lmiArea.weekly === 'National' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">National</button>
+                                <button type="button" role="radio" :aria-checked="($store.lmiArea.weekly === 'Regional').toString()" @click="setArea('Regional')"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-wider uppercase transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus:outline-none"
+                                    :class="$store.lmiArea.weekly === 'Regional' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">Regional</button>
                                 </div>
                                 <span class="text-xs text-slate-500 italic">Editing the
                                     <strong class="not-italic text-slate-700" x-text="$store.lmiArea.weekly"></strong> weekly card and issues</span>
