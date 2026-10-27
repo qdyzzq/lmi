@@ -5,6 +5,394 @@ function provinceQuery() {
     return 'province=' + encodeURIComponent(window.currentProvince);
 }
 
+// ─── Labor Force vs Employment Rate: swipeable on phones ─────────────────────
+// Phones + more than 8 quarters → the chart gets ~40px per quarter and scrolls
+// sideways (opening on the latest quarter); both axes stay pinned on screen.
+// Value labels are hidden on phones; tapping a bar shows both values.
+const LABOR_SWIPE_MIN_POINTS = 8;
+const LABOR_SWIPE_PX_PER_POINT = 56;          // phones: room for every bar value and rate label
+const LABOR_DESKTOP_PX_PER_POINT = 64;        // desktop/tablet when scrolling kicks in (room for every value)
+const LABOR_DESKTOP_MIN_PX_PER_POINT = 56;    // desktop/tablet: scroll when a quarter gets less room than this
+
+function laborIsPhone() {
+    return window.innerWidth < 640;
+}
+
+// Smaller tooltips on phones (all charts); desktop keeps the usual size
+if (window.Chart) {
+    const tt = Chart.defaults.plugins.tooltip;
+    tt.titleFont = () => ({ size: laborIsPhone() ? 11 : 12, weight: 'bold' });
+    tt.bodyFont  = () => ({ size: laborIsPhone() ? 10 : 12 });
+    tt.padding   = () => (laborIsPhone() ? 6 : 6);
+    tt.boxWidth  = () => (laborIsPhone() ? 8 : 12);
+    tt.boxHeight = () => (laborIsPhone() ? 8 : 12);
+}
+
+// Copies the axis strips of the chart onto small pinned canvases (swipe mode)
+function makeStickyAxesPlugin(leftId, rightId) {
+  return {
+    id: 'stickyAxes_' + leftId,
+    afterRender(chart) {
+        const left  = document.getElementById(leftId);
+        const right = rightId ? document.getElementById(rightId) : null;
+        if (!left) return;
+
+        const on      = !!chart.$lmiSwipe && !!chart.chartArea;
+        const rightOn = !!right && on && chart.options.scales.y1 && chart.options.scales.y1.display !== false;
+        left.style.display  = on ? 'block' : 'none';
+        if (right) right.style.display = rightOn ? 'block' : 'none';
+        if (!on) return;
+
+        const dpr  = chart.currentDevicePixelRatio || window.devicePixelRatio || 1;
+        const top  = 0;                                                                   // from the very top: nothing passes above the strip
+        const h    = chart.height - top;                                                  // full height: nothing peeks underneath
+        const axisH = Math.min(h, Math.ceil(chart.chartArea.bottom - top + 6));           // copy only the axis numbers
+        const draw = (cv, sx, w) => {
+            if (w <= 0) return;
+            cv.width = Math.round(w * dpr);
+            cv.height = Math.round(h * dpr);
+            cv.style.width = w + 'px';
+            cv.style.height = h + 'px';
+            cv.style.top = top + 'px';
+            const ctx = cv.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, cv.width, cv.height);
+            ctx.drawImage(chart.canvas, sx * dpr, top * dpr, w * dpr, axisH * dpr, 0, 0, cv.width, Math.round(axisH * dpr));
+        };
+        draw(left, 0, Math.ceil(chart.chartArea.left));
+        if (rightOn) draw(right, Math.floor(chart.chartArea.right), Math.ceil(chart.width - chart.chartArea.right));
+    }
+  };
+}
+const laborStickyAxesPlugin = makeStickyAxesPlugin('laborAxisLeft', 'laborAxisRight');
+const unempStickyAxesPlugin = makeStickyAxesPlugin('unempAxisLeft', null);
+
+// Swipe mode: tooltip as a floating box above the pinned axes, kept inside the visible area
+function makeFloatingTooltip(scrollId, tipId) {
+  return function ({ chart, tooltip }) {
+    const scroll = document.getElementById(scrollId);
+    const box    = scroll?.parentElement;
+    if (!box) return;
+
+    let el = document.getElementById(tipId);
+    if (!el) {
+        el = document.createElement('div');
+        el.id = tipId;
+        el.style.cssText = 'position:absolute; z-index:30; pointer-events:none; background:rgba(15,23,42,0.94); color:#fff;'
+            + 'border-radius:6px; padding:4px 6px; font:500 10px Inter, system-ui, sans-serif; line-height:1.4;'
+            + 'white-space:nowrap; box-shadow:0 4px 12px rgba(0,0,0,0.25); display:none;';
+        box.appendChild(el);
+    }
+
+    if (!tooltip || tooltip.opacity === 0) { el.style.display = 'none'; return; }
+
+    const swatch = c => `<span style="display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; vertical-align:-1px; background:${c}"></span>`;
+    const lines = (tooltip.body || []).map((b, i) => {
+        const col = tooltip.labelColors?.[i]?.backgroundColor || '#fff';
+        return `<div>${swatch(col)}${b.lines.join(' ')}</div>`;
+    }).join('');
+    el.innerHTML = `<div style="font-weight:700; margin-bottom:2px;">${(tooltip.title || []).join(' ')}</div>${lines}`;
+    el.style.display = 'block';
+
+    // keep it between the two pinned axes, just above the chart area
+    const leftPin  = Math.ceil(chart.chartArea.left);
+    const rightPin = Math.ceil(chart.width - chart.chartArea.right);
+    const visibleX = tooltip.caretX - scroll.scrollLeft;
+    const w = el.offsetWidth;
+    const minX = leftPin + 4;
+    const maxX = box.clientWidth - rightPin - w - 4;
+    el.style.left = Math.max(minX, Math.min(maxX, visibleX - w / 2)) + 'px';
+    el.style.top  = Math.max(0, chart.chartArea.top + 4) + 'px';
+}
+
+// Swipe mode: legend outside the scrolling area so it never scrolls away.
+// Tapping an item hides/shows that series, like the normal legend.
+function laborRenderSwipeLegend(chart, show, elId = 'laborSwipeLegend') {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.style.display = show ? 'flex' : 'none';
+    if (!show) return;
+
+    el.innerHTML = '';
+    chart.data.datasets.forEach((ds, i) => {
+        const visible = chart.isDatasetVisible(i);
+        const color = typeof ds.borderColor === 'string' && ds.type === 'line' ? ds.borderColor
+                    : (typeof ds.backgroundColor === 'string' ? ds.backgroundColor : '#1e3a5f');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'flex items-center gap-1.5 focus:outline-none';
+        btn.style.opacity = visible ? '1' : '0.4';
+        btn.style.textDecoration = visible ? 'none' : 'line-through';
+        btn.setAttribute('aria-pressed', String(visible));
+        btn.innerHTML = `<span style="width:10px; height:10px; border-radius:50%; background:${color}; display:inline-block;"></span>${ds.label}`;
+        btn.addEventListener('click', () => {
+            chart.setDatasetVisibility(i, !chart.isDatasetVisible(i));
+            chart.update();
+            laborRenderSwipeLegend(chart, true, elId);
+        });
+        el.appendChild(btn);
+    });
+  };
+}
+const laborFloatingTooltip = makeFloatingTooltip('laborChartScroll', 'laborTooltip');
+const unempFloatingTooltip = makeFloatingTooltip('unempChartScroll', 'unempTooltip');
+
+function laborHideFloatingTooltip() {
+    const el = document.getElementById('laborTooltip');
+    if (el) el.style.display = 'none';
+}
+
+// ─── Expanded "Labor Force vs Employment Rate" helpers ───────────────────────
+const LABOR_MANY_POINTS = 16;   // above this: year-only axis labels + key rate labels only
+
+// Rate labels on long ranges: only first, latest, highest and lowest point
+function laborKeyRateIndexes(data) {
+    if (!data.length) return new Set();
+    let hi = 0, lo = 0;
+    data.forEach((v, i) => { if (v > data[hi]) hi = i; if (v < data[lo]) lo = i; });
+    return new Set([0, data.length - 1, hi, lo]);
+}
+
+// Main chart, long range (desktop/tablet, not swipe mode): key-point labels + year-only axis
+function laborIsLongRange(chart) {
+    return !chart.$lmiSwipe && chart.data.labels.length > LABOR_MANY_POINTS;
+}
+function laborIsKeyRate(ctx) {
+    return laborKeyRateIndexes(ctx.chart.data.datasets[0].data).has(ctx.dataIndex);
+}
+function laborYearOnlyTick(value, index) {
+    const label = String(this.getLabelForValue(value));
+    if (!laborIsLongRange(this.chart)) return label;
+    const year = label.split(' ')[0];
+    const prev = index > 0 ? String(this.getLabelForValue(index - 1)).split(' ')[0] : null;
+    return year !== prev ? year : '';
+}
+
+
+// Expanded window (phones): same swipe behaviour as the main chart
+const expandedStickyAxesPlugin = makeStickyAxesPlugin('expandedAxisLeft', null);
+const expandedFloatingTooltip  = makeFloatingTooltip('expandedChartScroll', 'expandedTooltip');
+
+const EXPANDED_DESKTOP_PX_PER_POINT = 80;   // expanded window on desktop/tablet: bigger representation
+
+// Does the expanded chart need to scroll? Same rule as the normal view.
+function expandedNeedsSwipe(n, phonePx, minPx) {
+    const scroll = document.getElementById('expandedChartScroll');
+    if (!scroll || !scroll.clientWidth) return false;
+    return laborIsPhone() ? n * phonePx > scroll.clientWidth - 50
+                          : (scroll.clientWidth - 110) / n < minPx;
+}
+
+// Widen the expanded chart for scrolling (before it is created)
+function expandedPrepareSwipe(swipe, n, phonePx) {
+    const inner = document.getElementById('expandedChartInner');
+    if (swipe && inner) inner.style.width = (n * (laborIsPhone() ? phonePx : EXPANDED_DESKTOP_PX_PER_POINT) + 110) + 'px';
+}
+
+// After creating an expanded chart: pinned axis + legend, open at the start, text sizes
+function expandedFinish(chart, swipe, sizes) {
+    const scroll = document.getElementById('expandedChartScroll');
+    const n = chart.data.labels.length;
+    chart.$lmiSwipe = swipe;
+    laborRenderSwipeLegend(chart, swipe, 'expandedLegend');
+    if (sizes) sizes(chart, n);
+    chart.update('none');
+    if (scroll) {
+        scroll.scrollLeft = 0;
+        if (!scroll.$lmiScrollHide) {
+            scroll.addEventListener('scroll', () => { const t = document.getElementById('expandedTooltip'); if (t) t.style.display = 'none'; }, { passive: true });
+            scroll.$lmiScrollHide = true;
+        }
+    }
+}
+
+// Back to a normal, non-scrolling expanded chart (used before drawing any expanded chart / on close)
+function expandedResetSwipe() {
+    const inner = document.getElementById('expandedChartInner');
+    const scroll = document.getElementById('expandedChartScroll');
+    if (inner) inner.style.width = '100%';
+    if (scroll) scroll.scrollLeft = 0;
+    ['expandedAxisLeft', 'expandedTooltip'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    const legend = document.getElementById('expandedLegend');
+    if (legend) legend.style.display = 'none';
+}
+
+// ─── Text size follows the screen AND how many quarters are shown ─────────────
+// Few quarters → more room → bigger text. Recalculated on every update/resize.
+function chartTextScale(n) {
+    return n <= 2 ? 1.35 : n <= 4 ? 1.25 : n <= 8 ? 1.1 : 1;
+}
+function chartFontSize(phone, tablet, desktop, n) {
+    const w = window.innerWidth;
+    const base = w < 640 ? phone : w < 1024 ? tablet : desktop;
+    return Math.round(base * chartTextScale(n));
+}
+function setFontSize(holder, key, size) {
+    if (!holder) return;
+    const cur = holder[key];
+    holder[key] = Object.assign({}, (cur && typeof cur === 'object') ? cur : {}, { size });
+}
+
+// Turns swipe mode on/off for the current data and screen size
+function laborChartLayout() {
+    const chart  = window.laborChart;
+    const inner  = document.getElementById('laborChartInner');
+    const scroll = document.getElementById('laborChartScroll');
+    const hint   = document.getElementById('laborSwipeHint');
+    if (!chart || !inner || !scroll) return;
+    if (scroll.clientWidth === 0) return;   // chart on a hidden tab: decide once it is visible (see onResize)
+
+    const n        = chart.data.labels.length;
+    const phone    = laborIsPhone();
+    // desktop/tablet: scrollable when the quarters don't have room for their values (same idea as phones)
+    const tooDense = !phone && (scroll.clientWidth - 110) / n < LABOR_DESKTOP_MIN_PX_PER_POINT;
+    const swipe    = (phone && n * LABOR_SWIPE_PX_PER_POINT > scroll.clientWidth - 50) || tooDense;
+    chart.$lmiSwipe = swipe;
+
+    const pxPer = phone ? LABOR_SWIPE_PX_PER_POINT : LABOR_DESKTOP_PX_PER_POINT;
+    inner.style.width = swipe ? (n * pxPer + 110) + 'px' : '100%';
+    if (hint) {
+        hint.style.display = swipe ? 'block' : 'none';
+        hint.textContent = phone
+            ? 'Swipe the chart to see later quarters · tap a bar for values'
+            : 'Scroll the chart sideways to see later quarters · hover a bar for values';
+    }
+    const valueHint = document.getElementById('laborValueHint');
+    if (valueHint) {
+        valueHint.style.display = swipe ? 'none' : 'block';          // swipe hint already says "tap a bar"
+        valueHint.textContent = laborIsPhone() ? 'Tap a bar to see its exact values'
+                                               : 'Hover over a bar to see its exact values';
+    }
+
+    const sc    = chart.options.scales;
+    if (sc.y?.title)    sc.y.title.display  = !phone;
+
+    const longRange = !swipe && n > LABOR_MANY_POINTS;
+    const xt = chart.options.scales.x.ticks;
+    xt.callback      = laborYearOnlyTick;
+    xt.autoSkip      = !(swipe || longRange);
+    xt.maxTicksLimit = (swipe || longRange) ? n : (laborIsPhone() ? 3 : window.innerWidth < 1024 ? 6 : 12);
+    xt.maxRotation   = (swipe || longRange) ? 0 : 90;
+    chart.options.scales.x.grid = longRange
+        ? { display: true, drawOnChartArea: false, drawTicks: true, tickLength: 6, color: '#cbd5e1' }   // small quarter tick marks
+        : { display: false };
+    chart.options.plugins.legend.align   = 'center';
+    chart.options.plugins.legend.display = !swipe;          // swipe mode uses the pinned legend above the chart
+    laborRenderSwipeLegend(chart, swipe);
+
+    // swipe mode → floating tooltip above the pinned axes; otherwise the normal one
+    chart.options.plugins.tooltip.enabled  = !swipe;
+    chart.options.plugins.tooltip.external = swipe ? laborFloatingTooltip : undefined;
+    laborHideFloatingTooltip();
+    if (!scroll.$lmiScrollHide) {
+        scroll.addEventListener('scroll', laborHideFloatingTooltip, { passive: true });
+        scroll.$lmiScrollHide = true;
+    }
+
+    // text sizes: screen + number of quarters
+    setFontSize(chart.data.datasets[0].datalabels, 'font', chartFontSize(9, 10, 12, n));    // rate labels
+    setFontSize(chart.data.datasets[1].datalabels, 'font', chartFontSize(10, 13, 17, n));   // bar values
+    setFontSize(chart.options.scales.x.ticks, 'font', chartFontSize(9, 11, 11, n));
+    setFontSize(chart.options.scales.y.ticks, 'font', chartFontSize(9, 11, 11, n));
+    setFontSize(chart.options.plugins.legend.labels, 'font', chartFontSize(10, 12, 12, n));
+
+    chart.resize();
+    chart.update('none');
+    scroll.scrollLeft = 0;   // swipe charts open at the start (earliest quarter)
+}
+
+// ─── Key Employment Indicators chart on phones ───────────────────────────────
+// The built-in legend (4 rows) is replaced by a compact 2×2 legend under the chart,
+// value labels are hidden (tap shows them) and the quarter labels stay straight.
+const UNEMP_PX_PER_POINT = 64;   // phones: room for the four value labels of each quarter
+
+function unempChartLayout() {
+    const chart  = window.unempChart;
+    if (!chart) return;
+    const scroll = document.getElementById('unempChartScroll');
+    const inner  = document.getElementById('unempChartInner');
+    if (scroll && scroll.clientWidth === 0) return;   // hidden tab: decide once visible
+    const phone = laborIsPhone();
+    const n     = chart.data.labels.length;
+
+    // any screen: if the quarters don't fit at 64px each (room for every value), the chart scrolls sideways
+    const swipe = !!(scroll && inner && n * UNEMP_PX_PER_POINT > scroll.clientWidth - 40);
+    chart.$lmiSwipe = swipe;
+    if (inner) inner.style.width = swipe ? (n * UNEMP_PX_PER_POINT + 60) + 'px' : '100%';
+
+    chart.options.plugins.legend.display = !phone && !swipe;     // otherwise the pinned legend under the chart
+    if (chart.options.scales.y?.title) chart.options.scales.y.title.display = !phone;
+    // half a quarter of space before the first point, so its labels never cover the axis numbers
+    chart.options.scales.x.offset = true;
+    const xt = chart.options.scales.x.ticks;
+    xt.autoSkip      = !swipe;
+    xt.maxRotation   = (phone || swipe) ? 0 : 90;
+    xt.maxTicksLimit = swipe ? n : (phone ? 4 : (window.innerWidth < 1024 ? 6 : 12));
+
+    chart.options.plugins.tooltip.enabled  = !swipe;
+    chart.options.plugins.tooltip.external = swipe ? unempFloatingTooltip : undefined;
+    const tip = document.getElementById('unempTooltip');
+    if (tip) tip.style.display = 'none';
+    if (scroll && !scroll.$lmiScrollHide) {
+        scroll.addEventListener('scroll', () => { const t = document.getElementById('unempTooltip'); if (t) t.style.display = 'none'; }, { passive: true });
+        scroll.$lmiScrollHide = true;
+    }
+
+    const legend = document.getElementById('unempLegend');
+    const hint   = document.getElementById('unempValueHint');
+    if (hint) {
+        hint.style.display = (phone || swipe) ? 'block' : 'none';
+        hint.textContent = !swipe ? 'Tap the chart to see exact values'
+                         : phone  ? 'Swipe the chart to see later quarters · tap for details'
+                                  : 'Scroll the chart sideways to see later quarters · hover for details';
+    }
+    if (legend) {
+        const showLegend = phone || swipe;
+        legend.style.display = showLegend ? 'grid' : 'none';
+        legend.style.gridTemplateColumns = phone ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, auto)';
+        legend.style.justifyContent = phone ? '' : 'center';
+        if (showLegend) {
+            legend.innerHTML = '';
+            chart.data.datasets.forEach((ds, i) => {
+                const visible = chart.isDatasetVisible(i);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'flex items-center gap-1.5 text-left focus:outline-none';
+                btn.style.opacity = visible ? '1' : '0.4';
+                btn.style.textDecoration = visible ? 'none' : 'line-through';
+                btn.setAttribute('aria-pressed', String(visible));
+                btn.innerHTML = `<span style="width:9px; height:9px; border-radius:50%; flex-shrink:0; background:${ds.borderColor};"></span>`
+                    + `<span>${String(ds.label).toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}</span>`;
+                btn.addEventListener('click', () => {
+                    chart.setDatasetVisibility(i, !chart.isDatasetVisible(i));
+                    chart.update();
+                    unempChartLayout();
+                });
+                legend.appendChild(btn);
+            });
+        }
+    }
+    // text sizes: screen + number of quarters
+    chart.data.datasets.forEach(ds => setFontSize(ds.datalabels, 'font', chartFontSize(8, 10, 11, n)));
+    setFontSize(chart.options.plugins.datalabels, 'font', chartFontSize(8, 10, 11, n));
+    setFontSize(chart.options.scales.x.ticks, 'font', chartFontSize(9, 11, 12, n));
+    setFontSize(chart.options.scales.y.ticks, 'font', chartFontSize(9, 11, 12, n));
+    setFontSize(chart.options.plugins.legend.labels, 'font', chartFontSize(9, 11, 11, n));
+
+    chart.resize();
+    chart.update('none');
+    if (scroll) scroll.scrollLeft = 0;   // swipe charts open at the start (earliest quarter)
+}
+let unempLayoutTimer = null;
+
+let laborLayoutTimer = null;
+window.addEventListener('resize', () => {
+    clearTimeout(laborLayoutTimer);
+    laborLayoutTimer = setTimeout(laborChartLayout, 150);
+    clearTimeout(unempLayoutTimer);
+    unempLayoutTimer = setTimeout(unempChartLayout, 150);
+}, { passive: true });
+
 function statsFilter() {
             return {
                 tableExpanded: false,
@@ -701,6 +1089,8 @@ function statsFilter() {
                 },
 
                 province: 'Regional',   // provinces have annual data only (no quarters)
+                laborLoading: false,    // loading overlays on the two charts
+                unempLoading: false,
 
                 // Labor Chart State
                 laborAvailableYears: [],
@@ -762,6 +1152,7 @@ function statsFilter() {
                         window.expandedChartInstance.destroy();
                         window.expandedChartInstance = null;
                     }
+                    expandedResetSwipe();
                 },
 
                 drawExpandedLaborChart() {
@@ -776,8 +1167,17 @@ function statsFilter() {
                     if (!originalChart) return;
 
                     const isMobile = window.innerWidth < 640;
+                    const allLabels = originalChart.data.labels;
+                    const many = allLabels.length > LABOR_MANY_POINTS;
+                    const keyRates = laborKeyRateIndexes(originalChart.data.datasets[0].data);
+
+                    // same rule as the normal view: scroll when the quarters don't have room for their values
+                    expandedResetSwipe();
+                    const swipe = expandedNeedsSwipe(allLabels.length, LABOR_SWIPE_PX_PER_POINT, LABOR_DESKTOP_MIN_PX_PER_POINT);
+                    expandedPrepareSwipe(swipe, allLabels.length, LABOR_SWIPE_PX_PER_POINT);
 
                     window.expandedChartInstance = new Chart(ctx.getContext('2d'), {
+                        plugins: [expandedStickyAxesPlugin],
                         data: {
                             labels: originalChart.data.labels,
                             datasets: [{
@@ -785,14 +1185,15 @@ function statsFilter() {
                                     label: 'Employment Rate (%)',
                                     data: originalChart.data.datasets[0].data,
                                     borderColor: '#3B82F6',
-                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                    tension: 0.4,
-                                    borderWidth: isMobile ? 2 : 4,
-                                    pointRadius: isMobile ? 4 : 7,
-                                    pointHoverRadius: isMobile ? 6 : 9,
+                                    backgroundColor: '#3B82F6',
+                                    tension: 0.3,
+                                    borderWidth: isMobile ? 2.5 : 4,
+                                    // phones + long range: dots only on the labelled key points, so the line stays continuous
+                                    pointRadius: (c) => isMobile ? ((many && !swipe && !keyRates.has(c.dataIndex)) ? 0 : 4) : 7,
+                                    pointHoverRadius: isMobile ? 5 : 9,
                                     pointBackgroundColor: '#3B82F6',
                                     pointBorderColor: '#fff',
-                                    pointBorderWidth: 3,
+                                    pointBorderWidth: isMobile ? 2 : 3,
                                     fill: false,
                                     yAxisID: 'y1',
                                     datalabels: {
@@ -800,8 +1201,10 @@ function statsFilter() {
                                         anchor: 'end',
                                         align: 'top',
                                         offset: isMobile ? 4 : 8,
-                                        color: '#1e293b',
-                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                        color: '#3B82F6',
+                                        backgroundColor: '#ffffff',
+                                        borderColor: '#3B82F6',
+                                        borderWidth: 1.5,
                                         borderRadius: 4,
                                         padding: isMobile ? 2 : 5,
                                         font: {
@@ -810,9 +1213,8 @@ function statsFilter() {
                                             size: isMobile ? 9 : 13
                                         },
                                         formatter: (value, context) => {
-                                            const total = context.chart.data.labels.length;
-                                            const step = total > 16 ? 3 : total > 12 ? 2 : 1;
-                                            return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
+                                            if (many && !swipe && !keyRates.has(context.dataIndex)) return null;
+                                            return value.toFixed(1) + '%';
                                         }
                                     }
                                 },
@@ -820,22 +1222,13 @@ function statsFilter() {
                                     type: 'bar',
                                     label: 'Labor Force (thousands)',
                                     data: originalChart.data.datasets[1].data,
-                                    backgroundColor: function(context) {
-                                        const chart = context.chart;
-                                        const { ctx, chartArea } = chart;
-                                        if (!chartArea) return '#182337';
-                                        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-                                        gradient.addColorStop(0, '#3B5175');
-                                        gradient.addColorStop(0.5, '#2A3F5F');
-                                        gradient.addColorStop(1, '#182337');
-                                        return gradient;
-                                    },
-                                    borderColor: '#4A6FA5',
-                                    borderWidth: 1.5,
-                                    borderRadius: 4,
+                                    backgroundColor: '#1e3a5f',
+                                    borderWidth: 0,
+                                    borderRadius: { topLeft: 4, topRight: 4 },
+                                    borderSkipped: 'bottom',
                                     yAxisID: 'y',
                                     datalabels: {
-                                        display: !isMobile,
+                                        display: () => swipe || !many,   // hidden only in the desktop long-range overview
                                         anchor: 'center',
                                         align: 'center',
                                         color: '#FFFFFF',
@@ -847,6 +1240,7 @@ function statsFilter() {
                                         formatter: (value, context) => {
                                             const total = context.chart.data.labels.length;
                                             const step = total > 16 ? 3 : total > 12 ? 2 : 1;
+                                            if (swipe) return new Intl.NumberFormat('en-US').format(value);   // scrolling: every bar value
                                             return context.dataIndex % step === 0 ? new Intl.NumberFormat('en-US').format(value) : null;
                                         }
                                     }
@@ -857,11 +1251,12 @@ function statsFilter() {
                             responsive: true,
                             maintainAspectRatio: false,
                             layout: {
-                                padding: { top: isMobile ? 25 : 40, bottom: 10, left: 5, right: 10 }
+                                padding: { top: isMobile ? 16 : 24, bottom: 4, left: 5, right: isMobile ? 28 : 10 }
                             },
                             interaction: { mode: 'index', intersect: false },
                             plugins: {
                                 legend: {
+                                    display: !swipe,
                                     position: 'top',
                                     labels: {
                                         usePointStyle: true,
@@ -876,6 +1271,8 @@ function statsFilter() {
                                     }
                                 },
                                 tooltip: {
+                                    enabled: !swipe,
+                                    external: swipe ? expandedFloatingTooltip : undefined,
                                     mode: 'index',
                                     intersect: false,
                                     callbacks: {
@@ -895,10 +1292,18 @@ function statsFilter() {
                             scales: {
                                 x: {
                                     ticks: {
-                                        autoSkip: true,
-                                        maxTicksLimit: isMobile ? 3 : originalChart.data.labels.length,
-                                        maxRotation: 90,
+                                        autoSkip: !many,
+                                        maxTicksLimit: many ? allLabels.length : (isMobile ? 3 : allLabels.length),
+                                        maxRotation: many ? 0 : 90,
                                         minRotation: 0,
+                                        // long ranges: show each year once, under its first quarter
+                                        callback: function (value, index) {
+                                            const label = String(this.getLabelForValue(value));
+                                            if (!many || swipe) return label;
+                                            const year = label.split(' ')[0];
+                                            const prevYear = index > 0 ? String(this.getLabelForValue(index - 1)).split(' ')[0] : null;
+                                            return year !== prevYear ? year : '';
+                                        },
                                         color: '#475569',
                                         font: {
                                             family: 'Inter, system-ui, -apple-system, sans-serif',
@@ -907,7 +1312,10 @@ function statsFilter() {
                                         },
                                         padding: 8
                                     },
-                                    grid: { display: false },
+                                    // small tick marks under every quarter (no vertical lines in the chart)
+                                    grid: many
+                                        ? { display: true, drawOnChartArea: false, drawTicks: true, tickLength: 6, color: '#cbd5e1' }
+                                        : { display: false },
                                     border: { color: '#e2e8f0', width: 2 }
                                 },
                                 y: {
@@ -931,24 +1339,35 @@ function statsFilter() {
                                             weight: '500'
                                         },
                                         padding: 8,
-                                        maxTicksLimit: isMobile ? 4 : 6,
+                                        stepSize: 0.5,          // 0K, 500K, 1,000K, 1,500K …
+                                        maxTicksLimit: 12,
                                         callback: (value) => {
                                             const num = value * 1000;
-                                            return isMobile ? (num/1000).toFixed(0)+'k' : new Intl.NumberFormat('en-US').format(num);
+                                            return new Intl.NumberFormat('en-US').format(num) + 'K';
                                         }
                                     },
                                     grid: { color: '#f1f5f9', lineWidth: 1 },
                                     border: { display: false }
                                 },
-                                y1: { display: false, position: 'right', min: 80, max: 100 }
+                                y1: { display: false, position: 'right', suggestedMin: 90, max: 100 }
                             }
                         }
+                    });
+
+                    expandedFinish(window.expandedChartInstance, swipe, (c, n) => {
+                        // bigger than the normal view; still follows the number of quarters
+                        setFontSize(c.data.datasets[0].datalabels, 'font', chartFontSize(9, 12, 13, n));   // rate labels
+                        setFontSize(c.data.datasets[1].datalabels, 'font', chartFontSize(11, 15, 19, n));  // bar values
+                        setFontSize(c.options.scales.x.ticks, 'font', chartFontSize(9, 12, 13, n));
+                        setFontSize(c.options.scales.y.ticks, 'font', chartFontSize(9, 12, 13, n));
+                        setFontSize(c.options.plugins.legend.labels, 'font', chartFontSize(10, 13, 14, n));
                     });
                 },
 
                 drawExpandedUnemploymentChart() {
                     const ctx = document.getElementById('expandedChart');
                     if (!ctx) return;
+                    expandedResetSwipe();
 
                     if (window.expandedChartInstance) {
                         window.expandedChartInstance.destroy();
@@ -958,6 +1377,10 @@ function statsFilter() {
                     if (!originalChart) return;
 
                     const isMobile = window.innerWidth < 640;
+                    const nPts = originalChart.data.labels.length;
+                    // same rule as the normal view: scroll when the quarters don't have room for their values
+                    const swipe = expandedNeedsSwipe(nPts, UNEMP_PX_PER_POINT, UNEMP_PX_PER_POINT);
+                    expandedPrepareSwipe(swipe, nPts, UNEMP_PX_PER_POINT);
 
                     // Alternate top/bottom to prevent label collisions between lines
                     const datasetConfigs = [{
@@ -1017,6 +1440,7 @@ function statsFilter() {
                                 weight: 'bold'
                             },
                             formatter: (value, context) => {
+                                if (swipe) return value.toFixed(1) + '%';   // scrolling: every value
                                 const total = context.chart.data.labels.length;
                                 const step = total > 12 ? 3 : total > 6 ? 2 : 1;
                                 return context.dataIndex % step === 0 ? value.toFixed(1) + '%' : null;
@@ -1026,6 +1450,7 @@ function statsFilter() {
 
                     window.expandedChartInstance = new Chart(ctx.getContext('2d'), {
                         type: 'line',
+                        plugins: [expandedStickyAxesPlugin],
                         data: {
                             labels: originalChart.data.labels,
                             datasets: datasets
@@ -1037,8 +1462,12 @@ function statsFilter() {
                                 padding: { top: isMobile ? 20 : 40, bottom: isMobile ? 10 : 30, left: 5, right: 10 }
                             },
                             plugins: {
+                                tooltip: {
+                                    enabled: !swipe,
+                                    external: swipe ? expandedFloatingTooltip : undefined
+                                },
                                 legend: {
-                                    display: true,
+                                    display: !swipe,                 // scrolling: pinned legend above the chart
                                     position: 'bottom',
                                     align: 'center',
                                     labels: {
@@ -1059,10 +1488,11 @@ function statsFilter() {
                             },
                             scales: {
                                 x: {
+                                    offset: true,                    // first/last labels clear of the axis
                                     ticks: {
-                                        autoSkip: true,
-                                        maxTicksLimit: isMobile ? 3 : 12,
-                                        maxRotation: 90,
+                                        autoSkip: !swipe,
+                                        maxTicksLimit: swipe ? nPts : (isMobile ? 3 : 12),
+                                        maxRotation: swipe ? 0 : 90,
                                         minRotation: 0,
                                         padding: isMobile ? 6 : 12,
                                         color: '#475569',
@@ -1098,6 +1528,13 @@ function statsFilter() {
                                 }
                             }
                         }
+                    });
+
+                    expandedFinish(window.expandedChartInstance, swipe, (c, n) => {
+                        c.data.datasets.forEach(ds => setFontSize(ds.datalabels, 'font', chartFontSize(8, 11, 12, n)));
+                        setFontSize(c.options.scales.x.ticks, 'font', chartFontSize(9, 12, 13, n));
+                        setFontSize(c.options.scales.y.ticks, 'font', chartFontSize(9, 12, 13, n));
+                        setFontSize(c.options.plugins.legend.labels, 'font', chartFontSize(9, 12, 13, n));
                     });
                 },
 
@@ -1227,7 +1664,19 @@ function statsFilter() {
                     await this.updateUnempChart();
                 },
 
-                async initializeLaborChart() {
+                // Shows the chart's loading overlay if fetching takes longer than 200 ms
+                async withLoading(flag, fn) {
+                    const timer = setTimeout(() => { this[flag] = true; }, 200);
+                    try { return await fn(); }
+                    finally { clearTimeout(timer); this[flag] = false; }
+                },
+
+                initializeLaborChart() { return this.withLoading('laborLoading', () => this._initializeLaborChart()); },
+                updateLaborChart()     { return this.withLoading('laborLoading', () => this._updateLaborChart()); },
+                initializeUnempChart() { return this.withLoading('unempLoading', () => this._initializeUnempChart()); },
+                updateUnempChart()     { return this.withLoading('unempLoading', () => this._updateUnempChart()); },
+
+                async _initializeLaborChart() {
                     const laborCtx = document.getElementById('laborEmploymentChart');
                     if (!laborCtx) return;
 
@@ -1252,6 +1701,7 @@ function statsFilter() {
                     }
 
                     window.laborChart = new Chart(laborCtx.getContext('2d'), {
+                        plugins: [laborStickyAxesPlugin],
                         data: {
                             labels: labels,
                             datasets: [{
@@ -1259,10 +1709,10 @@ function statsFilter() {
                                     label: 'Employment Rate (%)',
                                     data: empRateData,
                                     borderColor: '#3B82F6',
-                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                    tension: 0.4,
+                                    backgroundColor: '#3B82F6',
+                                    tension: 0.3,
                                     borderWidth: 3,
-                                    pointRadius: window.innerWidth < 640 ? 3 : 6,
+                                    pointRadius: (c) => laborIsLongRange(c.chart) && !laborIsKeyRate(c) ? 0 : (window.innerWidth < 640 ? 3 : 6),
                                     pointHoverRadius: window.innerWidth < 640 ? 5 : 8,
                                     pointBackgroundColor: '#3B82F6',
                                     pointBorderColor: '#fff',
@@ -1275,8 +1725,10 @@ function statsFilter() {
                                         anchor: 'end',
                                         align: 'top',
                                         offset: 4,
-                                        color: '#1e293b',
-                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                        color: '#3B82F6',
+                                        backgroundColor: '#ffffff',
+                                        borderColor: '#3B82F6',
+                                        borderWidth: 1.5,
                                         borderRadius: 4,
                                         padding: 3,
                                         font: {
@@ -1285,6 +1737,8 @@ function statsFilter() {
                                             size: window.innerWidth < 480 ? 8 : window.innerWidth < 768 ? 9 : 12
                                         },
                                         formatter: (value, context) => {
+                                            if (context.chart.$lmiSwipe) return value.toFixed(1) + '%';
+                                            if (laborIsLongRange(context.chart)) return laborIsKeyRate(context) ? value.toFixed(1) + '%' : null;
                                             const total = context.chart.data.labels.length;
                                             const isMobile = window.innerWidth < 480;
                                             const step = isMobile
@@ -1298,27 +1752,13 @@ function statsFilter() {
                                     type: 'bar',
                                     label: 'Labor Force (thousands)',
                                     data: laborData,
-                                    backgroundColor: function(context) {
-                                        const chart = context.chart;
-                                        const {
-                                            ctx,
-                                            chartArea
-                                        } = chart;
-                                        if (!chartArea) return '#182337';
-
-                                        const gradient = ctx.createLinearGradient(0, chartArea.bottom,
-                                            0, chartArea.top);
-                                        gradient.addColorStop(0, '#3B5175');
-                                        gradient.addColorStop(0.5, '#2A3F5F');
-                                        gradient.addColorStop(1, '#182337');
-                                        return gradient;
-                                    },
-                                    borderColor: '#22324D',
-                                    borderWidth: 1,
-                                    borderRadius: 2,
+                                    backgroundColor: '#1e3a5f',
+                                    borderWidth: 0,
+                                    borderRadius: { topLeft: 4, topRight: 4 },
+                                    borderSkipped: 'bottom',
                                     yAxisID: 'y',
                                     datalabels: {
-                                        display: true,
+                                        display: (ctx) => !laborIsLongRange(ctx.chart),
                                         anchor: 'center',
                                         align: 'center',
                                         color: "#FFFFFF",
@@ -1332,6 +1772,7 @@ function statsFilter() {
                                             const step = isMobile
                                                 ? (total > 10 ? 4 : total > 6 ? 2 : 1)
                                                 : (total > 20 ? 4 : total > 10 ? 3 : 1);
+                                            if (context.chart.$lmiSwipe) return new Intl.NumberFormat('en-US').format(value);
                                             return context.dataIndex % step === 0 ? new Intl.NumberFormat('en-US').format(value) : null;
                                         }
                                     }
@@ -1342,6 +1783,11 @@ function statsFilter() {
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
+                            // re-check scroll mode when the chart becomes visible or changes size
+                            onResize: () => {
+                                clearTimeout(laborLayoutTimer);
+                                laborLayoutTimer = setTimeout(laborChartLayout, 150);
+                            },
                             interaction: {
                                 mode: 'index',
                                 intersect: false
@@ -1415,30 +1861,25 @@ function statsFilter() {
                                             weight: '500'
                                         },
                                         padding: 4,
-                                        maxTicksLimit: window.innerWidth < 640 ? 4 : 6,
+                                        stepSize: 0.5,          // 0K, 500K, 1,000K, 1,500K …
+                                        maxTicksLimit: 12,
                                         callback: (value) => {
                                             const num = value * 1000;
-                                            if (window.innerWidth < 640) {
-                                                return num >= 1000 ? (num/1000).toFixed(0)+'k' : num;
-                                            }
-                                            return new Intl.NumberFormat('en-US').format(num);
+                                            return new Intl.NumberFormat('en-US').format(num) + 'K';
                                         }
                                     },
                                     grid: { color: '#f1f5f9', lineWidth: 1 },
                                     border: { display: false }
                                 },
-                                y1: {
-                                    display: false,
-                                    position: 'right',
-                                    min: 80,
-                                    max: 100,
-                                }
+                                y1: { display: false, position: 'right', suggestedMin: 90, max: 100 }
                             }
                         }
                     });
+
+                    laborChartLayout();
                 },
 
-                async updateLaborChart() {
+                async _updateLaborChart() {
                     const startYear = parseInt(this.laborStartYear);
                     const endYear = parseInt(this.laborEndYear);
                     const quarterToNum = (q) => parseInt(q.replace('Q', ''));
@@ -1479,9 +1920,10 @@ function statsFilter() {
                     window.laborChart.data.datasets[1].data = laborData;
                     window.laborChart.data.datasets[0].data = empRateData;
                     window.laborChart.update();
+                    laborChartLayout();
                 },
 
-                async initializeUnempChart() {
+                async _initializeUnempChart() {
                     const unempCtx = document.getElementById('unemploymentChart');
                     if (!unempCtx) return;
 
@@ -1512,6 +1954,7 @@ function statsFilter() {
 
                     window.unempChart = new Chart(unempCtx.getContext('2d'), {
                         type: 'line',
+                        plugins: [unempStickyAxesPlugin],
                         data: {
                             labels: labels,
                             datasets: [{
@@ -1531,6 +1974,7 @@ function statsFilter() {
                                         align: 'top',
                                         offset: 6,
                                         formatter: (value, context) => {
+                                            if (context.chart.$lmiSwipe) return value.toFixed(1) + '%';   // swipe mode: every value
                                             const total = context.chart.data.labels.length;
                                             const isMobile = window.innerWidth < 480;
                                             const step = isMobile
@@ -1557,6 +2001,7 @@ function statsFilter() {
                                         align: 'top',
                                         offset: 6,
                                         formatter: (value, context) => {
+                                            if (context.chart.$lmiSwipe) return value.toFixed(1) + '%';   // swipe mode: every value
                                             const total = context.chart.data.labels.length;
                                             const isMobile = window.innerWidth < 480;
                                             const step = isMobile
@@ -1583,6 +2028,7 @@ function statsFilter() {
                                         align: 'top',
                                         offset: 6,
                                         formatter: (value, context) => {
+                                            if (context.chart.$lmiSwipe) return value.toFixed(1) + '%';   // swipe mode: every value
                                             const total = context.chart.data.labels.length;
                                             const isMobile = window.innerWidth < 480;
                                             const step = isMobile
@@ -1609,6 +2055,7 @@ function statsFilter() {
                                         align: 'bottom',
                                         offset: 6,
                                         formatter: (value, context) => {
+                                            if (context.chart.$lmiSwipe) return value.toFixed(1) + '%';   // swipe mode: every value
                                             const total = context.chart.data.labels.length;
                                             const isMobile = window.innerWidth < 480;
                                             const step = isMobile
@@ -1623,7 +2070,12 @@ function statsFilter() {
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
+                            onResize: () => {
+                                clearTimeout(unempLayoutTimer);
+                                unempLayoutTimer = setTimeout(unempChartLayout, 150);
+                            },
                             plugins: {
+                                tooltip: { enabled: true },
                                 legend: {
                                     display: true,
                                     position: 'bottom',
@@ -1706,9 +2158,11 @@ function statsFilter() {
                             }
                         }
                     });
+
+                    unempChartLayout();
                 },
 
-                async updateUnempChart() {
+                async _updateUnempChart() {
                     const startYear = parseInt(this.unempStartYear);
                     const endYear = parseInt(this.unempEndYear);
                     const quarterToNum = (q) => parseInt(q.replace('Q', ''));
@@ -1745,6 +2199,7 @@ function statsFilter() {
                     window.unempChart.data.datasets[2].data = under;
                     window.unempChart.data.datasets[3].data = unemp;
                     window.unempChart.update();
+                    unempChartLayout();
                 }
             }
         }
