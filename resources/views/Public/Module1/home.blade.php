@@ -298,7 +298,7 @@
                                     <label class="cursor-pointer">
                                         <input type="radio" name="areaMode" value="provinces" x-model="mode" @change="apply()" class="sr-only peer">
                                         <span class="block px-4 py-2 rounded-md text-sm font-semibold transition peer-focus-visible:ring-2 peer-focus-visible:ring-slate-400"
-                                            :class="mode === 'provinces' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">Provinces</span>
+                                            :class="mode === 'provinces' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-100'">Provincial</span>
                                     </label>
                                 </div>
                                 <select x-show="mode === 'provinces'" style="display: none;" x-model="province" @change="apply()" aria-label="Province"
@@ -325,8 +325,61 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <h3 class="text-white font-bold text-lg">Labor Force Survey</h3>
+                                        <h3 class="text-white font-bold text-lg"
+                                            x-text="province === 'Regional' ? 'Labor Force Survey' : 'Provincial Labor Market Statistics'">Labor Force Survey</h3>
                                         <p class="text-slate-300 text-sm" x-text="selectedPeriodLabel === 'Loading...' ? selectedPeriodLabel : `${province} ${selectedPeriodLabel}`">Loading...</p>
+                                    </div>
+                                </div>
+
+                                <div class="relative" x-data="{ open: false }" @click.stop>
+                                    <button @click="open = !open; if(open) positionDropdown($el, 'kpi-period-dropdown')"
+                                        id="kpi-period-btn"
+                                        class="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-sm font-medium rounded-lg flex items-center gap-2 transition">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <span>Change Period</span>
+                                    </button>
+
+                                    <div x-show="open" @click.away="open = false" x-transition
+                                        id="kpi-period-dropdown"
+                                        class="filter-dropdown">
+                                        <label class="block text-xs font-semibold text-slate-700 mb-3">Select
+                                            Period</label>
+
+                                        <div class="grid grid-cols-2 gap-3 mb-4">
+                                            <div x-show="province === 'Regional'">
+                                                <label
+                                                    class="text-[10px] text-slate-500 mb-1 block">Quarter</label>
+                                                <select x-model="pendingMonth"
+                                                    class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                                    <template x-for="month in availableMonths" :key="month">
+                                                        <option :value="month.toString()" x-text="{0:'Annual',1:'Jan',4:'Apr',7:'Jul',10:'Oct'}[month] ?? month"></option>
+                                                    </template>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="text-[10px] text-slate-500 mb-1 block">Year</label>
+                                                <select x-model="pendingYear"
+                                                    @change="updateAvailableMonths()"
+                                                    class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                                    <option value="" disabled>Select year</option>
+                                                    <template x-for="year in availableYears"
+                                                        :key="year">
+                                                        <option :value="year" x-text="year"></option>
+                                                    </template>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <button @click="applyPeriodFilter(); open = false;"
+                                            class="w-full bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 hover:from-slate-800 hover:via-slate-700 hover:to-slate-800 text-white text-sm py-2 px-4 rounded-lg font-medium transition">
+                                            Apply Filter
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -354,7 +407,7 @@
                                     <div class="h-1 w-16 bg-gradient-to-r from-[#023E8A] to-blue-300 rounded-full mb-3 relative z-10">
                                     </div>
                                     <p class="text-xs text-slate-600 font-medium relative z-10"
-                                        x-text="(kpiData.participation_rate?.active_workforce || '0') + ' Estimate number of people'">
+                                        x-text="(kpiData.participation_rate?.active_workforce || '0') + 'K Estimate number of people'">
                                     </p>
                                 </div>
 
@@ -381,7 +434,7 @@
                                         class="h-1 w-16 bg-gradient-to-r from-[#006400] to-green-300 rounded-full mb-3 relative z-10">
                                     </div>
                                     <p class="text-xs text-slate-600 font-medium relative z-10"
-                                        x-text="(kpiData.employment_rate?.count || '0') + ' Estimate number of people'">
+                                        x-text="(kpiData.employment_rate?.count || '0') + 'K Estimate number of people'">
                                     </p>
                                 </div>
 
@@ -408,7 +461,7 @@
                                         class="h-1 w-16 bg-gradient-to-r from-[#FF8C00] to-orange-300 rounded-full mb-3 relative z-10">
                                     </div>
                                     <p class="text-xs text-slate-600 font-medium relative z-10"
-                                        x-text="(kpiData.underemployment_rate?.count_formatted || '0') + ' seeking more hours'">
+                                        x-text="(kpiData.underemployment_rate?.count || '0') + 'K seeking more hours'">
                                     </p>
                                 </div>
 
@@ -435,7 +488,7 @@
                                     <div class="h-1 w-16 bg-gradient-to-r from-[#D30000] to-red-300 rounded-full mb-3 relative z-10">
                                     </div>
                                     <p class="text-xs text-slate-600 font-medium relative z-10"
-                                        x-text="(kpiData.unemployment_rate?.count_formatted || '0') + ' Estimate number of people'">
+                                        x-text="(kpiData.unemployment_rate?.count || '0') + 'K Estimate number of people'">
                                     </p>
                                 </div>
 
@@ -457,64 +510,14 @@
                                                 </svg>
                                             </div>
                                             <div>
-                                                <h3 class="text-white font-bold text-lg">
+                                                <h3 class="text-white font-bold text-lg"
+                                                    x-text="province === 'Regional' ? 'Labor Force Analysis' : 'Provincial Labor Market Analysis'">
                                                     Labor Force Analysis
                                                 </h3>
                                                 <p class="text-slate-300 text-sm" x-text="selectedPeriodLabel === 'Loading...' ? selectedPeriodLabel : `${province} ${selectedPeriodLabel}`">Loading...</p>
                                             </div>
                                         </div>
 
-                                        <div class="relative" x-data="{ open: false }" @click.stop>
-                                            <button @click="open = !open; if(open) positionDropdown($el, 'kpi-period-dropdown')"
-                                                id="kpi-period-btn"
-                                                class="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-sm font-medium rounded-lg flex items-center gap-2 transition">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                                <span>Change Period</span>
-                                            </button>
-
-                                            <div x-show="open" @click.away="open = false" x-transition
-                                                id="kpi-period-dropdown"
-                                                class="filter-dropdown">
-                                                <label class="block text-xs font-semibold text-slate-700 mb-3">Select
-                                                    Period</label>
-
-                                                <div class="grid grid-cols-2 gap-3 mb-4">
-                                                    <div x-show="province === 'Regional'">
-                                                        <label
-                                                            class="text-[10px] text-slate-500 mb-1 block">Quarter</label>
-                                                        <select x-model="pendingMonth"
-                                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                                            <template x-for="month in availableMonths" :key="month">
-                                                                <option :value="month.toString()" x-text="{0:'Annual',1:'Jan',4:'Apr',7:'Jul',10:'Oct'}[month] ?? month"></option>
-                                                            </template>
-                                                        </select>
-                                                    </div>
-                                                    <div>
-                                                        <label
-                                                            class="text-[10px] text-slate-500 mb-1 block">Year</label>
-                                                        <select x-model="pendingYear"
-                                                            @change="updateAvailableMonths()"
-                                                            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
-                                                            <option value="" disabled>Select year</option>
-                                                            <template x-for="year in availableYears"
-                                                                :key="year">
-                                                                <option :value="year" x-text="year"></option>
-                                                            </template>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <button @click="applyPeriodFilter(); open = false;"
-                                                    class="w-full bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 hover:from-slate-800 hover:via-slate-700 hover:to-slate-800 text-white text-sm py-2 px-4 rounded-lg font-medium transition">
-                                                    Apply Filter
-                                                </button>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -618,7 +621,7 @@
                         Chart.register(ChartDataLabels);
                     </script>
                     <!-- Charts Section -->
-                    <div x-data="{ ...chartFilters(), activeChart: 'labor', chartsExpanded: false }" @province-changed.window="onProvinceChanged($event.detail)" class="max-w-7xl mx-auto px-6 space-y-4 mt-6">
+                    <div x-data="{ ...chartFilters(), activeChart: 'labor', chartsExpanded: false }" @province-changed.window="onProvinceChanged($event.detail)" class="w-full max-w-[1760px] mx-auto px-2 sm:px-4 space-y-4 mt-6">{{-- wider than the other sections so the charts have room --}}
                         <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
 
                             <!-- Dark Header with Icon -->
@@ -675,7 +678,7 @@
                                                 ? 'bg-white text-blue-700 shadow font-semibold border border-blue-100'
                                                 : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'"
                                             class="px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 cursor-pointer text-center leading-snug">
-                                            DAVAO REGION<br>LABOR MARKET PERFORMANCE
+                                            <span x-text="province === 'Regional' ? 'DAVAO REGION' : province.toUpperCase()">DAVAO REGION</span><br>LABOR MARKET PERFORMANCE
                                         </button>
                                     </div>
 
@@ -775,9 +778,28 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div id="laborSwipeLegend" class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mb-2 text-xs text-slate-600" style="display:none;"></div>
                                             <div class="chart-wrapper">
-                                                <canvas id="laborEmploymentChart"></canvas>
+                                                {{-- Phones with many quarters: the chart becomes swipeable (axes stay pinned) --}}
+                                                <div id="laborChartScroll" style="position:absolute; inset:0; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;">
+                                                    <div id="laborChartInner" style="position:relative; height:100%; width:100%;">
+                                                        <canvas id="laborEmploymentChart"></canvas>
+                                                    </div>
+                                                </div>
+                                                <canvas id="laborAxisLeft" aria-hidden="true" style="position:absolute; left:0; display:none; pointer-events:none;"></canvas>
+                                                <canvas id="laborAxisRight" aria-hidden="true" style="position:absolute; right:0; display:none; pointer-events:none;"></canvas>
+                                                <!-- Loading overlay (shown while the chart fetches data) -->
+                                                <div x-show="laborLoading" style="display:none;" role="status" aria-live="polite"
+                                                    class="absolute inset-0 z-40 flex flex-col items-center justify-center gap-2 bg-white/75 rounded-lg">
+                                                    <svg class="w-7 h-7 animate-spin text-slate-700" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                                    </svg>
+                                                    <span class="text-xs font-semibold text-slate-600">Loading data…</span>
+                                                </div>
                                             </div>
+                                            <p id="laborSwipeHint" class="text-center text-xs text-slate-400 mt-2 italic" style="display:none;">Swipe the chart to see later quarters · tap a bar for values</p>
+                                            <p id="laborValueHint" class="text-center text-xs text-slate-400 mt-2 italic">Hover over a bar to see its exact values</p>
                                             <!-- Mobile tip -->
                                             <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">Tap "Expand" above for a full-screen view</p>
                                         </div>
@@ -787,7 +809,7 @@
                                             x-show="activeChart === 'compiled' || activeChart === 'side'" x-transition>
                                             <div class="flex flex-col gap-3 mb-4">
                                                 <div>
-                                                    <h3 class="font-semibold text-slate-800 text-base">DAVAO REGION LABOR MARKET PERFORMANCE</h3>
+                                                    <h3 class="font-semibold text-slate-800 text-base" x-text="(province === 'Regional' ? 'DAVAO REGION' : province.toUpperCase()) + ' LABOR MARKET PERFORMANCE'">DAVAO REGION LABOR MARKET PERFORMANCE</h3>
                                                     <p class="text-xs text-slate-500 mt-0.5">Key Employment Indicators</p>
                                                 </div>
                                                 <div class="flex items-center gap-2">
@@ -872,8 +894,26 @@
                                                 </div>
                                             </div>
                                             <div class="chart-wrapper">
-                                                <canvas id="unemploymentChart"></canvas>
+                                                {{-- Phones: swipeable when the quarters don't fit (axis stays pinned) --}}
+                                                <div id="unempChartScroll" style="position:absolute; inset:0; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;">
+                                                    <div id="unempChartInner" style="position:relative; height:100%; width:100%;">
+                                                        <canvas id="unemploymentChart"></canvas>
+                                                    </div>
+                                                </div>
+                                                <canvas id="unempAxisLeft" aria-hidden="true" style="position:absolute; left:0; display:none; pointer-events:none;"></canvas>
+                                                <!-- Loading overlay (shown while the chart fetches data) -->
+                                                <div x-show="unempLoading" style="display:none;" role="status" aria-live="polite"
+                                                    class="absolute inset-0 z-40 flex flex-col items-center justify-center gap-2 bg-white/75 rounded-lg">
+                                                    <svg class="w-7 h-7 animate-spin text-slate-700" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                                    </svg>
+                                                    <span class="text-xs font-semibold text-slate-600">Loading data…</span>
+                                                </div>
                                             </div>
+                                            <!-- Phones: compact 2×2 legend (replaces the 4-row legend inside the chart) -->
+                                            <div id="unempLegend" class="grid grid-cols-2 gap-x-3 gap-y-1.5 mt-3 text-[11px] font-semibold text-slate-700" style="display:none;"></div>
+                                            <p id="unempValueHint" class="text-center text-xs text-slate-400 mt-2 italic" style="display:none;">Tap the chart to see exact values</p>
                                             <!-- Mobile tip -->
                                             <p class="block sm:hidden text-center text-xs text-slate-400 mt-2 italic">Tap "Expand" above for a full-screen view</p>
                                         </div>
@@ -889,13 +929,13 @@
                                             <div class="fixed inset-0 bg-black/60 bg-opacity-25 transition-opacity"
                                                 @click="closeChartModal()"></div>
                                             <div class="flex min-h-screen items-center justify-center p-4">
-                                                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-10xl max-h-[95vh] overflow-hidden"
+                                                <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-10xl h-[95vh] max-h-[95vh] overflow-hidden flex flex-col"
                                                     @click.stop>
                                                     <div
-                                                        class="flex items-center  justify-between p-6 border-b border-gray-200">
+                                                        class="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
                                                         <div>
                                                             <h3 class="text-xl font-semibold text-slate-800"
-                                                                x-text="expandedChart === 'labor' ? 'Labor Force vs Employment Rate' : 'DAVAO REGION LABOR MARKET PERFORMANCE'">
+                                                                x-text="expandedChart === 'labor' ? 'Labor Force vs Employment Rate' : (province === 'Regional' ? 'DAVAO REGION' : province.toUpperCase()) + ' LABOR MARKET PERFORMANCE'">
                                                             </h3>
                                                             <p class="text-sm text-slate-500 mt-1"
                                                                 x-text="expandedChart === 'labor' ? 'Comparing workforce size (bars) vs employment rate (line)' : 'Key Employment Indicators'">
@@ -910,15 +950,22 @@
                                                             </svg>
                                                         </button>
                                                     </div>
-                                                    <div class="p-6">
-                                                        <div class="relative w-full" style="height: clamp(280px, 60vh, 600px);">
-                                                            <canvas id="expandedChart"></canvas>
+                                                    <div class="flex-1 min-h-0 px-4 sm:px-6 py-3 flex flex-col">
+                                                        {{-- Phones (swipe mode): legend pinned above the chart --}}
+                                                        <div id="expandedLegend" class="shrink-0 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mb-2 text-xs text-slate-600" style="display:none;"></div>
+                                                        <div class="relative w-full flex-1 min-h-0" style="min-height: 280px;">
+                                                            <div id="expandedChartScroll" style="position:absolute; inset:0; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;">
+                                                                <div id="expandedChartInner" style="position:relative; height:100%; width:100%;">
+                                                                    <canvas id="expandedChart"></canvas>
+                                                                </div>
+                                                            </div>
+                                                            <canvas id="expandedAxisLeft" aria-hidden="true" style="position:absolute; left:0; display:none; pointer-events:none;"></canvas>
                                                         </div>
                                                     </div>
                                                     <div
-                                                        class="p-6 border-t border-gray-200 bg-slate-50 flex justify-between items-center">
+                                                        class="px-6 py-2 border-t border-gray-200 bg-slate-50 flex justify-between items-center shrink-0">
                                                         <p class="text-xs text-slate-500">Press ESC or click outside to
-                                                            close</p>
+                                                            close · <span class="hidden sm:inline">Hover over</span><span class="sm:hidden">Tap</span> the chart to see exact values</p>
                                                         
                                                     </div>
                                                 </div>
@@ -950,7 +997,8 @@
                                             </svg>
                                         </div>
                                         <div>
-                                            <h3 class="font-bold text-white text-lg">Consolidated Regional Employment
+                                            <h3 class="font-bold text-white text-lg"
+                                                x-text="province === 'Regional' ? 'Consolidated Regional Employment Statistics' : `Consolidated ${province} Employment Statistics`">Consolidated Regional Employment
                                                 Statistics</h3>
                                             <p class="text-xs text-slate-300">Summary of Key Employment Indicators
                                                 <span class="italic text-slate-400">In thousands</span>
