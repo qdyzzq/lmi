@@ -1343,7 +1343,7 @@ function statsFilter() {
                                         maxTicksLimit: 12,
                                         callback: (value) => {
                                             const num = value * 1000;
-                                            return new Intl.NumberFormat('en-US').format(num) + 'K';
+                                            return new Intl.NumberFormat('en-US').format(num) + (num >= 1000 ? 'K' : '');   // 0, 500, 1,000K, 1,500K …
                                         }
                                     },
                                     grid: { color: '#f1f5f9', lineWidth: 1 },
@@ -1865,7 +1865,7 @@ function statsFilter() {
                                         maxTicksLimit: 12,
                                         callback: (value) => {
                                             const num = value * 1000;
-                                            return new Intl.NumberFormat('en-US').format(num) + 'K';
+                                            return new Intl.NumberFormat('en-US').format(num) + (num >= 1000 ? 'K' : '');   // 0, 500, 1,000K, 1,500K …
                                         }
                                     },
                                     grid: { color: '#f1f5f9', lineWidth: 1 },
