@@ -168,15 +168,15 @@
                 {{-- ── Area selector (annual): REGIONAL | PROVINCES | NATIONAL ── --}}
                 <div class="flex flex-wrap items-center gap-3 mb-4">
                     <div class="inline-flex bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-300 dark:border-slate-600 p-1" role="radiogroup" aria-label="Publication coverage">
+                    <button type="button" role="radio" :aria-checked="(annualMode === 'national').toString()" @click="annualMode = 'national'"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition focus-visible:ring-2 focus-visible:ring-[#023E8A]/40 focus:outline-none"
+                                    :class="annualMode === 'national' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">National</button>
                     <button type="button" role="radio" :aria-checked="(annualMode === 'regional').toString()" @click="annualMode = 'regional'"
                                     class="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition focus-visible:ring-2 focus-visible:ring-[#023E8A]/40 focus:outline-none"
                                     :class="annualMode === 'regional' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">Regional</button>
                     <button type="button" role="radio" :aria-checked="(annualMode === 'provinces').toString()" @click="annualMode = 'provinces'"
                                     class="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition focus-visible:ring-2 focus-visible:ring-[#023E8A]/40 focus:outline-none"
-                                    :class="annualMode === 'provinces' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">Provinces</button>
-                    <button type="button" role="radio" :aria-checked="(annualMode === 'national').toString()" @click="annualMode = 'national'"
-                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition focus-visible:ring-2 focus-visible:ring-[#023E8A]/40 focus:outline-none"
-                                    :class="annualMode === 'national' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">National</button>
+                                    :class="annualMode === 'provinces' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">Provincial</button>
                     </div>
                     <select x-show="annualMode === 'provinces'" style="display: none;" x-model="province" aria-label="Province"
                         class="text-[0.8rem] font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2.5 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#023E8A]/30">
@@ -570,12 +570,12 @@
                 {{-- ── Area selector (weekly): REGIONAL | NATIONAL — only when both are published ── --}}
                 <div x-show="Object.keys(weeklyCards).length > 1" style="display: none;" class="flex flex-wrap items-center gap-3 mb-4">
                     <div class="inline-flex bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-300 dark:border-slate-600 p-1" role="radiogroup" aria-label="Weekly coverage">
-                    <button type="button" role="radio" :aria-checked="(weeklyArea === 'Regional').toString()" @click="weeklyArea = 'Regional'"
-                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition focus-visible:ring-2 focus-visible:ring-[#023E8A]/40 focus:outline-none"
-                                    :class="weeklyArea === 'Regional' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">Regional</button>
                     <button type="button" role="radio" :aria-checked="(weeklyArea === 'National').toString()" @click="weeklyArea = 'National'"
                                     class="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition focus-visible:ring-2 focus-visible:ring-[#023E8A]/40 focus:outline-none"
                                     :class="weeklyArea === 'National' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">National</button>
+                    <button type="button" role="radio" :aria-checked="(weeklyArea === 'Regional').toString()" @click="weeklyArea = 'Regional'"
+                                    class="px-4 py-2 rounded-md text-xs font-bold tracking-widest uppercase transition focus-visible:ring-2 focus-visible:ring-[#023E8A]/40 focus:outline-none"
+                                    :class="weeklyArea === 'Regional' ? 'bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">Regional</button>
                     </div>
                 </div>
 

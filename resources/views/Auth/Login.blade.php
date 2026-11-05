@@ -46,7 +46,7 @@
                 </div>
                 
                 <h1 class="font-dole-display text-3xl font-bold text-dole-dark mb-2 leading-tight">
-                    Labor Market Intelligence System
+                    Labor Market Information System
                 </h1>
             </div>
 
