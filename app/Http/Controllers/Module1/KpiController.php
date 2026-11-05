@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Module1;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Support\SafeError;
 use Illuminate\Support\Facades\DB;
 
 class KpiController extends Controller
@@ -44,7 +45,7 @@ class KpiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching available periods',
-                'error' => $e->getMessage()
+                'error' => SafeError::message($e)
             ], 500);
         }
     }
@@ -184,7 +185,7 @@ class KpiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching KPI data',
-                'error' => $e->getMessage()
+                'error' => SafeError::message($e)
             ], 500);
         }
     }
@@ -275,7 +276,7 @@ class KpiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching KPI data',
-                'error' => $e->getMessage()
+                'error' => SafeError::message($e)
             ], 500);
         }
     }

@@ -1,0 +1,141 @@
+diff --git a/app/Http/Controllers/Module1/ChartController.php b/app/Http/Controllers/Module1/ChartController.php
+index e0ebf91..b0e37fb 100644
+--- a/app/Http/Controllers/Module1/ChartController.php
++++ b/app/Http/Controllers/Module1/ChartController.php
+@@ -4,6 +4,7 @@
+ 
+ use Illuminate\Http\Request;
+ use App\Http\Controllers\Controller;
++use App\Support\SafeError;
+ use Illuminate\Support\Facades\DB;
+ 
+ class ChartController extends Controller
+@@ -69,7 +70,7 @@ public function getAvailableYears(Request $request)
+         return response()->json([
+             'success' => false,
+             'message' => 'Error fetching available years',
+-            'error' => $e->getMessage()
++            'error' => SafeError::message($e)
+         ], 500);
+     }
+ }
+diff --git a/app/Http/Controllers/Module1/KpiController.php b/app/Http/Controllers/Module1/KpiController.php
+index c71522b..346828d 100644
+--- a/app/Http/Controllers/Module1/KpiController.php
++++ b/app/Http/Controllers/Module1/KpiController.php
+@@ -4,6 +4,7 @@
+ 
+ use Illuminate\Http\Request;
+ use App\Http\Controllers\Controller;
++use App\Support\SafeError;
+ use Illuminate\Support\Facades\DB;
+ 
+ class KpiController extends Controller
+@@ -44,7 +45,7 @@ public function getAvailablePeriods(Request $request)
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Error fetching available periods',
+-                'error' => $e->getMessage()
++                'error' => SafeError::message($e)
+             ], 500);
+         }
+     }
+@@ -184,7 +185,7 @@ public function getKpiCards(Request $request)
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Error fetching KPI data',
+-                'error' => $e->getMessage()
++                'error' => SafeError::message($e)
+             ], 500);
+         }
+     }
+@@ -275,7 +276,7 @@ public function getKpiCardsByPeriod(Request $request)
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Error fetching KPI data',
+-                'error' => $e->getMessage()
++                'error' => SafeError::message($e)
+             ], 500);
+         }
+     }
+diff --git a/app/Http/Controllers/Module1/LaborMarketController.php b/app/Http/Controllers/Module1/LaborMarketController.php
+index 4b0f283..8cbef53 100644
+--- a/app/Http/Controllers/Module1/LaborMarketController.php
++++ b/app/Http/Controllers/Module1/LaborMarketController.php
+@@ -4,6 +4,7 @@
+ 
+ use Illuminate\Http\Request;
+ use App\Http\Controllers\Controller;
++use App\Support\SafeError;
+ use App\Models\Module1\RegionalLaborMarketStatistic;
+ use App\Models\Module1\PendingLaborMarketData;
+ use Illuminate\Support\Facades\DB;
+@@ -76,7 +77,7 @@ public function check(Request $request)
+         } catch (\Exception $e) {
+             return response()->json([
+                 'exists' => true,
+-                'message' => 'Error checking data: ' . $e->getMessage()
++                'message' => 'Error checking data: ' . SafeError::message($e)
+             ], 500);
+         }
+     }
+@@ -144,7 +145,7 @@ public function submitPending(Request $request)
+         } catch (\Exception $e) {
+             return response()->json([
+                 'success' => false,
+-                'message' => 'Error submitting data: ' . $e->getMessage()
++                'message' => 'Error submitting data: ' . SafeError::message($e)
+             ], 500);
+         }
+     }
+@@ -184,7 +185,7 @@ public function checkPost(Request $request)
+         } catch (\Exception $e) {
+             return response()->json([
+                 'exists' => true,
+-                'message' => 'Error checking data: ' . $e->getMessage()
++                'message' => 'Error checking data: ' . SafeError::message($e)
+             ], 500);
+         }
+     }
+@@ -267,7 +268,7 @@ public function post(Request $request)
+         } catch (\Exception $e) {
+             return response()->json([
+                 'success' => false,
+-                'message' => 'Error posting data: ' . $e->getMessage()
++                'message' => 'Error posting data: ' . SafeError::message($e)
+             ], 500);
+         }
+     }
+@@ -300,7 +301,7 @@ public function checkBeforePost(Request $request)
+         } catch (\Exception $e) {
+             return response()->json([
+                 'exists' => true,
+-                'message' => 'Error checking data: ' . $e->getMessage()
++                'message' => 'Error checking data: ' . SafeError::message($e)
+             ], 500);
+         }
+     }
+@@ -375,7 +376,7 @@ public function postVerifiedData(Request $request)
+         } catch (\Exception $e) {
+             return response()->json([
+                 'success' => false,
+-                'message' => 'Error posting data: ' . $e->getMessage()
++                'message' => 'Error posting data: ' . SafeError::message($e)
+             ], 500);
+         }
+     }
+diff --git a/app/Http/Controllers/Module6/WeeklyCardSettingController.php b/app/Http/Controllers/Module6/WeeklyCardSettingController.php
+index 6eba35f..a9901f5 100644
+--- a/app/Http/Controllers/Module6/WeeklyCardSettingController.php
++++ b/app/Http/Controllers/Module6/WeeklyCardSettingController.php
+@@ -70,8 +70,8 @@ public function updateMedia(Request $request): JsonResponse
+             if ($setting->image_path) {
+                 Storage::disk('public')->delete($setting->image_path);
+             }
+-            $setting->image_path = $request->file('image')
+-                ->storeAs('weekly-card', uniqid() . '.' . $request->file('image')->getClientOriginalExtension(), 'public');
++            // store() names the file randomly with an extension detected from its content.
++            $setting->image_path = $request->file('image')->store('weekly-card', 'public');
+         }
+ 
+         if (array_key_exists('link_url', $validated)) {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Module1;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Support\SafeError;
 use Illuminate\Support\Facades\DB;
 
 class ChartController extends Controller
@@ -69,7 +70,7 @@ class ChartController extends Controller
         return response()->json([
             'success' => false,
             'message' => 'Error fetching available years',
-            'error' => $e->getMessage()
+            'error' => SafeError::message($e)
         ], 500);
     }
 }
