@@ -4,34 +4,58 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
+/**
+ * Creates the initial admin and statistician accounts.
+ *
+ * Credentials come from .env (SEED_ADMIN_* / SEED_STATISTICIAN_*), never from
+ * this file. If a password is not set, a strong random one is generated and
+ * printed once in the console; change it after the first login.
+ */
 class UserSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('users')->insert([
+        $accounts = [
             [
                 'id'         => 1,
                 'name'       => 'Admin User',
-                'email'      => 'admin@lmi.com',
-                'phone_number'=> '639127404378',
+                'email'      => env('SEED_ADMIN_EMAIL', 'admin@lmi.com'),
+                'phone_number'=> env('SEED_ADMIN_PHONE'),
                 'role'       => 'admin',
                 'department' => 'Administration',
-                'password'   => '$2y$12$qnv.xCy7vNc8SCukLoG3YuikOyjh/U/8HWtQh8xclpnllrBlC79SG',
-                'created_at' => '2026-01-20 08:15:51',
-                'updated_at' => '2026-01-20 08:15:51',
+                'password'   => env('SEED_ADMIN_PASSWORD'),
             ],
             [
                 'id'         => 2,
                 'name'       => 'Statistician',
-                'email'      => 'statistician@lmi.com',
-                'phone_number'=> '639053236642',
+                'email'      => env('SEED_STATISTICIAN_EMAIL', 'statistician@lmi.com'),
+                'phone_number'=> env('SEED_STATISTICIAN_PHONE'),
                 'role'       => 'statistician',
                 'department' => 'Data Analysis',
-                'password'   => '$2y$12$v.3gFWLq0XTpcbfqVJeiL.I3NbPw20DN2.SXpCtdnCucZmFwHGv6y',
-                'created_at' => '2026-01-20 08:18:43',
-                'updated_at' => '2026-01-20 08:18:43',
+                'password'   => env('SEED_STATISTICIAN_PASSWORD'),
             ],
-        ]);
+        ];
+
+        foreach ($accounts as $account) {
+            if (empty($account['password'])) {
+                $account['password'] = $this->generatePassword();
+                $this->command?->warn("Generated password for {$account['email']}: {$account['password']}  (change it after first login)");
+            }
+
+            $account['password']   = Hash::make($account['password']);
+            $account['created_at'] = now();
+            $account['updated_at'] = now();
+
+            DB::table('users')->insert($account);
+        }
+    }
+
+    /** Random password that satisfies the password policy (upper, lower, number, symbol, 16 chars). */
+    protected function generatePassword(): string
+    {
+        return Str::password(16, true, true, true, false) . 'Aa1!';
     }
 }

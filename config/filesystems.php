@@ -33,7 +33,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Off: the app never issues signed URLs for private files, so the
+            // storage/{path} GET/PUT routes are not needed (less attack surface).
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Mail\OtpMail;
 use App\Models\User;
 use App\Http\Controllers\Controller;
+use App\Services\OtpService;
+use App\Support\SecurityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -20,7 +19,7 @@ class AuthenticatedSessionController extends Controller
      * Redirects to login if no OTP is pending.
      */
     public function otp(): View|RedirectResponse
-    {   
+    {
         // If already logged in, redirect to their dashboard
         if (Auth::check()) {
             if (Auth::user()->role === 'admin') {
@@ -40,38 +39,52 @@ class AuthenticatedSessionController extends Controller
      * Verify the OTP entered by the user.
      * Logs the user in and redirects based on their role.
      */
-    public function verifyOtp(Request $request): RedirectResponse
+    public function verifyOtp(Request $request, OtpService $otp): RedirectResponse
     {
         $request->validate([
-            'otp' => 'required|numeric',
+            'otp' => 'required|digits:6',
         ]);
 
-        $sessionOtp     = session('otp');
-        $userId         = session('user_id');
-        $otpGeneratedAt = session('otp_generated_at');
+        $result = $otp->verify((string) $request->otp);
 
-        // Check if OTP has expired (10 minutes)
-        if (!$otpGeneratedAt || now()->diffInMinutes($otpGeneratedAt) > 10) {
+        if ($result === OtpService::RESULT_NO_LOGIN) {
+            return redirect()->route('login')->withErrors(['email' => 'Your login session has expired. Please log in again.']);
+        }
+
+        if ($result === OtpService::RESULT_EXPIRED) {
             return back()->withErrors(['otp' => 'The OTP has expired. Please request a new one.']);
         }
 
-        // Check if OTP matches
-        if ($request->otp != $sessionOtp) {
-            return back()->withErrors(['otp' => 'The OTP is incorrect.']);
+        if ($result === OtpService::RESULT_LOCKED) {
+            return redirect()->route('login')->withErrors([
+                'email' => 'Too many incorrect OTP attempts. Please log in again.',
+            ]);
         }
 
+        if ($result === OtpService::RESULT_INVALID) {
+            $left = $otp->attemptsLeft();
+            return back()->withErrors(['otp' => "The OTP is incorrect. {$left} attempt(s) left."]);
+        }
+
+        $user = User::find(session('user_id'));
+
         // Clear OTP session data
-        session()->forget(['otp', 'otp_pending']);
+        $otp->clear();
+
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['email' => 'Your login session has expired. Please log in again.']);
+        }
 
         // Log the user in
-        $user = User::find($userId);
         Auth::login($user);
 
         // Regenerate session to prevent session fixation
         $request->session()->regenerate();
 
         // Store session ID to prevent duplicate logins
-        Cache::put('user_session_' . $user->id, session()->getId(), now()->addHours(2));
+        Cache::put('user_session_' . $user->id, session()->getId(), now()->addMinutes(config('session.lifetime', 120)));
+
+        SecurityLog::info('auth.login_success', ['role' => $user->role]);
 
         // Redirect based on role
         if ($user->role === 'statistician') {
@@ -89,47 +102,39 @@ class AuthenticatedSessionController extends Controller
     /**
      * Resend the OTP — via SMS (default) or email (on request).
      */
-    public function resendOtp(Request $request): RedirectResponse
+    public function resendOtp(Request $request, OtpService $otp): RedirectResponse
     {
+        $request->validate([
+            'via' => 'nullable|in:sms,email',
+        ]);
+
         $userId = session('user_id');
 
-        if (!$userId) {
-            return redirect()->route('login')->withErrors(['otp' => 'Unable to resend OTP. Please log in again.']);
+        if (session('otp_pending') !== true || !$userId) {
+            return redirect()->route('login')->withErrors(['email' => 'Unable to resend OTP. Please log in again.']);
         }
 
         $user = User::find($userId);
 
         if (!$user) {
-            return redirect()->route('login')->withErrors(['otp' => 'User not found. Please log in again.']);
+            return redirect()->route('login')->withErrors(['email' => 'User not found. Please log in again.']);
         }
 
-        // Generate new OTP
-        $otp = rand(100000, 999999);
-
-        session([
-            'otp'              => $otp,
-            'otp_pending'      => true,
-            'otp_generated_at' => now(),
-        ]);
+        $wait = $otp->resendWaitSeconds();
+        if ($wait > 0) {
+            return back()->with('error', "Please wait {$wait} second(s) before requesting a new OTP.");
+        }
 
         $via = $request->input('via', 'sms');
 
-        // Send via Email
-        if ($via === 'email') {
-            Mail::to($user->email)->send(new OtpMail($otp));
-            return back()->with('success', 'A new OTP has been sent to your email address.');
+        if (!$otp->issue($user, $via, true)) {
+            return back()->with('error', $via === 'email'
+                ? 'We could not send the OTP by email. Please try SMS or contact the administrator.'
+                : 'We could not send the OTP by SMS. Please try email or contact the administrator.');
         }
 
-        // Default: Send via SMS
-        $message = "Your OTP for Labor Market Intelligence System is {$otp}. This OTP is valid for 10 minutes. Do not share it with anyone. If you did not request this, please contact support.";
-
-        Http::withoutVerifying()->get('https://messagingsuite.smart.com.ph/cgphttp/servlet/sendmsg', [
-            'username'    => config('sms.username'),
-            'password'    => config('sms.password'),
-            'destination' => $user->phone_number,
-            'text'        => $message,
-        ]);
-
-        return back()->with('success', 'A new OTP has been sent to your registered phone number.');
+        return back()->with('success', $via === 'email'
+            ? 'A new OTP has been sent to your email address.'
+            : 'A new OTP has been sent to your registered phone number.');
     }
 }

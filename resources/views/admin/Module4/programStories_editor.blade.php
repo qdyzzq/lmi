@@ -828,7 +828,7 @@
                                                 </h4>
                                                 {{-- FIX #1: Sanitize HTML output — allow only safe formatting tags --}}
                                                 <div class="text-slate-700 leading-relaxed prose prose-sm max-w-none">
-                                                    {!! strip_tags($program->description, '<b><strong><em><i><u><ul><ol><li><p><br><a><span><h1><h2><h3><h4>') !!}</div>
+                                                    @safehtml(strip_tags($program->description, '<b><strong><em><i><u><ul><ol><li><p><br><a><span><h1><h2><h3><h4>'))</div>
                                                 <span
                                                     class="absolute top-3 right-3 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
                                                     <button
@@ -890,7 +890,7 @@
                                                                         style="color:{{ $c['500'] }}">•</span>
                                                                     {{-- FIX #1: Sanitize HTML output — allow only safe formatting tags --}}
                                                                     <span
-                                                                        class="flex-1 qual-content">{!! strip_tags($q->content, '<b><strong><em><i><u><ul><ol><li><p><br><a><span>') !!}</span>
+                                                                        class="flex-1 qual-content">@safehtml(strip_tags($q->content, '<b><strong><em><i><u><ul><ol><li><p><br><a><span>'))</span>
                                                                     <span
                                                                         class="flex gap-1 opacity-0 group-hover/item:opacity-100 transition flex-shrink-0">
                                                                         <button
@@ -994,7 +994,7 @@
 
                                                             <span class="flex-1">
                                                                 @if ($step->link)
-                                                                    {!! preg_replace('/(<\/?\s*(p|div|br)\s*\/?>)/i', ' ', $stepContent) !!}
+                                                                    @safehtml(preg_replace('/(<\/?\s*(p|div|br)\s*\/?>)/i', ' ', $stepContent))
                                                                     <a href="{{ $step->link }}" target="_blank"
                                                                         class="inline-flex items-center gap-1 underline font-semibold hover:opacity-80 transition ml-1"
                                                                         style="color:white;">
@@ -1009,7 +1009,7 @@
                                                                         {{ parse_url($step->link, PHP_URL_HOST) ?? $step->link }}
                                                                     </a>
                                                                 @else
-                                                                    {!! $stepContent !!}
+                                                                    @safehtml($stepContent)
                                                                 @endif
                                                             </span>
                                                             <span

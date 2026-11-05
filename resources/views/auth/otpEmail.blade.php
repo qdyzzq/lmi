@@ -49,6 +49,7 @@
                 If you did not request this, please contact support immediately.
             </p>
         </div>
+        
 
         <!-- Footer -->
         <div class="bg-slate-50 px-10 py-5 text-center border-t border-slate-200"

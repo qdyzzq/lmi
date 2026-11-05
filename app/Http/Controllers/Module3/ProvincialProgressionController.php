@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Module3;
 
 
+
+use App\Support\SafeError;
 use App\Models\Module3\DisciplineGraduate;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -129,7 +131,7 @@ class ProvincialProgressionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching progression data: ' . $e->getMessage()
+                'message' => 'Error fetching progression data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -152,7 +154,7 @@ class ProvincialProgressionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching provinces: ' . $e->getMessage()
+                'message' => 'Error fetching provinces: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -175,7 +177,7 @@ class ProvincialProgressionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching years: ' . $e->getMessage()
+                'message' => 'Error fetching years: ' . SafeError::message($e)
             ], 500);
         }
     }

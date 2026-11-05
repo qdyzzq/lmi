@@ -48,7 +48,7 @@
                     OTP Verification
                 </h1>
                 <p class="text-slate-500 text-sm font-medium" id="otpSubtitle">
-                    A 6-digit OTP has been sent to your registered <span id="channelLabel" class="font-semibold text-dole-blue">phone number</span>. It is valid for <span class="font-semibold text-dole-blue">10 minutes</span>.
+                    A 6-digit OTP has been sent to your registered <span id="channelLabel" class="font-semibold text-dole-blue">phone number</span>. It is valid for <span class="font-semibold text-dole-blue">{{ config('security.otp.expires_minutes', 10) }} minutes</span>.
                 </p>
             </div>
 

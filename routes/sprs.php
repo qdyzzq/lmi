@@ -38,16 +38,16 @@ Route::prefix('sprs')->name('sprs.')->group(function () {
         return view('sprs.auth.login');
     })->name('login')->middleware('no.back');
 
-    Route::post('/login', [LoginController::class, 'login'])->name('login.store');
+    Route::post('/login', [LoginController::class, 'login'])->name('login.store')->middleware('throttle:login');
 
    
 
     Route::get('/otp', [AuthenticatedSessionController::class, 'otp'])->name('otp');
-    Route::post('/otp', [AuthenticatedSessionController::class, 'verifyOtp'])->name('otp.verify');
-    Route::post('/otp/resend', [AuthenticatedSessionController::class, 'resendOtp'])->name('otp.resend');
+    Route::post('/otp', [AuthenticatedSessionController::class, 'verifyOtp'])->name('otp.verify')->middleware('throttle:otp-verify');
+    Route::post('/otp/resend', [AuthenticatedSessionController::class, 'resendOtp'])->name('otp.resend')->middleware('throttle:otp-resend');
 
     // ==================== SUPERADMIN ====================
-    Route::middleware(['auth', 'sprs.otp.verified', 'no.duplicate', 'no.back', 'role:super_admin'])
+    Route::middleware(['auth', 'sprs.otp.verified', 'no.duplicate', 'no.back', 'role:super_admin', 'throttle:staff-write', 'audit'])
         ->prefix('superadmin')
         ->name('superadmin.')
         ->group(function () {
@@ -58,7 +58,7 @@ Route::prefix('sprs')->name('sprs.')->group(function () {
         });
 
     // ==================== EVERY OTHER ROLE ====================
-    Route::middleware(['auth', 'sprs.otp.verified', 'no.duplicate', 'no.back'])
+    Route::middleware(['auth', 'sprs.otp.verified', 'no.duplicate', 'no.back', 'throttle:staff-write', 'audit'])
         ->group(function () {
 
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -107,7 +107,7 @@ Route::prefix('sprs')->name('sprs.')->group(function () {
         });
 
     // ==================== PROFILE ====================
-    Route::middleware(['auth', 'sprs.otp.verified'])
+    Route::middleware(['auth', 'sprs.otp.verified', 'throttle:staff-write', 'audit'])
         ->group(function () {
             Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])
                 ->name('profile.avatar.update');

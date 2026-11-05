@@ -186,9 +186,9 @@ class AuthenticatedSessionController extends Controller
         $message = "Your OTP for the Strategic Planning & Reporting System (SPRS) is {$otp}. "
                  . 'Valid for ' . self::OTP_TTL_MINUTES . ' minutes. Do not share it with anyone.';
 
-        $response = Http::withoutVerifying()
+        $response = Http::withOptions(['verify' => config('sms.verify')])   // TLS verified, same as LMI's OtpService
             ->timeout(15)
-            ->get('https://messagingsuite.smart.com.ph/cgphttp/servlet/sendmsg', [
+            ->get(config('sms.url'), [
                 'username'    => config('sms.username'),
                 'password'    => config('sms.password'),
                 'destination' => $phoneNumber,

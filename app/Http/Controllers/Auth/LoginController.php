@@ -2,84 +2,79 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Mail\OtpMail;
 use App\Models\User;
 use App\Http\Controllers\Controller;
+use App\Services\OtpService;
+use App\Support\SecurityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class LoginController extends Controller
 {
-    public function login(Request $request)
+    public function login(Request $request, OtpService $otp)
     {
         $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required',
+            'email'    => 'required|email|max:255',
+            'password' => 'required|string|max:255',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $email      = Str::lower(trim($request->email));
+        $lockoutKey = 'login-lockout:' . sha1($email);
+        $maxTries   = config('security.lockout.max_attempts', 5);
+
+        // Account lockout: too many wrong passwords for this email, from any IP.
+        if (RateLimiter::tooManyAttempts($lockoutKey, $maxTries)) {
+            $minutes = (int) ceil(RateLimiter::availableIn($lockoutKey) / 60);
+
+            SecurityLog::warning('auth.login_blocked_locked_account', ['email' => $email]);
+
+            return back()->withErrors([
+                'email' => "Too many failed login attempts. This account is locked for {$minutes} minute(s).",
+            ])->onlyInput('email');
+        }
+
+        $user = User::where('email', $email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
+            RateLimiter::hit($lockoutKey, config('security.lockout.decay_minutes', 15) * 60);
+
+            SecurityLog::warning('auth.login_failed', [
+                'email'    => $email,
+                'reason'   => $user ? 'bad_password' : 'unknown_user',
+                'attempts' => RateLimiter::attempts($lockoutKey),
+            ]);
+
+            if (RateLimiter::tooManyAttempts($lockoutKey, $maxTries)) {
+                SecurityLog::alert('auth.account_locked', ['email' => $email, 'attempts' => RateLimiter::attempts($lockoutKey)]);
+            }
+
             return back()->withErrors([
                 'email' => 'The provided credentials do not match our records.',
             ])->onlyInput('email');
         }
 
-        $otp = rand(100000, 999999);
+        RateLimiter::clear($lockoutKey);
 
-        session([
-            'otp'              => $otp,
-            'otp_pending'      => true,
-            'user_id'          => $user->id,
-            'otp_generated_at' => now(),
-        ]);
+        // New session ID before any login state is stored (prevents session fixation).
+        $request->session()->regenerate();
 
-        $this->sendOtpViaSms($user->phone_number, $otp);
+        $sent = $otp->issue($user, 'sms');
 
-        return redirect()->route('otp');
-    }
+        $redirect = redirect()->route('otp');
 
-    /**
-     * Resend OTP — via SMS (default) or email (on request).
-     */
-    public function resendOtp(Request $request)
-    {
-        if (!session('otp_pending')) {
-            return redirect()->route('login')->withErrors(['email' => 'Session expired. Please log in again.']);
-        }
-
-        $user = User::find(session('user_id'));
-
-        if (!$user) {
-            return redirect()->route('login')->withErrors(['email' => 'Session expired. Please log in again.']);
-        }
-
-        $otp = rand(100000, 999999);
-
-        session([
-            'otp'              => $otp,
-            'otp_generated_at' => now(),
-        ]);
-
-        $via = $request->input('via', 'sms');
-
-        if ($via === 'email') {
-            Mail::to($user->email)->send(new OtpMail($otp));
-            return back()->with('success', 'A new OTP has been sent to your email address.');
-        }
-
-        // Default: SMS
-        $this->sendOtpViaSms($user->phone_number, $otp);
-
-        return back()->with('success', 'A new OTP has been sent to your phone number.');
+        return $sent
+            ? $redirect
+            : $redirect->with('error', 'We could not send the OTP by SMS. Please use "Receive OTP via Email instead".');
     }
 
     public function logout(Request $request)
     {
+        SecurityLog::info('auth.logout');
+
         Cache::forget('user_session_' . Auth::id());
 
         Auth::logout();
@@ -89,24 +84,4 @@ class LoginController extends Controller
 
         return redirect('/login')->with('success', 'You have been logged out successfully.');
     }
-
-    // ─────────────────────────────────────────────
-    // Helpers
-    // ─────────────────────────────────────────────
-
-    private function sendOtpViaSms(string $phoneNumber, int $otp): void
-{
-    $message = "Your OTP for Labor Market Information System is {$otp}. "
-             . "This OTP is valid for 10 minutes. "
-             . "Do not share it with anyone. "
-             . "If you did not request this, please contact support.";
-
-    $response = Http::withoutVerifying()->get('https://messagingsuite.smart.com.ph/cgphttp/servlet/sendmsg', [
-        'username'    => config('sms.username'),
-        'password'    => config('sms.password'),
-        'destination' => $phoneNumber,
-        'text'        => $message,
-    ]);
-
-}
 }

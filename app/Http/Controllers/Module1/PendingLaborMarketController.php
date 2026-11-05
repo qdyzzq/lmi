@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Module1;
 
+use App\Support\SafeError;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Module1\RegionalLaborMarketStatistic;
@@ -68,7 +69,7 @@ class PendingLaborMarketController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'exists' => true,
-                'message' => 'Error checking data: ' . $e->getMessage()
+                'message' => 'Error checking data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -106,7 +107,7 @@ class PendingLaborMarketController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => SafeError::message($e)
             ], 500);
         }
     }
@@ -139,7 +140,7 @@ class PendingLaborMarketController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'exists' => true,
-                'message' => 'Error checking data: ' . $e->getMessage()
+                'message' => 'Error checking data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -205,7 +206,7 @@ class PendingLaborMarketController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => SafeError::message($e)
             ], 500);
         }
     }

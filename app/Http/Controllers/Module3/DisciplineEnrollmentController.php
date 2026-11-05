@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Module3;
 
+use App\Support\SafeError;
 use App\Models\Module3\DisciplineEnrollment;
 use App\Models\Module3\SupplySideAnalysis;
 use Illuminate\Http\Request;
@@ -156,7 +157,7 @@ class DisciplineEnrollmentController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while saving the data: ' . $e->getMessage()
+                'message' => 'An error occurred while saving the data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -240,7 +241,7 @@ class DisciplineEnrollmentController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error checking year: ' . $e->getMessage()
+                'message' => 'Error checking year: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -326,7 +327,7 @@ class DisciplineEnrollmentController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting data: ' . $e->getMessage()
+                'message' => 'Error deleting data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -613,7 +614,7 @@ class DisciplineEnrollmentController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to retrieve enrollment trend data',
-                'message' => $e->getMessage()
+                'message' => SafeError::message($e)
             ], 500);
         }
     }

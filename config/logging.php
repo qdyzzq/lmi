@@ -1,5 +1,6 @@
 <?php
 
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -51,6 +52,16 @@ return [
     */
 
     'channels' => [
+
+        // Security events and audit trail (see App\Support\SecurityLog), one JSON object per line.
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => 'info',
+            'days' => env('SECURITY_LOG_DAYS', 365),
+            'formatter' => JsonFormatter::class,
+            'replace_placeholders' => true,
+        ],
 
         'stack' => [
             'driver' => 'stack',

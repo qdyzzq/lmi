@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Module3;
 
+use App\Support\SafeError;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Module3\LicensureRate;
@@ -85,7 +86,7 @@ class LicensureRateController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while saving the data: ' . $e->getMessage()
+                'message' => 'An error occurred while saving the data: ' . SafeError::message($e)
             ], 500);
         }
     }
@@ -235,7 +236,7 @@ class LicensureRateController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting data: ' . $e->getMessage()
+                'message' => 'Error deleting data: ' . SafeError::message($e)
             ], 500);
         }
     }
