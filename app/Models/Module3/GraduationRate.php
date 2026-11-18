@@ -31,7 +31,7 @@ class GraduationRate extends Model
     public static function calculateEnrollmentYear($graduateYear)
     {
         // Parse graduate year (e.g., "2024-2025")
-        $years = explode('-', $graduateYear);
+        $years = explode('-', (string) $graduateYear);
         if (count($years) !== 2) {
             return null;
         }

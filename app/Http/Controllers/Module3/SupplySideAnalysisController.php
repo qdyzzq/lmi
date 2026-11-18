@@ -434,8 +434,9 @@ class SupplySideAnalysisController extends Controller
                         'province'      => $sis->province,
                         'analysis_text' => $sis->analysis_text,
                         'is_active'     => $sis->is_active,
-                        'created_at'    => $sis->created_at->format('M d, Y'),
-                        'updated_at'    => $sis->updated_at->format('M d, Y h:i A'),
+                        // Seeded rows have no timestamps.
+                        'created_at'    => $sis->created_at?->format('M d, Y'),
+                        'updated_at'    => $sis->updated_at?->format('M d, Y h:i A'),
                     ];
                 });
 

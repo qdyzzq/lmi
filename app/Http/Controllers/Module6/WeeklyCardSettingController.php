@@ -70,8 +70,9 @@ class WeeklyCardSettingController extends Controller
             if ($setting->image_path) {
                 Storage::disk('public')->delete($setting->image_path);
             }
-            $setting->image_path = $request->file('image')
-                ->storeAs('weekly-card', uniqid() . '.' . $request->file('image')->getClientOriginalExtension(), 'public');
+            // store() names the file randomly with an extension detected from its content,
+            // never the client-supplied one (blocks uploads like "shell.php").
+            $setting->image_path = $request->file('image')->store('weekly-card', 'public');
         }
 
         if (array_key_exists('link_url', $validated)) {
