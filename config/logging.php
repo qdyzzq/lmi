@@ -58,7 +58,7 @@ return [
             'driver' => 'daily',
             'path' => storage_path('logs/security.log'),
             'level' => 'info',
-            'days' => env('SECURITY_LOG_DAYS', 365),
+            'max_files' => env('SECURITY_LOG_DAYS', 365),
             'formatter' => JsonFormatter::class,
             'replace_placeholders' => true,
         ],
@@ -80,7 +80,7 @@ return [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'days' => env('LOG_DAILY_DAYS', 14),
+            'max_files' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
         ],
 
